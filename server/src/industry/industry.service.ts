@@ -5,7 +5,7 @@ import { UpdateIndustryDto } from './dto/update-industry.dto';
 @Injectable()
 export class IndustryService {
   create(createIndustryDto: CreateIndustryDto) {
-    return 'This action adds a new industry';
+    return createIndustryDto;
   }
 
   findAll() {

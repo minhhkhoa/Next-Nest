@@ -11,7 +11,7 @@ export class Industry {
   @Prop({ type: MultiLang })
   name: MultiLang;
 
-  @Prop()
+  @Prop({ default: false })
   isDeleted: boolean;
 }
 
