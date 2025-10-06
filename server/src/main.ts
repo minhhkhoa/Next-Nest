@@ -19,6 +19,15 @@ async function bootstrap() {
     }),
   ); //- sử dụng pipe để validate dữ liệu trước khi vào controller
 
+  //- config cors
+  app.enableCors({
+    origin: true, //- domain client
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    preflightContinue: false,
+    credentials: true,
+  });
+  //- end config cors
+
   //- config swagger
   const config = new DocumentBuilder()
     .setTitle('NestJS API Document')

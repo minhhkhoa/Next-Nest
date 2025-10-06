@@ -121,7 +121,7 @@ export class TranslationService {
     //- lặp qua field cần dịch
     for (const field of fieldsToTranslate) {
       if (data[field]) {
-        const vi = data[field].vi;
+        const vi = data[field];
         let en: string;
 
         //- Kiểm tra xem có phải HTML không

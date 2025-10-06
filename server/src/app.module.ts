@@ -6,6 +6,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Connection } from 'mongoose';
 import { IndustryModule } from './industry/industry.module';
 import { TranslationModule } from './translation/translation.module';
+import { softDeletePlugin } from 'soft-delete-plugin-mongoose';
+
 
 @Module({
   imports: [
@@ -18,8 +20,8 @@ import { TranslationModule } from './translation/translation.module';
         socketTimeoutMS: 45000,
         connectionFactory: (connection: Connection) => {
           //- điều này giúp sử dụng soft delete
-          // connection.plugin(softDeletePlugin);
-          // return connection;
+          connection.plugin(softDeletePlugin);
+          return connection;
         },
       }),
       inject: [ConfigService],
@@ -31,7 +33,6 @@ import { TranslationModule } from './translation/translation.module';
     }),
 
     IndustryModule,
-
     TranslationModule,
   ],
   controllers: [AppController],
