@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Connection } from 'mongoose';
 import { IndustryModule } from './industry/industry.module';
+import { TranslationModule } from './translation/translation.module';
 
 @Module({
   imports: [
@@ -30,6 +31,8 @@ import { IndustryModule } from './industry/industry.module';
     }),
 
     IndustryModule,
+
+    TranslationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
