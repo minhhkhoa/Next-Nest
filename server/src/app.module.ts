@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Connection } from 'mongoose';
+import { IndustryModule } from './industry/industry.module';
 
 @Module({
   imports: [
@@ -27,6 +28,8 @@ import { Connection } from 'mongoose';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+
+    IndustryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
