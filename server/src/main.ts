@@ -1,20 +1,27 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
+import { TransformInterceptor } from './core/transform.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
+  //- use reflector
+  const reflector = app.get(Reflector);
+  
+  //- use global interceptor
+  app.useGlobalInterceptors(new TransformInterceptor(reflector));
+
   //- use global pipe
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, //- loại bỏ các field khong khai bao trong DTO tức là làm sạch dữ liệu trước khi vào controller đó
-      // transform: true, // ép kiểu theo DTO - tắt đi vì nó khá nặng
+      transform: true, // ép kiểu theo DTO 
       transformOptions: {
-        enableImplicitConversion: true, // tự động convert string -> number, v.v.
+        enableImplicitConversion: true, // tự động convert string -> number, boolean, date, ...
       },
     }),
   ); //- sử dụng pipe để validate dữ liệu trước khi vào controller

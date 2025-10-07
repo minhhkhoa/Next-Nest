@@ -16,17 +16,21 @@ export class IndustryService {
     private indusTryModel: SoftDeleteModel<IndustryDocument>,
   ) {}
   async create(createIndustryDto: CreateIndustryDto) {
-    const dataLang = await this.translationService.translateModuleData(
-      'industry',
-      createIndustryDto,
-    );
+    try {
+      const dataLang = await this.translationService.translateModuleData(
+        'industry',
+        createIndustryDto,
+      );
 
-    const industry = await this.indusTryModel.create(dataLang);
+      const industry = await this.indusTryModel.create(dataLang);
 
-    return {
-      _id: industry._id,
-      name: industry.name.en,
-    };
+      return {
+        _id: industry._id,
+        name: industry.name.en,
+      };
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
   }
 
   findAll() {
@@ -93,8 +97,8 @@ export class IndustryService {
       const filter = { _id: id };
       const result = this.indusTryModel.softDelete(filter);
 
-      if(!result) throw new BadRequestCustom('Lỗi xóa industry', !!id);
-      
+      if (!result) throw new BadRequestCustom('Lỗi xóa industry', !!id);
+
       return result;
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
