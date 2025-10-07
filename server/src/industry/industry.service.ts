@@ -78,7 +78,11 @@ export class IndustryService {
         throw new BadRequestCustom('ID industry không đúng định dạng', !!id);
       }
 
-      const industry = await this.indusTryModel.findById(id);
+      const industry = await this.indusTryModel.findById(id).populate({
+        path: 'relatedIndustries',
+        match: { isDeleted: false }, //- Chỉ lấy khi chưa bị xóa mềm
+        select: 'name _id', //- Chỉ lấy name và _id
+      });
 
       if (!industry)
         throw new BadRequestCustom('ID industry không tìm thấy', !!id);

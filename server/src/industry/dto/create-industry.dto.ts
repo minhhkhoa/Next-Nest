@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsArray, IsBoolean, IsMongoId, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreateIndustryDto {
   @ApiProperty()
@@ -10,4 +10,13 @@ export class CreateIndustryDto {
   @IsBoolean({ message: 'isDeleted phải là boolean' })
   @IsOptional()
   isDeleted: boolean;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsArray({ message: 'relatedIndustries phải là mảng' })
+  @IsMongoId({
+    each: true,
+    message: 'Mỗi ID trong relatedIndustries phải là MongoId hợp lệ',
+  })
+  relatedIndustries?: string[];
 }

@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 
 export class MultiLang {
   @Prop() vi: string;
@@ -14,6 +14,9 @@ export class Industry {
 
   @Prop({ default: false })
   isDeleted: boolean;
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Industry' }] }) //- tham chiếu tới chính nó
+  relatedIndustries: Types.ObjectId[]; //- Mảng chứa _id của các ngành nghề liên quan
 
   @Prop()
   createdAt?: Date;
