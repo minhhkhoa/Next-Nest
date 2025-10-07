@@ -10,7 +10,7 @@ export class FindIndustryQueryDto {
   @IsNumber()
   pageSize: number;
 
-  @ApiPropertyOptional({ example: 'IT' })
+  @ApiPropertyOptional({ example: '' })
   @IsOptional()
   @IsString()
   query?: string;

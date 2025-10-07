@@ -7,6 +7,7 @@ import { Connection } from 'mongoose';
 import { IndustryModule } from './industry/industry.module';
 import { TranslationModule } from './translation/translation.module';
 import { softDeletePlugin } from 'soft-delete-plugin-mongoose';
+import { SkillModule } from './skill/skill.module';
 
 
 @Module({
@@ -34,6 +35,7 @@ import { softDeletePlugin } from 'soft-delete-plugin-mongoose';
 
     IndustryModule,
     TranslationModule,
+    SkillModule,
   ],
   controllers: [AppController],
   providers: [AppService],
