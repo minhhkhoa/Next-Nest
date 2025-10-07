@@ -14,6 +14,15 @@ export class Industry {
 
   @Prop({ default: false })
   isDeleted: boolean;
+
+  @Prop()
+  createdAt?: Date;
+
+  @Prop()
+  updatedAt?: Date;
+
+  @Prop()
+  deletedAt?: Date;
 }
 
 export const IndustrySchema = SchemaFactory.createForClass(Industry);

@@ -6,12 +6,14 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { IndustryService } from './industry.service';
 import { CreateIndustryDto } from './dto/create-industry.dto';
 import { UpdateIndustryDto } from './dto/update-industry.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ResponseMessage } from 'src/decorator/customize';
+import { FindIndustryQueryDto } from './dto/industryDto.dto';
 
 @ApiTags('industry')
 @Controller('industry')
@@ -28,8 +30,12 @@ export class IndustryController {
   @ResponseMessage('Lấy tất cả ngành nghề thành công')
   @ApiOperation({ summary: 'GettAll' })
   @Get()
-  findAll() {
-    return this.industryService.findAll();
+  findAll(@Query() query: FindIndustryQueryDto) {
+    return this.industryService.findAll(
+      query.currentPage,
+      query.pageSize,
+      query.query!,
+    );
   }
 
   @ResponseMessage('Tìm kiếm ngành nghề theo ID thành công')
