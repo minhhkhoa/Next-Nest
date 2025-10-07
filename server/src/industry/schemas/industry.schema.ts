@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument } from 'mongoose';
 
 export class MultiLang {
   @Prop() vi: string;
@@ -16,3 +17,4 @@ export class Industry {
 }
 
 export const IndustrySchema = SchemaFactory.createForClass(Industry);
+export type IndustryDocument = HydratedDocument<Industry>;

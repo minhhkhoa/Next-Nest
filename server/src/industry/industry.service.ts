@@ -3,14 +3,17 @@ import { CreateIndustryDto } from './dto/create-industry.dto';
 import { UpdateIndustryDto } from './dto/update-industry.dto';
 import { TranslationService } from 'src/translation/translation.service';
 import { InjectModel } from '@nestjs/mongoose';
-import { Industry } from './schemas/industry.schema';
-import { Model } from 'mongoose';
+import { Industry, IndustryDocument } from './schemas/industry.schema';
+import mongoose from 'mongoose';
+import { BadRequestCustom } from 'src/customExceptions/BadRequestCustom';
+import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 
 @Injectable()
 export class IndustryService {
   constructor(
     private readonly translationService: TranslationService,
-    @InjectModel(Industry.name) private indusTryModel: Model<Industry>,
+    @InjectModel(Industry.name)
+    private indusTryModel: SoftDeleteModel<IndustryDocument>,
   ) {}
   async create(createIndustryDto: CreateIndustryDto) {
     const dataLang = await this.translationService.translateModuleData(
@@ -30,15 +33,71 @@ export class IndustryService {
     return `This action returns all industry`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} industry`;
+  async findOne(id: string) {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new BadRequestCustom('ID industry không đúng định dạng', !!id);
+      }
+
+      const industry = await this.indusTryModel.findById(id);
+
+      return industry;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
   }
 
-  update(id: number, updateIndustryDto: UpdateIndustryDto) {
-    return `This action updates a #${id} industry`;
+  async update(id: string, updateIndustryDto: UpdateIndustryDto) {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new BadRequestCustom('ID industry không đúng định dạng', !!id);
+      }
+
+      const checkExist = await this.findOne(id);
+      if (!checkExist)
+        throw new BadRequestCustom('ID industry không tìm thấy', !!id);
+
+      //- cần translation trước đã
+      const dataTranslation = await this.translationService.translateModuleData(
+        'industry',
+        updateIndustryDto,
+      );
+      const filter = { _id: id };
+      const update = { $set: dataTranslation };
+
+      const result = await this.indusTryModel.updateOne(filter, update);
+
+      if (result.modifiedCount === 0)
+        throw new BadRequestCustom('Lỗi sửa industry', !!id);
+      return result;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} industry`;
+  async remove(id: string) {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new BadRequestCustom('ID industry không đúng định dạng', !!id);
+      }
+
+      const checkExistIndustry = await this.findOne(id);
+      if (!checkExistIndustry)
+        throw new BadRequestCustom('ID industry không tìm thấy', !!id);
+
+      const isDeleted = checkExistIndustry.isDeleted;
+
+      if (isDeleted)
+        throw new BadRequestCustom('Industry này đã được xóa', !!isDeleted);
+
+      const filter = { _id: id };
+      const result = this.indusTryModel.softDelete(filter);
+
+      if(!result) throw new BadRequestCustom('Lỗi xóa industry', !!id);
+      
+      return result;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
   }
 }
