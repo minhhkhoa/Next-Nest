@@ -80,6 +80,16 @@ export class IndustryService {
 
       const industry = await this.indusTryModel.findById(id);
 
+      if (!industry)
+        throw new BadRequestCustom('ID industry không tìm thấy', !!id);
+
+      if (industry?.isDeleted) {
+        throw new BadRequestCustom(
+          'Industry này hiện đã bị xóa',
+          !!industry?.isDeleted,
+        );
+      }
+
       return industry;
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
@@ -92,8 +102,8 @@ export class IndustryService {
         throw new BadRequestCustom('ID industry không đúng định dạng', !!id);
       }
 
-      const checkExist = await this.findOne(id);
-      if (!checkExist)
+      const industry = await this.indusTryModel.findById(id);
+      if (!industry)
         throw new BadRequestCustom('ID industry không tìm thấy', !!id);
 
       //- cần translation trước đã
@@ -120,11 +130,11 @@ export class IndustryService {
         throw new BadRequestCustom('ID industry không đúng định dạng', !!id);
       }
 
-      const checkExistIndustry = await this.findOne(id);
-      if (!checkExistIndustry)
+      const industry = await this.indusTryModel.findById(id);
+      if (!industry)
         throw new BadRequestCustom('ID industry không tìm thấy', !!id);
 
-      const isDeleted = checkExistIndustry.isDeleted;
+      const isDeleted = industry.isDeleted;
 
       if (isDeleted)
         throw new BadRequestCustom('Industry này đã được xóa', !!isDeleted);
