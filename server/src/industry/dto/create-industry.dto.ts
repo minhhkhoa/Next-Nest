@@ -9,7 +9,7 @@ export class CreateIndustryDto {
   @ApiProperty({ required: false, default: false })
   @IsBoolean({ message: 'isDeleted phải là boolean' })
   @IsOptional()
-  isDeleted: boolean;
+  isDeleted?: boolean;
 
   @ApiProperty()
   @IsOptional()
