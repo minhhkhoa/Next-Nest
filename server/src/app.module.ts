@@ -8,6 +8,7 @@ import { IndustryModule } from './industry/industry.module';
 import { TranslationModule } from './translation/translation.module';
 import { softDeletePlugin } from 'soft-delete-plugin-mongoose';
 import { SkillModule } from './skill/skill.module';
+import { CateNewsModule } from './cate-news/cate-news.module';
 
 
 @Module({
@@ -36,6 +37,7 @@ import { SkillModule } from './skill/skill.module';
     IndustryModule,
     TranslationModule,
     SkillModule,
+    CateNewsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
