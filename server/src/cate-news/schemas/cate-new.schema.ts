@@ -12,7 +12,7 @@ export class CateNews {
   isDeleted: boolean;
 
   @Prop()
-  summary: string;
+  summary: MultiLang;
 
   @Prop()
   createdAt?: Date;

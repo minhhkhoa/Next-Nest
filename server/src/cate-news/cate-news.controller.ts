@@ -36,7 +36,7 @@ export class CateNewsController {
   @ApiOperation({ summary: 'Lấy danh mục tin tức theo id' })
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.cateNewsService.findOne(+id);
+    return this.cateNewsService.findOne(id);
   }
 
   @ResponseMessage('Cập nhật danh mục tin tức thành công')
