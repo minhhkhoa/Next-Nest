@@ -66,11 +66,57 @@ export class CateNewsService {
     }
   }
 
-  update(id: number, updateCateNewDto: UpdateCateNewsDto) {
-    return `This action updates a #${id} cateNew`;
+  async update(id: string, updateCateNewDto: UpdateCateNewsDto) {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new BadRequestCustom('ID CateNews không đúng định dạng', !!id);
+      }
+
+      const cateNews = await this.cateNewsModel.findById(id);
+      if (!cateNews)
+        throw new BadRequestCustom('ID cateNews không tìm thấy', !!id);
+
+      //- cần translation trước đã
+      const dataTranslation = await this.translationService.translateModuleData(
+        'cateNews',
+        updateCateNewDto,
+      );
+      const filter = { _id: id };
+      const update = { $set: dataTranslation };
+
+      const result = await this.cateNewsModel.updateOne(filter, update);
+
+      if (result.modifiedCount === 0)
+        throw new BadRequestCustom('Lỗi sửa cateNews', !!id);
+      return result;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} cateNew`;
+  async remove(id: string) {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new BadRequestCustom('ID cateNews không đúng định dạng', !!id);
+      }
+
+      const cateNews = await this.cateNewsModel.findById(id);
+      if (!cateNews)
+        throw new BadRequestCustom('ID cateNews không tìm thấy', !!id);
+
+      const isDeleted = cateNews.isDeleted;
+
+      if (isDeleted)
+        throw new BadRequestCustom('CateNews này đã được xóa', !!isDeleted);
+
+      const filter = { _id: id };
+      const result = this.cateNewsModel.softDelete(filter);
+
+      if (!result) throw new BadRequestCustom('Lỗi xóa cateNews', !!id);
+
+      return result;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
   }
 }

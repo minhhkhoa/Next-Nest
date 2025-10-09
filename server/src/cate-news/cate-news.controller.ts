@@ -26,7 +26,7 @@ export class CateNewsController {
   }
 
   @ResponseMessage('Lấy danh sách danh mục tin tức thành công')
-  @ApiOperation({ summary: 'Lấy danh sách danh mục tin tức' })
+  @ApiOperation({ summary: 'getAll' })
   @Get()
   findAll() {
     return this.cateNewsService.findAll();
@@ -46,13 +46,13 @@ export class CateNewsController {
     @Param('id') id: string,
     @Body() updateCateNewsDto: UpdateCateNewsDto,
   ) {
-    return this.cateNewsService.update(+id, updateCateNewsDto);
+    return this.cateNewsService.update(id, updateCateNewsDto);
   }
 
   @ResponseMessage('Xóa danh mục tin tức thành công')
   @ApiOperation({ summary: 'Xóa danh mục tin tức' })
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.cateNewsService.remove(+id);
+    return this.cateNewsService.remove(id);
   }
 }
