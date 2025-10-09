@@ -1,10 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-
-export class MultiLang {
-  @Prop() vi: string;
-  @Prop() en: string;
-}
+import { MultiLang } from 'src/utils/typeSchemas';
 
 @Schema({ timestamps: true })
 //- Định nghĩa các field có trong collection Industry

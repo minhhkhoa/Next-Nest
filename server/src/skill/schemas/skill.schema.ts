@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import { MultiLang } from 'src/industry/schemas/industry.schema';
+import { MultiLang } from 'src/utils/typeSchemas';
 
 @Schema({ timestamps: true })
 //- Định nghĩa các field có trong collection Skill

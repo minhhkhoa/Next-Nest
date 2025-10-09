@@ -3,6 +3,7 @@ export const translationConfig = {
   industry: ['name'],
   skill: ['name'],
   cateNews: ['name', 'summary'],
+  news: ['title', 'description', 'summary'],
 };
 
 export type allModules = keyof typeof translationConfig;
