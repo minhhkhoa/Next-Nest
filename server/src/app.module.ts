@@ -9,6 +9,7 @@ import { TranslationModule } from './translation/translation.module';
 import { softDeletePlugin } from 'soft-delete-plugin-mongoose';
 import { SkillModule } from './skill/skill.module';
 import { CateNewsModule } from './cate-news/cate-news.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 
 @Module({
@@ -38,6 +39,7 @@ import { CateNewsModule } from './cate-news/cate-news.module';
     TranslationModule,
     SkillModule,
     CateNewsModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
