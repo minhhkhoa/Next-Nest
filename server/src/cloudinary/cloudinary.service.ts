@@ -1,26 +1,29 @@
 import { Injectable } from '@nestjs/common';
-import { CreateCloudinaryDto } from './dto/create-cloudinary.dto';
-import { UpdateCloudinaryDto } from './dto/update-cloudinary.dto';
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryResponse } from './cloudinary/cloudinary-response';
+import * as streamifier from 'streamifier';
 
 @Injectable()
 export class CloudinaryService {
-  create(createCloudinaryDto: CreateCloudinaryDto) {
-    return 'This action adds a new cloudinary';
-  }
+  uploadFile(file: Express.Multer.File): Promise<CloudinaryResponse> {
+    return new Promise<CloudinaryResponse>((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'do_an', //- lưu vào folder resume trên cloud
+          resource_type: 'auto', //- tự động biết kiểu mở rộng của file
+          access_mode: 'public', //- cho phép public link
+        },
+        (error, result) => {
+          if (error) return reject(error);
+          if (result) {
+            resolve(result as CloudinaryResponse);
+          } else {
+            reject(new Error('Upload failed with no result'));
+          }
+        },
+      );
 
-  findAll() {
-    return `This action returns all cloudinary`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} cloudinary`;
-  }
-
-  update(id: number, updateCloudinaryDto: UpdateCloudinaryDto) {
-    return `This action updates a #${id} cloudinary`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} cloudinary`;
+      streamifier.createReadStream(file.buffer).pipe(uploadStream);
+    });
   }
 }
