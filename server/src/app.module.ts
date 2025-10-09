@@ -10,6 +10,7 @@ import { softDeletePlugin } from 'soft-delete-plugin-mongoose';
 import { SkillModule } from './skill/skill.module';
 import { CateNewsModule } from './cate-news/cate-news.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { NewsModule } from './news/news.module';
 
 
 @Module({
@@ -40,6 +41,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     SkillModule,
     CateNewsModule,
     CloudinaryModule,
+    NewsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
