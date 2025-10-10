@@ -13,6 +13,7 @@ import { CreateNewsDto } from './dto/create-news.dto';
 import { UpdateNewsDto } from './dto/update-news.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ResponseMessage } from 'src/decorator/customize';
+import { FindNewsQueryDto } from './dto/newsDto-dto';
 
 @ApiTags('news')
 @Controller('news')
@@ -33,24 +34,31 @@ export class NewsController {
     return this.newsService.findAll();
   }
 
+  @ResponseMessage('pagination + filter theo title + cateNewsID')
+  @ApiOperation({ summary: 'Get all news by filter' })
+  @Get('filter')
+  findAllByFilter(@Query() query: FindNewsQueryDto) {
+    return this.newsService.findAllByFilter(query);
+  }
+
   @ResponseMessage('Lấy tin tức theo id thành công')
   @ApiOperation({ summary: 'GetById' })
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.newsService.findOne(+id);
+    return this.newsService.findOne(id);
   }
 
   @ResponseMessage('Cập nhật tin tức thành công')
   @ApiOperation({ summary: 'Cập nhật tin tức' })
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateNewsDto: UpdateNewsDto) {
-    return this.newsService.update(+id, updateNewsDto);
+    return this.newsService.update(id, updateNewsDto);
   }
 
   @ResponseMessage('Xóa tin tức thành công')
   @ApiOperation({ summary: 'Xóa tin tức' })
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.newsService.remove(+id);
+    return this.newsService.remove(id);
   }
 }

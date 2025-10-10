@@ -1,8 +1,15 @@
 import { Module } from '@nestjs/common';
 import { NewsService } from './news.service';
 import { NewsController } from './news.controller';
+import { TranslationModule } from 'src/translation/translation.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { News, NewsSchema } from './schemas/news.schema';
 
 @Module({
+  imports: [
+    TranslationModule,
+    MongooseModule.forFeature([{ name: News.name, schema: NewsSchema }]),
+  ],
   controllers: [NewsController],
   providers: [NewsService],
 })
