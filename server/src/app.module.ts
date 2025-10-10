@@ -11,6 +11,7 @@ import { SkillModule } from './skill/skill.module';
 import { CateNewsModule } from './cate-news/cate-news.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { NewsModule } from './news/news.module';
+import { CompanyModule } from './company/company.module';
 
 
 @Module({
@@ -42,6 +43,7 @@ import { NewsModule } from './news/news.module';
     CateNewsModule,
     CloudinaryModule,
     NewsModule,
+    CompanyModule,
   ],
   controllers: [AppController],
   providers: [AppService],
