@@ -7,8 +7,8 @@ import {
   IsOptional,
 } from 'class-validator';
 
+//- lớp này là do admin tạo tài khoản cho employer còn candidate sẽ có phương thức register riêng
 export class CreateUserDto {
-  //- lớp này là do admin tạo tài khoản cho employer còn candidate sẽ có phương thức register riêng
   @ApiProperty()
   @IsNotEmpty({ message: 'Tên người dùng không được để trống' })
   name: string;
