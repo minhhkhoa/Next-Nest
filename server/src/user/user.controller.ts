@@ -1,34 +1,55 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ResponseMessage } from 'src/decorator/customize';
 
+@ApiTags('user')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @ResponseMessage('Tạo mới người dùng thành công')
+  @ApiOperation({ summary: 'Thêm mới người dùng' })
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
 
+  @ResponseMessage('Tìm kiếm toàn bộ người dùng thành công')
+  @ApiOperation({ summary: 'get all user' })
   @Get()
   findAll() {
     return this.userService.findAll();
   }
 
+  @ResponseMessage('Tìm kiếm theo id thành công')
+  @ApiOperation({ summary: 'getDetail user' })
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+    return this.userService.findOne(id);
   }
 
+  @ResponseMessage('Cập nhật thông tin người dùng thành công')
+  @ApiOperation({ summary: 'update user' })
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+    return this.userService.update(id, updateUserDto);
   }
 
+  @ResponseMessage('Xóa người dùng thành công')
+  @ApiOperation({ summary: 'Delete user' })
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+    return this.userService.remove(id);
   }
 }
