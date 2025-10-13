@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -25,12 +25,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useTheme } from "next-themes";
+import { useLoginMutation } from "@/queries/auth";
 
 export function LoginForm() {
+  const [isClient, setIsClient] = useState(false);
   const { theme } = useTheme();
-  console.log("theme", theme);
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { isPending, mutateAsync: loginMutation } = useLoginMutation();
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
     defaultValues: {
@@ -40,17 +41,24 @@ export function LoginForm() {
   });
 
   const onSubmit = async (data: LoginBodyType) => {
-    setIsLoading(true);
     console.log("[v0] Login data:", data);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsLoading(false);
+    const result = await loginMutation(data);
+    console.log("result: ", result.data?.access_token);
   };
 
   const handleSocialLogin = (provider: "google" | "facebook") => {
     console.log("[v0] Social login with:", provider);
     // Handle social login logic here
   };
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    //- do dùng theme trong button mà ở next-server không có theme nên nó báo lỗi
+    return null;
+  }
 
   return (
     <Card className="w-full max-w-md shadow-2xl border-border/50">
@@ -126,9 +134,9 @@ export function LoginForm() {
             <Button
               type="submit"
               className="w-full select-none" //- select-none: giúp click đúp không bôi text
-              disabled={isLoading}
+              disabled={isPending}
             >
-              {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
+              {isPending ? "Đang đăng nhập..." : "Đăng nhập"}
             </Button>
           </form>
         </Form>
@@ -148,7 +156,7 @@ export function LoginForm() {
           <Button
             variant="outline"
             onClick={() => handleSocialLogin("google")}
-            disabled={isLoading}
+            disabled={isPending}
             className={`w-full ${theme === "dark" ? "hover:!bg-primary" : ""}`}
           >
             <Mail className="mr-2 h-4 w-4" />
@@ -157,10 +165,10 @@ export function LoginForm() {
           <Button
             variant="outline"
             onClick={() => handleSocialLogin("facebook")}
-            disabled={isLoading}
+            disabled={isPending}
             className={`w-full ${theme === "dark" ? "hover:!bg-primary" : ""}`}
           >
-            <Facebook className="mr-2 h-4 w-4"/>
+            <Facebook className="mr-2 h-4 w-4" />
             Facebook
           </Button>
         </div>

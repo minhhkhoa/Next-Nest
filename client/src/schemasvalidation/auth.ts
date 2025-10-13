@@ -15,4 +15,18 @@ export const LoginBody = z
   })
   .strict();
 
-  export type LoginBodyType = z.TypeOf<typeof LoginBody>;
+export type LoginBodyType = z.TypeOf<typeof LoginBody>;
+
+export const LoginRes = z.object({
+  access_token: z.string(),
+  user: z.object({
+    _id: z.string(),
+    avatar: z.string(),
+    email: z.string(),
+    name: z.string(),
+    companyID: z.array(z.string()),
+    roleID: z.array(z.string()),
+  }),
+});
+
+export type LoginResType = z.TypeOf<typeof LoginRes>;

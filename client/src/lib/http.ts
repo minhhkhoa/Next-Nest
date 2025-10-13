@@ -1,8 +1,9 @@
-import axios from "axios";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { envConfig } from "../../config";
 
 //- Tạo instance Axios
-const axiosInstance = axios.create({
+const instance = axios.create({
   baseURL: envConfig.NEXT_PUBLIC_API_URL,
   timeout: 10000, // Timeout 10 giây
   headers: {
@@ -12,7 +13,7 @@ const axiosInstance = axios.create({
 });
 
 //- Interceptor cho request: Thêm token hoặc các xử lý trước khi gửi request
-axiosInstance.interceptors.request.use(
+instance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -26,8 +27,8 @@ axiosInstance.interceptors.request.use(
 );
 
 //- Interceptor cho response: Xử lý lỗi từ server
-axiosInstance.interceptors.response.use(
-  (response) => {
+instance.interceptors.response.use(
+  (response: AxiosResponse) => {
     //- Trả về dữ liệu từ response
     return response.data;
   },
@@ -65,4 +66,18 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-export default axiosInstance;
+//- tạo wrapper có generic type
+const http = {
+  get: <T>(url: string, config?: AxiosRequestConfig) =>
+    instance.get<never, T>(url, config),
+  post: <T>(url: string, data?: any, config?: AxiosRequestConfig) =>
+    instance.post<never, T>(url, data, config),
+  put: <T>(url: string, data?: any, config?: AxiosRequestConfig) =>
+    instance.put<never, T>(url, data, config),
+  patch: <T>(url: string, data?: any, config?: AxiosRequestConfig) =>
+    instance.patch<never, T>(url, data, config),
+  delete: <T>(url: string, config?: AxiosRequestConfig) =>
+    instance.delete<never, T>(url, config),
+};
+
+export default http;
