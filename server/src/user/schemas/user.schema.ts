@@ -40,3 +40,13 @@ export class User {
 
 export const UserSchema = SchemaFactory.createForClass(User);
 export type UserDocument = HydratedDocument<User>;
+
+export type UserResponse = Omit<
+  User,
+  | 'password'
+  | 'refresh_token'
+  | 'isDeleted'
+  | 'createdAt'
+  | 'updatedAt'
+  | 'deletedAt'
+> & { _id: string };

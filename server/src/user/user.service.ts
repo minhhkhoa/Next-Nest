@@ -94,12 +94,12 @@ export class UserService {
     }
   }
 
-  async findUserByEmail(email: string): Promise<User | null> {
+  async findUserByEmail(email: string): Promise<UserDocument | null> {
     try {
       if (!email)
         throw new BadRequestCustom('email khong duoc de trong', !!email);
 
-      const user = await this.userModel.findOne({ email }).select('-password');
+      const user = await this.userModel.findOne({ email });
       return user;
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);

@@ -41,10 +41,6 @@ export class CreateUserDto {
 }
 
 export class LoginDto {
-  @ApiProperty()
-  @IsNotEmpty({ message: 'Tên người dùng không được để trống' })
-  name: string;
-
   @ApiProperty({ example: 'khoa@gmail.com', description: 'Email người dùng' })
   @IsEmail()
   email: string;
