@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -25,8 +24,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useTheme } from "next-themes";
 
 export function LoginForm() {
+  const { theme } = useTheme();
+  console.log("theme", theme);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const form = useForm<LoginBodyType>({
@@ -74,7 +76,11 @@ export function LoginForm() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="example@gmail.com" {...field} autoFocus/>
+                    <Input
+                      placeholder="example@gmail.com"
+                      {...field}
+                      autoFocus
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -143,7 +149,7 @@ export function LoginForm() {
             variant="outline"
             onClick={() => handleSocialLogin("google")}
             disabled={isLoading}
-            className="w-full bg-primary text-primary-foreground hover:!bg-primary"
+            className={`w-full ${theme === "dark" ? "hover:!bg-primary" : ""}`}
           >
             <Mail className="mr-2 h-4 w-4" />
             Google
@@ -152,9 +158,9 @@ export function LoginForm() {
             variant="outline"
             onClick={() => handleSocialLogin("facebook")}
             disabled={isLoading}
-            className="w-full bg-primary text-primary-foreground hover:!bg-primary"
+            className={`w-full ${theme === "dark" ? "hover:!bg-primary" : ""}`}
           >
-            <Facebook className="mr-2 h-4 w-4" />
+            <Facebook className="mr-2 h-4 w-4"/>
             Facebook
           </Button>
         </div>
