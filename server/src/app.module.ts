@@ -13,6 +13,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { NewsModule } from './news/news.module';
 import { CompanyModule } from './company/company.module';
 import { UserModule } from './user/user.module';
+import { AuthModule } from './auth/auth.module';
 
 
 @Module({
@@ -46,6 +47,7 @@ import { UserModule } from './user/user.module';
     NewsModule,
     CompanyModule,
     UserModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
