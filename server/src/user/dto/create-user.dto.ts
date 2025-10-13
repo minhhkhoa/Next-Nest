@@ -39,3 +39,17 @@ export class CreateUserDto {
   @IsOptional()
   isDeleted?: boolean;
 }
+
+export class LoginDto {
+  @ApiProperty()
+  @IsNotEmpty({ message: 'Tên người dùng không được để trống' })
+  name: string;
+
+  @ApiProperty({ example: 'khoa@gmail.com', description: 'Email người dùng' })
+  @IsEmail()
+  email: string;
+
+  @ApiProperty({ example: '123456abc', description: 'Mật khẩu người dùng' })
+  @IsNotEmpty({ message: 'Mật khẩu người dùng không được để trống' })
+  password: string;
+}

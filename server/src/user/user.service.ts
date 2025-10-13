@@ -94,6 +94,18 @@ export class UserService {
     }
   }
 
+  async findUserByEmail(email: string): Promise<User | null> {
+    try {
+      if (!email)
+        throw new BadRequestCustom('email khong duoc de trong', !!email);
+
+      const user = await this.userModel.findOne({ email }).select('-password');
+      return user;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
   async update(id: string, updateUserDto: UpdateUserDto) {
     try {
       if (!mongoose.Types.ObjectId.isValid(id)) {

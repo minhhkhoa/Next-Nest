@@ -32,6 +32,13 @@ export class UserController {
     return this.userService.findAll();
   }
 
+  @ResponseMessage('Tìm kiếm theo email thành công')
+  @ApiOperation({ summary: 'getDetail user by email' })
+  @Get('/getUserByEmail')
+  findUserByEmail(@Body() email: string) {
+    return this.userService.findUserByEmail(email);
+  }
+
   @ResponseMessage('Tìm kiếm theo id thành công')
   @ApiOperation({ summary: 'getDetail user' })
   @Get(':id')
