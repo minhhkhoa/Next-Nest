@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, RegisterDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { InjectModel } from '@nestjs/mongoose';
@@ -132,6 +132,31 @@ export class UserService {
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }
+  }
+
+  //- func update refresh token...
+  async updateRefreshToken(id: string, refreshToken: string) {
+    try {
+      //- vào tới đây thì id đã chính xác rồi
+      const filter = { _id: id };
+      const update = { $set: { refresh_token: refreshToken } };
+
+      const result = await this.userModel.updateOne(filter, update);
+
+      if (result.modifiedCount === 0)
+        throw new BadRequestCustom('Lỗi sửa refresh token', !!id);
+
+      return result;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
+  //- func register 
+  async register(registerDto: RegisterDto) {
+    if(!!registerDto) return;
+
+    return await this.userModel.create(registerDto);
   }
 
   async remove(id: string) {

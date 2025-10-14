@@ -49,3 +49,17 @@ export class LoginDto {
   @IsNotEmpty({ message: 'Mật khẩu người dùng không được để trống' })
   password: string;
 }
+
+export class RegisterDto {
+  @ApiProperty({ example: 'khoa', description: 'Tên người dùng' })
+  @IsNotEmpty({ message: 'Tên người dùng không được để trống' })
+  name: string;
+
+  @ApiProperty({ example: 'example@gmail.com', description: 'Email người dùng' })
+  @IsEmail()
+  email: string;
+
+  @ApiProperty({ example: '123456abc', description: 'Mật khẩu người dùng' })
+  @IsNotEmpty({ message: 'Mật khẩu người dùng không được để trống' })
+  password: string;
+}

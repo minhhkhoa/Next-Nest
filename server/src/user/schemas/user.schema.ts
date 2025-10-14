@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import mongoose, { HydratedDocument, Types } from 'mongoose';
 
 @Schema({ timestamps: true })
 //- Định nghĩa các field có trong collection User
@@ -36,6 +36,29 @@ export class User {
 
   @Prop()
   deletedAt?: Date;
+
+
+  //- update schema 
+  @Prop({ type: Object })
+  createdBy: {
+    _id: mongoose.Schema.Types.ObjectId;
+    name: string;
+    email: string;
+  };
+
+  @Prop({ type: Object })
+  updatedBy: {
+    _id: mongoose.Schema.Types.ObjectId;
+    name: string;
+    email: string;
+  };
+
+  @Prop({ type: Object })
+  deletedBy: {
+    _id: mongoose.Schema.Types.ObjectId;
+    name: string;
+    email: string;
+  };
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -5,6 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { TransformInterceptor } from './core/transform.interceptor';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -29,6 +30,9 @@ async function bootstrap() {
       },
     }),
   ); //- sử dụng pipe để validate dữ liệu trước khi vào controller
+
+  //- use cookie-parser
+  app.use(cookieParser());
 
   //- config cors
   app.enableCors({

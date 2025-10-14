@@ -1,10 +1,11 @@
-import { Controller, Request, Post, UseGuards, Get } from '@nestjs/common';
+import { Controller, Request, Post, UseGuards, Get, Req, Res, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { LocalAuthGuard } from './local-auth.guard';
-import { LoginDto } from 'src/user/dto/create-user.dto';
+import { LoginDto, RegisterDto } from 'src/user/dto/create-user.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
-import { Public } from 'src/decorator/customize';
+import { Public, ResponseMessage } from 'src/decorator/customize';
+import { Response } from 'express';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -15,8 +16,19 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   @ApiBody({ type: LoginDto })
-  async login(@Request() req: any) {
-    return this.authService.login(req.user);
+  async login(
+    @Request() req: any,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    //- truyền response sang để lưu cookie
+    return this.authService.login(req.user, response);
+  }
+
+  @Public()
+  @ResponseMessage('Đăng ký người dùng thành công')
+  @Post('register')
+  async register(@Body() registerUserDto: RegisterDto) {
+    return this.authService.register(registerUserDto);
   }
 
   @UseGuards(JwtAuthGuard)
