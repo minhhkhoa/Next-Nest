@@ -28,6 +28,7 @@ import { useTheme } from "next-themes";
 import { useLoginMutation } from "@/queries/auth";
 import { toast } from "sonner";
 import { setAccessTokenToLocalStorage } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 export function LoginForm() {
   const [isClient, setIsClient] = useState(false);
@@ -41,18 +42,19 @@ export function LoginForm() {
       password: "",
     },
   });
+  const router = useRouter();
 
   const onSubmit = async (data: LoginBodyType) => {
     const result = await loginMutation(data);
     if (result.statusCode === 201) {
       const access_token = result?.data?.access_token as string;
-      toast.success("Đăng nhập thành công!");
 
       //- ghi vao localStorage
       setAccessTokenToLocalStorage(access_token);
 
       //- chuyen trang
-      window.location.href = "/";
+      router.push("/");
+      toast.success("Đăng nhập thành công!");
     }
   };
 
@@ -162,6 +164,7 @@ export function LoginForm() {
           </div>
         </div>
 
+        {/* clg ra theme */}
         <div className="grid grid-cols-2 gap-3">
           <Button
             variant="outline"

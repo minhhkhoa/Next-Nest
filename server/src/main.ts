@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { TransformInterceptor } from './core/transform.interceptor';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -11,7 +12,10 @@ async function bootstrap() {
 
   //- use reflector
   const reflector = app.get(Reflector);
-  
+
+  //- use global JwtAuthGuard
+  app.useGlobalGuards(new JwtAuthGuard(reflector)); //- check xem có gửi token kèm theo không
+
   //- use global interceptor
   app.useGlobalInterceptors(new TransformInterceptor(reflector));
 
@@ -19,7 +23,7 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, //- loại bỏ các field khong khai bao trong DTO tức là làm sạch dữ liệu trước khi vào controller đó
-      transform: true, // ép kiểu theo DTO 
+      transform: true, // ép kiểu theo DTO
       transformOptions: {
         enableImplicitConversion: true, // tự động convert string -> number, boolean, date, ...
       },
