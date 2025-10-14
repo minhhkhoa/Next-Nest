@@ -26,6 +26,8 @@ import {
 } from "@/components/ui/form";
 import { useTheme } from "next-themes";
 import { useLoginMutation } from "@/queries/auth";
+import { toast } from "sonner";
+import { setAccessTokenToLocalStorage } from "@/lib/utils";
 
 export function LoginForm() {
   const [isClient, setIsClient] = useState(false);
@@ -41,9 +43,17 @@ export function LoginForm() {
   });
 
   const onSubmit = async (data: LoginBodyType) => {
-    console.log("[v0] Login data:", data);
     const result = await loginMutation(data);
-    console.log("result: ", result.data?.access_token);
+    if (result.statusCode === 201) {
+      const access_token = result?.data?.access_token as string;
+      toast.success("Đăng nhập thành công!");
+
+      //- ghi vao localStorage
+      setAccessTokenToLocalStorage(access_token);
+
+      //- chuyen trang
+      window.location.href = "/";
+    }
   };
 
   const handleSocialLogin = (provider: "google" | "facebook") => {

@@ -1,14 +1,19 @@
+"use client";
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { envConfig } from "../../config";
+import { toast } from "sonner";
+import { getAccessTokenFromLocalStorage } from "./utils";
 
 //- Tạo instance Axios
 const instance = axios.create({
   baseURL: envConfig.NEXT_PUBLIC_API_URL,
+  withCredentials: true,
   timeout: 10000, // Timeout 10 giây
   headers: {
     "Content-Type": "application/json",
-    // 'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+    Authorization: `Bearer ${getAccessTokenFromLocalStorage() || ""}`,
   },
 });
 
@@ -16,8 +21,18 @@ const instance = axios.create({
 instance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
-    if (token) {
+    if (
+      typeof window !== "undefined" &&
+      window &&
+      window.localStorage &&
+      token
+    ) {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+    if (!config.headers.Accept && config.headers["Content-Type"]) {
+      //- neu khong co header Accept thi them
+      config.headers.Accept = "application/json";
+      config.headers["Content-Type"] = "application/json; charset=utf-8";
     }
     return config;
   },
@@ -33,36 +48,30 @@ instance.interceptors.response.use(
     return response.data;
   },
   (error) => {
+    const message = error.response?.data?.message || "Có lỗi xảy ra";
+    const status = error.response?.status;
+
     //- Xử lý lỗi dựa trên status code
-    if (error.response) {
-      const { status, data } = error.response;
-      switch (status) {
-        case 401:
-          //- Xử lý lỗi Unauthorized (ví dụ: đăng xuất người dùng)
-          console.error("Unauthorized! Please login again.");
-          //- Ví dụ: localStorage.removeItem('token');
-          //- window.location.href = '/login';
-          break;
-        case 403:
-          console.error("Forbidden! You do not have access.");
-          break;
-        case 404:
-          console.error("Resource not found.");
-          break;
-        case 500:
-          console.error("Server error, please try again later.");
-          break;
-        default:
-          console.error(data.message || "An error occurred.");
-      }
-    } else if (error.request) {
-      //- Lỗi không nhận được phản hồi từ server
-      console.error("No response received from server.");
-    } else {
-      //- Lỗi trong quá trình thiết lập request
-      console.error("Error setting up request:", error.message);
+    switch (status) {
+      case 401:
+        toast.error(message);
+        //- Ví dụ: localStorage.removeItem('token');
+        //- window.location.href = '/login';
+        break;
+      // case 403:
+      //   console.error("Forbidden! You do not have access.");
+      //   break;
+      case 404:
+        console.error("Resource not found.");
+        break;
+      case 500:
+        console.error("Server error, please try again later.");
+        break;
+      default:
+        toast.error(message);
     }
-    return Promise.reject(error);
+
+    return Promise.reject(null);
   }
 );
 

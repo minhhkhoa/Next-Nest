@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ModeToggle } from "@/components/ModeToggle";
 import TanstackProvider from "@/components/TanstackProvider";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,6 +46,7 @@ export default function RootLayout({
               </div>
             </header>
             {children}
+            <Toaster position="top-right" richColors />
           </ThemeProvider>
         </TanstackProvider>
       </body>
