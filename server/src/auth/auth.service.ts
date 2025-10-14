@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import * as ms from 'ms';
+import { BadRequestCustom } from 'src/customExceptions/BadRequestCustom';
 import { RegisterDto } from 'src/user/dto/create-user.dto';
 import { UserResponse } from 'src/user/schemas/user.schema';
 import { UserService } from 'src/user/user.service';
@@ -37,14 +38,14 @@ export class AuthService {
   }
 
   async login(user: UserResponse, response: Response) {
-    const { avatar, email, name, companyID, roleID, _id } = user;
-    const payload = { email, id: _id, name, roleID, companyID, avatar };
+    const { avatar, email, name, companyID, roleID, id } = user;
+    const payload = { email, id, name, roleID, companyID, avatar };
 
     //- create refresh_token
     const resfreshToken = this.createRefreshToken(payload);
 
     //- set refresh_token to user in db
-    await this.usersService.updateRefreshToken(_id, resfreshToken);
+    await this.usersService.updateRefreshToken(id, resfreshToken);
 
     //- set refresh_token to cookie of client(browser)
     response.clearCookie('refresh_token');
@@ -60,7 +61,7 @@ export class AuthService {
     return {
       access_token: this.jwtService.sign(payload),
       user: {
-        _id,
+        id,
         avatar,
         email,
         name,
@@ -98,7 +99,7 @@ export class AuthService {
       ...registerDto,
       password: hashedPassword,
     };
-    
+
     const resultUser = await this.usersService.register(newUser);
 
     if (!resultUser) throw new Error('Tạo người dùng thất bại');
@@ -107,5 +108,18 @@ export class AuthService {
       _id: resultUser.id,
       createdAt: resultUser.createdAt,
     };
+  }
+
+  //- func logout
+  async logout(response: Response, user: UserResponse) {
+    try {
+      //- set refresh_token is "" to user in db
+      const result = await this.usersService.updateRefreshToken(user.id, "");
+      response.clearCookie('refresh_token');
+
+      if (result.matchedCount == 1) return 'Logout thanh cong';
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
   }
 }

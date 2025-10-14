@@ -72,4 +72,7 @@ export type UserResponse = Omit<
   | 'createdAt'
   | 'updatedAt'
   | 'deletedAt'
-> & { _id: string };
+  | 'createdBy'
+  | 'updatedBy'
+  | 'deletedBy'
+> & { id: string };
