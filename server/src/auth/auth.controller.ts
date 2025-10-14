@@ -57,6 +57,18 @@ export class AuthController {
     return { user };
   }
 
+  @Public() //- phải để public vì khi này access_token đâu còn hợp lệ
+  @ResponseMessage('Get User by refresh token')
+  @Get('refresh')
+  async handleRefreshToken(
+    @Req() request: any,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const refreshToken = request.cookies['refresh_token'];
+
+    return await this.authService.getNewToken(refreshToken, response);
+  }
+
   @Post('logout')
   @ResponseMessage('Logout User thành công')
   handleLogout(

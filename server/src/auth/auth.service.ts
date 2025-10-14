@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
@@ -114,12 +118,56 @@ export class AuthService {
   async logout(response: Response, user: UserResponse) {
     try {
       //- set refresh_token is "" to user in db
-      const result = await this.usersService.updateRefreshToken(user.id, "");
+      const result = await this.usersService.updateRefreshToken(user.id, '');
       response.clearCookie('refresh_token');
 
       if (result.matchedCount == 1) return 'Logout thanh cong';
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
+  //- func refresh token
+  async getNewToken(refreshToken: string, response: Response) {
+    try {
+      //1. giải mã
+      const decode = this.jwtService.verify(refreshToken, {
+        secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET'),
+      });
+
+      //2.Lấy user id
+      const userId = decode.id;
+
+      if (!userId) {
+        throw new BadRequestException('Token payload thiếu userId');
+      }
+
+      // 3. Query user theo userId
+      const user = await this.usersService.findOne(userId);
+      if (!user) {
+        throw new BadRequestException('User không tồn tại');
+      }
+      if (user.refresh_token !== refreshToken) {
+        throw new BadRequestException('Refresh token không khớp');
+      }
+
+      //-update refresh_token
+      const { email, name, avatar, companyID, roleID, id } = user;
+
+      const payload = {
+        id,
+        avatar,
+        name,
+        email,
+        roleID,
+        companyID,
+      };
+
+      const result = await this.login(payload, response);
+
+      return result;
+    } catch (error) {
+      throw new UnauthorizedException('Refresh_token khong hop le!');
     }
   }
 }
