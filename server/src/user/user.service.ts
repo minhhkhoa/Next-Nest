@@ -152,11 +152,12 @@ export class UserService {
     }
   }
 
-  //- func register 
+  //- func register
   async register(registerDto: RegisterDto) {
-    if(!!registerDto) return;
+    if (!registerDto) return;
 
-    return await this.userModel.create(registerDto);
+    const user = await this.userModel.create(registerDto);
+    return user;
   }
 
   async remove(id: string) {

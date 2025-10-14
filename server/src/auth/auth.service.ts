@@ -103,6 +103,9 @@ export class AuthService {
 
     if (!resultUser) throw new Error('Tạo người dùng thất bại');
 
-    return resultUser;
+    return {
+      _id: resultUser.id,
+      createdAt: resultUser.createdAt,
+    };
   }
 }

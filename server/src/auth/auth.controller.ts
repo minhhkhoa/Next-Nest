@@ -3,9 +3,9 @@ import { AuthService } from './auth.service';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { LocalAuthGuard } from './local-auth.guard';
 import { LoginDto, RegisterDto } from 'src/user/dto/create-user.dto';
-import { JwtAuthGuard } from './jwt-auth.guard';
-import { Public, ResponseMessage } from 'src/decorator/customize';
+import { Public, ResponseMessage, userDecorator } from 'src/decorator/customize';
 import { Response } from 'express';
+import { UserResponse } from 'src/user/schemas/user.schema';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -31,9 +31,8 @@ export class AuthController {
     return this.authService.register(registerUserDto);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get('profile')
-  getProfile(@Request() req) {
-    return req.user;
+  async getProfile(@userDecorator() user: UserResponse) {
+    return { user };
   }
 }
