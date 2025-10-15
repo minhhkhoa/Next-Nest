@@ -13,6 +13,7 @@ export default function Home() {
   useEffect(() => {
     getPage();
   }, []);
+
   return (
     <>
       <Button>Click me!</Button>
