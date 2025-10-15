@@ -17,6 +17,20 @@ export const LoginBody = z
 
 export type LoginBodyType = z.TypeOf<typeof LoginBody>;
 
+export const LoginRes = z.object({
+  access_token: z.string(),
+  user: z.object({
+    _id: z.string(),
+    avatar: z.string(),
+    email: z.string(),
+    name: z.string(),
+    companyID: z.array(z.string()),
+    roleID: z.array(z.string()),
+  }),
+});
+
+export type LoginResType = z.TypeOf<typeof LoginRes>;
+
 export const RegisterBody = z
   .object({
     name: z.string({ message: "Vui lòng nhập tên" }).trim(),
@@ -36,16 +50,9 @@ export const RegisterBody = z
 
 export type RegisterBodyType = z.TypeOf<typeof RegisterBody>;
 
-export const LoginRes = z.object({
-  access_token: z.string(),
-  user: z.object({
-    _id: z.string(),
-    avatar: z.string(),
-    email: z.string(),
-    name: z.string(),
-    companyID: z.array(z.string()),
-    roleID: z.array(z.string()),
-  }),
+export const RegisterRes = z.object({
+  _id: z.string(),
+  createdAt: z.string(),
 });
 
-export type LoginResType = z.TypeOf<typeof LoginRes>;
+export type RegisterResType = z.TypeOf<typeof RegisterRes>;

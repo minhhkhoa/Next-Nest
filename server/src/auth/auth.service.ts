@@ -42,76 +42,92 @@ export class AuthService {
   }
 
   async login(user: UserResponse, response: Response) {
-    const { avatar, email, name, companyID, roleID, id } = user;
-    const payload = { email, id, name, roleID, companyID, avatar };
+    try {
+      const { avatar, email, name, companyID, roleID, id } = user;
+      const payload = { email, id, name, roleID, companyID, avatar };
 
-    //- create refresh_token
-    const resfreshToken = this.createRefreshToken(payload);
+      //- create refresh_token
+      const resfreshToken = this.createRefreshToken(payload);
 
-    //- set refresh_token to user in db
-    await this.usersService.updateRefreshToken(id, resfreshToken);
+      //- set refresh_token to user in db
+      await this.usersService.updateRefreshToken(id, resfreshToken);
 
-    //- set refresh_token to cookie of client(browser)
-    response.clearCookie('refresh_token');
-    response.cookie('refresh_token', resfreshToken, {
-      httpOnly: true,
-      //- maxAge là thoi gian hieu luc cua cookie tính theo ms
-      maxAge: ms(
-        this.configService.get<string>('JWT_REFRESH_EXPIRE') as ms.StringValue,
-      ),
-    });
+      //- set refresh_token to cookie of client(browser)
+      response.clearCookie('refresh_token');
+      response.cookie('refresh_token', resfreshToken, {
+        httpOnly: true,
+        //- maxAge là thoi gian hieu luc cua cookie tính theo ms
+        maxAge: ms(
+          this.configService.get<string>(
+            'JWT_REFRESH_EXPIRE',
+          ) as ms.StringValue,
+        ),
+      });
 
-    //- return access_token to client and some info of user
-    return {
-      access_token: this.jwtService.sign(payload),
-      user: {
-        id,
-        avatar,
-        email,
-        name,
-        companyID,
-        roleID,
-      },
-    };
+      //- return access_token to client and some info of user
+      return {
+        access_token: this.jwtService.sign(payload),
+        user: {
+          id,
+          avatar,
+          email,
+          name,
+          companyID,
+          roleID,
+        },
+      };
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
   }
 
   //- function create refresh_token
   createRefreshToken = (payload: any) => {
-    const refreshToken = this.jwtService.sign(payload, {
-      secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET'),
-      expiresIn:
-        ms(
-          this.configService.get<string>(
-            'JWT_REFRESH_EXPIRE',
-          ) as ms.StringValue,
-        ) / 1000, //- ms: mili-seconds còn jwt là second (1 second = 1000 mili-seconds)
-    });
+    try {
+      const refreshToken = this.jwtService.sign(payload, {
+        secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET'),
+        expiresIn:
+          ms(
+            this.configService.get<string>(
+              'JWT_REFRESH_EXPIRE',
+            ) as ms.StringValue,
+          ) / 1000, //- ms: mili-seconds còn jwt là second (1 second = 1000 mili-seconds)
+      });
 
-    return refreshToken;
+      return refreshToken;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
   };
 
   //- func register
   async register(registerDto: RegisterDto) {
-    const { email, password } = registerDto;
-    const user = await this.usersService.findUserByEmail(email);
-    if (user)
-      throw new Error('Email đã tồn tại, vui lòng đăng ký bằng email khác');
+    try {
+      const { email, password } = registerDto;
+      const user = await this.usersService.findUserByEmail(email);
+      if (user)
+        throw new BadRequestCustom(
+          'Email đã tồn tại, vui lòng đăng ký bằng email khác',
+        );
 
-    const hashedPassword = await hashPassword(password);
+      const hashedPassword = await hashPassword(password);
 
-    const newUser = {
-      ...registerDto,
-      password: hashedPassword,
-    };
+      const newUser = {
+        ...registerDto,
+        password: hashedPassword,
+      };
 
-    const resultUser = await this.usersService.register(newUser);
+      const resultUser = await this.usersService.register(newUser);
 
-    if (!resultUser) throw new Error('Tạo người dùng thất bại');
+      if (!resultUser) throw new BadRequestCustom('Tạo người dùng thất bại');
 
-    return {
-      _id: resultUser.id,
-      createdAt: resultUser.createdAt,
-    };
+      return {
+        _id: resultUser.id,
+        createdAt: resultUser.createdAt,
+      };
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
   }
 
   //- func logout

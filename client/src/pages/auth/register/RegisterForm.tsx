@@ -25,17 +25,19 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useTheme } from "next-themes";
-import { useLoginMutation } from "@/queries/auth";
+import { useRegisterMutation } from "@/queries/auth";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export function RegisterForm() {
   const [isClient, setIsClient] = useState(false);
   const { theme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
-  const { isPending, mutateAsync: loginMutation } = useLoginMutation();
+  const { isPending, mutateAsync: registerMutation } = useRegisterMutation();
   const form = useForm<RegisterBodyType>({
     resolver: zodResolver(RegisterBody),
     defaultValues: {
+      name: "",
       email: "",
       password: "",
     },
@@ -43,12 +45,39 @@ export function RegisterForm() {
   const router = useRouter();
 
   const onSubmit = async (data: RegisterBodyType) => {
-    console.log("data: ", data);
+    try {
+      const res = await registerMutation(data);
+      if (res.isError) return;
+
+      toast.success(() => (
+        <div className="flex items-center justify-center">
+          <p>Chúc mừng bạn đã đăng ký tài khoản thành công🎇</p>
+
+          <Button
+            variant={"outline"}
+            onClick={() => router.push("/login")}
+            className="!text-white"
+          >
+            Đăng nhập
+          </Button>
+        </div>
+      ));
+    } catch (error) {
+      console.log("error: ", error);
+    } finally {
+      onResetField();
+    }
   };
 
   const handleSocialLogin = (provider: "google" | "facebook") => {
     console.log("[v0] Social login with:", provider);
     // Handle social login logic here
+  };
+
+  const onResetField = () => {
+    form.resetField("name");
+    form.resetField("email");
+    form.resetField("password");
   };
 
   useEffect(() => {
@@ -84,11 +113,7 @@ export function RegisterForm() {
                 <FormItem>
                   <FormLabel>Tên</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Nguyễn Văn A"
-                      {...field}
-                      autoFocus
-                    />
+                    <Input placeholder="Nguyễn Văn A" {...field} autoFocus />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -102,10 +127,7 @@ export function RegisterForm() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="example@gmail.com"
-                      {...field}
-                    />
+                    <Input placeholder="example@gmail.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -153,7 +175,7 @@ export function RegisterForm() {
               className="w-full select-none" //- select-none: giúp click đúp không bôi text
               disabled={isPending}
             >
-              {isPending ? "Đang đăng nhập..." : "Đăng nhập"}
+              {isPending ? "Đang đăng ký..." : "Đăng ký"}
             </Button>
           </form>
         </Form>

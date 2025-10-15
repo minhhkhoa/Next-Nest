@@ -49,7 +49,7 @@ instance.interceptors.response.use(
   },
   (error) => {
     const message = error.response?.data?.message || "Có lỗi xảy ra";
-    const status = error.response?.status;
+    const status = error.response?.data.statusCode;
 
     //- Xử lý lỗi dựa trên status code
     switch (status) {
@@ -65,13 +65,13 @@ instance.interceptors.response.use(
         console.error("Resource not found.");
         break;
       case 500:
-        console.error("Server error, please try again later.");
+        toast.error(message);
         break;
       default:
         toast.error(message);
     }
 
-    return Promise.reject(null);
+    return Promise.reject(error.response?.data);
   }
 );
 
