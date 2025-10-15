@@ -29,7 +29,7 @@ import { useRegisterMutation } from "@/queries/auth";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-export function RegisterForm() {
+export default function RegisterForm() {
   const [isClient, setIsClient] = useState(false);
   const { theme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);

@@ -30,7 +30,7 @@ import { toast } from "sonner";
 import { setAccessTokenToLocalStorage } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
-export function LoginForm() {
+export default function LoginForm() {
   const [isClient, setIsClient] = useState(false);
   const { theme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
