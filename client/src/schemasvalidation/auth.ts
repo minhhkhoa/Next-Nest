@@ -17,6 +17,25 @@ export const LoginBody = z
 
 export type LoginBodyType = z.TypeOf<typeof LoginBody>;
 
+export const RegisterBody = z
+  .object({
+    name: z.string({ message: "Vui lòng nhập tên" }).trim(),
+
+    email: z
+      .string({ message: "Vui lòng nhập email" })
+      .trim()
+      .email({ message: "Email không hợp lệ" }),
+
+    password: z
+      .string({ message: "Vui lòng nhập mật khẩu" })
+      .trim()
+      .min(8, { message: "Mật khẩu phải có ít nhất 8 ký tự" })
+      .max(100, { message: "Mật khẩu không được vượt quá 100 ký tự" }),
+  })
+  .strict();
+
+export type RegisterBodyType = z.TypeOf<typeof RegisterBody>;
+
 export const LoginRes = z.object({
   access_token: z.string(),
   user: z.object({

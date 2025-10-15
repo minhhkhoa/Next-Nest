@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Facebook, Mail, Eye, EyeClosed } from "lucide-react";
-import { LoginBody, LoginBodyType } from "@/schemasvalidation/auth";
+import { RegisterBody, RegisterBodyType } from "@/schemasvalidation/auth";
 import {
   Form,
   FormControl,
@@ -26,17 +26,15 @@ import {
 } from "@/components/ui/form";
 import { useTheme } from "next-themes";
 import { useLoginMutation } from "@/queries/auth";
-import { toast } from "sonner";
-import { setAccessTokenToLocalStorage } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
-export function LoginForm() {
+export function RegisterForm() {
   const [isClient, setIsClient] = useState(false);
   const { theme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const { isPending, mutateAsync: loginMutation } = useLoginMutation();
-  const form = useForm<LoginBodyType>({
-    resolver: zodResolver(LoginBody),
+  const form = useForm<RegisterBodyType>({
+    resolver: zodResolver(RegisterBody),
     defaultValues: {
       email: "",
       password: "",
@@ -44,18 +42,8 @@ export function LoginForm() {
   });
   const router = useRouter();
 
-  const onSubmit = async (data: LoginBodyType) => {
-    const result = await loginMutation(data);
-    if (result.statusCode === 201) {
-      const access_token = result?.data?.access_token as string;
-
-      //- ghi vao localStorage
-      setAccessTokenToLocalStorage(access_token);
-
-      //- chuyen trang
-      router.push("/");
-      toast.success("Đăng nhập thành công!");
-    }
+  const onSubmit = async (data: RegisterBodyType) => {
+    console.log("data: ", data);
   };
 
   const handleSocialLogin = (provider: "google" | "facebook") => {
@@ -76,10 +64,10 @@ export function LoginForm() {
     <Card className="w-full max-w-md shadow-2xl border-border/50">
       <CardHeader className="space-y-2 text-center">
         <CardTitle className="text-3xl font-bold tracking-tight">
-          Đăng nhập
+          Đăng ký
         </CardTitle>
         <CardDescription className="text-base">
-          Nhập thông tin của bạn để tiếp tục
+          Nhập thông tin của bạn để hoàn tất đăng ký tài khoản
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -91,6 +79,24 @@ export function LoginForm() {
           >
             <FormField
               control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tên</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Nguyễn Văn A"
+                      {...field}
+                      autoFocus
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
@@ -99,7 +105,6 @@ export function LoginForm() {
                     <Input
                       placeholder="example@gmail.com"
                       {...field}
-                      autoFocus
                     />
                   </FormControl>
                   <FormMessage />
@@ -159,7 +164,7 @@ export function LoginForm() {
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-card px-2 text-muted-foreground">
-              Hoặc tiếp tục với
+              Hoặc đăng ký với
             </span>
           </div>
         </div>
@@ -188,9 +193,9 @@ export function LoginForm() {
       </CardContent>
       <CardFooter className="flex justify-center">
         <p className="text-sm text-muted-foreground">
-          Bạn chưa có tài khoản?{" "}
-          <a href="/register" className="text-primary font-medium hover:underline">
-            Đăng ký ngay
+          Bạn đã có tài khoản?{" "}
+          <a href="/login" className="text-primary font-medium hover:underline">
+            Đăng nhập ngay
           </a>
         </p>
       </CardFooter>
