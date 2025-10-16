@@ -14,6 +14,8 @@ const authApiRequest = {
 
   register: (body: RegisterBodyType) =>
     http.post<ApiResponse<RegisterResType>>(`${prefix}/register`, body),
+
+  logout: () => http.post<ApiResponse<string>>(`${prefix}/logout`),
 };
 
 export default authApiRequest;

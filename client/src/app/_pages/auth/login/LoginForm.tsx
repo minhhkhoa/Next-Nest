@@ -29,8 +29,10 @@ import { useLoginMutation } from "@/queries/auth";
 import { toast } from "sonner";
 import { setAccessTokenToLocalStorage } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { useAppStore } from "@/components/TanstackProvider";
 
 export default function LoginForm() {
+    const { setLogin } = useAppStore();
   const [isClient, setIsClient] = useState(false);
   const { theme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
@@ -51,6 +53,7 @@ export default function LoginForm() {
 
       //- ghi vao localStorage
       setAccessTokenToLocalStorage(access_token);
+      setLogin(true);
 
       //- chuyen trang
       router.push("/");

@@ -2,6 +2,7 @@
 
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { create } from "zustand";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -10,6 +11,16 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+interface AppStoreType {
+  isLogin: boolean;
+  setLogin: (value: boolean) => void;
+}
+
+export const useAppStore = create<AppStoreType>((set) => ({
+  isLogin: false,
+  setLogin: (value) => set({ isLogin: value }),
+}));
 
 export default function TanstackProvider({
   children,
