@@ -9,6 +9,8 @@ import {
   removeTokensFromLocalStorage,
   setAccessTokenToLocalStorage,
 } from "./utils";
+import { jwtDecode } from "jwt-decode";
+import { de } from "zod/v4/locales";
 
 //- Tạo instance Axios
 const instance = axios.create({
@@ -25,6 +27,12 @@ const instance = axios.create({
 instance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("access_token");
+
+    //- check access_token đã phòng user sửa trên localStorage
+    if (!token) {
+      removeTokensFromLocalStorage();
+      return config;
+    }
 
     if (
       typeof window !== "undefined" &&
@@ -59,37 +67,52 @@ instance.interceptors.response.use(
 
     //- xử lý 401 riêng
     if (status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true; // tránh vòng lặp vô hạn
-
+      originalRequest._retry = true; //- tránh vòng lặp vô hạn
+      const token = localStorage.getItem("access_token");
+      
       try {
-        //- call API refresh token
-        const res: any = await instance.get("auth/refresh");
-        const newAccessToken = res.data?.access_token;
-
-        if (!newAccessToken) {
-          removeTokensFromLocalStorage();
-          toast.error("Không thể làm mới phiên đăng nhập!");
-          return Promise.reject(error);
+        const decoded = jwtDecode(token!); //- token mà null -> catch
+        //- nếu còn hạn
+        if(decoded.iat && decoded.exp && Date.now() < decoded.exp * 1000) {
+          //- còn hạn mà user sửa trên localStorage ==> về login
+          const decodedToken = jwtDecode(token!, { header: true });
+          if(decodedToken) {
+            window.location.href = "/login";
+          }
+        } else {
+          //- call API refresh token (xuống đây là token hết hạn)
+          const res: any = await instance.get("auth/refresh");
+          const newAccessToken = res.data?.access_token;
+  
+          if (!newAccessToken) {
+            removeTokensFromLocalStorage();
+            toast.error("Không thể làm mới phiên đăng nhập!");
+            return Promise.reject(error);
+          }
+  
+          //- lưu token mới
+          setAccessTokenToLocalStorage(newAccessToken);
+  
+          //- gắn token mới vào header và gọi lại request cũ
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+  
+          return instance(originalRequest);
         }
 
-        //- lưu token mới
-        setAccessTokenToLocalStorage(newAccessToken);
-
-        //- gắn token mới vào header và gọi lại request cũ
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-
-        return instance(originalRequest);
       } catch (refreshError) {
-        //- nếu refresh cũng lỗi → đăng xuất
+        //- nếu refresh cũng lỗi → đăng xuất || token bị null
         removeTokensFromLocalStorage();
         toast.error("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
-        window.location.href = "/login";
+        setTimeout(() => (window.location.href = "/login"), 1000);
         return Promise.reject(refreshError);
       }
     }
 
     //- Xử lý lỗi dựa trên status code
     switch (status) {
+      case 403:
+        console.error("Resource not found.");
+        break;
       case 404:
         console.error("Resource not found.");
         break;
