@@ -186,4 +186,12 @@ export class AuthService {
       throw new UnauthorizedException('Refresh_token khong hop le!');
     }
   }
+
+  async validateOAuthLogin(userData: any) {
+    // TODO: kiểm tra user trong DB (bằng email hoặc providerId)
+    // nếu chưa có thì tạo mới user
+    // return user object
+    console.log('userData: ', userData);
+    return userData;
+  }
 }

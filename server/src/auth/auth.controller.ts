@@ -19,6 +19,7 @@ import {
 } from 'src/decorator/customize';
 import { Response } from 'express';
 import { UserResponse } from 'src/user/schemas/user.schema';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -76,5 +77,34 @@ export class AuthController {
     @userDecorator() user: UserResponse,
   ) {
     return this.authService.logout(response, user);
+  }
+
+  @Public()
+  @Get('facebook')
+  @UseGuards(AuthGuard('facebook'))
+  async facebookLogin(): Promise<any> {
+    // redirect đến facebook để login
+  }
+
+  @Public()
+  @Get('facebook/callback')
+  @UseGuards(AuthGuard('facebook'))
+  async facebookLoginCallback(
+    @Req() req,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const user: UserResponse = {
+      id: req.user.providerId,
+      email: req.user.email || "",
+      name: req.user.firstName + ' ' + req.user.lastName,
+      avatar: req.user.avatar,
+      companyID: req.user.companyID || [],
+      roleID: req.user.roleID || [],
+    };
+    // sinh token JWT
+    // return this.authService.login(user, response);
+    return response.redirect(
+      `http://localhost:3000?token=${user.name}`,
+    );
   }
 }

@@ -30,6 +30,7 @@ import { toast } from "sonner";
 import { setAccessTokenToLocalStorage } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/components/TanstackProvider";
+import { envConfig } from "../../../../../config";
 
 export default function LoginForm() {
     const { setLogin } = useAppStore();
@@ -63,6 +64,9 @@ export default function LoginForm() {
 
   const handleSocialLogin = (provider: "google" | "facebook") => {
     console.log("[v0] Social login with:", provider);
+    if (provider === "facebook") {
+       window.location.href = `${envConfig.NEXT_PUBLIC_API_URL}/auth/facebook`;
+    }
     // Handle social login logic here
   };
 
