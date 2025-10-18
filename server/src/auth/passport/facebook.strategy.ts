@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, Profile } from 'passport-facebook';
 import { AuthService } from '../auth.service';
 import { ConfigService } from '@nestjs/config';
+import { ResUserFB } from 'src/utils/typeSchemas';
 
 @Injectable()
 export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
@@ -16,14 +17,24 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
         'FACEBOOK_CLIENT_SECRET',
       ) as string,
       callbackURL: configService.get<string>('FACEBOOK_CALLBACK_URL') as string,
-      profileFields: ['id', 'emails', 'name', 'photos'],
+      //- điền các field cần lấy của profile vào đây nhưng sẽ có hạn chế của fb cần đk với nó
+      profileFields: [
+        'id',
+        'emails',
+        'name',
+        'photos',
+        'displayName',
+        'gender',
+        'birthday',
+        'age_range',
+      ],
     });
   }
 
   async validate(accessToken: string, refreshToken: string, profile: Profile) {
     const { name, emails, photos, id } = profile;
 
-    const userData = {
+    const userData: ResUserFB = {
       provider: 'facebook',
       providerId: id,
       email: emails?.[0]?.value,
@@ -32,8 +43,9 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
       avatar: photos?.[0]?.value,
     };
 
-    // kiểm tra hoặc tạo user mới
+    // kiểm tra xem co tk chua neu chua thi tạo user mới
     const user = await this.authService.validateOAuthLogin(userData);
-    return user;
+
+    return user; //- gắn vào req.user
   }
 }

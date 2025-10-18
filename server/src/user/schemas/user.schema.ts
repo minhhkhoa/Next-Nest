@@ -22,6 +22,13 @@ export class User {
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Role' }] }) //- tham chiếu tới Role
   roleID: Types.ObjectId;
 
+  //- login bằng fb|gg thì có thêm field này
+  @Prop({ type: Object })
+  provider?: {
+    type: string;
+    id: string;
+  };
+
   @Prop()
   refresh_token: string;
 
@@ -37,8 +44,7 @@ export class User {
   @Prop()
   deletedAt?: Date;
 
-
-  //- update schema 
+  //- update schema
   @Prop({ type: Object })
   createdBy: {
     _id: mongoose.Schema.Types.ObjectId;

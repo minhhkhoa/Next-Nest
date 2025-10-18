@@ -7,6 +7,7 @@ import { User, UserDocument } from './schemas/user.schema';
 import { BadRequestCustom } from 'src/customExceptions/BadRequestCustom';
 import { hashPassword } from 'src/utils/hashPassword';
 import mongoose from 'mongoose';
+import { ResUserFB } from 'src/utils/typeSchemas';
 
 @Injectable()
 export class UserService {
@@ -33,6 +34,30 @@ export class UserService {
       };
 
       const createdUser = await this.userModel.create(newUser);
+
+      if (!createdUser)
+        throw new BadRequestCustom('Tạo người dùng thất bại', !!createdUser);
+
+      return {
+        _id: createdUser._id,
+        name: createdUser.name,
+      };
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
+  async createUserWithProviderFB(userData: ResUserFB) {
+    try {
+      const data = {
+        ...userData,
+        name: userData.firstName + ' ' + userData.lastName,
+        provider: {
+          type: 'facebook',
+          id: userData.providerId,
+        },
+      };
+      const createdUser = await this.userModel.create(data);
 
       if (!createdUser)
         throw new BadRequestCustom('Tạo người dùng thất bại', !!createdUser);
@@ -100,6 +125,26 @@ export class UserService {
         throw new BadRequestCustom('email khong duoc de trong', !!email);
 
       const user = await this.userModel.findOne({ email });
+      return user;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
+  async findUserByProviderIdFB(
+    idProvider: string,
+  ): Promise<UserDocument | null> {
+    try {
+      if (!idProvider)
+        throw new BadRequestCustom(
+          'idProviderFB khong duoc de trong',
+          !!idProvider,
+        );
+
+      const user = await this.userModel.findOne({ 'provider.id': idProvider });
+
+      if (!user) throw new BadRequestCustom('user khong ton tai', !!user);
+
       return user;
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
@@ -180,6 +225,20 @@ export class UserService {
       if (!result) throw new BadRequestCustom('Lỗi xóa user', !!id);
 
       return result;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
+  //- check user fb
+  async checkUserByProviderIdFB(providerId: string) {
+    try {
+      if (!providerId) return null;
+      const user = await this.userModel.findOne({ 'provider.id': providerId });
+
+      if (!user) return null;
+
+      return user;
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }

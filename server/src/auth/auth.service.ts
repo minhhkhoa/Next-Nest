@@ -12,6 +12,7 @@ import { RegisterDto } from 'src/user/dto/create-user.dto';
 import { UserResponse } from 'src/user/schemas/user.schema';
 import { UserService } from 'src/user/user.service';
 import { comparePassword, hashPassword } from 'src/utils/hashPassword';
+import { ResUserFB } from 'src/utils/typeSchemas';
 
 @Injectable()
 export class AuthService {
@@ -69,6 +70,52 @@ export class AuthService {
         access_token: this.jwtService.sign(payload),
         user: {
           id,
+          avatar,
+          email,
+          name,
+          companyID,
+          roleID,
+        },
+      };
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
+  async loginFB(user: UserResponse, response: Response) {
+    try {
+      const { avatar, email, name, companyID, roleID, id: idProvider } = user;
+      const payload = { email, idProvider, name, roleID, companyID, avatar };
+
+      //- create refresh_token
+      const resfreshToken = this.createRefreshToken(payload);
+
+      //- find user login fb
+      const userLogin =
+        await this.usersService.findUserByProviderIdFB(idProvider);
+
+      const idDocumentUser = userLogin?._id.toString(); //const
+
+      //- set refresh_token to user in db
+      await this.usersService.updateRefreshToken(idDocumentUser!, resfreshToken);
+
+      //- set refresh_token to cookie of client(browser)
+      response.clearCookie('refresh_token');
+      response.cookie('refresh_token', resfreshToken, {
+        httpOnly: true,
+        //- maxAge là thoi gian hieu luc cua cookie tính theo ms
+        maxAge: ms(
+          this.configService.get<string>(
+            'JWT_REFRESH_EXPIRE',
+          ) as ms.StringValue,
+        ),
+      });
+
+      //- return access_token to client and some info of user
+      return {
+        access_token: this.jwtService.sign(payload),
+        user: {
+          id: idDocumentUser,
           avatar,
           email,
           name,
@@ -187,11 +234,16 @@ export class AuthService {
     }
   }
 
-  async validateOAuthLogin(userData: any) {
-    // TODO: kiểm tra user trong DB (bằng email hoặc providerId)
-    // nếu chưa có thì tạo mới user
-    // return user object
-    console.log('userData: ', userData);
+  async validateOAuthLogin(userData: ResUserFB) {
+    const { providerId } = userData;
+    //- check db xem có providerId chưa nếu có -> đã đk với fb rồi
+    const user = await this.usersService.checkUserByProviderIdFB(providerId);
+
+    if (user) throw new BadRequestCustom('User đã đăng ký với fb rồi', !!user);
+
+    //- tạo người dùng
+    await this.usersService.createUserWithProviderFB(userData);
+
     return userData;
   }
 }

@@ -83,7 +83,7 @@ export class AuthController {
   @Get('facebook')
   @UseGuards(AuthGuard('facebook'))
   async facebookLogin(): Promise<any> {
-    // redirect đến facebook để login
+    //- redirect đến facebook để login cái này fb tự xử lý
   }
 
   @Public()
@@ -95,16 +95,19 @@ export class AuthController {
   ) {
     const user: UserResponse = {
       id: req.user.providerId,
-      email: req.user.email || "",
+      email: req.user.email || '',
       name: req.user.firstName + ' ' + req.user.lastName,
       avatar: req.user.avatar,
       companyID: req.user.companyID || [],
       roleID: req.user.roleID || [],
     };
-    // sinh token JWT
-    // return this.authService.login(user, response);
+
+    //- logic tương tự như jwt vẫn cần sinh access_Token + refresh_token để dùng cho app của mình
+    const loginUser = await this.authService.loginFB(user, response);
+    const access_token = loginUser.access_token;
+
     return response.redirect(
-      `http://localhost:3000?token=${user.name}`,
+      `http://localhost:3000?access_token=${access_token}`,
     );
   }
 }
