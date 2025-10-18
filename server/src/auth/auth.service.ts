@@ -112,8 +112,13 @@ export class AuthService {
       });
 
       //- return access_token to client and some info of user
+      const payloadNew = {
+        ...payload,
+        id: idDocumentUser,
+      }
+
       return {
-        access_token: this.jwtService.sign(payload),
+        access_token: this.jwtService.sign(payloadNew),
         user: {
           id: idDocumentUser,
           avatar,

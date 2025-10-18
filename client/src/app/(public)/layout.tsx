@@ -23,6 +23,7 @@ export default function RootLayout({
 
   const handleLogout = async () => {
     const res = await mutationLogout();
+    console.log("res: ", res)
     if (res.isError) return;
 
     //- login success

@@ -16,10 +16,13 @@ export default function Home() {
 
   useEffect(() => {
     if (!access_token) return;
-    
+
     setAccessTokenToLocalStorage(access_token);
-    getPage();
   }, [access_token]);
+
+  useEffect(() => {
+    getPage();
+  }, []);
 
   return (
     <>
