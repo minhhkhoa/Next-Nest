@@ -91,7 +91,7 @@ export class AuthController {
   @UseGuards(AuthGuard('facebook'))
   async facebookLoginCallback(
     @Req() req,
-    @Res({ passthrough: true }) response: Response,
+    @Res() response: Response,
   ) {
     const user: UserResponse = {
       id: req.user.providerId,
