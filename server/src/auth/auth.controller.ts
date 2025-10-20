@@ -21,6 +21,7 @@ import { Response } from 'express';
 import { UserResponse } from 'src/user/schemas/user.schema';
 import { AuthGuard } from '@nestjs/passport';
 import { FacebookAuthGuard } from './passport-guard/facebook.guard';
+import { GoogleAuthGuard } from './passport-guard/google.guard';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -119,5 +120,32 @@ export class AuthController {
 
     response.setHeader('Content-Type', 'text/html');
     return response.send(html);
+  }
+
+  //- login google
+  @Public()
+  @Get('google')
+  @UseGuards(GoogleAuthGuard)
+  async googleLogin() {
+    //- redirect đến google để login cái này gg tự xử lý
+  }
+
+  @Public()
+  @Get('google/callback')
+  @UseGuards(GoogleAuthGuard)
+  async googleLoginCallback(@Req() req, @Res() res: Response) {
+    const user = {
+      id: req.user.providerId,
+      email: req.user.email || '',
+      name: `${req.user.firstName} ${req.user.lastName}`,
+      avatar: req.user.avatar,
+    };
+
+    // return "login gg"
+    // Gọi service login (tạo JWT hoặc tài khoản mới)
+    // const loginUser = await this.authService.loginGoogle(user, res);
+    // const access_token = loginUser.access_token;
+
+    return res.redirect(`http://localhost:3000?access_token=zxbcjzbxch`);
   }
 }

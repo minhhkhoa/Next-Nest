@@ -9,6 +9,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './passport-strategy/jwt.strategy';
 import * as ms from 'ms';
 import { FacebookStrategy } from './passport-strategy/facebook.strategy';
+import { GoogleStrategy } from './passport-strategy/google.strategy';
 
 @Module({
   imports: [
@@ -30,7 +31,13 @@ import { FacebookStrategy } from './passport-strategy/facebook.strategy';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy, FacebookStrategy],
+  providers: [
+    AuthService,
+    LocalStrategy,
+    JwtStrategy,
+    FacebookStrategy,
+    GoogleStrategy,
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}
