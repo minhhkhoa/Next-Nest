@@ -10,6 +10,7 @@ export class FacebookAuthGuard extends AuthGuard('facebook') {
 
     //- trường hợp user ấn "Cancel" trên modal Facebook
     if (req.query?.error_reason === 'user_denied') {
+      //- bắn mã lỗi về client
       const html = `
         <html>
           <body>
