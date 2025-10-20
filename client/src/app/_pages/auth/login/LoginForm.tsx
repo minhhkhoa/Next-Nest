@@ -62,14 +62,6 @@ export default function LoginForm() {
     }
   };
 
-  // const handleSocialLogin = (provider: "google" | "facebook") => {
-  //   console.log("[v0] Social login with:", provider);
-  //   if (provider === "facebook") {
-  //      window.location.href = `${envConfig.NEXT_PUBLIC_API_URL}/auth/facebook`;
-  //   }
-  //   // Handle social login logic here
-  // };
-
   const handleSocialLogin = (provider: "google" | "facebook") => {
     const width = 600;
     const height = 700;
@@ -96,7 +88,7 @@ export default function LoginForm() {
 
           //- chuyen trang
           router.push("/");
-          toast.success(`Đăng nhập ${provider} thành công!`);
+          toast.success(`Đăng nhập với ${provider} thành công!`);
         }
 
         if (error) {

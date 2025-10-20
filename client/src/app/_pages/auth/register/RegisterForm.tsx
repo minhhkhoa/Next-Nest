@@ -28,8 +28,12 @@ import { useTheme } from "next-themes";
 import { useRegisterMutation } from "@/queries/auth";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { envConfig } from "../../../../../config";
+import { setAccessTokenToLocalStorage } from "@/lib/utils";
+import { useAppStore } from "@/components/TanstackProvider";
 
 export default function RegisterForm() {
+    const { setLogin } = useAppStore();
   const [isClient, setIsClient] = useState(false);
   const { theme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
@@ -70,8 +74,43 @@ export default function RegisterForm() {
   };
 
   const handleSocialLogin = (provider: "google" | "facebook") => {
-    console.log("[v0] Social login with:", provider);
-    // Handle social login logic here
+    const width = 600;
+    const height = 700;
+    const left = window.screenX + (window.innerWidth - width) / 2;
+    const top = window.screenY + (window.innerHeight - height) / 2;
+
+    const popup = window.open(
+      `${envConfig.NEXT_PUBLIC_API_URL}/auth/${provider}`,
+      "SocialLogin",
+      `width=${width},height=${height},left=${left},top=${top}`
+    );
+
+    if (popup) {
+      const handleMessage = (event: MessageEvent) => {
+        if (event.origin !== envConfig.NEXT_PUBLIC_API_URL) return;
+        const { token, error } = event.data;
+
+        if (token) {
+          console.log("[OAuth] Received token:", token);
+          setAccessTokenToLocalStorage(token);
+          popup.close();
+          window.removeEventListener("message", handleMessage);
+          setLogin(true);
+
+          //- chuyen trang
+          router.push("/");
+          toast.success(`Đăng nhập với ${provider} thành công!`);
+        }
+
+        if (error) {
+          console.log("error: ", error);
+          popup.close();
+          window.removeEventListener("message", handleMessage);
+          toast.error(error);
+        }
+      };
+      window.addEventListener("message", handleMessage);
+    }
   };
 
   const onResetField = () => {
