@@ -169,7 +169,11 @@ export class AuthController {
       };
 
       //- để cho đỡ rối, lần này sẽ xử lý hết ở đây
-      const loginGoogle = await this.authService.loginWithSocial(user, res, 'google');
+      const loginGoogle = await this.authService.loginWithSocial(
+        user,
+        res,
+        'google',
+      );
       const access_token = loginGoogle.access_token;
 
       const html = `

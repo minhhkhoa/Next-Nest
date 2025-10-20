@@ -12,7 +12,6 @@ import { RegisterDto } from 'src/user/dto/create-user.dto';
 import { UserResponse } from 'src/user/schemas/user.schema';
 import { UserService } from 'src/user/user.service';
 import { comparePassword, hashPassword } from 'src/utils/hashPassword';
-import { ResUserFB, ResUserGG } from 'src/utils/typeSchemas';
 
 @Injectable()
 export class AuthService {
@@ -82,16 +81,13 @@ export class AuthService {
     }
   }
 
-  async loginWithSocial(user: UserResponse, response: Response, provider: string) {
+  async loginWithSocial(
+    user: UserResponse,
+    response: Response,
+    provider: string,
+  ) {
     try {
-      const {
-        avatar,
-        email,
-        id: idProvider,
-        name,
-        companyID,
-        roleID,
-      } = user;
+      const { avatar, email, id: idProvider, name, companyID, roleID } = user;
 
       //- B1: check xem có tài khoản chưa
       const userLoginSocial =
