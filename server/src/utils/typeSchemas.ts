@@ -18,3 +18,11 @@ export type ResUserFB = {
   lastName: string | undefined;
   avatar: string | undefined;
 };
+
+export type ResUserGG = {
+  provider: string;
+  providerId: string;
+  email: string;
+  name: string;
+  avatar: string;
+};

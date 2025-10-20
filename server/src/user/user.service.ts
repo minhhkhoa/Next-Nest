@@ -3,11 +3,11 @@ import { CreateUserDto, RegisterDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument } from './schemas/user.schema';
+import { User, UserDocument, UserResponse } from './schemas/user.schema';
 import { BadRequestCustom } from 'src/customExceptions/BadRequestCustom';
 import { hashPassword } from 'src/utils/hashPassword';
 import mongoose from 'mongoose';
-import { ResUserFB } from 'src/utils/typeSchemas';
+import { ResUserFB, ResUserGG } from 'src/utils/typeSchemas';
 
 @Injectable()
 export class UserService {
@@ -55,6 +55,31 @@ export class UserService {
         provider: {
           type: 'facebook',
           id: userData.providerId,
+        },
+      };
+      const createdUser = await this.userModel.create(data);
+
+      if (!createdUser)
+        throw new BadRequestCustom('Tạo người dùng thất bại', !!createdUser);
+
+      return {
+        _id: createdUser._id,
+        name: createdUser.name,
+      };
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
+  async createUserWithProviderGG(userData: UserResponse) {
+    try {
+      const { id, ...rest } = userData;
+
+      const data = {
+        ...rest,
+        provider: {
+          type: 'google',
+          id: userData.id,
         },
       };
       const createdUser = await this.userModel.create(data);
@@ -144,6 +169,26 @@ export class UserService {
       const user = await this.userModel.findOne({ 'provider.id': idProvider });
 
       if (!user) throw new BadRequestCustom('user khong ton tai', !!user);
+
+      return user;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
+  async findUserByProviderIdGG(
+    idProvider: string,
+  ): Promise<UserDocument | null> {
+    try {
+      if (!idProvider)
+        throw new BadRequestCustom(
+          'idProviderGG khong duoc de trong',
+          !!idProvider,
+        );
+
+      const user = await this.userModel.findOne({ 'provider.id': idProvider });
+
+      if (!user) return null;
 
       return user;
     } catch (error) {

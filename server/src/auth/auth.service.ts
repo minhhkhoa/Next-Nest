@@ -12,7 +12,7 @@ import { RegisterDto } from 'src/user/dto/create-user.dto';
 import { UserResponse } from 'src/user/schemas/user.schema';
 import { UserService } from 'src/user/user.service';
 import { comparePassword, hashPassword } from 'src/utils/hashPassword';
-import { ResUserFB } from 'src/utils/typeSchemas';
+import { ResUserFB, ResUserGG } from 'src/utils/typeSchemas';
 
 @Injectable()
 export class AuthService {
@@ -96,7 +96,8 @@ export class AuthService {
 
       const idDocumentUser = userLogin?._id.toString(); //const
 
-      if(!idDocumentUser) throw new BadRequestCustom('User khong ton tai', !!userLogin);
+      if (!idDocumentUser)
+        throw new BadRequestCustom('User khong ton tai', !!userLogin);
       //- set refresh_token to user in db
       await this.usersService.updateRefreshToken(idDocumentUser, resfreshToken);
 
@@ -116,7 +117,7 @@ export class AuthService {
       const payloadNew = {
         ...payload,
         id: idDocumentUser,
-      }
+      };
 
       return {
         access_token: this.jwtService.sign(payloadNew),
@@ -129,6 +130,125 @@ export class AuthService {
           roleID,
         },
       };
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
+  async loginGoogle(user: UserResponse, response: Response) {
+    try {
+      const { avatar, email, id: idProviderGG, name, companyID, roleID } = user;
+
+      //- B1: check xem có tài khoản chưa
+      const userLoginGoogle =
+        await this.usersService.findUserByProviderIdGG(idProviderGG);
+
+      if (!userLoginGoogle) {
+        //- B2: tạo người dùng
+        await this.usersService.createUserWithProviderGG(user);
+
+        //- B3: tạo refresh_token
+        const payload = {
+          email,
+          idProviderGG,
+          name,
+          roleID,
+          companyID,
+          avatar,
+        };
+        const resfreshToken = this.createRefreshToken(payload);
+
+        //- tim user vua tao de luu refresh_token vao db
+        const userNew =
+          await this.usersService.findUserByProviderIdGG(idProviderGG);
+
+        const idDocumentUserLoginGG = userNew?._id.toString();
+
+        if (!idDocumentUserLoginGG)
+          throw new BadRequestCustom('User khong ton tai', !!userLoginGoogle);
+        //- set refresh_token to user in db
+        await this.usersService.updateRefreshToken(
+          idDocumentUserLoginGG,
+          resfreshToken,
+        );
+
+        //- set refresh_token to cookie of client(browser)
+        response.clearCookie('refresh_token');
+        response.cookie('refresh_token', resfreshToken, {
+          httpOnly: true,
+          //- maxAge là thoi gian hieu luc cua cookie tính theo ms
+          maxAge: ms(
+            this.configService.get<string>(
+              'JWT_REFRESH_EXPIRE',
+            ) as ms.StringValue,
+          ),
+        });
+
+        const payloadNew = {
+          ...payload,
+          id: idDocumentUserLoginGG,
+        };
+
+        return {
+          access_token: this.jwtService.sign(payloadNew),
+          user: {
+            id: idDocumentUserLoginGG,
+            avatar,
+            email,
+            name,
+            companyID,
+            roleID,
+          },
+        }
+      } else {
+        //- nếu đã có tài khoản ==> refresh_token
+        const payload = {
+          email,
+          idProviderGG,
+          name,
+          roleID,
+          companyID,
+          avatar,
+        };
+
+        const resfreshToken = this.createRefreshToken(payload);
+        const idDocumentUserLoginGG = userLoginGoogle?._id.toString();
+
+        //- luu refresh_token vao db
+        await this.usersService.updateRefreshToken(
+          idDocumentUserLoginGG,
+          resfreshToken,
+        );
+
+        //- set refresh_token to cookie of client(browser)
+        response.clearCookie('refresh_token');
+        response.cookie('refresh_token', resfreshToken, {
+          httpOnly: true,
+          //- maxAge là thoi gian hieu luc cua cookie tính theo ms
+          maxAge: ms(
+            this.configService.get<string>(
+              'JWT_REFRESH_EXPIRE',
+            ) as ms.StringValue,
+          ),
+        });
+
+        const payloadNew = {
+          ...payload,
+          id: idDocumentUserLoginGG,
+        };
+
+        return {
+          access_token: this.jwtService.sign(payloadNew),
+          user: {
+            id: idDocumentUserLoginGG,
+            avatar,
+            email,
+            name,
+            companyID,
+            roleID,
+          },
+        };
+      }
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }

@@ -19,9 +19,9 @@ import {
 } from 'src/decorator/customize';
 import { Response } from 'express';
 import { UserResponse } from 'src/user/schemas/user.schema';
-import { AuthGuard } from '@nestjs/passport';
 import { FacebookAuthGuard } from './passport-guard/facebook.guard';
 import { GoogleAuthGuard } from './passport-guard/google.guard';
+import { BadRequestCustom } from 'src/customExceptions/BadRequestCustom';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -134,18 +134,53 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
   async googleLoginCallback(@Req() req, @Res() res: Response) {
-    const user = {
-      id: req.user.providerId,
-      email: req.user.email || '',
-      name: `${req.user.firstName} ${req.user.lastName}`,
-      avatar: req.user.avatar,
-    };
+    try {
+      const user: UserResponse = {
+        id: req.user.providerId,
+        email: req.user.email || '',
+        name: req.user.name,
+        avatar: req.user.avatar,
+        companyID: req.user.companyID || [],
+        roleID: req.user.roleID || [],
+      };
 
-    // return "login gg"
-    // Gọi service login (tạo JWT hoặc tài khoản mới)
-    // const loginUser = await this.authService.loginGoogle(user, res);
-    // const access_token = loginUser.access_token;
+      //- để cho đỡ rối, lần này sẽ xử lý hết ở đây
+      const loginGoogle = await this.authService.loginGoogle(user, res);
+      const access_token = loginGoogle.access_token;
 
-    return res.redirect(`http://localhost:3000?access_token=zxbcjzbxch`);
+      const html = `
+      <html>
+        <body>
+          <script>
+            window.opener.postMessage(
+              { token: "${access_token}" },
+              "http://localhost:3000"
+            );
+            window.close();
+          </script>
+        </body>
+      </html>
+    `;
+
+      res.setHeader('Content-Type', 'text/html');
+      return res.send(html);
+    } catch (error) {
+      const mess = error.message;
+      const html = `
+        <html>
+          <body>
+            <script>
+              window.opener.postMessage(
+                { error: "${mess}" },
+                "http://localhost:3000"
+              );
+              window.close();
+            </script>
+          </body>
+        </html>
+      `;
+      res.status(200).send(html);
+      return null;
+    }
   }
 }

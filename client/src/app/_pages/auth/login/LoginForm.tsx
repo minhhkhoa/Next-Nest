@@ -96,7 +96,7 @@ export default function LoginForm() {
 
           //- chuyen trang
           router.push("/");
-          toast.success("Đăng nhập Facebook thành công!");
+          toast.success(`Đăng nhập ${provider} thành công!`);
         }
 
         if (error) {
