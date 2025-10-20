@@ -33,7 +33,7 @@ import { useAppStore } from "@/components/TanstackProvider";
 import { envConfig } from "../../../../../config";
 
 export default function LoginForm() {
-    const { setLogin } = useAppStore();
+  const { setLogin } = useAppStore();
   const [isClient, setIsClient] = useState(false);
   const { theme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
@@ -62,12 +62,44 @@ export default function LoginForm() {
     }
   };
 
+  // const handleSocialLogin = (provider: "google" | "facebook") => {
+  //   console.log("[v0] Social login with:", provider);
+  //   if (provider === "facebook") {
+  //      window.location.href = `${envConfig.NEXT_PUBLIC_API_URL}/auth/facebook`;
+  //   }
+  //   // Handle social login logic here
+  // };
+
   const handleSocialLogin = (provider: "google" | "facebook") => {
-    console.log("[v0] Social login with:", provider);
-    if (provider === "facebook") {
-       window.location.href = `${envConfig.NEXT_PUBLIC_API_URL}/auth/facebook`;
+    const width = 600;
+    const height = 700;
+    const left = window.screenX + (window.innerWidth - width) / 2;
+    const top = window.screenY + (window.innerHeight - height) / 2;
+
+    const popup = window.open(
+      `${envConfig.NEXT_PUBLIC_API_URL}/auth/${provider}`,
+      "SocialLogin",
+      `width=${width},height=${height},left=${left},top=${top}`
+    );
+
+    if (popup) {
+      const handleMessage = (event: MessageEvent) => {
+        //- Kiểm tra origin an toàn
+        if (event.origin !== envConfig.NEXT_PUBLIC_API_URL) return;
+
+        const { token } = event.data;
+        if (token) {
+          console.log("[OAuth] Received token:", token);
+          setAccessTokenToLocalStorage(token);
+          popup.close();
+          window.removeEventListener("message", handleMessage);
+
+          router.push("/");
+          toast.success("Đăng nhập thành công!");
+        }
+      };
+      window.addEventListener("message", handleMessage);
     }
-    // Handle social login logic here
   };
 
   useEffect(() => {
@@ -196,7 +228,10 @@ export default function LoginForm() {
       <CardFooter className="flex justify-center">
         <p className="text-sm text-muted-foreground">
           Bạn chưa có tài khoản?{" "}
-          <a href="/register" className="text-primary font-medium hover:underline">
+          <a
+            href="/register"
+            className="text-primary font-medium hover:underline"
+          >
             Đăng ký ngay
           </a>
         </p>

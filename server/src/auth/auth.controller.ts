@@ -89,10 +89,7 @@ export class AuthController {
   @Public()
   @Get('facebook/callback')
   @UseGuards(AuthGuard('facebook'))
-  async facebookLoginCallback(
-    @Req() req,
-    @Res() response: Response,
-  ) {
+  async facebookLoginCallback(@Req() req, @Res() response: Response) {
     const user: UserResponse = {
       id: req.user.providerId,
       email: req.user.email || '',
@@ -106,8 +103,27 @@ export class AuthController {
     const loginUser = await this.authService.loginFB(user, response);
     const access_token = loginUser.access_token;
 
-    return response.redirect(
-      `http://localhost:3000?access_token=${access_token}`,
-    );
+    // return response.redirect(
+    //   `http://localhost:3000?access_token=${access_token}`,
+    // );
+
+    // Gửi token về cửa sổ mở (main window)
+    const html = `
+    <html>
+      <body>
+        <script>
+          window.opener.postMessage(
+            { token: "${access_token}" },
+            "http://localhost:3000"
+          );
+          window.close();
+        </script>
+      </body>
+    </html>
+  `;
+
+  console.log("html: ", html)
+    response.setHeader('Content-Type', 'text/html');
+    return response.send(html);
   }
 }
