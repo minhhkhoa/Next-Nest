@@ -84,18 +84,24 @@ export default function LoginForm() {
 
     if (popup) {
       const handleMessage = (event: MessageEvent) => {
-        //- Kiểm tra origin an toàn
         if (event.origin !== envConfig.NEXT_PUBLIC_API_URL) return;
+        const { token, error } = event.data;
 
-        const { token } = event.data;
         if (token) {
           console.log("[OAuth] Received token:", token);
           setAccessTokenToLocalStorage(token);
           popup.close();
           window.removeEventListener("message", handleMessage);
 
+          //- chuyen trang
           router.push("/");
-          toast.success("Đăng nhập thành công!");
+          toast.success("Đăng nhập Facebook thành công!");
+        }
+
+        if (error) {
+          popup.close();
+          window.removeEventListener("message", handleMessage);
+          toast.error(error); // hoặc setErrorState(error)
         }
       };
       window.addEventListener("message", handleMessage);

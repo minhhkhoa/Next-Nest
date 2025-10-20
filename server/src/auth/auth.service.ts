@@ -96,8 +96,9 @@ export class AuthService {
 
       const idDocumentUser = userLogin?._id.toString(); //const
 
+      if(!idDocumentUser) throw new BadRequestCustom('User khong ton tai', !!userLogin);
       //- set refresh_token to user in db
-      await this.usersService.updateRefreshToken(idDocumentUser!, resfreshToken);
+      await this.usersService.updateRefreshToken(idDocumentUser, resfreshToken);
 
       //- set refresh_token to cookie of client(browser)
       response.clearCookie('refresh_token');

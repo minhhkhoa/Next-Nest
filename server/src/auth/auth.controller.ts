@@ -20,6 +20,7 @@ import {
 import { Response } from 'express';
 import { UserResponse } from 'src/user/schemas/user.schema';
 import { AuthGuard } from '@nestjs/passport';
+import { FacebookAuthGuard } from './facebook.guard';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -81,14 +82,14 @@ export class AuthController {
 
   @Public()
   @Get('facebook')
-  @UseGuards(AuthGuard('facebook'))
+  @UseGuards(FacebookAuthGuard)
   async facebookLogin(): Promise<any> {
     //- redirect đến facebook để login cái này fb tự xử lý
   }
 
   @Public()
   @Get('facebook/callback')
-  @UseGuards(AuthGuard('facebook'))
+  @UseGuards(FacebookAuthGuard)
   async facebookLoginCallback(@Req() req, @Res() response: Response) {
     const user: UserResponse = {
       id: req.user.providerId,
@@ -99,30 +100,23 @@ export class AuthController {
       roleID: req.user.roleID || [],
     };
 
-    //- logic tương tự như jwt vẫn cần sinh access_Token + refresh_token để dùng cho app của mình
     const loginUser = await this.authService.loginFB(user, response);
     const access_token = loginUser.access_token;
 
-    // return response.redirect(
-    //   `http://localhost:3000?access_token=${access_token}`,
-    // );
-
-    // Gửi token về cửa sổ mở (main window)
     const html = `
-    <html>
-      <body>
-        <script>
-          window.opener.postMessage(
-            { token: "${access_token}" },
-            "http://localhost:3000"
-          );
-          window.close();
-        </script>
-      </body>
-    </html>
-  `;
+      <html>
+        <body>
+          <script>
+            window.opener.postMessage(
+              { token: "${access_token}" },
+              "http://localhost:3000"
+            );
+            window.close();
+          </script>
+        </body>
+      </html>
+    `;
 
-  console.log("html: ", html)
     response.setHeader('Content-Type', 'text/html');
     return response.send(html);
   }
