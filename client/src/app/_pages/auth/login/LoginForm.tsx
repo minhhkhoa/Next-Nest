@@ -92,6 +92,7 @@ export default function LoginForm() {
           setAccessTokenToLocalStorage(token);
           popup.close();
           window.removeEventListener("message", handleMessage);
+          setLogin(true);
 
           //- chuyen trang
           router.push("/");
@@ -99,9 +100,10 @@ export default function LoginForm() {
         }
 
         if (error) {
+          console.log("error: ", error);
           popup.close();
           window.removeEventListener("message", handleMessage);
-          toast.error(error); // hoặc setErrorState(error)
+          toast.error(error);
         }
       };
       window.addEventListener("message", handleMessage);
