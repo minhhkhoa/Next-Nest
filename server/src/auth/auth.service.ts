@@ -82,75 +82,29 @@ export class AuthService {
     }
   }
 
-  async loginFB(user: UserResponse, response: Response) {
+  async loginWithSocial(user: UserResponse, response: Response, provider: string) {
     try {
-      const { avatar, email, name, companyID, roleID, id: idProvider } = user;
-      const payload = { email, idProvider, name, roleID, companyID, avatar };
-
-      //- create refresh_token
-      const resfreshToken = this.createRefreshToken(payload);
-
-      //- find user login fb
-      const userLogin =
-        await this.usersService.findUserByProviderIdFB(idProvider);
-
-      const idDocumentUser = userLogin?._id.toString(); //const
-
-      if (!idDocumentUser)
-        throw new BadRequestCustom('User khong ton tai', !!userLogin);
-      //- set refresh_token to user in db
-      await this.usersService.updateRefreshToken(idDocumentUser, resfreshToken);
-
-      //- set refresh_token to cookie of client(browser)
-      response.clearCookie('refresh_token');
-      response.cookie('refresh_token', resfreshToken, {
-        httpOnly: true,
-        //- maxAge là thoi gian hieu luc cua cookie tính theo ms
-        maxAge: ms(
-          this.configService.get<string>(
-            'JWT_REFRESH_EXPIRE',
-          ) as ms.StringValue,
-        ),
-      });
-
-      //- return access_token to client and some info of user
-      const payloadNew = {
-        ...payload,
-        id: idDocumentUser,
-      };
-
-      return {
-        access_token: this.jwtService.sign(payloadNew),
-        user: {
-          id: idDocumentUser,
-          avatar,
-          email,
-          name,
-          companyID,
-          roleID,
-        },
-      };
-    } catch (error) {
-      throw new BadRequestCustom(error.message, !!error.message);
-    }
-  }
-
-  async loginGoogle(user: UserResponse, response: Response) {
-    try {
-      const { avatar, email, id: idProviderGG, name, companyID, roleID } = user;
+      const {
+        avatar,
+        email,
+        id: idProvider,
+        name,
+        companyID,
+        roleID,
+      } = user;
 
       //- B1: check xem có tài khoản chưa
-      const userLoginGoogle =
-        await this.usersService.findUserByProviderIdGG(idProviderGG);
+      const userLoginSocial =
+        await this.usersService.findUserByProviderIDSocial(idProvider);
 
-      if (!userLoginGoogle) {
+      if (!userLoginSocial) {
         //- B2: tạo người dùng
-        await this.usersService.createUserWithProviderGG(user);
+        await this.usersService.createUserWithProviderSocial(user, provider);
 
         //- B3: tạo refresh_token
         const payload = {
           email,
-          idProviderGG,
+          idProvider,
           name,
           roleID,
           companyID,
@@ -160,15 +114,15 @@ export class AuthService {
 
         //- tim user vua tao de luu refresh_token vao db
         const userNew =
-          await this.usersService.findUserByProviderIdGG(idProviderGG);
+          await this.usersService.findUserByProviderIDSocial(idProvider);
 
-        const idDocumentUserLoginGG = userNew?._id.toString();
+        const idDocumentUserLogin = userNew?._id.toString();
 
-        if (!idDocumentUserLoginGG)
-          throw new BadRequestCustom('User khong ton tai', !!userLoginGoogle);
+        if (!idDocumentUserLogin)
+          throw new BadRequestCustom('User khong ton tai', true);
         //- set refresh_token to user in db
         await this.usersService.updateRefreshToken(
-          idDocumentUserLoginGG,
+          idDocumentUserLogin,
           resfreshToken,
         );
 
@@ -186,25 +140,25 @@ export class AuthService {
 
         const payloadNew = {
           ...payload,
-          id: idDocumentUserLoginGG,
+          id: idDocumentUserLogin,
         };
 
         return {
           access_token: this.jwtService.sign(payloadNew),
           user: {
-            id: idDocumentUserLoginGG,
+            id: idDocumentUserLogin,
             avatar,
             email,
             name,
             companyID,
             roleID,
           },
-        }
+        };
       } else {
         //- nếu đã có tài khoản ==> refresh_token
         const payload = {
           email,
-          idProviderGG,
+          idProvider,
           name,
           roleID,
           companyID,
@@ -212,11 +166,11 @@ export class AuthService {
         };
 
         const resfreshToken = this.createRefreshToken(payload);
-        const idDocumentUserLoginGG = userLoginGoogle?._id.toString();
+        const idDocumentUserLogin = userLoginSocial?._id.toString();
 
         //- luu refresh_token vao db
         await this.usersService.updateRefreshToken(
-          idDocumentUserLoginGG,
+          idDocumentUserLogin,
           resfreshToken,
         );
 
@@ -234,13 +188,13 @@ export class AuthService {
 
         const payloadNew = {
           ...payload,
-          id: idDocumentUserLoginGG,
+          id: idDocumentUserLogin,
         };
 
         return {
           access_token: this.jwtService.sign(payloadNew),
           user: {
-            id: idDocumentUserLoginGG,
+            id: idDocumentUserLogin,
             avatar,
             email,
             name,
@@ -358,18 +312,5 @@ export class AuthService {
     } catch (error) {
       throw new UnauthorizedException('Refresh_token khong hop le!');
     }
-  }
-
-  async validateOAuthLogin(userData: ResUserFB) {
-    const { providerId } = userData;
-    //- check db xem có providerId chưa nếu có -> đã đk với fb rồi
-    const user = await this.usersService.checkUserByProviderIdFB(providerId);
-
-    if (user) throw new BadRequestCustom('User đã đăng ký với fb rồi', !!user);
-
-    //- tạo người dùng
-    await this.usersService.createUserWithProviderFB(userData);
-
-    return userData;
   }
 }

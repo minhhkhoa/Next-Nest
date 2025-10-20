@@ -92,19 +92,24 @@ export class AuthController {
   @Get('facebook/callback')
   @UseGuards(FacebookAuthGuard)
   async facebookLoginCallback(@Req() req, @Res() response: Response) {
-    const user: UserResponse = {
-      id: req.user.providerId,
-      email: req.user.email || '',
-      name: req.user.firstName + ' ' + req.user.lastName,
-      avatar: req.user.avatar,
-      companyID: req.user.companyID || [],
-      roleID: req.user.roleID || [],
-    };
+    try {
+      const user: UserResponse = {
+        id: req.user.providerId,
+        email: req.user.email || '',
+        name: req.user.firstName + ' ' + req.user.lastName,
+        avatar: req.user.avatar,
+        companyID: req.user.companyID || [],
+        roleID: req.user.roleID || [],
+      };
 
-    const loginUser = await this.authService.loginFB(user, response);
-    const access_token = loginUser.access_token;
+      const loginUser = await this.authService.loginWithSocial(
+        user,
+        response,
+        'facebook',
+      );
+      const access_token = loginUser.access_token;
 
-    const html = `
+      const html = `
       <html>
         <body>
           <script>
@@ -118,8 +123,27 @@ export class AuthController {
       </html>
     `;
 
-    response.setHeader('Content-Type', 'text/html');
-    return response.send(html);
+      response.setHeader('Content-Type', 'text/html');
+      return response.send(html);
+    } catch (error) {
+      //- xử lý lỗi
+      const mess = error.message;
+      const html = `
+        <html>
+          <body>
+            <script>
+              window.opener.postMessage(
+                { error: "${mess}" },
+                "http://localhost:3000"
+              );
+              window.close();
+            </script>
+          </body>
+        </html>
+      `;
+      response.status(200).send(html);
+      return null;
+    }
   }
 
   //- login google
@@ -145,7 +169,7 @@ export class AuthController {
       };
 
       //- để cho đỡ rối, lần này sẽ xử lý hết ở đây
-      const loginGoogle = await this.authService.loginGoogle(user, res);
+      const loginGoogle = await this.authService.loginWithSocial(user, res, 'google');
       const access_token = loginGoogle.access_token;
 
       const html = `
@@ -165,6 +189,7 @@ export class AuthController {
       res.setHeader('Content-Type', 'text/html');
       return res.send(html);
     } catch (error) {
+      //- xử lý lỗi
       const mess = error.message;
       const html = `
         <html>

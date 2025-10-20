@@ -7,7 +7,6 @@ import { User, UserDocument, UserResponse } from './schemas/user.schema';
 import { BadRequestCustom } from 'src/customExceptions/BadRequestCustom';
 import { hashPassword } from 'src/utils/hashPassword';
 import mongoose from 'mongoose';
-import { ResUserFB, ResUserGG } from 'src/utils/typeSchemas';
 
 @Injectable()
 export class UserService {
@@ -47,38 +46,15 @@ export class UserService {
     }
   }
 
-  async createUserWithProviderFB(userData: ResUserFB) {
+  async createUserWithProviderSocial(userData: UserResponse, provider: string) {
     try {
-      const data = {
-        ...userData,
-        name: userData.firstName + ' ' + userData.lastName,
-        provider: {
-          type: 'facebook',
-          id: userData.providerId,
-        },
-      };
-      const createdUser = await this.userModel.create(data);
-
-      if (!createdUser)
-        throw new BadRequestCustom('Tạo người dùng thất bại', !!createdUser);
-
-      return {
-        _id: createdUser._id,
-        name: createdUser.name,
-      };
-    } catch (error) {
-      throw new BadRequestCustom(error.message, !!error.message);
-    }
-  }
-
-  async createUserWithProviderGG(userData: UserResponse) {
-    try {
+      //- bỏ id đi
       const { id, ...rest } = userData;
 
       const data = {
         ...rest,
         provider: {
-          type: 'google',
+          type: provider,
           id: userData.id,
         },
       };
@@ -156,33 +132,13 @@ export class UserService {
     }
   }
 
-  async findUserByProviderIdFB(
+  async findUserByProviderIDSocial(
     idProvider: string,
   ): Promise<UserDocument | null> {
     try {
       if (!idProvider)
         throw new BadRequestCustom(
-          'idProviderFB khong duoc de trong',
-          !!idProvider,
-        );
-
-      const user = await this.userModel.findOne({ 'provider.id': idProvider });
-
-      if (!user) throw new BadRequestCustom('user khong ton tai', !!user);
-
-      return user;
-    } catch (error) {
-      throw new BadRequestCustom(error.message, !!error.message);
-    }
-  }
-
-  async findUserByProviderIdGG(
-    idProvider: string,
-  ): Promise<UserDocument | null> {
-    try {
-      if (!idProvider)
-        throw new BadRequestCustom(
-          'idProviderGG khong duoc de trong',
+          'idProvider khong duoc de trong',
           !!idProvider,
         );
 
@@ -270,20 +226,6 @@ export class UserService {
       if (!result) throw new BadRequestCustom('Lỗi xóa user', !!id);
 
       return result;
-    } catch (error) {
-      throw new BadRequestCustom(error.message, !!error.message);
-    }
-  }
-
-  //- check user fb
-  async checkUserByProviderIdFB(providerId: string) {
-    try {
-      if (!providerId) return null;
-      const user = await this.userModel.findOne({ 'provider.id': providerId });
-
-      if (!user) return null;
-
-      return user;
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }

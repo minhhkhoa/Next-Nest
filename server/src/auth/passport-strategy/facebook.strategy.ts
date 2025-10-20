@@ -43,9 +43,6 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
       avatar: photos?.[0]?.value,
     };
 
-    // kiểm tra xem co tk chua neu chua thi tạo user mới
-    const user = await this.authService.validateOAuthLogin(userData);
-
-    return user; //- gắn vào req.user
+    return userData; //- gắn vào req.user
   }
 }
