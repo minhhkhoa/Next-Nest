@@ -3,12 +3,12 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UserModule } from 'src/user/user.module';
 import { PassportModule } from '@nestjs/passport';
-import { LocalStrategy } from './passport/local.strategy';
+import { LocalStrategy } from './passport-strategy/local.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
-import { JwtStrategy } from './passport/jwt.strategy';
+import { JwtStrategy } from './passport-strategy/jwt.strategy';
 import * as ms from 'ms';
-import { FacebookStrategy } from './passport/facebook.strategy';
+import { FacebookStrategy } from './passport-strategy/facebook.strategy';
 
 @Module({
   imports: [

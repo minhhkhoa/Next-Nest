@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
-import { LocalAuthGuard } from './local-auth.guard';
+import { LocalAuthGuard } from './passport-guard/local-auth.guard';
 import { LoginDto, RegisterDto } from 'src/user/dto/create-user.dto';
 import {
   Public,
@@ -20,7 +20,7 @@ import {
 import { Response } from 'express';
 import { UserResponse } from 'src/user/schemas/user.schema';
 import { AuthGuard } from '@nestjs/passport';
-import { FacebookAuthGuard } from './facebook.guard';
+import { FacebookAuthGuard } from './passport-guard/facebook.guard';
 
 @ApiTags('auth')
 @Controller('auth')
