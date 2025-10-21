@@ -1,5 +1,5 @@
 import authApiRequest from "@/apiRequest/auth";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 export const useLoginMutation = () => {
   return useMutation({
@@ -16,5 +16,12 @@ export const useRegisterMutation = () => {
 export const useLogoutMutation = () => {
   return useMutation({
     mutationFn: authApiRequest.logout
+  })
+}
+
+export const useGetProfile = () => {
+  return useQuery({
+    queryKey: ['profile'],
+    queryFn: authApiRequest.getProfile
   })
 }

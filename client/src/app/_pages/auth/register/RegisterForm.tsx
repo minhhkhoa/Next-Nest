@@ -25,7 +25,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useTheme } from "next-themes";
-import { useRegisterMutation } from "@/queries/auth";
+import { useRegisterMutation } from "@/queries/useAuth";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { envConfig } from "../../../../../config";
