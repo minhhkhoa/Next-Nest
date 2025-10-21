@@ -68,37 +68,36 @@ instance.interceptors.response.use(
     if (status === 401 && !originalRequest._retry) {
       originalRequest._retry = true; //- tránh vòng lặp vô hạn
       const token = localStorage.getItem("access_token");
-      
+
       try {
         const decoded = jwtDecode(token!); //- token mà null -> catch
         //- nếu còn hạn
-        if(decoded.iat && decoded.exp && Date.now() < decoded.exp * 1000) {
-          console.log("vao dây")
+        if (decoded.iat && decoded.exp && Date.now() < decoded.exp * 1000) {
+          console.log("vao dây");
           //- còn hạn mà user sửa trên localStorage ==> về login
           const decodedToken = jwtDecode(token!, { header: true });
-          if(decodedToken) {
+          if (decodedToken) {
             window.location.href = "/login";
           }
         } else {
           //- call API refresh token (xuống đây là token hết hạn)
           const res: any = await instance.get("auth/refresh");
           const newAccessToken = res.data?.access_token;
-  
+
           if (!newAccessToken) {
             removeTokensFromLocalStorage();
             toast.error("Không thể làm mới phiên đăng nhập!");
             return Promise.reject(error);
           }
-  
+
           //- lưu token mới
           setAccessTokenToLocalStorage(newAccessToken);
-  
+
           //- gắn token mới vào header và gọi lại request cũ
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-  
+
           return instance(originalRequest);
         }
-
       } catch (refreshError) {
         //- nếu refresh cũng lỗi → đăng xuất || token bị null
         removeTokensFromLocalStorage();
@@ -110,6 +109,9 @@ instance.interceptors.response.use(
 
     //- Xử lý lỗi dựa trên status code
     switch (status) {
+      case 423: //- khi refesh_token hết hạn ở cookie
+        toast.error("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
+        setTimeout(() => (window.location.href = "/login"), 1000);
       case 403:
         console.error("Resource not found.");
         break;

@@ -275,7 +275,11 @@ export class AuthService {
       });
 
       //2.Lấy user id
-      const userId = decode.id;
+      const providerId = decode.idProvider;
+      const userProvider =
+        await this.usersService.findUserByProviderIDSocial(providerId);
+      const idUserProvider = userProvider?._id.toString();
+      const userId = decode.id ? decode.id : idUserProvider;
 
       if (!userId) {
         throw new BadRequestException('Token payload thiếu userId');

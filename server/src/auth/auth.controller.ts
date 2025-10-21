@@ -67,9 +67,14 @@ export class AuthController {
     @Req() request: any,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const refreshToken = request.cookies['refresh_token'];
-
-    return await this.authService.getNewToken(refreshToken, response);
+    try {
+      //- refresh_token có thể bị hết hạn ==> logout
+      const refreshToken = request.cookies['refresh_token'];
+  
+      return await this.authService.getNewToken(refreshToken, response);
+    } catch (error) {
+      throw new BadRequestCustom("Refresh_token đã hết hạn!", !!error.message, 423);
+    }
   }
 
   @Post('logout')

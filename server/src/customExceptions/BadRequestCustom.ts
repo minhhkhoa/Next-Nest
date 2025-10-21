@@ -1,10 +1,10 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 
 export class BadRequestCustom extends HttpException {
-  constructor(message: string, isError = true) {
+  constructor(message: string, isError = true, statusCode?: number) {
     super(
       {
-        statusCode: isError ? 500 : 200,
+        statusCode: statusCode ? statusCode : isError ? 500 : 200,
         message,
         isOk: !isError,
         isError,
