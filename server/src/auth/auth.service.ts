@@ -46,13 +46,23 @@ export class AuthService {
       const { avatar, email, name, companyID, roleID, id } = user;
       const payload = { email, id, name, roleID, companyID, avatar };
 
-      //- create refresh_token
+      //- create refresh_token/access_token
+      const accessToken = this.jwtService.sign(payload);
       const resfreshToken = this.createRefreshToken(payload);
 
       //- set refresh_token to user in db
       await this.usersService.updateRefreshToken(id, resfreshToken);
 
-      //- set refresh_token to cookie of client(browser)
+      //- set refresh_token/access_token to cookie of client(browser)
+      response.clearCookie('access_token');
+      response.cookie('access_token', accessToken, {
+        httpOnly: true,
+        //- maxAge là thoi gian hieu luc cua cookie tính theo ms
+        maxAge: ms(
+          this.configService.get<string>('JWT_ACCESS_EXPIRE') as ms.StringValue,
+        ),
+      });
+
       response.clearCookie('refresh_token');
       response.cookie('refresh_token', resfreshToken, {
         httpOnly: true,
@@ -106,6 +116,7 @@ export class AuthService {
           companyID,
           avatar,
         };
+
         const resfreshToken = this.createRefreshToken(payload);
 
         //- tim user vua tao de luu refresh_token vao db
@@ -122,7 +133,7 @@ export class AuthService {
           resfreshToken,
         );
 
-        //- set refresh_token to cookie of client(browser)
+        //- set refresh_token/access_token to cookie of client(browser)
         response.clearCookie('refresh_token');
         response.cookie('refresh_token', resfreshToken, {
           httpOnly: true,
@@ -138,6 +149,18 @@ export class AuthService {
           ...payload,
           id: idDocumentUserLogin,
         };
+
+        const accessToken = this.jwtService.sign(payloadNew);
+        response.clearCookie('access_token');
+        response.cookie('access_token', accessToken, {
+          httpOnly: true,
+          //- maxAge là thoi gian hieu luc cua cookie tính theo ms
+          maxAge: ms(
+            this.configService.get<string>(
+              'JWT_ACCESS_EXPIRE',
+            ) as ms.StringValue,
+          ),
+        });
 
         return {
           access_token: this.jwtService.sign(payloadNew),
@@ -186,6 +209,18 @@ export class AuthService {
           ...payload,
           id: idDocumentUserLogin,
         };
+
+        const accessToken = this.jwtService.sign(payloadNew);
+        response.clearCookie('access_token');
+        response.cookie('access_token', accessToken, {
+          httpOnly: true,
+          //- maxAge là thoi gian hieu luc cua cookie tính theo ms
+          maxAge: ms(
+            this.configService.get<string>(
+              'JWT_ACCESS_EXPIRE',
+            ) as ms.StringValue,
+          ),
+        });
 
         return {
           access_token: this.jwtService.sign(payloadNew),
@@ -259,6 +294,7 @@ export class AuthService {
       //- set refresh_token is "" to user in db
       const result = await this.usersService.updateRefreshToken(user.id, '');
       response.clearCookie('refresh_token');
+      response.clearCookie('access_token');
 
       if (result.matchedCount == 1) return 'Logout thanh cong';
     } catch (error) {
