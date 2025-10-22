@@ -43,7 +43,7 @@ export function UserAvatarMenu() {
   };
 
   const onProfileClick = () => {
-    alert("onProfileClick");
+    router.push("/profile");
   };
 
   const onManageClick = () => {
