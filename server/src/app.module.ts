@@ -14,6 +14,7 @@ import { NewsModule } from './news/news.module';
 import { CompanyModule } from './company/company.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import { DetailProfileModule } from './detail-profile/detail-profile.module';
 
 
 @Module({
@@ -48,6 +49,7 @@ import { AuthModule } from './auth/auth.module';
     CompanyModule,
     UserModule,
     AuthModule,
+    DetailProfileModule,
   ],
   controllers: [AppController],
   providers: [AppService],
