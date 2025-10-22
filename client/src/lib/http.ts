@@ -22,6 +22,20 @@ const instance = axios.create({
   },
 });
 
+//- tạo riêng 1 cái cho refresh token
+export const refreshInstance = axios.create({
+  baseURL: envConfig.NEXT_PUBLIC_API_URL,
+  timeout: 50000,
+  withCredentials: true,
+});
+
+//- tạo riêng 1 cái cho xóa access token
+export const accessInstance = axios.create({
+  baseURL: envConfig.NEXT_PUBLIC_API_URL,
+  timeout: 50000,
+  withCredentials: true,
+});
+
 //- Interceptor cho request: Thêm token hoặc các xử lý trước khi gửi request
 instance.interceptors.request.use(
   (config) => {
@@ -69,41 +83,63 @@ instance.interceptors.response.use(
       originalRequest._retry = true; //- tránh vòng lặp vô hạn
       const token = localStorage.getItem("access_token");
 
-      try {
-        const decoded = jwtDecode(token!); //- token mà null -> catch
-        //- nếu còn hạn
-        if (decoded.iat && decoded.exp && Date.now() < decoded.exp * 1000) {
-          console.log("vao dây");
-          //- còn hạn mà user sửa trên localStorage ==> về login
-          const decodedToken = jwtDecode(token!, { header: true });
-          if (decodedToken) {
-            window.location.href = "/login";
-          }
-        } else {
-          //- call API refresh token (xuống đây là token hết hạn)
-          const res: any = await instance.get("auth/refresh");
-          const newAccessToken = res.data?.access_token;
-
-          if (!newAccessToken) {
-            removeTokensFromLocalStorage();
-            toast.error("Không thể làm mới phiên đăng nhập!");
-            return Promise.reject(error);
-          }
-
-          //- lưu token mới
-          setAccessTokenToLocalStorage(newAccessToken);
-
-          //- gắn token mới vào header và gọi lại request cũ
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-
-          return instance(originalRequest);
-        }
-      } catch (refreshError) {
-        //- nếu refresh cũng lỗi → đăng xuất || token bị null
+      //- CASE 1: Không có token
+      if (!token) {
+        toast.error("Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.");
         removeTokensFromLocalStorage();
-        toast.error("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
         setTimeout(() => (window.location.href = "/login"), 1000);
-        return Promise.reject(refreshError);
+        return Promise.reject(error);
+      }
+
+      try {
+        const decoded = jwtDecode(token);
+        const now = Date.now();
+
+        //- CASE 2: Token còn hạn mà vẫn 401 → có thể bị revoke
+        if (decoded.exp && now < decoded.exp * 1000) {
+          toast.error(
+            "Phiên đăng nhập không còn hợp lệ. Vui lòng đăng nhập lại."
+          );
+          removeTokensFromLocalStorage();
+          await accessInstance.get("/auth/removeAccessToken");
+          setTimeout(() => (window.location.href = "/login"), 1000);
+          return Promise.reject(error);
+        }
+
+        //- CASE 3: Token đã hết hạn → gọi refresh
+        if (decoded.exp && now >= decoded.exp * 1000) {
+          try {
+            const res = await refreshInstance.get("/auth/refresh");
+            const newAccessToken = res.data?.data.access_token;
+
+            if (!newAccessToken) {
+              toast.error("Không thể làm mới phiên đăng nhập!");
+              removeTokensFromLocalStorage();
+              await accessInstance.get("/auth/removeAccessToken");
+              setTimeout(() => (window.location.href = "/login"), 1000);
+              return Promise.reject(error);
+            }
+
+            setAccessTokenToLocalStorage(newAccessToken);
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+
+            //- gọi lại request cũ bằng íntance gốc
+            return instance(originalRequest);
+          } catch (refreshError) {
+            toast.error("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
+            removeTokensFromLocalStorage();
+            await accessInstance.get("/auth/removeAccessToken");
+            setTimeout(() => (window.location.href = "/login"), 1000);
+            return Promise.reject(refreshError);
+          }
+        }
+      } catch (decodeError) {
+        //- CASE 4: Token sai định dạng (người dùng chỉnh sửa)
+        toast.error("Token không hợp lệ. Vui lòng đăng nhập lại.");
+        removeTokensFromLocalStorage();
+        await accessInstance.get("/auth/removeAccessToken");
+        // setTimeout(() => (window.location.href = "/login"), 1000);
+        return Promise.reject(decodeError);
       }
     }
 

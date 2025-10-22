@@ -77,6 +77,19 @@ export class AuthController {
     }
   }
 
+  @Public() //- phải để public vì khi này access_token đâu còn hợp lệ
+  @ResponseMessage('Success')
+  @Get('removeAccessToken')
+  async handleRemoveAccessTokenInCookie(
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    try {
+      response.clearCookie('access_token');
+    } catch (error) {
+      throw new BadRequestCustom("Lỗi xóa access_token", !!error.message, 423);
+    }
+  }
+
   @Post('logout')
   @ResponseMessage('Logout User thành công')
   handleLogout(

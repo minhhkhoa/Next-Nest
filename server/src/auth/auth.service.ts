@@ -311,10 +311,10 @@ export class AuthService {
       });
 
       //2.Lấy user id
-      const providerId = decode.idProvider;
-      const userProvider =
+      const providerId = decode.idProvider ?? undefined;
+      const userProvider = providerId &&
         await this.usersService.findUserByProviderIDSocial(providerId);
-      const idUserProvider = userProvider?._id.toString();
+      const idUserProvider = providerId && userProvider?._id.toString();
       const userId = decode.id ? decode.id : idUserProvider;
 
       if (!userId) {
