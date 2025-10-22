@@ -2,29 +2,24 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { use, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Edit2, Check, X, Upload } from "lucide-react";
+import { useAppStore } from "@/components/TanstackProvider";
+import { handleInitName } from "@/lib/utils";
 
-interface BasicInfoSectionProps {
-  data: {
-    name: string;
-    email: string;
-    avatar: string;
-  };
-  onUpdate: (data: any) => void;
-}
-
-export function BasicInfoSection({ data, onUpdate }: BasicInfoSectionProps) {
+export function BasicInfoSection() {
+  const { user } = useAppStore();
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState(data);
+  const [formData, setFormData] = useState(user);
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
+
 
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -39,22 +34,25 @@ export function BasicInfoSection({ data, onUpdate }: BasicInfoSectionProps) {
   };
 
   const handleSave = () => {
-    onUpdate(formData);
+    console.log("formdata: ", formData);
+    const id = formData.id;
+    const payload = {
+      name: formData.name,
+      avatar: formData.avatar,
+    }
+
     setIsEditing(false);
   };
 
   const handleCancel = () => {
-    setFormData(data);
+    setFormData(formData);
     setIsEditing(false);
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
+  useEffect(() => {
+    if(user) setFormData(user);
+    
+  }, [user]);
 
   return (
     <div>
@@ -79,11 +77,8 @@ export function BasicInfoSection({ data, onUpdate }: BasicInfoSectionProps) {
         {/* Avatar Section */}
         <div className="flex items-center gap-6">
           <Avatar className="w-32 h-32">
-            <AvatarImage
-              src={formData.avatar || "/placeholder.svg"}
-              alt={formData.name}
-            />
-            <AvatarFallback>{getInitials(formData.name)}</AvatarFallback>
+            <AvatarImage src={formData?.avatar || ""} alt={formData.name} />
+            <AvatarFallback>{handleInitName(formData.name)}</AvatarFallback>
           </Avatar>
 
           {isEditing && (
@@ -103,7 +98,7 @@ export function BasicInfoSection({ data, onUpdate }: BasicInfoSectionProps) {
                   <Upload className="w-4 h-4 text-muted-foreground" />
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  PNG, JPG, GIF (tối đa 5MB)
+                  PNG, JPG, GIF (tối đa 2MB)
                 </p>
               </div>
             </div>
@@ -136,9 +131,9 @@ export function BasicInfoSection({ data, onUpdate }: BasicInfoSectionProps) {
               <Input
                 id="email"
                 type="email"
-                value={formData.email}
-                onChange={(e) => handleChange("email", e.target.value)}
+                value={formData.email || ""}
                 className="mt-2"
+                readOnly
               />
             ) : (
               <p className="mt-2 text-foreground">{formData.email}</p>
@@ -148,11 +143,7 @@ export function BasicInfoSection({ data, onUpdate }: BasicInfoSectionProps) {
 
         {/* Action Buttons */}
         {isEditing && (
-          <div className="flex gap-3 pt-4">
-            <Button onClick={handleSave} className="gap-2">
-              <Check className="w-4 h-4" />
-              Lưu
-            </Button>
+          <div className="flex gap-3 pt-4 justify-end">
             <Button
               variant="outline"
               onClick={handleCancel}
@@ -160,6 +151,10 @@ export function BasicInfoSection({ data, onUpdate }: BasicInfoSectionProps) {
             >
               <X className="w-4 h-4" />
               Hủy
+            </Button>
+            <Button onClick={handleSave} className="gap-2">
+              <Check className="w-4 h-4" />
+              Lưu
             </Button>
           </div>
         )}

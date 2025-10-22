@@ -34,7 +34,6 @@ interface DetailedInfoSectionProps {
     level: string;
     address: string;
   };
-  onUpdate: (data: any) => void;
 }
 
 const GENDER_OPTIONS = [
@@ -91,7 +90,6 @@ const ADDRESS_OPTIONS = [
 
 export function DetailedInfoSection({
   data,
-  onUpdate,
 }: DetailedInfoSectionProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(data);
@@ -115,7 +113,6 @@ export function DetailedInfoSection({
   };
 
   const handleSave = () => {
-    onUpdate(formData);
     setIsEditing(false);
   };
 
@@ -393,11 +390,7 @@ export function DetailedInfoSection({
 
         {/* Action Buttons */}
         {isEditing && (
-          <div className="flex gap-3 pt-4">
-            <Button onClick={handleSave} className="gap-2">
-              <Check className="w-4 h-4" />
-              Lưu
-            </Button>
+          <div className="flex gap-3 pt-4 justify-end">
             <Button
               variant="outline"
               onClick={handleCancel}
@@ -405,6 +398,10 @@ export function DetailedInfoSection({
             >
               <X className="w-4 h-4" />
               Hủy
+            </Button>
+            <Button onClick={handleSave} className="gap-2">
+              <Check className="w-4 h-4" />
+              Lưu
             </Button>
           </div>
         )}

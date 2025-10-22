@@ -33,14 +33,6 @@ export default function ProfilePage() {
     address: "Hà Nội",
   });
 
-  const handleBasicInfoUpdate = (data: any) => {
-    setProfileData((prev) => ({ ...prev, ...data }));
-  };
-
-  const handleDetailedInfoUpdate = (data: any) => {
-    setProfileData((prev) => ({ ...prev, ...data }));
-  };
-
   return (
     <main className="min-h-screen bg-background py-8 px-2">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -48,21 +40,11 @@ export default function ProfilePage() {
           <h1 className="text-3xl font-bold text-foreground mb-2">
             Thông tin cá nhân
           </h1>
-          <p className="text-muted-foreground">
-            Quản lý thông tin hồ sơ của bạn
-          </p>
         </div>
 
         {/* Basic Info Section */}
         <Card className="p-6">
-          <BasicInfoSection
-            data={{
-              name: profileData.name,
-              email: profileData.email,
-              avatar: profileData.avatar,
-            }}
-            onUpdate={handleBasicInfoUpdate}
-          />
+          <BasicInfoSection />
         </Card>
 
         {/* Detailed Info Section */}
@@ -78,7 +60,6 @@ export default function ProfilePage() {
               level: profileData.level,
               address: profileData.address,
             }}
-            onUpdate={handleDetailedInfoUpdate}
           />
         </Card>
       </div>
