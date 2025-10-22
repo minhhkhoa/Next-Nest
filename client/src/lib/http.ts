@@ -41,12 +41,6 @@ instance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("access_token");
 
-    //- check access_token đã phòng user sửa trên localStorage
-    if (!token) {
-      removeTokensFromLocalStorage();
-      return config;
-    }
-
     if (
       typeof window !== "undefined" &&
       window &&
@@ -87,6 +81,7 @@ instance.interceptors.response.use(
       if (!token) {
         toast.error("Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.");
         removeTokensFromLocalStorage();
+        await accessInstance.get("/auth/removeAccessToken");
         setTimeout(() => (window.location.href = "/login"), 1000);
         return Promise.reject(error);
       }
@@ -138,7 +133,7 @@ instance.interceptors.response.use(
         toast.error("Token không hợp lệ. Vui lòng đăng nhập lại.");
         removeTokensFromLocalStorage();
         await accessInstance.get("/auth/removeAccessToken");
-        // setTimeout(() => (window.location.href = "/login"), 1000);
+        setTimeout(() => (window.location.href = "/login"), 1000);
         return Promise.reject(decodeError);
       }
     }

@@ -4,16 +4,25 @@ import { ModeToggle } from "@/components/ModeToggle";
 import { UserAvatarMenu } from "../_pages/components/user-avatar-menu";
 import { useAppStore } from "@/components/TanstackProvider";
 import { useRouter } from "next/navigation";
+import { useGetProfile } from "@/queries/useAuth";
+import { Button } from "@/components/ui/button";
+import { UserResponseType } from "@/schemasvalidation/user";
+import { useEffect } from "react";
 
-export default function PublicLayout({
+export default function ClientLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const router = useRouter();
-  const { isLogin } = useAppStore();
+  const { isLogin, setUser } = useAppStore();
+  const { data } = useGetProfile(isLogin); //- chỉ call khi đã login
 
-  console.log("isLogin: ", isLogin);
+  useEffect(() => {
+    if (data?.data?.user) {
+      setUser(data.data.user as UserResponseType);
+    }
+  }, [data, setUser]);
 
   return (
     <div>
@@ -28,6 +37,18 @@ export default function PublicLayout({
             </h1>
           </div>
           <div className="flex items-center gap-2 mr-10">
+            {!isLogin && (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => router.push("/register")}
+                >
+                  Đăng ký
+                </Button>
+                <Button onClick={() => router.push("/login")}>Đăng nhập</Button>
+              </div>
+            )}
+
             <ModeToggle />
             {isLogin && <UserAvatarMenu />}
           </div>

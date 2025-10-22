@@ -19,9 +19,11 @@ export const useLogoutMutation = () => {
   })
 }
 
-export const useGetProfile = () => {
+//- thêm enabled để kiểm soát việc call api, true thì call
+export const useGetProfile = (enabled = true) => {
   return useQuery({
-    queryKey: ['profile'],
-    queryFn: authApiRequest.getProfile
-  })
-}
+    queryKey: ["profile"],
+    queryFn: authApiRequest.getProfile,
+    enabled,
+  });
+};

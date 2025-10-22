@@ -12,3 +12,6 @@ export const apiProfileUserRes = z.object({
 });
 
 export type ProfileResType = z.infer<typeof apiProfileUserRes>;
+
+export const userResponseSchema = apiProfileUserRes.shape.user;
+export type UserResponseType = z.infer<typeof userResponseSchema>;

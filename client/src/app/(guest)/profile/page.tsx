@@ -4,13 +4,16 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { BasicInfoSection } from "@/app/_pages/client/profile/basic-info-section";
 import { DetailedInfoSection } from "@/app/_pages/client/profile/detailed-info-section";
+import { useAppStore } from "@/components/TanstackProvider";
 
 export default function ProfilePage() {
+  const { user } = useAppStore();
   const [profileData, setProfileData] = useState({
     // Basic Info
     name: "Nguyễn Văn A",
     email: "nguyenvana@example.com",
-    avatar: "https://images.unsplash.com/photo-1499714608240-22fc6ad53fb2?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=76&q=80",
+    avatar:
+      "https://images.unsplash.com/photo-1499714608240-22fc6ad53fb2?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=76&q=80",
 
     // Detailed Info
     summary: "Lập trình viên Full Stack với 5 năm kinh nghiệm",

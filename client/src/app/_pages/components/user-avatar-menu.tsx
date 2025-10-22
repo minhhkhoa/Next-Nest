@@ -23,23 +23,21 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export function UserAvatarMenu() {
-  const { isLogin, setLogin } = useAppStore();
+  const { isLogin, setLogin, user } = useAppStore();
   const router = useRouter();
   const { mutateAsync: mutationLogout } = useLogoutMutation();
-  const { data } = useGetProfile();
 
-  const name = data?.data?.user.name && handleInitName(data?.data?.user.name);
+  const name = handleInitName(user.name);
 
   const handleLogout = async () => {
     const res = await mutationLogout();
-    console.log("res: ", res);
     if (res.isError) return;
 
     //- login success
     removeTokensFromLocalStorage();
     setLogin(false);
     toast.success("Đăng xuất thành công!");
-    router.push("/login");
+    router.push("/");
   };
 
   const onProfileClick = () => {
@@ -66,7 +64,7 @@ export function UserAvatarMenu() {
           className="relative h-10 w-10 rounded-full p-0 border hover:border-primary"
         >
           <Avatar className="h-9 w-9 select-none">
-            <AvatarImage src={data?.data?.user.avatar || ""} alt={name} />
+            <AvatarImage src={user.avatar || ""} alt={name} />
             <AvatarFallback>{name}</AvatarFallback>
           </Avatar>
         </Button>
@@ -75,15 +73,15 @@ export function UserAvatarMenu() {
         {/* Thông tin người dùng */}
         <div className="flex items-center gap-2 px-2 py-1.5">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={data?.data?.user.avatar || ""} alt={name} />
+            <AvatarImage src={user.avatar || ""} alt={name} />
             <AvatarFallback>{name}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col space-y-0.5">
             <p className="text-sm font-medium leading-none">
-              {data?.data?.user.name}
+              {user.name}
             </p>
             <p className="text-xs leading-none text-muted-foreground">
-              {data?.data?.user.email}
+              {user.email}
             </p>
           </div>
         </div>
