@@ -36,7 +36,7 @@ export class DetailProfileController {
   @ApiOperation({ summary: 'find by id' })
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.detailProfileService.findOne(+id);
+    return this.detailProfileService.findOne(id);
   }
 
   @ResponseMessage('Cập nhật chi tiết người dùng thành công')
@@ -46,13 +46,13 @@ export class DetailProfileController {
     @Param('id') id: string,
     @Body() updateDetailProfileDto: UpdateDetailProfileDto,
   ) {
-    return this.detailProfileService.update(+id, updateDetailProfileDto);
+    return this.detailProfileService.update(id, updateDetailProfileDto);
   }
 
   @ResponseMessage('Xóa chi tiết người dùng thành công')
   @ApiOperation({ summary: 'delete' })
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.detailProfileService.remove(+id);
+    return this.detailProfileService.remove(id);
   }
 }

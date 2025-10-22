@@ -19,7 +19,7 @@ export class DetailProfile {
   industryID: Types.ObjectId[];
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Skill' }] }) //- tham chiếu tới skill
-  skillsID: Types.ObjectId[];
+  skillID: Types.ObjectId[];
 
   @Prop({ type: Object })
   desiredSalary: {
@@ -41,7 +41,7 @@ export class DetailProfile {
   level: string;
 
   @Prop()
-  adress: string;
+  address: string;
 
   @Prop({ default: false })
   isDeleted: boolean;
