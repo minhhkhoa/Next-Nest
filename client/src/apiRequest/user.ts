@@ -1,6 +1,11 @@
 import http from "@/lib/http";
+import { UpdateUserType } from "@/schemasvalidation/user";
+import { ApiResponse } from "@/types/apiResponse";
 
-const authApiRequest = {
+const prefix = "/user";
+const userApiRequest = {
+  update: (id: string, payload: UpdateUserType) =>
+    http.patch<ApiResponse<any>>(`${prefix}/${id}`, payload),
 };
 
-export default authApiRequest;
+export default userApiRequest;

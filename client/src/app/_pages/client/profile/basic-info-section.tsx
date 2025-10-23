@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,38 +10,66 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Edit2, Check, X, Upload } from "lucide-react";
 import { useAppStore } from "@/components/TanstackProvider";
 import { handleInitName } from "@/lib/utils";
+import { useCloudQuery } from "@/queries/useCloud";
+import { Spinner } from "@/components/ui/spinner";
+import { useUpdateUserMutate } from "@/queries/useUser";
+import { toast } from "sonner";
 
 export function BasicInfoSection() {
+  const { mutateAsync: uploadMutate, isPending } = useCloudQuery();
+  const { mutateAsync: userUpdateMutate } = useUpdateUserMutate();
   const { user } = useAppStore();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(user);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  console.log("user: ", user)
 
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        handleChange("avatar", base64String);
-      };
-      reader.readAsDataURL(file);
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const file = e.target.files?.[0];
+      if (file) {
+        const res = await uploadMutate(file);
+
+        if (res.isError) return;
+
+        const urlAvatar = res.data;
+        setFormData((prev) => ({ ...prev, avatar: urlAvatar }));
+      }
+    } catch (error) {
+      console.log("error upload: ", error);
     }
   };
 
-  const handleSave = () => {
-    console.log("formdata: ", formData);
-    const id = formData.id;
-    const payload = {
-      name: formData.name,
-      avatar: formData.avatar,
-    }
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      console.log("formdata: ", formData);
+      const id = formData.id;
+      const payload = {
+        name: formData.name,
+        avatar: formData.avatar,
+      };
 
-    setIsEditing(false);
+      // TODO: gọi API update user ở đây (nếu có)
+      const res = await userUpdateMutate({ id, payload });
+
+      console.log("res: ", res);
+
+      if (res.isError) return;
+
+      toast.success(`${res.message}`);
+
+      setIsEditing(false);
+    } catch (error) {
+      console.log("Save error: ", error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -50,8 +78,7 @@ export function BasicInfoSection() {
   };
 
   useEffect(() => {
-    if(user) setFormData(user);
-    
+    if (user) setFormData(user);
   }, [user]);
 
   return (
@@ -152,7 +179,12 @@ export function BasicInfoSection() {
               <X className="w-4 h-4" />
               Hủy
             </Button>
-            <Button onClick={handleSave} className="gap-2">
+            <Button
+              onClick={handleSave}
+              className="gap-2"
+              disabled={isSaving || isPending}
+            >
+              {(isSaving || isPending) && <Spinner />}
               <Check className="w-4 h-4" />
               Lưu
             </Button>
