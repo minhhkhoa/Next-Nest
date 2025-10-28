@@ -5,10 +5,20 @@ import { Input } from "@/components/ui/input";
 import { X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+interface MultiLang {
+  vi: string;
+  en: string;
+}
+
+interface Option {
+  label: MultiLang;
+  value: string;
+}
+
 interface MultiSelectProps {
-  options: string[];
-  selected: string[];
-  onChange: (selected: string[]) => void;
+  options: Option[];
+  selected: Option[];
+  onChange: (selected: Option[]) => void;
   placeholder?: string;
   className?: string;
 }
@@ -26,17 +36,18 @@ export function MultiSelect({
 
   const filteredOptions = options.filter(
     (option) =>
-      option.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      !selected.includes(option)
+      option.label.vi.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      !selected.some((s) => s.value === option.value)
   );
 
-  const handleSelect = (option: string) => {
+
+  const handleSelect = (option: Option) => {
     onChange([...selected, option]);
     setSearchTerm("");
   };
 
-  const handleRemove = (option: string) => {
-    onChange(selected.filter((item) => item !== option));
+  const handleRemove = (value: string) => {
+    onChange(selected.filter((item) => item.value !== value));
   };
 
   useEffect(() => {
@@ -60,23 +71,25 @@ export function MultiSelect({
         onClick={() => setIsOpen(!isOpen)}
       >
         {selected.length > 0 ? (
-          selected.map((item) => (
-            <span
-              key={item}
-              className="inline-flex items-center gap-1 px-2 py-1 rounded bg-primary text-primary-foreground text-sm"
-            >
-              {item}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRemove(item);
-                }}
-                className="hover:opacity-70"
+          selected.map((item) => {
+            return (
+              <span
+                key={item.value}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded bg-primary text-primary-foreground text-sm"
               >
-                <X className="w-3 h-3" />
-              </button>
-            </span>
-          ))
+                {item.label.vi}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemove(item.value);
+                  }}
+                  className="hover:opacity-70"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            );
+          })
         ) : (
           <span className="text-muted-foreground text-sm">{placeholder}</span>
         )}
@@ -96,11 +109,11 @@ export function MultiSelect({
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option) => (
                 <button
-                  key={option}
+                  key={option.value}
                   onClick={() => handleSelect(option)}
                   className="w-full text-left px-3 py-2 hover:bg-muted text-sm"
                 >
-                  {option}
+                  {option.label.vi}
                 </button>
               ))
             ) : (

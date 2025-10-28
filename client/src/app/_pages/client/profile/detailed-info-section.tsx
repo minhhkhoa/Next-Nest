@@ -18,16 +18,29 @@ import { MultiSelect } from "../../components/multi-select";
 import { EducationForm } from "./education-form";
 import { useAppStore } from "@/components/TanstackProvider";
 import { useGetDetailProfile } from "@/queries/useDetailProfile";
-import { ADDRESS_OPTIONS, GENDER_OPTIONS, INDUSTRY_OPTIONS, LEVEL_OPTIONS, SKILLS_OPTIONS } from "@/lib/constant";
-
+import {
+  ADDRESS_OPTIONS,
+  GENDER_OPTIONS,
+  INDUSTRY_OPTIONS,
+  LEVEL_OPTIONS,
+  SKILLS_OPTIONS,
+} from "@/lib/constant";
+import { useGetDetaiSkill } from "@/queries/useSkill";
+import { SkillResType } from "@/schemasvalidation/skill";
+import { useGetDetaiIndustry } from "@/queries/useIndustry";
+import { GetAllOmitMetaResType, GetAllResType, IndustryResType } from "@/schemasvalidation/industry";
 
 export function DetailedInfoSection() {
   const { user } = useAppStore();
-  const { data } = useGetDetailProfile({ id: user?._id });
+  const { data: detailProfileData } = useGetDetailProfile({ id: user?._id });
+  const { data: skillData } = useGetDetaiSkill();
+  const { data: industryData } = useGetDetaiIndustry();
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState(data?.data);
+  const [formData, setFormData] = useState(detailProfileData?.data);
 
-  console.log("detailProfile: ", data?.data)
+  // console.log("detailProfile: ", detailProfileData?.data);
+  // console.log("skillData: ", skillData?.data);
+  // console.log("industryData: ", industryData?.data);
 
   const handleChange = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev!, [field]: value }));
@@ -52,7 +65,7 @@ export function DetailedInfoSection() {
   };
 
   const handleCancel = () => {
-    setFormData(data?.data);
+    setFormData(detailProfileData?.data);
     setIsEditing(false);
   };
 
@@ -64,10 +77,25 @@ export function DetailedInfoSection() {
     }).format(salary);
   };
 
+  const fomatDataSkill = (skills: SkillResType[]) => {
+    return skills?.map((skill) => {
+      return {
+        label: skill?.name,
+        value: skill?._id,
+      };
+    });
+  };
+
+const fomatDataIndustry = (industries: IndustryResType[]) => {
+  return industries.map((industry) => ({
+    label: industry.name,
+    value: industry._id,
+  }));
+};
+
   useEffect(() => {
-    if(data?.data) setFormData(data?.data);
-    
-  }, [data]);
+    if (detailProfileData?.data) setFormData(detailProfileData?.data);
+  }, [detailProfileData]);
 
   return (
     <div>
@@ -201,13 +229,30 @@ export function DetailedInfoSection() {
 
           {isEditing ? (
             <MultiSelect
-              options={INDUSTRY_OPTIONS}
-              selected={formData?.industryID?.map((item) => item._id) || []}
-              onChange={(ids) => {
-                // trả về mảng id string
-                const selectedIndustries = ids.map((id) =>
-                  INDUSTRY_OPTIONS.find((opt) => opt === id)
-                );
+              options={
+                Array.isArray(industryData?.data?.result)
+                  ? fomatDataIndustry(industryData.data.result)
+                  : []
+              }
+              selected={
+                formData?.industryID.map((item) => {
+                  return {
+                    label: item.name,
+                    value: item._id,
+                  };
+                }) || []
+              }
+              onChange={(options) => {
+                const industryDataArray = Array.isArray(
+                  industryData?.data?.result
+                )
+                  ? industryData?.data?.result
+                  : [];
+                const selectedIndustries =
+                  industryDataArray.filter((industry) =>
+                    options.some((option) => option.value === industry._id)
+                  ) ?? [];
+
                 handleChange("industryID", selectedIndustries);
               }}
               placeholder="Chọn Chuyên ngành..."
@@ -237,12 +282,29 @@ export function DetailedInfoSection() {
 
           {isEditing ? (
             <MultiSelect
-              options={SKILLS_OPTIONS}
-              selected={formData?.skillID?.map((item) => item._id) || []}
-              onChange={(ids) => {
-                const selectedSkills = ids.map((id) =>
-                  SKILLS_OPTIONS.find((opt) => opt === id)
-                );
+              options={
+                Array.isArray(skillData?.data)
+                  ? fomatDataSkill(skillData?.data)
+                  : []
+              }
+              selected={
+                formData?.skillID?.map((item) => {
+                  // console.log("item: ", item);
+                  return {
+                    label: item.name,
+                    value: item._id,
+                  };
+                }) || []
+              }
+              onChange={(options) => {
+                const skillDataArray = Array.isArray(skillData?.data)
+                  ? skillData?.data
+                  : [];
+                const selectedSkills =
+                  skillDataArray.filter((skill) =>
+                    options.some((option) => option.value === skill._id)
+                  ) ?? [];
+
                 handleChange("skillID", selectedSkills);
               }}
               placeholder="Chọn kỹ năng..."
