@@ -18,7 +18,6 @@ const instance = axios.create({
   timeout: 10000, // Timeout 10 giây
   headers: {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${getAccessTokenFromLocalStorage() || ""}`,
   },
 });
 
@@ -41,6 +40,8 @@ instance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("access_token");
 
+    const isCloudinary = config.url?.includes("https://api.cloudinary.com");
+
     if (
       typeof window !== "undefined" &&
       window &&
@@ -53,6 +54,11 @@ instance.interceptors.request.use(
       //- neu khong co header Accept thi them
       config.headers.Accept = "application/json";
       config.headers["Content-Type"] = "application/json; charset=utf-8";
+    }
+
+    if (isCloudinary) {
+      delete config.headers.Authorization;
+      config.withCredentials = false;
     }
     return config;
   },

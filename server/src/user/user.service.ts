@@ -92,18 +92,23 @@ export class UserService {
         throw new BadRequestCustom('ID user không đúng định dạng', !!id);
       }
 
-      const user = await this.userModel.findById(id).populate([
-        {
-          path: 'companyID',
-          match: { isDeleted: false },
-          select: 'name _id',
-        },
-        // {
-        //   path: 'roleID',
-        //   match: { isDeleted: false },
-        //   select: 'name _id',
-        // },
-      ]);
+      const user = await this.userModel
+        .findById(id)
+        .populate([
+          {
+            path: 'companyID',
+            match: { isDeleted: false },
+            select: 'name _id',
+          },
+          // {
+          //   path: 'roleID',
+          //   match: { isDeleted: false },
+          //   select: 'name _id',
+          // },
+        ])
+        .select(
+          '-password -isDeleted -deletedAt -createdAt -updatedAt -refresh_token -__v',
+        );
 
       if (!user) throw new BadRequestCustom('ID user không tìm thấy', !!id);
 

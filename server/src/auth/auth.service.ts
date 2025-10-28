@@ -312,8 +312,9 @@ export class AuthService {
 
       //2.Lấy user id
       const providerId = decode.idProvider ?? undefined;
-      const userProvider = providerId &&
-        await this.usersService.findUserByProviderIDSocial(providerId);
+      const userProvider =
+        providerId &&
+        (await this.usersService.findUserByProviderIDSocial(providerId));
       const idUserProvider = providerId && userProvider?._id.toString();
       const userId = decode.id ? decode.id : idUserProvider;
 
@@ -347,6 +348,18 @@ export class AuthService {
       return result;
     } catch (error) {
       throw new UnauthorizedException('Refresh_token khong hop le!');
+    }
+  }
+
+  //- getProfile
+  async getProfile(id: string) {
+    try {
+      if (!id) throw new BadRequestCustom('Không truyền ID', !!id);
+
+      const user = await this.usersService.findOne(id);
+      return user;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
     }
   }
 }

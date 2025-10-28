@@ -9,56 +9,63 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Edit2, Check, X, Upload } from "lucide-react";
 import { useAppStore } from "@/components/TanstackProvider";
-import { handleInitName } from "@/lib/utils";
-import { useCloudQuery } from "@/queries/useCloud";
+import { handleInitName, uploadToCloudinary } from "@/lib/utils";
+// import { useCloudQuery } from "@/queries/useCloud";
 import { Spinner } from "@/components/ui/spinner";
 import { useUpdateUserMutate } from "@/queries/useUser";
 import { toast } from "sonner";
 
 export function BasicInfoSection() {
-  const { mutateAsync: uploadMutate, isPending } = useCloudQuery();
+  // const { mutateAsync: uploadMutate, isPending } = useCloudQuery();
   const { mutateAsync: userUpdateMutate } = useUpdateUserMutate();
   const { user } = useAppStore();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(user);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  console.log("user: ", user)
-
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    // try {
+    //   const file = e.target.files?.[0];
+    //   if (file) {
+    //     const res = await uploadMutate(file);
+
+    //     if (res.isError) return;
+
+    //     const urlAvatar = res.data;
+    //     setFormData((prev) => ({ ...prev, avatar: urlAvatar }));
+    //   }
+    // } catch (error) {
+    //   console.log("error upload: ", error);
+    // }
     try {
+      setIsUploading(true);
       const file = e.target.files?.[0];
-      if (file) {
-        const res = await uploadMutate(file);
+      if (!file) return;
 
-        if (res.isError) return;
-
-        const urlAvatar = res.data;
-        setFormData((prev) => ({ ...prev, avatar: urlAvatar }));
-      }
+      const url = await uploadToCloudinary(file);
+      setFormData((prev) => ({ ...prev, avatar: url }));
     } catch (error) {
-      console.log("error upload: ", error);
+      console.log("Lỗi upload media: ", error);
+    } finally {
+      setIsUploading(false);
     }
   };
 
   const handleSave = async () => {
     try {
       setIsSaving(true);
-      console.log("formdata: ", formData);
-      const id = formData.id;
+      const id = formData._id;
       const payload = {
         name: formData.name,
         avatar: formData.avatar,
       };
 
-      // TODO: gọi API update user ở đây (nếu có)
       const res = await userUpdateMutate({ id, payload });
-
-      console.log("res: ", res);
 
       if (res.isError) return;
 
@@ -158,12 +165,20 @@ export function BasicInfoSection() {
               <Input
                 id="email"
                 type="email"
-                value={formData.email || ""}
+                value={
+                  formData.email
+                    ? formData.email
+                    : "Tài khoản đăng nhập với FaceBook"
+                }
                 className="mt-2"
                 readOnly
               />
             ) : (
-              <p className="mt-2 text-foreground">{formData.email}</p>
+              <p className="mt-2 text-foreground">
+                {formData.email
+                  ? formData.email
+                  : "Tài khoản đăng nhập với FaceBook"}
+              </p>
             )}
           </div>
         </div>
@@ -182,9 +197,9 @@ export function BasicInfoSection() {
             <Button
               onClick={handleSave}
               className="gap-2"
-              disabled={isSaving || isPending}
+              disabled={isSaving || isUploading}
             >
-              {(isSaving || isPending) && <Spinner />}
+              {(isSaving || isUploading) && <Spinner />}
               <Check className="w-4 h-4" />
               Lưu
             </Button>

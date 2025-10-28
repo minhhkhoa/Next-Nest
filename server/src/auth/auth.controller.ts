@@ -55,9 +55,20 @@ export class AuthController {
     return this.authService.register(registerUserDto);
   }
 
+  //- cần query xuống db chứ không phải lấy ở jwt vì khi update song mà vẫn lấy ở jwt thì data đã cũ
   @Get('profile')
   async getProfile(@userDecorator() user: UserResponse) {
-    return { user };
+    try {
+      const id = user.id;
+
+      const userProfile = await this.authService.getProfile(id);
+
+      return {
+        user: userProfile,
+      };
+    } catch (error) {
+      console.log('error getProfile: ', error);
+    }
   }
 
   @Public() //- phải để public vì khi này access_token đâu còn hợp lệ
@@ -70,10 +81,14 @@ export class AuthController {
     try {
       //- refresh_token có thể bị hết hạn ==> logout
       const refreshToken = request.cookies['refresh_token'];
-  
+
       return await this.authService.getNewToken(refreshToken, response);
     } catch (error) {
-      throw new BadRequestCustom("Refresh_token đã hết hạn!", !!error.message, 423);
+      throw new BadRequestCustom(
+        'Refresh_token đã hết hạn!',
+        !!error.message,
+        423,
+      );
     }
   }
 
@@ -86,7 +101,7 @@ export class AuthController {
     try {
       response.clearCookie('access_token');
     } catch (error) {
-      throw new BadRequestCustom("Lỗi xóa access_token", !!error.message, 423);
+      throw new BadRequestCustom('Lỗi xóa access_token', !!error.message, 423);
     }
   }
 
