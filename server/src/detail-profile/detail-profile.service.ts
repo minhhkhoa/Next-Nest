@@ -58,11 +58,14 @@ export class DetailProfileService {
   async findOne(id: string) {
     try {
       if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new BadRequestCustom('ID detailProfile không đúng định dạng', !!id);
+        throw new BadRequestCustom(
+          'ID detailProfile không đúng định dạng',
+          !!id,
+        );
       }
 
       const detailProfile = await this.detailProfileModel
-        .findById(id)
+        .findOne({ userID: id })
         .populate([
           {
             path: 'userID',
@@ -98,40 +101,51 @@ export class DetailProfileService {
   }
 
   async update(id: string, updateDetailProfileDto: UpdateDetailProfileDto) {
-   try {
-         if (!mongoose.Types.ObjectId.isValid(id)) {
-           throw new BadRequestCustom('ID detailProfile không đúng định dạng', !!id);
-         }
-   
-         const detailProfile = await this.detailProfileModel.findById(id);
-         if (!detailProfile) throw new BadRequestCustom('ID detailProfile không tìm thấy', !!id);
-   
-         const filter = { _id: id };
-         const update = { $set: updateDetailProfileDto };
-   
-         const result = await this.detailProfileModel.updateOne(filter, update);
-   
-         if (result.modifiedCount === 0)
-           throw new BadRequestCustom('Lỗi sửa detailProfile', !!id);
-         return result;
-       } catch (error) {
-         throw new BadRequestCustom(error.message, !!error.message);
-       }
+    try {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new BadRequestCustom(
+          'ID detailProfile không đúng định dạng',
+          !!id,
+        );
+      }
+
+      const detailProfile = await this.detailProfileModel.findById(id);
+      if (!detailProfile)
+        throw new BadRequestCustom('ID detailProfile không tìm thấy', !!id);
+
+      const filter = { _id: id };
+      const update = { $set: updateDetailProfileDto };
+
+      const result = await this.detailProfileModel.updateOne(filter, update);
+
+      if (result.modifiedCount === 0)
+        throw new BadRequestCustom('Lỗi sửa detailProfile', !!id);
+      return result;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
   }
 
   async remove(id: string) {
     try {
       if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new BadRequestCustom('ID detailProfile không đúng định dạng', !!id);
+        throw new BadRequestCustom(
+          'ID detailProfile không đúng định dạng',
+          !!id,
+        );
       }
 
       const detailProfile = await this.detailProfileModel.findById(id);
-      if (!detailProfile) throw new BadRequestCustom('ID detailProfile không tìm thấy', !!id);
+      if (!detailProfile)
+        throw new BadRequestCustom('ID detailProfile không tìm thấy', !!id);
 
       const isDeleted = detailProfile.isDeleted;
 
       if (isDeleted)
-        throw new BadRequestCustom('detailProfile này đã được xóa', !!isDeleted);
+        throw new BadRequestCustom(
+          'detailProfile này đã được xóa',
+          !!isDeleted,
+        );
 
       const filter = { _id: id };
       const result = this.detailProfileModel.softDelete(filter);

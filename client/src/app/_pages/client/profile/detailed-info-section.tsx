@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,100 +16,35 @@ import { Card } from "@/components/ui/card";
 import { Edit2, Check, X } from "lucide-react";
 import { MultiSelect } from "../../components/multi-select";
 import { EducationForm } from "./education-form";
+import { useAppStore } from "@/components/TanstackProvider";
+import { useGetDetailProfile } from "@/queries/useDetailProfile";
+import { ADDRESS_OPTIONS, GENDER_OPTIONS, INDUSTRY_OPTIONS, LEVEL_OPTIONS, SKILLS_OPTIONS } from "@/lib/constant";
 
 
-interface DetailedInfoSectionProps {
-  data: {
-    summary: string;
-    gender: string;
-    industry: string[];
-    skills: string[];
-    desiredSalary: { min: number; max: number };
-    education: Array<{
-      school: string;
-      degree: string;
-      startDate: string;
-      endDate: string;
-    }>;
-    level: string;
-    address: string;
-  };
-}
-
-const GENDER_OPTIONS = [
-  { value: "male", label: "Nam" },
-  { value: "female", label: "Nữ" },
-  { value: "other", label: "Khác" },
-];
-
-const INDUSTRY_OPTIONS = [
-  "Technology",
-  "Finance",
-  "Healthcare",
-  "Education",
-  "Retail",
-  "Manufacturing",
-  "Software",
-  "Consulting",
-];
-
-const SKILLS_OPTIONS = [
-  "React",
-  "Vue.js",
-  "Angular",
-  "Node.js",
-  "Python",
-  "Java",
-  "C#",
-  "TypeScript",
-  "JavaScript",
-  "PostgreSQL",
-  "MongoDB",
-  "AWS",
-  "Docker",
-  "Kubernetes",
-];
-
-const LEVEL_OPTIONS = [
-  { value: "junior", label: "Junior" },
-  { value: "mid", label: "Mid-level" },
-  { value: "senior", label: "Senior" },
-  { value: "lead", label: "Lead" },
-];
-
-const ADDRESS_OPTIONS = [
-  "Hà Nội",
-  "TP. Hồ Chí Minh",
-  "Đà Nẵng",
-  "Hải Phòng",
-  "Cần Thơ",
-  "Biên Hòa",
-  "Nha Trang",
-  "Quảng Ninh",
-];
-
-export function DetailedInfoSection({
-  data,
-}: DetailedInfoSectionProps) {
+export function DetailedInfoSection() {
+  const { user } = useAppStore();
+  const { data } = useGetDetailProfile({ id: user?._id });
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState(data);
+  const [formData, setFormData] = useState(data?.data);
+
+  console.log("detailProfile: ", data?.data)
 
   const handleChange = (field: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev!, [field]: value }));
   };
 
   const handleSalaryChange = (field: "min" | "max", value: string) => {
     setFormData((prev) => ({
-      ...prev,
+      ...prev!,
       desiredSalary: {
-        ...prev.desiredSalary,
+        ...prev!.desiredSalary,
         [field]: Number.parseInt(value) || 0,
       },
     }));
   };
 
   const handleEducationChange = (education: any[]) => {
-    setFormData((prev) => ({ ...prev, education }));
+    setFormData((prev) => ({ ...prev!, education }));
   };
 
   const handleSave = () => {
@@ -117,7 +52,7 @@ export function DetailedInfoSection({
   };
 
   const handleCancel = () => {
-    setFormData(data);
+    setFormData(data?.data);
     setIsEditing(false);
   };
 
@@ -128,6 +63,11 @@ export function DetailedInfoSection({
       maximumFractionDigits: 0,
     }).format(salary);
   };
+
+  useEffect(() => {
+    if(data?.data) setFormData(data?.data);
+    
+  }, [data]);
 
   return (
     <div>
@@ -157,14 +97,14 @@ export function DetailedInfoSection({
           {isEditing ? (
             <Textarea
               id="summary"
-              value={formData.summary}
+              value={formData?.sumary}
               onChange={(e) => handleChange("summary", e.target.value)}
               placeholder="Mô tả ngắn về bản thân..."
               className="mt-2 min-h-24"
             />
           ) : (
             <p className="mt-2 text-foreground whitespace-pre-wrap">
-              {formData.summary}
+              {formData?.sumary}
             </p>
           )}
         </div>
@@ -177,7 +117,7 @@ export function DetailedInfoSection({
             </Label>
             {isEditing ? (
               <Select
-                value={formData.gender}
+                value={formData?.gender}
                 onValueChange={(value) => handleChange("gender", value)}
               >
                 <SelectTrigger id="gender" className="mt-2">
@@ -193,7 +133,10 @@ export function DetailedInfoSection({
               </Select>
             ) : (
               <p className="mt-2 text-foreground">
-                {GENDER_OPTIONS.find((o) => o.value === formData.gender)?.label}
+                {
+                  GENDER_OPTIONS.find((o) => o.label === formData?.gender)
+                    ?.label
+                }
               </p>
             )}
           </div>
@@ -204,7 +147,7 @@ export function DetailedInfoSection({
             </Label>
             {isEditing ? (
               <Select
-                value={formData.level}
+                value={formData?.level}
                 onValueChange={(value) => handleChange("level", value)}
               >
                 <SelectTrigger id="level" className="mt-2">
@@ -220,7 +163,7 @@ export function DetailedInfoSection({
               </Select>
             ) : (
               <p className="mt-2 text-foreground">
-                {LEVEL_OPTIONS.find((o) => o.value === formData.level)?.label}
+                {LEVEL_OPTIONS.find((o) => o.value === formData?.level)?.label}
               </p>
             )}
           </div>
@@ -233,7 +176,7 @@ export function DetailedInfoSection({
           </Label>
           {isEditing ? (
             <Select
-              value={formData.address}
+              value={formData?.address}
               onValueChange={(value) => handleChange("address", value)}
             >
               <SelectTrigger id="address" className="mt-2">
@@ -248,30 +191,37 @@ export function DetailedInfoSection({
               </SelectContent>
             </Select>
           ) : (
-            <p className="mt-2 text-foreground">{formData.address}</p>
+            <p className="mt-2 text-foreground">{formData?.address}</p>
           )}
         </div>
 
         {/* Industry */}
         <div>
-          <Label className="text-sm font-medium">Ngành công nghiệp</Label>
+          <Label className="text-sm font-medium">Chuyên ngành</Label>
+
           {isEditing ? (
             <MultiSelect
               options={INDUSTRY_OPTIONS}
-              selected={formData.industry}
-              onChange={(value) => handleChange("industry", value)}
-              placeholder="Chọn ngành công nghiệp..."
+              selected={formData?.industryID?.map((item) => item._id) || []}
+              onChange={(ids) => {
+                // trả về mảng id string
+                const selectedIndustries = ids.map((id) =>
+                  INDUSTRY_OPTIONS.find((opt) => opt === id)
+                );
+                handleChange("industryID", selectedIndustries);
+              }}
+              placeholder="Chọn Chuyên ngành..."
               className="mt-2"
             />
           ) : (
             <div className="mt-2 flex flex-wrap gap-2">
-              {formData.industry.length > 0 ? (
-                formData.industry.map((item) => (
+              {formData?.industryID && formData?.industryID?.length > 0 ? (
+                formData?.industryID.map((item) => (
                   <span
-                    key={item}
+                    key={item._id}
                     className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary text-primary-foreground"
                   >
-                    {item}
+                    {item.name.vi}
                   </span>
                 ))
               ) : (
@@ -284,23 +234,29 @@ export function DetailedInfoSection({
         {/* Skills */}
         <div>
           <Label className="text-sm font-medium">Kỹ năng</Label>
+
           {isEditing ? (
             <MultiSelect
               options={SKILLS_OPTIONS}
-              selected={formData.skills}
-              onChange={(value) => handleChange("skills", value)}
+              selected={formData?.skillID?.map((item) => item._id) || []}
+              onChange={(ids) => {
+                const selectedSkills = ids.map((id) =>
+                  SKILLS_OPTIONS.find((opt) => opt === id)
+                );
+                handleChange("skillID", selectedSkills);
+              }}
               placeholder="Chọn kỹ năng..."
               className="mt-2"
             />
           ) : (
             <div className="mt-2 flex flex-wrap gap-2">
-              {formData.skills.length > 0 ? (
-                formData.skills.map((skill) => (
+              {formData?.skillID && formData?.skillID?.length > 0 ? (
+                formData?.skillID.map((skill) => (
                   <span
-                    key={skill}
+                    key={skill._id}
                     className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-secondary text-secondary-foreground"
                   >
-                    {skill}
+                    {skill.name.vi}
                   </span>
                 ))
               ) : (
@@ -327,7 +283,7 @@ export function DetailedInfoSection({
                 <Input
                   id="salary-min"
                   type="number"
-                  value={formData.desiredSalary.min}
+                  value={formData?.desiredSalary.min}
                   onChange={(e) => handleSalaryChange("min", e.target.value)}
                   placeholder="0"
                   className="mt-2"
@@ -343,7 +299,7 @@ export function DetailedInfoSection({
                 <Input
                   id="salary-max"
                   type="number"
-                  value={formData.desiredSalary.max}
+                  value={formData?.desiredSalary.max}
                   onChange={(e) => handleSalaryChange("max", e.target.value)}
                   placeholder="0"
                   className="mt-2"
@@ -352,8 +308,8 @@ export function DetailedInfoSection({
             </div>
           ) : (
             <p className="mt-2 text-foreground">
-              {formatSalary(formData.desiredSalary.min)} -{" "}
-              {formatSalary(formData.desiredSalary.max)}
+              {formatSalary(formData?.desiredSalary?.min ?? 0)} -{" "}
+              {formatSalary(formData?.desiredSalary.max ?? 0)}
             </p>
           )}
         </div>
@@ -363,13 +319,13 @@ export function DetailedInfoSection({
           <Label className="text-sm font-medium mb-3 block">Học vấn</Label>
           {isEditing ? (
             <EducationForm
-              education={formData.education}
+              education={formData?.education || []}
               onChange={handleEducationChange}
             />
           ) : (
             <div className="space-y-3">
-              {formData.education.length > 0 ? (
-                formData.education.map((edu, index) => (
+              {formData?.education && formData?.education.length > 0 ? (
+                formData?.education.map((edu, index) => (
                   <Card key={index} className="p-4 bg-muted">
                     <p className="font-medium text-foreground">{edu.school}</p>
                     <p className="text-sm text-muted-foreground">
