@@ -18,17 +18,12 @@ import { MultiSelect } from "../../components/multi-select";
 import { EducationForm } from "./education-form";
 import { useAppStore } from "@/components/TanstackProvider";
 import { useGetDetailProfile } from "@/queries/useDetailProfile";
-import {
-  ADDRESS_OPTIONS,
-  GENDER_OPTIONS,
-  INDUSTRY_OPTIONS,
-  LEVEL_OPTIONS,
-  SKILLS_OPTIONS,
-} from "@/lib/constant";
+import { ADDRESS_OPTIONS, GENDER_OPTIONS, LEVEL_OPTIONS } from "@/lib/constant";
 import { useGetDetaiSkill } from "@/queries/useSkill";
 import { SkillResType } from "@/schemasvalidation/skill";
 import { useGetDetaiIndustry } from "@/queries/useIndustry";
-import { GetAllOmitMetaResType, GetAllResType, IndustryResType } from "@/schemasvalidation/industry";
+import { IndustryResType } from "@/schemasvalidation/industry";
+import { CustomizeSelect } from "../../components/CustomizeSelect";
 
 export function DetailedInfoSection() {
   const { user } = useAppStore();
@@ -37,10 +32,6 @@ export function DetailedInfoSection() {
   const { data: industryData } = useGetDetaiIndustry();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(detailProfileData?.data);
-
-  // console.log("detailProfile: ", detailProfileData?.data);
-  // console.log("skillData: ", skillData?.data);
-  // console.log("industryData: ", industryData?.data);
 
   const handleChange = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev!, [field]: value }));
@@ -86,12 +77,12 @@ export function DetailedInfoSection() {
     });
   };
 
-const fomatDataIndustry = (industries: IndustryResType[]) => {
-  return industries.map((industry) => ({
-    label: industry.name,
-    value: industry._id,
-  }));
-};
+  const fomatDataIndustry = (industries: IndustryResType[]) => {
+    return industries.map((industry) => ({
+      label: industry.name,
+      value: industry._id,
+    }));
+  };
 
   useEffect(() => {
     if (detailProfileData?.data) setFormData(detailProfileData?.data);
@@ -203,21 +194,26 @@ const fomatDataIndustry = (industries: IndustryResType[]) => {
             Địa chỉ
           </Label>
           {isEditing ? (
-            <Select
-              value={formData?.address}
-              onValueChange={(value) => handleChange("address", value)}
-            >
-              <SelectTrigger id="address" className="mt-2">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {ADDRESS_OPTIONS.map((option) => (
-                  <SelectItem key={option} value={option}>
-                    {option}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            // <Select
+            //   value={formData?.address}
+            //   onValueChange={(value) => handleChange("address", value)}
+            // >
+            //   <SelectTrigger id="address" className="mt-2">
+            //     <SelectValue />
+            //   </SelectTrigger>
+            //   <SelectContent>
+            //     {ADDRESS_OPTIONS.map((option) => (
+            //       <SelectItem key={option} value={option}>
+            //         {option}
+            //       </SelectItem>
+            //     ))}
+            //   </SelectContent>
+            // </Select>
+            <CustomizeSelect
+              data={ADDRESS_OPTIONS}
+              value={formData?.address as string}
+              onChange={(value) => handleChange("address", value)}
+            />
           ) : (
             <p className="mt-2 text-foreground">{formData?.address}</p>
           )}

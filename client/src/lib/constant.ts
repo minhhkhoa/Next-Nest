@@ -7,9 +7,9 @@ export const LEVEL_OPTIONS = [
 ];
 
 export const GENDER_OPTIONS = [
-  { value: "male", label: "Nam" },
-  { value: "female", label: "Nữ" },
-  { value: "other", label: "Khác" },
+  { value: "Nam", label: "Nam" },
+  { value: "Nữ", label: "Nữ" },
+  { value: "Khác", label: "Khác" },
 ];
 
 export enum Gender {
@@ -19,39 +19,43 @@ export enum Gender {
 }
 
 export const ADDRESS_OPTIONS = [
+  //- 6 thành phố trực thuộc trung ương
   "Hà Nội",
   "TP. Hồ Chí Minh",
   "Đà Nẵng",
   "Hải Phòng",
   "Cần Thơ",
-  "Biên Hòa",
-  "Nha Trang",
-  "Quảng Ninh",
+  "Thủ Đức",
+
+  //- 28 tỉnh
+  "An Giang",
+  "Bà Rịa - Vũng Tàu",
+  "Bắc Giang",
+  "Bắc Ninh",
+  "Bến Tre",
+  "Bình Dương",
+  "Bình Phước",
+  "Bình Thuận",
+  "Cà Mau",
+  "Đắk Lắk",
+  "Đắk Nông",
+  "Đồng Nai",
+  "Đồng Tháp",
+  "Gia Lai",
+  "Hà Nam",
+  "Hà Tĩnh",
+  "Hậu Giang",
+  "Khánh Hòa",
+  "Kiên Giang",
+  "Lâm Đồng",
+  "Long An",
+  "Nam Định",
+  "Nghệ An",
+  "Ninh Bình",
+  "Phú Thọ",
+  "Quảng Nam",
+  "Quảng Ngãi",
+  "Thanh Hóa",
 ];
 
-export const SKILLS_OPTIONS = [
-  "React",
-  "Vue.js",
-  "Angular",
-  "Node.js",
-  "Python",
-  "Java",
-  "C#",
-  "TypeScript",
-  "JavaScript",
-  "PostgreSQL",
-  "MongoDB",
-  "AWS",
-  "Docker",
-  "Kubernetes",
-];
 
-export const INDUSTRY_OPTIONS = [
-  "IT",
-  "Marketing",
-  "Sales",
-  "Customer Service",
-  "Design",
-  "HR",
-  "Finance",
-];
