@@ -10,5 +10,6 @@ import { DetailProfile, DetailProfileSchema } from './schemas/detail-profile.sch
   ],
   controllers: [DetailProfileController],
   providers: [DetailProfileService],
+  exports: [DetailProfileService],
 })
 export class DetailProfileModule {}

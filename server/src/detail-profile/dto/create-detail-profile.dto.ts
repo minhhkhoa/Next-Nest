@@ -101,3 +101,10 @@ export class CreateDetailProfileDto {
   @IsNotEmpty({ message: 'Địa chỉ người dùng không được để trống' })
   address: string;
 }
+
+export class AutoCreateDetailProfileDto {
+  @ApiProperty()
+  @IsNotEmpty({ message: 'ID người dùng không được để trống' })
+  @IsMongoId({ message: 'ID người dùng phải là MongoId hợp lệ' })
+  userID: string;
+}

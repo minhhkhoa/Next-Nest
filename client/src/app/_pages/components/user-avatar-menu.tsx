@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/components/TanstackProvider";
-import { useGetProfile, useLogoutMutation } from "@/queries/useAuth";
+import { useLogoutMutation } from "@/queries/useAuth";
 import {
   getAccessTokenFromLocalStorage,
   handleInitName,
@@ -64,7 +64,7 @@ export function UserAvatarMenu() {
           className="relative h-10 w-10 rounded-full p-0 border hover:border-primary"
         >
           <Avatar className="h-9 w-9 select-none">
-            <AvatarImage src={user.avatar || ""} alt={name} />
+            <AvatarImage src={user?.avatar || ""} alt={name} />
             <AvatarFallback>{name}</AvatarFallback>
           </Avatar>
         </Button>

@@ -163,7 +163,7 @@ export function DetailedInfoSection() {
             <Textarea
               id="summary"
               value={formData?.sumary}
-              onChange={(e) => handleChange("summary", e.target.value)}
+              onChange={(e) => handleChange("sumary", e.target.value)}
               placeholder="Mô tả ngắn về bản thân..."
               className="mt-2 min-h-24"
             />

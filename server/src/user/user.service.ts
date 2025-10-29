@@ -7,12 +7,14 @@ import { User, UserDocument, UserResponse } from './schemas/user.schema';
 import { BadRequestCustom } from 'src/customExceptions/BadRequestCustom';
 import { hashPassword } from 'src/utils/hashPassword';
 import mongoose from 'mongoose';
+import { DetailProfileService } from 'src/detail-profile/detail-profile.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name)
     private userModel: SoftDeleteModel<UserDocument>,
+    private detailProfileService: DetailProfileService,
   ) {}
   async create(createUserDto: CreateUserDto) {
     try {
@@ -36,6 +38,11 @@ export class UserService {
 
       if (!createdUser)
         throw new BadRequestCustom('Tạo người dùng thất bại', !!createdUser);
+
+      //- đồng thời tạo luôn detail profile cho người dùng
+      await this.detailProfileService.createAuto({
+        userID: createdUser._id.toString(),
+      });
 
       return {
         _id: createdUser._id,
@@ -62,6 +69,11 @@ export class UserService {
 
       if (!createdUser)
         throw new BadRequestCustom('Tạo người dùng thất bại', !!createdUser);
+
+      //- đồng thời tạo luôn detail profile cho người dùng
+      await this.detailProfileService.createAuto({
+        userID: createdUser._id.toString(),
+      });
 
       return {
         _id: createdUser._id,

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CreateDetailProfileDto } from './dto/create-detail-profile.dto';
+import { AutoCreateDetailProfileDto, CreateDetailProfileDto } from './dto/create-detail-profile.dto';
 import { UpdateDetailProfileDto } from './dto/update-detail-profile.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import {
@@ -153,6 +153,29 @@ export class DetailProfileService {
       if (!result) throw new BadRequestCustom('Lỗi xóa detailProfile', !!id);
 
       return result;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
+  async createAuto(createDetailProfileDto: AutoCreateDetailProfileDto) {
+    try {
+      const detailProfile = await this.detailProfileModel.create({
+        ...createDetailProfileDto,
+        sumary: '',
+        gender: 'Nam',
+        industryID: [],
+        skillID: [],
+        desiredSalary: { min: 0, max: 0 },
+        education: [],
+        level: '',
+        address: '',
+      });
+
+      return {
+        _id: detailProfile._id,
+        createdAt: detailProfile.createdAt,
+      };
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }
