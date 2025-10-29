@@ -242,6 +242,12 @@ export class UserService {
     if (!registerDto) return;
 
     const user = await this.userModel.create(registerDto);
+
+    //- đồng thời tạo luôn detail profile cho người dùng
+    await this.detailProfileService.createAuto({
+      userID: user._id.toString(),
+    });
+    
     return user;
   }
 

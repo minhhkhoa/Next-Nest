@@ -20,21 +20,26 @@ import { join } from 'path';
           },
         },
 
-        // template: {
-        //   dir: join(__dirname, 'templates'),
-        //   adapter: new HandlebarsAdapter(),
-        //   options: {
-        //     strict: true,
-        //   },
-        // },
+        defaults: {
+          from: '"Support Team" <example@gmail.com>',
+        },
 
-        // preview:
-        //   configService.get<string>('EMAIL_PREVIEW') === 'true' ? true : false,
+        template: {
+          dir: join(__dirname, 'templates'),
+          adapter: new HandlebarsAdapter(),
+          options: {
+            strict: true,
+          },
+        },
+
+        preview:
+          configService.get<string>('EMAIL_PREVIEW') === 'true' ? true : false,
       }),
       inject: [ConfigService],
     }),
   ],
   controllers: [MailController],
   providers: [MailService],
+  exports: [MailService],
 })
 export class MailModule {}

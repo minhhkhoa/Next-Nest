@@ -10,11 +10,13 @@ import { JwtStrategy } from './passport-strategy/jwt.strategy';
 import * as ms from 'ms';
 import { FacebookStrategy } from './passport-strategy/facebook.strategy';
 import { GoogleStrategy } from './passport-strategy/google.strategy';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   imports: [
     UserModule,
     PassportModule,
+    MailModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

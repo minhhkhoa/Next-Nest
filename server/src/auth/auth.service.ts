@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import * as ms from 'ms';
 import { BadRequestCustom } from 'src/customExceptions/BadRequestCustom';
+import { MailService } from 'src/mail/mail.service';
 import { RegisterDto } from 'src/user/dto/create-user.dto';
 import { UserResponse } from 'src/user/schemas/user.schema';
 import { UserService } from 'src/user/user.service';
@@ -22,6 +23,7 @@ export class AuthService {
   constructor(
     private configService: ConfigService,
     private usersService: UserService,
+    private mailService: MailService,
     private jwtService: JwtService,
   ) {}
 
@@ -388,7 +390,12 @@ export class AuthService {
 
       await this.usersService.updateUserResetToken(user.id, update);
 
-      return "ok";
+      //- tạo link
+      const resetLink = `${this.configService.get<string>('FRONTEND_URL')}/reset-password?token=${tokenPlain}&email=${user.email}`;
+
+      await this.mailService.sendResetPasswordMail(user.email, resetLink);
+
+      return { message: 'Chúng tôi đã gửi đường dẫn tạo lại mật khẩu tới Email của bạn, hãy làm theo hướng dẫn tại Email để đặt lại mật khẩu' };
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }
