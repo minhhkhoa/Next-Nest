@@ -65,6 +65,13 @@ export class User {
     name: string;
     email: string;
   };
+
+  //- phục vụ cho forgot/reset password
+  @Prop()
+  resetToken?: string;
+
+  @Prop()
+  resetTokenExpiresAt?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
@@ -81,4 +88,6 @@ export type UserResponse = Omit<
   | 'createdBy'
   | 'updatedBy'
   | 'deletedBy'
+  | 'resetToken'
+  | 'resetTokenExpiresAt'
 > & { id: string };

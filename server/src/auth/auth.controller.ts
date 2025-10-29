@@ -7,9 +7,10 @@ import {
   Req,
   Res,
   Body,
+  Query,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { LocalAuthGuard } from './passport-guard/local-auth.guard';
 import { LoginDto, RegisterDto } from 'src/user/dto/create-user.dto';
 import {
@@ -22,6 +23,8 @@ import { UserResponse } from 'src/user/schemas/user.schema';
 import { FacebookAuthGuard } from './passport-guard/facebook.guard';
 import { GoogleAuthGuard } from './passport-guard/google.guard';
 import { BadRequestCustom } from 'src/customExceptions/BadRequestCustom';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -245,4 +248,27 @@ export class AuthController {
       return null;
     }
   }
+
+  //- start handle forgot/reset password
+  @Public()
+  @Post('forgot-password')
+  @ApiOperation({ summary: 'Quên mật khẩu' })
+  @ApiBody({ type: ForgotPasswordDto })
+  async forgotPassword(@Body() body: ForgotPasswordDto) {
+    return this.authService.sendResetEmail(body.email);
+  }
+
+  // @Get('validate-reset')
+  // async validateReset(
+  //   @Query('token') token: string,
+  //   @Query('email') email: string,
+  // ) {
+  //   return this.authService.validateResetToken(email, token);
+  // }
+
+  // @Post('reset-password')
+  // async resetPassword(@Body() dto: ResetPasswordDto) {
+  //   return this.authService.resetPassword(dto);
+  // }
+  //- end handle forgot/reset password
 }

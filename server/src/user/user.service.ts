@@ -197,6 +197,28 @@ export class UserService {
     }
   }
 
+  async updateUserResetToken(id: string, update: any) {
+    try {
+      if(!mongoose.Types.ObjectId.isValid(id)) {
+        throw new BadRequestCustom('ID user không đúng định dạng', !!id);
+      }
+
+      const filter = {
+        _id: id,
+      };
+
+      const result = await this.userModel.updateOne(filter, update);
+
+      if (result.modifiedCount === 0)
+        throw new BadRequestCustom('Lỗi sửa user', !!id);
+
+      return result;
+
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
   //- func update refresh token...
   async updateRefreshToken(id: string, refreshToken: string) {
     try {

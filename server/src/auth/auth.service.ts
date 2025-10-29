@@ -11,7 +11,11 @@ import { BadRequestCustom } from 'src/customExceptions/BadRequestCustom';
 import { RegisterDto } from 'src/user/dto/create-user.dto';
 import { UserResponse } from 'src/user/schemas/user.schema';
 import { UserService } from 'src/user/user.service';
-import { comparePassword, hashPassword } from 'src/utils/hashPassword';
+import {
+  comparePassword,
+  generateResetToken,
+  hashPassword,
+} from 'src/utils/hashPassword';
 
 @Injectable()
 export class AuthService {
@@ -362,4 +366,32 @@ export class AuthService {
       throw new BadRequestCustom(error.message, !!error.message);
     }
   }
+
+  //-start forgot/reset password
+  async sendResetEmail(email: string) {
+    try {
+      if (!email) throw new BadRequestCustom('Không truyền email', !!email);
+
+      const user = await this.usersService.findUserByEmail(email);
+      if (!user) throw new BadRequestCustom('Email khong ton tai', !!email);
+
+      //- tạo token để xác nhân người dùng nào đang yêu cầu tạo lại mật khẩu
+      const { tokenPlain, tokenHash, expiresAt } = await generateResetToken();
+
+      //- lưu vào db
+      const update = {
+        $set: {
+          resetToken: tokenHash,
+          resetTokenExpiresAt: expiresAt,
+        },
+      };
+
+      await this.usersService.updateUserResetToken(user.id, update);
+
+      return "ok";
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+  //-end forgot/reset password
 }

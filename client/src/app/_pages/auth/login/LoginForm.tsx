@@ -31,6 +31,7 @@ import { setAccessTokenToLocalStorage } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/components/TanstackProvider";
 import { envConfig } from "../../../../../config";
+import Link from "next/link";
 
 export default function LoginForm() {
   const { setLogin } = useAppStore();
@@ -180,6 +181,16 @@ export default function LoginForm() {
                   />
                 )}
               </div>
+            </div>
+
+            {/* quên mật khẩu */}
+            <div className="flex justify-end">
+              <Link
+                href="/forgot-password"
+                className="text-sm text-muted-foreground hover:text-primary"
+              >
+                Quên mật khẩu?
+              </Link>
             </div>
 
             <Button
