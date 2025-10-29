@@ -88,3 +88,8 @@ export async function uploadToCloudinary(file: File): Promise<string> {
   return res.secure_url;
 }
 //- end cloudinary
+
+export const formatDateInput = (date: string) => {
+  if (!date) return "";
+  return new Date(date).toISOString().split("T")[0];
+};

@@ -17,21 +17,28 @@ import { Edit2, Check, X } from "lucide-react";
 import { MultiSelect } from "../../components/multi-select";
 import { EducationForm } from "./education-form";
 import { useAppStore } from "@/components/TanstackProvider";
-import { useGetDetailProfile } from "@/queries/useDetailProfile";
+import {
+  useGetDetailProfile,
+  useUpdateDetailProfileMutate,
+} from "@/queries/useDetailProfile";
 import { ADDRESS_OPTIONS, GENDER_OPTIONS, LEVEL_OPTIONS } from "@/lib/constant";
 import { useGetDetaiSkill } from "@/queries/useSkill";
 import { SkillResType } from "@/schemasvalidation/skill";
 import { useGetDetaiIndustry } from "@/queries/useIndustry";
 import { IndustryResType } from "@/schemasvalidation/industry";
 import { CustomizeSelect } from "../../components/CustomizeSelect";
+import { toast } from "sonner";
 
 export function DetailedInfoSection() {
   const { user } = useAppStore();
   const { data: detailProfileData } = useGetDetailProfile({ id: user?._id });
   const { data: skillData } = useGetDetaiSkill();
   const { data: industryData } = useGetDetaiIndustry();
+  const { mutateAsync: updateDetailProfileMutate } =
+    useUpdateDetailProfileMutate();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(detailProfileData?.data);
+  const [validateForm, setValidateForm] = useState(false);
 
   const handleChange = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev!, [field]: value }));
@@ -51,7 +58,46 @@ export function DetailedInfoSection() {
     setFormData((prev) => ({ ...prev!, education }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    const idUserUpdate = formData && formData?._id;
+
+    if (!idUserUpdate) {
+      console.error("Thiếu ID người dùng để cập nhật");
+      return;
+    }
+
+    const payload = {
+      sumary: formData?.sumary?.trim() || "",
+      gender: formData?.gender || "Nam",
+      industryID: Array.isArray(formData?.industryID)
+        ? formData?.industryID.map((ind) => ind?._id)
+        : [],
+      skillID: Array.isArray(formData?.skillID)
+        ? formData?.skillID.map((skill) => skill?._id)
+        : [],
+      desiredSalary: {
+        min: Number(formData?.desiredSalary?.min) || 0,
+        max: Number(formData?.desiredSalary?.max) || 0,
+      },
+      education: Array.isArray(formData?.education)
+        ? formData?.education.map((edu) => ({
+            school: edu.school?.trim(),
+            degree: edu.degree?.trim(),
+            startDate: edu.startDate,
+            endDate: edu.endDate,
+          }))
+        : [],
+      level: formData?.level,
+      address: formData?.address,
+    };
+
+    const res = await updateDetailProfileMutate({ id: idUserUpdate, payload });
+
+    if(res.isError) return;
+
+    toast.success(res.message);
+    console.log("res: ", res);
+
     setIsEditing(false);
   };
 
@@ -194,21 +240,6 @@ export function DetailedInfoSection() {
             Địa chỉ
           </Label>
           {isEditing ? (
-            // <Select
-            //   value={formData?.address}
-            //   onValueChange={(value) => handleChange("address", value)}
-            // >
-            //   <SelectTrigger id="address" className="mt-2">
-            //     <SelectValue />
-            //   </SelectTrigger>
-            //   <SelectContent>
-            //     {ADDRESS_OPTIONS.map((option) => (
-            //       <SelectItem key={option} value={option}>
-            //         {option}
-            //       </SelectItem>
-            //     ))}
-            //   </SelectContent>
-            // </Select>
             <CustomizeSelect
               data={ADDRESS_OPTIONS}
               value={formData?.address as string}
@@ -379,6 +410,7 @@ export function DetailedInfoSection() {
             <EducationForm
               education={formData?.education || []}
               onChange={handleEducationChange}
+              setValidateForm={setValidateForm}
             />
           ) : (
             <div className="space-y-3">
@@ -413,7 +445,7 @@ export function DetailedInfoSection() {
               <X className="w-4 h-4" />
               Hủy
             </Button>
-            <Button onClick={handleSave} className="gap-2">
+            <Button onClick={handleSave} className="gap-2" disabled={!validateForm}>
               <Check className="w-4 h-4" />
               Lưu
             </Button>

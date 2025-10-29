@@ -6,6 +6,9 @@ const prefix = "/detail-profile";
 const detailProfileApiRequest = {
   getDetailProfile: (id: string) =>
     http.get<ApiResponse<DetailProfileResponseType>>(`${prefix}/${id}`),
+
+  updateDetailProfile: (id: string, payload: any) =>
+    http.patch<ApiResponse<any>>(`${prefix}/${id}`, payload),
 };
 
 export default detailProfileApiRequest;

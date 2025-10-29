@@ -1,7 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsMongoId, IsNotEmpty, IsNumber, IsObject, IsOptional, Min, ValidateNested } from 'class-validator';
+import { IsArray, IsMongoId, IsNotEmpty, IsNumber, IsObject, IsOptional, Min, Validate, ValidateNested, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
 import { Gender } from 'src/utils/typeSchemas';
+
+@ValidatorConstraint({ name: 'isStartBeforeEnd', async: false })
+export class IsStartBeforeEndConstraint
+  implements ValidatorConstraintInterface
+{
+  validate(endDate: Date, args: ValidationArguments) {
+    const obj: any = args.object;
+    if (!obj.startDate || !endDate) return true; // để class-validator lo validate required riêng
+    return new Date(obj.startDate) < new Date(endDate);
+  }
+
+  defaultMessage(args: ValidationArguments) {
+    return 'Ngày kết thúc phải sau ngày bắt đầu';
+  }
+}
 
 export class DesiredSalaryDto {
   @ApiProperty({ example: 1000 })
@@ -26,10 +41,13 @@ export class EducationDto {
 
   @ApiProperty({ example: '2021-09-01' })
   @IsNotEmpty({ message: 'Ngày bắt đầu không được để trống' })
+  @Type(() => Date)
   startDate: Date;
 
   @ApiProperty({ example: '2026-06-01' })
   @IsNotEmpty({ message: 'Ngày kết thúc không được để trống' })
+  @Type(() => Date)
+  @Validate(IsStartBeforeEndConstraint)
   endDate: Date;
 }
 
