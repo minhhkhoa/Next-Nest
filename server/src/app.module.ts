@@ -15,6 +15,7 @@ import { CompanyModule } from './company/company.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { DetailProfileModule } from './detail-profile/detail-profile.module';
+import { MailModule } from './mail/mail.module';
 
 
 @Module({
@@ -50,6 +51,7 @@ import { DetailProfileModule } from './detail-profile/detail-profile.module';
     UserModule,
     AuthModule,
     DetailProfileModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService],
