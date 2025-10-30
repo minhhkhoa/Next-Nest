@@ -19,6 +19,11 @@ const authApiRequest = {
   logout: () => http.post<ApiResponse<string>>(`${prefix}/logout`),
 
   getProfile: () => http.get<ApiResponse<ProfileResType>>(`${prefix}/profile`),
+
+  forgotPassword: (email: string) =>
+    http.post<ApiResponse<{ message: string }>>(`${prefix}/forgot-password`, {
+      email,
+    }),
 };
 
 export default authApiRequest;

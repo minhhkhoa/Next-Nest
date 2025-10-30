@@ -1,102 +1,82 @@
 "use client";
 
 import type React from "react";
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { useForgotPassword } from "@/queries/useAuth";
 
 export default function ForgotPasswordForm() {
+  const { mutateAsync: forgotPasswordMutate, isPending } = useForgotPassword();
   const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!email.trim()) {
-      toast.error("Vui lòng nhập email");
+      setError("Vui lòng nhập email");
       return;
     }
 
-    setIsLoading(true);
-
     try {
-      const response = await fetch("/api/forgot-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      });
+      const res = await forgotPasswordMutate(email);
 
-      const data = await response.json();
-
-      // if (!response.ok) {
-      //   toast({
-      //     title: "Lỗi",
-      //     description: data.message || "Email không tồn tại trong hệ thống",
-      //     variant: "destructive",
-      //   });
-      //   return;
-      // }
-
-      // toast({
-      //   title: "Thành công",
-      //   description:
-      //     "Chúng tôi đã gửi liên kết đặt lại mật khẩu đến email của bạn",
-      //   variant: "default",
-      // });
-
-      setEmail("");
+      if (res.isError) return;
+      setMessage(res?.data?.message as string);
     } catch (error) {
-      // toast({
-      //   title: "Lỗi",
-      //   description: "Có lỗi xảy ra. Vui lòng thử lại sau",
-      //   variant: "destructive",
-      // });
+      console.log("error: ", error);
     } finally {
-      setIsLoading(false);
+      setError("");
+      setEmail("");
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <label htmlFor="email" className="text-sm font-medium text-foreground">
-          Email
-        </label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="Nhập email của bạn"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          disabled={isLoading}
-          className="w-full"
-        />
-      </div>
+    <>
+      {message && <i className="text-sm text-white">{message}</i>}
+      <form onSubmit={handleSubmit} className={`space-y-4 ${!message ? "" : "mt-4"}`} noValidate>
+        <div className="space-y-2">
+          <label
+            htmlFor="email"
+            className="text-sm font-medium text-foreground"
+          >
+            Email
+          </label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="Nhập email của bạn"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={isPending}
+            className="w-full"
+          />
+          {!!error && <p className="text-sm text-red-500">{error}</p>}
+        </div>
 
-      <Button type="submit" disabled={isLoading} className="w-full">
-        {isLoading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Đang xử lý...
-          </>
-        ) : (
-          "Xác nhận"
-        )}
-      </Button>
+        <Button type="submit" disabled={isPending} className="w-full">
+          {isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Đang xử lý...
+            </>
+          ) : (
+            "Xác nhận"
+          )}
+        </Button>
 
-      <div className="flex justify-between">
-        <a href="/login" className="text-sm text-white hover:text-primary">
-          Quay lại đăng nhập
-        </a>
-        <a href="/register" className="text-sm text-white hover:text-primary">
-          Đăng ký tài khoản mới
-        </a>
-      </div>
-    </form>
+        <div className="flex justify-between">
+          <a href="/login" className="text-sm text-white hover:text-primary">
+            Quay lại đăng nhập
+          </a>
+          <a href="/register" className="text-sm text-white hover:text-primary">
+            Đăng ký tài khoản mới
+          </a>
+        </div>
+      </form>
+    </>
   );
 }

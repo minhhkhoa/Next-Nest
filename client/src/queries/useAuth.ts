@@ -27,3 +27,9 @@ export const useGetProfile = (enabled = true) => {
     enabled,
   });
 };
+
+export const useForgotPassword = () => {
+  return useMutation({
+    mutationFn: authApiRequest.forgotPassword
+  })
+}

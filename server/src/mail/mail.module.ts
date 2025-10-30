@@ -32,8 +32,8 @@ import { join } from 'path';
           },
         },
 
-        preview:
-          configService.get<string>('EMAIL_PREVIEW') === 'true' ? true : false,
+        // preview:
+        //   configService.get<string>('EMAIL_PREVIEW') === 'true' ? true : false,
       }),
       inject: [ConfigService],
     }),

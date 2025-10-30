@@ -375,7 +375,11 @@ export class AuthService {
       if (!email) throw new BadRequestCustom('Không truyền email', !!email);
 
       const user = await this.usersService.findUserByEmail(email);
-      if (!user) throw new BadRequestCustom('Email khong ton tai', !!email);
+      if (!user)
+        throw new BadRequestCustom(
+          'Email bạn nhập không tồn tại trên hệ thống',
+          !!email,
+        );
 
       //- tạo token để xác nhân người dùng nào đang yêu cầu tạo lại mật khẩu
       const { tokenPlain, tokenHash, expiresAt } = await generateResetToken();
@@ -395,7 +399,10 @@ export class AuthService {
 
       await this.mailService.sendResetPasswordMail(user.email, resetLink);
 
-      return { message: 'Chúng tôi đã gửi đường dẫn tạo lại mật khẩu tới Email của bạn, hãy làm theo hướng dẫn tại Email để đặt lại mật khẩu' };
+      return {
+        message:
+          'Chúng tôi đã gửi đường dẫn tạo lại mật khẩu tới Email của bạn, hãy làm theo hướng dẫn tại Email để đặt lại mật khẩu.',
+      };
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }

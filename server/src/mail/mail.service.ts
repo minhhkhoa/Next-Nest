@@ -9,7 +9,7 @@ export class MailService {
     await this.mailerService.sendMail({
       to,
       subject: 'Đặt lại mật khẩu',
-      template: './reset-password',
+      template: 'reset-password',
       context: { linkResetPassword: link },
     });
   }
