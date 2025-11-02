@@ -10,7 +10,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { LocalAuthGuard } from './passport-guard/local-auth.guard';
 import { LoginDto, RegisterDto } from 'src/user/dto/create-user.dto';
 import {
@@ -258,13 +258,15 @@ export class AuthController {
     return this.authService.sendResetEmail(body.email);
   }
 
-  // @Get('validate-reset')
-  // async validateReset(
-  //   @Query('token') token: string,
-  //   @Query('email') email: string,
-  // ) {
-  //   return this.authService.validateResetToken(email, token);
-  // }
+  @Public()
+  @Get('validate-reset')
+  @ApiOperation({ summary: 'Validate token and email to reset password' })
+  async validateReset(
+    @Query('token') token: string,
+    @Query('email') email: string,
+  ) {
+    return this.authService.validateResetToken(email, token);
+  }
 
   // @Post('reset-password')
   // async resetPassword(@Body() dto: ResetPasswordDto) {

@@ -16,6 +16,7 @@ import {
   comparePassword,
   generateResetToken,
   hashPassword,
+  verifyResetToken,
 } from 'src/utils/hashPassword';
 
 @Injectable()
@@ -406,6 +407,23 @@ export class AuthService {
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }
+  }
+
+  //- validate token and email to reset password
+  async validateResetToken(email: string, token: string) {
+    const user = await this.usersService.findUserByEmail(email);
+    if (!user || !user.resetToken)
+      throw new BadRequestCustom('Token không hợp lệ');
+
+
+    const userToken = user.resetToken;
+    const userTokenExpiry = user.resetTokenExpiresAt as Date;
+    const valid = await verifyResetToken(token, userToken, userTokenExpiry);
+
+    if (!valid)
+      throw new BadRequestCustom('Token không hợp lệ hoặc đã hết hạn', true);
+
+    return { valid: true };
   }
   //-end forgot/reset password
 }
