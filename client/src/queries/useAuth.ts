@@ -48,3 +48,13 @@ export const useResetPassword = () => {
       authApiRequest.resetPassword(data),
   });
 };
+
+export const useChangePassword = () => {
+  return useMutation({
+    mutationFn: (data: {
+      userID: string;
+      oldPassword: string;
+      newPassword: string;
+    }) => authApiRequest.changePassword(data),
+  });
+};

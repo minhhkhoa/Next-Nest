@@ -39,6 +39,16 @@ const authApiRequest = {
       `${prefix}/reset-password`,
       data
     ),
+
+  changePassword: (data: {
+    userID: string;
+    oldPassword: string;
+    newPassword: string;
+  }) =>
+    http.post<ApiResponse<{ message: string }>>(
+      `${prefix}/change-password`,
+      data
+    ),
 };
 
 export default authApiRequest;

@@ -19,6 +19,7 @@ import {
   verifyResetToken,
 } from 'src/utils/hashPassword';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -412,54 +413,100 @@ export class AuthService {
 
   //- validate token and email to reset password
   async validateResetToken(email: string, token: string) {
-    const user = await this.usersService.findUserByEmail(email);
-    if (!user || !user.resetToken)
-      throw new BadRequestCustom('Token không hợp lệ');
+    try {
+      const user = await this.usersService.findUserByEmail(email);
+      if (!user || !user.resetToken)
+        throw new BadRequestCustom('Token không hợp lệ');
 
-    const userToken = user.resetToken;
-    const userTokenExpiry = user.resetTokenExpiresAt as Date;
-    const valid = await verifyResetToken(token, userToken, userTokenExpiry);
+      const userToken = user.resetToken;
+      const userTokenExpiry = user.resetTokenExpiresAt as Date;
+      const valid = await verifyResetToken(token, userToken, userTokenExpiry);
 
-    if (!valid)
-      throw new BadRequestCustom('Token không hợp lệ hoặc đã hết hạn', true);
+      if (!valid)
+        throw new BadRequestCustom('Token không hợp lệ hoặc đã hết hạn', true);
 
-    return { valid: true };
+      return { valid: true };
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
   }
 
   //- reset password
   async resetPassword(body: ResetPasswordDto) {
-    const user = await this.usersService.findUserByEmail(body.email);
-    if (!user)
-      throw new BadRequestCustom('Email của người dùng không tìm thấy', true);
+    try {
+      const user = await this.usersService.findUserByEmail(body.email);
+      if (!user)
+        throw new BadRequestCustom('Email của người dùng không tìm thấy', true);
 
-    //- vẫn tiếp tục check
-    const userToken = user.resetToken as string;
-    const userTokenExpiry = user.resetTokenExpiresAt as Date;
-    const valid = await verifyResetToken(
-      body.token,
-      userToken,
-      userTokenExpiry,
-    );
+      //- vẫn tiếp tục check
+      const userToken = user.resetToken as string;
+      const userTokenExpiry = user.resetTokenExpiresAt as Date;
+      const valid = await verifyResetToken(
+        body.token,
+        userToken,
+        userTokenExpiry,
+      );
 
-    if (!valid)
-      throw new BadRequestCustom('Token không hợp lệ hoặc đã hết hạn', true);
+      if (!valid)
+        throw new BadRequestCustom('Token không hợp lệ hoặc đã hết hạn', true);
 
-    const hashNewPassword = await hashPassword(body.newPassword);
-    const update = {
-      $set: {
-        password: hashNewPassword,
-        resetToken: null,
-        resetTokenExpiresAt: null,
-      },
-    };
+      const hashNewPassword = await hashPassword(body.newPassword);
+      const update = {
+        $set: {
+          password: hashNewPassword,
+          resetToken: null,
+          resetTokenExpiresAt: null,
+        },
+      };
 
-    const id = user.id as string;
-    const result = await this.usersService.updateUserByAnyBody(id, update);
+      const id = user.id as string;
+      const result = await this.usersService.updateUserByAnyBody(id, update);
 
-    if (result.modifiedCount === 0)
-      throw new BadRequestCustom('Lỗi sửa user', !!id);
+      if (result.modifiedCount === 0)
+        throw new BadRequestCustom('Lỗi sửa user', !!id);
 
-    return { message: 'Đặt lại mật khẩu thành công' };
+      return { message: 'Đặt lại mật khẩu thành công' };
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
   }
   //-end forgot/reset password
+
+  //- change password
+  async changePassword(body: ChangePasswordDto) {
+    try {
+      const { userID, newPassword, oldPassword } = body;
+
+      const user = await this.usersService.findOne(userID, true);
+      if (!user) throw new BadRequestCustom('ID user không tìm thấy', !!userID);
+
+      //- check password
+      const isMatch = await comparePassword(oldPassword, user.password);
+      if (!isMatch)
+        throw new BadRequestCustom(
+          'Mật khẩu hiện tại bạn nhập không chính xác',
+          true,
+        );
+
+      //- mã hóa password
+      const hashNewPassword = await hashPassword(newPassword);
+
+      const update = {
+        $set: {
+          password: hashNewPassword,
+        },
+      };
+
+      //- update db
+      const id = user.id as string;
+      const result = await this.usersService.updateUserByAnyBody(id, update);
+
+      if (result.modifiedCount === 0)
+        throw new BadRequestCustom('Lỗi sửa user', !!id);
+
+      return { message: 'Thay đổi mật khẩu thành công' };
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
 }

@@ -98,7 +98,7 @@ export class UserService {
     }
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, getPassword = false) {
     try {
       if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new BadRequestCustom('ID user không đúng định dạng', !!id);
@@ -118,9 +118,7 @@ export class UserService {
           //   select: 'name _id',
           // },
         ])
-        .select(
-          '-password -isDeleted -deletedAt -createdAt -updatedAt -refresh_token -__v',
-        );
+        .select(getPassword ? 'password' : '-password -isDeleted -deletedAt -createdAt -updatedAt -refresh_token -__v');
 
       if (!user) throw new BadRequestCustom('ID user không tìm thấy', !!id);
 

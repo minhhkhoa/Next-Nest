@@ -49,7 +49,7 @@ export function UserAvatarMenu() {
   };
 
   const onSettingsClick = () => {
-    alert("onSettingsClick");
+    router.push("/settings");
   };
 
   useEffect(() => {
@@ -77,9 +77,7 @@ export function UserAvatarMenu() {
             <AvatarFallback>{name}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col space-y-0.5">
-            <p className="text-sm font-medium leading-none">
-              {user.name}
-            </p>
+            <p className="text-sm font-medium leading-none">{user.name}</p>
             <p className="text-xs leading-none text-muted-foreground">
               {user.email}
             </p>

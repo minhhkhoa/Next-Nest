@@ -25,6 +25,7 @@ import { GoogleAuthGuard } from './passport-guard/google.guard';
 import { BadRequestCustom } from 'src/customExceptions/BadRequestCustom';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -276,4 +277,12 @@ export class AuthController {
     return this.authService.resetPassword(body);
   }
   //- end handle forgot/reset password
+
+  //- change password
+  @ApiOperation({ summary: 'Thay đổi mật khẩu' })
+  @ResponseMessage('Thay đổi mật khẩu thành công')
+  @Post('change-password')
+  async changePassword(@Body() body: ChangePasswordDto) {
+    return this.authService.changePassword(body);
+  }
 }
