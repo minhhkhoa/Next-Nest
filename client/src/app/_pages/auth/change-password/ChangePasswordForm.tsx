@@ -64,7 +64,7 @@ export default function ChangePasswordForm() {
   }
 
   return (
-    <Card className="w-full max-w-md flex justify-start">
+    <Card className="w-full max-w-md">
       <CardHeader>
         <CardTitle>Đổi mật khẩu</CardTitle>
         <CardDescription>

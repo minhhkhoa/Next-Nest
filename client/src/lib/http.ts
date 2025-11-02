@@ -83,6 +83,12 @@ instance.interceptors.response.use(
       originalRequest._retry = true; //- tránh vòng lặp vô hạn
       const token = localStorage.getItem("access_token");
 
+      //- email or password wrong
+      if (message === "Email hoặc mật khẩu không đúng") {
+        toast.error(message);
+        return Promise.reject(error);
+      }
+
       //- CASE 1: Không có token
       if (!token) {
         toast.error("Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.");
