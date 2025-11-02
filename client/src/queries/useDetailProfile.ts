@@ -14,7 +14,7 @@ export const useUpdateDetailProfileMutate = () => {
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: any }) =>
       detailProfileApiRequest.updateDetailProfile(id, payload),
-    onSuccess: (res) => {
+    onSuccess: () => {
       //- khi update thành công thì invalidate query profile
       queryClient.invalidateQueries({ queryKey: ["detailProfile"] });
     },

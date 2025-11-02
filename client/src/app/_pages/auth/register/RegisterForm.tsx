@@ -33,7 +33,7 @@ import { setAccessTokenToLocalStorage } from "@/lib/utils";
 import { useAppStore } from "@/components/TanstackProvider";
 
 export default function RegisterForm() {
-    const { setLogin } = useAppStore();
+  const { setLogin } = useAppStore();
   const [isClient, setIsClient] = useState(false);
   const { theme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);

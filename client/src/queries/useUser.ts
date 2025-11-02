@@ -8,7 +8,7 @@ export function useUpdateUserMutate() {
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: UpdateUserType }) =>
       userApiRequest.update(id, payload),
-    onSuccess: (res) => {
+    onSuccess: () => {
       //- khi update thành công thì invalidate query profile
       queryClient.invalidateQueries({ queryKey: ["profile"] });
     },

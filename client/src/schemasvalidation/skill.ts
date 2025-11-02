@@ -1,5 +1,4 @@
 import z from "zod";
-import { PopulatedItemSchema } from "./detailProfile";
 import { MultiLang } from "./trans";
 import { apiIndustryRes } from "./industry";
 

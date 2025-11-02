@@ -9,8 +9,7 @@ import {
   removeTokensFromLocalStorage,
 } from "@/lib/utils";
 import { UserResponseType } from "@/schemasvalidation/user";
-import { usePathname, useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { usePathname } from "next/navigation";
 import { accessInstance } from "@/lib/http";
 
 const queryClient = new QueryClient({
