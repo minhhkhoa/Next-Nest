@@ -18,6 +18,7 @@ import {
   hashPassword,
   verifyResetToken,
 } from 'src/utils/hashPassword';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -393,7 +394,7 @@ export class AuthService {
         },
       };
 
-      await this.usersService.updateUserResetToken(user.id, update);
+      await this.usersService.updateUserByAnyBody(user.id, update);
 
       //- tạo link
       const resetLink = `${this.configService.get<string>('FRONTEND_URL')}/reset-password?token=${tokenPlain}&email=${user.email}`;
@@ -415,7 +416,6 @@ export class AuthService {
     if (!user || !user.resetToken)
       throw new BadRequestCustom('Token không hợp lệ');
 
-
     const userToken = user.resetToken;
     const userTokenExpiry = user.resetTokenExpiresAt as Date;
     const valid = await verifyResetToken(token, userToken, userTokenExpiry);
@@ -424,6 +424,42 @@ export class AuthService {
       throw new BadRequestCustom('Token không hợp lệ hoặc đã hết hạn', true);
 
     return { valid: true };
+  }
+
+  //- reset password
+  async resetPassword(body: ResetPasswordDto) {
+    const user = await this.usersService.findUserByEmail(body.email);
+    if (!user)
+      throw new BadRequestCustom('Email của người dùng không tìm thấy', true);
+
+    //- vẫn tiếp tục check
+    const userToken = user.resetToken as string;
+    const userTokenExpiry = user.resetTokenExpiresAt as Date;
+    const valid = await verifyResetToken(
+      body.token,
+      userToken,
+      userTokenExpiry,
+    );
+
+    if (!valid)
+      throw new BadRequestCustom('Token không hợp lệ hoặc đã hết hạn', true);
+
+    const hashNewPassword = await hashPassword(body.newPassword);
+    const update = {
+      $set: {
+        password: hashNewPassword,
+        resetToken: null,
+        resetTokenExpiresAt: null,
+      },
+    };
+
+    const id = user.id as string;
+    const result = await this.usersService.updateUserByAnyBody(id, update);
+
+    if (result.modifiedCount === 0)
+      throw new BadRequestCustom('Lỗi sửa user', !!id);
+
+    return { message: 'Đặt lại mật khẩu thành công' };
   }
   //-end forgot/reset password
 }

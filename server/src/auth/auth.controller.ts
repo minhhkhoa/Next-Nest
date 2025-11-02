@@ -268,9 +268,12 @@ export class AuthController {
     return this.authService.validateResetToken(email, token);
   }
 
-  // @Post('reset-password')
-  // async resetPassword(@Body() dto: ResetPasswordDto) {
-  //   return this.authService.resetPassword(dto);
-  // }
+  @Public()
+  @ResponseMessage('Đặt lại mật khẩu thành công')
+  @ApiOperation({ summary: 'Đặt lại mật khẩu' })
+  @Post('reset-password')
+  async resetPassword(@Body() body: ResetPasswordDto) {
+    return this.authService.resetPassword(body);
+  }
   //- end handle forgot/reset password
 }

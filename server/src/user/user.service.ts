@@ -197,7 +197,7 @@ export class UserService {
     }
   }
 
-  async updateUserResetToken(id: string, update: any) {
+  async updateUserByAnyBody(id: string, update: any) {
     try {
       if(!mongoose.Types.ObjectId.isValid(id)) {
         throw new BadRequestCustom('ID user không đúng định dạng', !!id);

@@ -29,6 +29,16 @@ const authApiRequest = {
     http.get<ApiResponse<{ valid: boolean }>>(
       `${prefix}/validate-reset?token=${token}&email=${email}`
     ),
+
+  resetPassword: (data: {
+    token: string;
+    email: string;
+    newPassword: string;
+  }) =>
+    http.post<ApiResponse<{ message: string }>>(
+      `${prefix}/reset-password`,
+      data
+    ),
 };
 
 export default authApiRequest;

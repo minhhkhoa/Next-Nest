@@ -22,7 +22,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useSearchParams } from "next/navigation";
-import { useValidateResetPassword } from "@/queries/useAuth";
+import { useResetPassword, useValidateResetPassword } from "@/queries/useAuth";
+import { toast } from "sonner";
+import Link from "next/link";
 
 const resetPasswordSchema = z
   .object({
@@ -42,6 +44,7 @@ export default function ResetPasswordForm() {
   const email = params.get("email") ?? "";
 
   const { data, isLoading } = useValidateResetPassword(token, email);
+  const { mutateAsync: resetPassword } = useResetPassword();
 
   const form = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordSchema),
@@ -54,20 +57,19 @@ export default function ResetPasswordForm() {
   const onSubmit = async (values: ResetPasswordFormValues) => {
     try {
       console.log("Resetting password with:", values);
+      const res = await resetPassword({
+        token,
+        email,
+        newPassword: values.password,
+      });
 
-      // toast({
-      //   title: "Thành công",
-      //   description: "Mật khẩu của bạn đã được đặt lại thành công",
-      //   variant: "default",
-      // });
+      if (res.isError) return;
+
+      toast.success(res.message);
 
       form.reset();
     } catch (error) {
-      // toast({
-      //   title: "Lỗi",
-      //   description: "Có lỗi xảy ra. Vui lòng thử lại sau",
-      //   variant: "destructive",
-      // });
+      console.log("error: ", error);
     }
   };
 
@@ -81,8 +83,16 @@ export default function ResetPasswordForm() {
 
   if (!data?.data?.valid) {
     return (
-      <div className="text-center p-8 text-red-500">
-        Token không hợp lệ hoặc đã hết hạn.
+      <div className="flex flex-col justify-center items-center h-screen">
+        <div className="text-center text-red-500">
+          Token không hợp lệ hoặc đã hết hạn.
+        </div>
+        {/* quay veef login */}
+        <div className="mt-4">
+          <Link href="/login">
+            <i className="hover:text-primary">Đăng nhập</i>
+          </Link>
+        </div>
       </div>
     );
   }

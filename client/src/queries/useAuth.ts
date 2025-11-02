@@ -41,3 +41,10 @@ export const useValidateResetPassword = (token?: string, email?: string) => {
     enabled: !!token && !!email, //- chỉ chạy khi có đủ param
   });
 };
+
+export const useResetPassword = () => {
+  return useMutation({
+    mutationFn: (data: { token: string; email: string; newPassword: string }) =>
+      authApiRequest.resetPassword(data),
+  });
+};
