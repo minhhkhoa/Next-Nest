@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { ModeToggle } from "@/components/ModeToggle";
 import TanstackProvider from "@/components/TanstackProvider";
 import { Toaster } from "@/components/ui/sonner";
+import { ColorThemeProvider } from "@/components/ColorThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased md:px-26`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased px-5 md:px-26`}
       >
         <TanstackProvider>
           <ThemeProvider
@@ -38,8 +38,10 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
-            <Toaster position="top-right" richColors />
+            <ColorThemeProvider>
+              {children}
+              <Toaster position="top-right" richColors />
+            </ColorThemeProvider>
           </ThemeProvider>
         </TanstackProvider>
       </body>
