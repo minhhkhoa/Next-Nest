@@ -1,11 +1,9 @@
 "use client";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { envConfig } from "../../config";
 import { toast } from "sonner";
 import {
-  getAccessTokenFromLocalStorage,
   removeTokensFromLocalStorage,
   setAccessTokenToLocalStorage,
 } from "./utils";

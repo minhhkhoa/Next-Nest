@@ -8,6 +8,13 @@ export const apiProfileUserRes = z.object({
     avatar: z.string().nullable().optional(),
     companyID: z.string().array().optional().nullable(),
     roleID: z.string().array().optional().nullable(),
+    provider: z
+      .object({
+        type: z.string(),
+        id: z.string(),
+      })
+      .optional()
+      .nullable(),
   }),
 });
 
