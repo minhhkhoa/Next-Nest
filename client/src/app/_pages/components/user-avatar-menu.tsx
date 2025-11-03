@@ -46,7 +46,7 @@ export function UserAvatarMenu() {
   };
 
   const onManageClick = () => {
-    alert("onManageClick");
+    router.push("/admin");
   };
 
   const onSettingsClick = () => {
@@ -91,13 +91,13 @@ export function UserAvatarMenu() {
         <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground">
           Quản lý
         </DropdownMenuLabel>
-        <DropdownMenuItem onClick={onProfileClick} className="cursor-pointer">
-          <User className="mr-2 h-4 w-4" />
-          <span>Hồ sơ cá nhân</span>
-        </DropdownMenuItem>
         <DropdownMenuItem onClick={onManageClick} className="cursor-pointer">
           <LayoutDashboard className="mr-2 h-4 w-4" />
           <span>Trang quản lý</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={onProfileClick} className="cursor-pointer">
+          <User className="mr-2 h-4 w-4" />
+          <span>Hồ sơ cá nhân</span>
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />

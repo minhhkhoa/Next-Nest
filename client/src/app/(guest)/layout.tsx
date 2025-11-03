@@ -13,8 +13,10 @@ export default async function ClientLayout({
 
   return (
     <BlockWrap>
-      <HeaderClient isLoginSSR={isLoginSSR} />
-      {children}
+      <div className="md:px-26">
+        <HeaderClient isLoginSSR={isLoginSSR} />
+        {children}
+      </div>
     </BlockWrap>
   );
 }

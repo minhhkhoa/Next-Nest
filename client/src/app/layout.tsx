@@ -54,7 +54,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased px-5 md:px-26`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased px-5`}
       >
         <TanstackProvider>
           <ThemeProvider

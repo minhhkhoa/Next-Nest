@@ -9,7 +9,7 @@ export default function BlockSettings({
 }: Readonly<{ user: UserResponseType }>) {
 
   return (
-    <div className="flex flex-col md:!flex-row pt-5 justify-around gap-5">
+    <div className="flex flex-col md:!flex-row py-5 justify-around gap-5">
       {!user.provider?.id && (
         <div className="w-full max-w-md">
           <h2 className="scroll-m-20 text-2xl font-semibold tracking-tight">

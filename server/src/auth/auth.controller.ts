@@ -61,8 +61,7 @@ export class AuthController {
 
   //- cần query xuống db chứ không phải lấy ở jwt vì khi update song mà vẫn lấy ở jwt thì data đã cũ
   @Get('profile')
-  async getProfile(@userDecorator() user: UserResponse, @Req() req) {
-    console.log('token: ', req.headers.authorization);
+  async getProfile(@userDecorator() user: UserResponse) {
     try {
       const id = user.id;
 
