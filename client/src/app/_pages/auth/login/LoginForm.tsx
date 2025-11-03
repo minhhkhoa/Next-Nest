@@ -70,14 +70,14 @@ export default function LoginForm() {
     const top = window.screenY + (window.innerHeight - height) / 2;
 
     const popup = window.open(
-      `${envConfig.NEXT_PUBLIC_API_URL}/auth/${provider}`,
+      `${envConfig.NEXT_PUBLIC_API_URL_SERVER}/auth/${provider}`,
       "SocialLogin",
       `width=${width},height=${height},left=${left},top=${top}`
     );
 
     if (popup) {
       const handleMessage = (event: MessageEvent) => {
-        if (event.origin !== envConfig.NEXT_PUBLIC_API_URL) return;
+        if (event.origin !== envConfig.NEXT_PUBLIC_API_URL_SERVER) return;
         const { token, error } = event.data;
 
         if (token) {

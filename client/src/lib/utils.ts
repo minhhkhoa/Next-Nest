@@ -60,7 +60,7 @@ export async function uploadToCloudinary(file: File): Promise<string> {
 
   // --- Gọi BE để lấy chữ ký Cloudinary ---
   const sigRes = await http.get<ApiResponse<CloudinarySignatureResponse>>(
-    `${envConfig.NEXT_PUBLIC_API_URL}/cloudinary/signature`
+    `${envConfig.NEXT_PUBLIC_API_URL_SERVER}/cloudinary/signature`
   );
   if (!sigRes.isOk) {
     throw new Error("Failed to get Cloudinary signature");

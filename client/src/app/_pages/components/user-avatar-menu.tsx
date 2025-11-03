@@ -38,6 +38,7 @@ export function UserAvatarMenu() {
     setLogin(false);
     toast.success("Đăng xuất thành công!");
     router.push("/");
+    router.refresh();
   };
 
   const onProfileClick = () => {

@@ -1,13 +1,15 @@
 import { z } from "zod";
 
 export const configSchema = z.object({
-  NEXT_PUBLIC_API_URL: z.string(),
+  NEXT_PUBLIC_API_URL_SERVER: z.string(),
+  NEXT_PUBLIC_API_URL_CLIENT: z.string(),
   NEXT_PUBLIC_TOKEN_TEST: z.string(),
   NEXT_PUBLIC_CLOUD_API: z.string(),
 });
 
 const configProject = configSchema.safeParse({
-  NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+  NEXT_PUBLIC_API_URL_SERVER: process.env.NEXT_PUBLIC_API_URL_SERVER,
+  NEXT_PUBLIC_API_URL_CLIENT: process.env.NEXT_PUBLIC_API_URL_CLIENT,
   NEXT_PUBLIC_TOKEN_TEST: process.env.NEXT_PUBLIC_TOKEN_TEST,
   NEXT_PUBLIC_CLOUD_API: process.env.NEXT_PUBLIC_CLOUD_API,
 });

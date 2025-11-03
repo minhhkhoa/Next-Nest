@@ -11,7 +11,7 @@ import { jwtDecode } from "jwt-decode";
 
 //- Tạo instance Axios
 const instance = axios.create({
-  baseURL: envConfig.NEXT_PUBLIC_API_URL,
+  baseURL: envConfig.NEXT_PUBLIC_API_URL_SERVER,
   withCredentials: true,
   timeout: 10000, // Timeout 10 giây
   headers: {
@@ -21,14 +21,14 @@ const instance = axios.create({
 
 //- tạo riêng 1 cái cho refresh token
 export const refreshInstance = axios.create({
-  baseURL: envConfig.NEXT_PUBLIC_API_URL,
+  baseURL: envConfig.NEXT_PUBLIC_API_URL_SERVER,
   timeout: 50000,
   withCredentials: true,
 });
 
 //- tạo riêng 1 cái cho xóa access token
 export const accessInstance = axios.create({
-  baseURL: envConfig.NEXT_PUBLIC_API_URL,
+  baseURL: envConfig.NEXT_PUBLIC_API_URL_SERVER,
   timeout: 50000,
   withCredentials: true,
 });
