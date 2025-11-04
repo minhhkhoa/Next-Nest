@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/popover";
 import { useSidebar } from "@/components/ui/sidebar";
 import { handleInitName, removeTokensFromLocalStorage } from "@/lib/utils";
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { LogOut, Settings, User } from "lucide-react";
 import { toast } from "sonner";
@@ -74,8 +74,8 @@ export default function PopoverAdmin() {
         </Button>
       </PopoverTrigger>
       <PopoverContent side="right" className="w-60">
-        <div className="flex gap-2">
-          <Avatar className="relative flex size-8 shrink-0 overflow-hidden h-9 w-9 rounded-lg">
+        <div className="flex gap-2 items-center rounded-xl pl-3 cursor-pointer hover:bg-accent/50">
+          <Avatar className="relative flex size-8 shrink-0 overflow-hidden h-10 w-10 rounded-lg">
             <AvatarImage src={user.avatar || ""} alt={name} />
             <AvatarFallback>{name}</AvatarFallback>
           </Avatar>
@@ -88,34 +88,36 @@ export default function PopoverAdmin() {
 
         <Separator className="mt-2" />
 
-        {/* trang ca nhan */}
-        <div
-          className="flex items-center gap-2 mt-2 rounded-xl h-8 cursor-pointer hover:bg-accent/50"
-          onClick={onProfileClick}
-        >
-          <User className="mr-2 h-4 w-4" />
-          <span>Hồ sơ cá nhân</span>
-        </div>
-
-        {/* cai dat tai khoan */}
-        <div
-          className="flex items-center gap-2 mt-2 rounded-xl cursor-pointer h-8 hover:bg-accent/50"
-          onClick={onSettingsClick}
-        >
-          <Settings className="mr-2 h-4 w-4" />
-          <span>Cài đặt tài khoản</span>
-        </div>
-
-        {/* logout */}
-        {isLogin && (
+        <div>
+          {/* trang ca nhan */}
           <div
-            className="flex items-center gap-2 mt-2 rounded-xl cursor-pointer text-destructive focus:text-destructive h-8 hover:bg-accent/50"
-            onClick={handleLogout}
+            className="flex items-center gap-2 mt-2 rounded-xl pl-3 h-8 cursor-pointer hover:bg-accent/50"
+            onClick={onProfileClick}
           >
-            <LogOut className="mr-2 h-4 w-4" />
-            <span>Đăng xuất</span>
+            <User className="mr-2 h-4 w-4" />
+            <span>Hồ sơ cá nhân</span>
           </div>
-        )}
+
+          {/* cai dat tai khoan */}
+          <div
+            className="flex items-center gap-2 mt-2 pl-3 rounded-xl cursor-pointer h-8 hover:bg-accent/50"
+            onClick={onSettingsClick}
+          >
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Cài đặt tài khoản</span>
+          </div>
+
+          {/* logout */}
+          {isLogin && (
+            <div
+              className="flex items-center gap-2 mt-2 pl-3 rounded-xl cursor-pointer text-destructive focus:text-destructive h-8 hover:bg-accent/50"
+              onClick={handleLogout}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Đăng xuất</span>
+            </div>
+          )}
+        </div>
       </PopoverContent>
     </Popover>
   );

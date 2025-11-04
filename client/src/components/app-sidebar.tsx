@@ -8,6 +8,7 @@ import {
   Users,
   ChevronDown,
   ChartNoAxesCombined,
+  Icon,
 } from "lucide-react";
 
 import {
@@ -25,21 +26,24 @@ import {
   BackHome,
 } from "@/components/ui/sidebar";
 
+import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
+
 import {
   Collapsible,
   CollapsibleTrigger,
   CollapsibleContent,
 } from "@/components/ui/collapsible";
 import PopoverAdmin from "@/app/_pages/components/popoverAdmin";
+import { TooltipTrigger } from "@radix-ui/react-tooltip";
+import Link from "next/link";
 
 // Menu items.
 const items = [
-  { title: "Home", url: "/", icon: Home },
-  { title: "Chart", url: "/charts", icon: ChartNoAxesCombined },
-  { title: "User", url: "/users", icon: User2 },
-  { title: "Calendar", url: "#", icon: Calendar },
-  { title: "Search", url: "#", icon: Search },
-  { title: "Settings", url: "#", icon: Settings },
+  { title: "Thống kê", url: "/charts", icon: ChartNoAxesCombined },
+  { title: "Người dùng", url: "/users", icon: User2 },
+  { title: "Jobs", url: "#", icon: Calendar },
+  { title: "Nhà tuyển dụng", url: "#", icon: Search },
+  { title: "Resumes & CV", url: "#", icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -70,7 +74,7 @@ export function AppSidebar() {
 
           {/* Nhóm Collapsible */}
           <SidebarGroup>
-            <SidebarGroupLabel>Management</SidebarGroupLabel>
+            <SidebarGroupLabel>Bài viết</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 <Collapsible defaultOpen className="group/collapsible">
@@ -78,7 +82,16 @@ export function AppSidebar() {
                     <CollapsibleTrigger asChild>
                       <SidebarMenuButton>
                         <FolderKanban />
-                        <span>Projects</span>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="truncate">
+                              Cẩm nang nghề nghiệp
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Cẩm nang nghề nghiệp</p>
+                          </TooltipContent>
+                        </Tooltip>
                         <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
                       </SidebarMenuButton>
                     </CollapsibleTrigger>
@@ -86,16 +99,9 @@ export function AppSidebar() {
                       <SidebarMenuSub>
                         <SidebarMenuSubItem>
                           <SidebarMenuSubButton asChild>
-                            <a href="#">
-                              <span>Active Projects</span>
-                            </a>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                        <SidebarMenuSubItem>
-                          <SidebarMenuSubButton asChild>
-                            <a href="#">
-                              <span>Archived</span>
-                            </a>
+                            <Link href="/admin/news">
+                              <span>Tin tức </span>
+                            </Link>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
                       </SidebarMenuSub>
@@ -103,14 +109,14 @@ export function AppSidebar() {
                   </SidebarMenuItem>
                 </Collapsible>
 
-                <SidebarMenuItem>
+                {/* <SidebarMenuItem>
                   <SidebarMenuButton asChild>
                     <a href="#">
                       <Users />
                       <span>Teams</span>
                     </a>
                   </SidebarMenuButton>
-                </SidebarMenuItem>
+                </SidebarMenuItem> */}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
