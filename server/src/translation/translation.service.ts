@@ -1,115 +1,138 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { translate } from '@vitalets/google-translate-api';
+import axios from 'axios';
 import { translationConfig } from './translation.config';
 import * as cheerio from 'cheerio';
 import { decode } from 'html-entities';
+import { ConfigService } from '@nestjs/config';
+
 
 @Injectable()
 export class TranslationService {
   private readonly logger = new Logger(TranslationService.name);
 
+  private readonly libreTranslateUrl: string;
+
+  constructor(private readonly configService: ConfigService) {
+    this.libreTranslateUrl =
+      this.configService.get<string>('LIBRETRANSLATE_URL') as string;
+
+    this.logger.log(`LibreTranslate URL: ${this.libreTranslateUrl}`);
+  }
+
   /**
-   * Dịch text thuần sang ngôn ngữ target
-   * @param text Nội dung cần dịch
-   * @param to Ngôn ngữ đích (default: 'en')
-   * @param from Ngôn ngữ gốc (default: 'vi')
+   * Gọi API LibreTranslate
+   * Chỉ cần dịch từ vi -> en
    */
-  async translateText(text: string, to = 'en', from = 'vi'): Promise<string> {
+  private async callLibreTranslate(
+    text: string,
+    from = 'vi',
+    to = 'en',
+  ): Promise<string> {
     try {
-      const res = await translate(text, { to, from });
-      return res.text;
-    } catch (err) {
-      this.logger.error(`Translation failed: ${err.message}`);
-      return text; //- Fallback giữ nguyên nếu lỗi
+      const response = await axios.post(
+        `${this.libreTranslateUrl}/translate`,
+        {
+          q: text,
+          source: from,
+          target: to,
+          format: 'text',
+        },
+        {
+          timeout: 10000,
+        },
+      );
+
+      return response.data.translatedText || text;
+    } catch (err: any) {
+      this.logger.error(`LibreTranslate error: ${err.message}`);
+      if (err.response?.data?.error) {
+        this.logger.error(`LibreTranslate server: ${err.response.data.error}`);
+      }
+      return text; //- Fallback: giữ nguyên
     }
   }
 
   /**
-   * Dịch HTML giữ nguyên cấu trúc
-   * @param html Nội dung HTML cần dịch
-   * @param to Ngôn ngữ đích
-   * @param from Ngôn ngữ gốc
+   * Dịch text thuần
+   */
+  async translateText(text: string, to = 'en', from = 'vi'): Promise<string> {
+    if (!text.trim()) return text;
+    return this.callLibreTranslate(text, from, to);
+  }
+
+  /**
+   * Dịch HTML – giữ cấu trúc, dịch từng đoạn nhỏ
    */
   async translateHTML(html: string, to = 'en', from = 'vi'): Promise<string> {
     if (!html) return '';
 
-    //- Load HTML với xmlMode: false để xử lý fragments an toàn
     const $ = cheerio.load(html, { xmlMode: false, decodeEntities: false });
+    const ignoreTags = ['script', 'style', 'code', 'pre'];
 
-    //- Các thẻ không cần dịch text bên trong
-    const ignoreTags = ['script', 'style', 'code'];
+    //- Hàm dịch từng đoạn text nhỏ (tránh lỗi Stanza với dấu "-")
+    const translateNodeText = async (node: cheerio.Element) => {
+      if (node.type === 'tag' && ignoreTags.includes(node.name)) return;
 
-    //- Hàm đệ quy duyệt và dịch text nodes
-    const traverseAndTranslate = async (node: cheerio.Element) => {
-      //- Bỏ qua nếu node nằm trong thẻ không cần dịch
-      if (node.type === 'tag' && ignoreTags.includes(node.name)) {
-        return;
-      }
-
-      //- Dịch text node nếu có nội dung
       if (node.type === 'text' && node.data?.trim()) {
-        const decodedText = decode(node.data);
-        if (decodedText.trim()) {
-          try {
-            const translated = await this.translateText(decodedText, to, from);
-            node.data = translated; //- Gán lại text đã dịch
-          } catch (error) {
-            this.logger.error(
-              `Lỗi dịch text trong HTML: ${decodedText}`,
-              error,
-            );
+        let rawText = decode(node.data);
+
+        //- Tách thành các câu nhỏ để tránh lỗi Stanza
+        const sentences = rawText.split(/(?<=[.!?])\s+/);
+        let translated = '';
+
+        for (const sentence of sentences) {
+          if (sentence.trim()) {
+            const cleaned = sentence
+              .replace(/-\s+/g, ' ') //- Thay "- " bằng khoảng trắng
+              .replace(/\s+/g, ' ')
+              .trim();
+            if (cleaned) {
+              translated += (await this.translateText(cleaned, to, from)) + ' ';
+            } else {
+              translated += sentence + ' ';
+            }
+          } else {
+            translated += sentence;
           }
         }
+
+        node.data = translated.trim();
       }
 
-      //- Chỉ duyệt children nếu node là tag
       if (node.type === 'tag' && node.children) {
         for (const child of node.children) {
-          await traverseAndTranslate(child);
+          await translateNodeText(child);
         }
       }
     };
 
-    //- Dịch attributes (như alt, title)
-    const translateAttributes = async () => {
-      const attributesToTranslate = ['alt', 'title'];
-      const elements = $(`[${attributesToTranslate.join('],[')}]`).toArray();
+    //- Dịch text nodes
+    await translateNodeText($('body')[0]);
 
-      for (const elem of elements) {
-        for (const attr of attributesToTranslate) {
-          const value = $(elem).attr(attr);
-          if (value?.trim()) {
-            const decodedValue = decode(value);
-            try {
-              const translated = await this.translateText(
-                decodedValue,
-                to,
-                from,
-              );
-              $(elem).attr(attr, translated);
-            } catch (error) {
-              this.logger.error(
-                `Lỗi dịch attribute ${attr}: ${decodedValue}`,
-                error,
-              );
-            }
-          }
+    //- Dịch attributes
+    const attributesToTranslate = ['alt', 'title', 'placeholder'];
+    for (const attr of attributesToTranslate) {
+      $(`[${attr}]`).each((_, elem) => {
+        const value = $(elem).attr(attr);
+        if (value?.trim()) {
+          const decoded = decode(value);
+          //- Dịch từng phần nhỏ
+          const translated = decoded.split(/(?<=[.!?])\s+/).map(async (s) => {
+            const cleaned = s.replace(/-\s+/g, ' ').trim();
+            return cleaned ? await this.translateText(cleaned, to, from) : s;
+          });
+          Promise.all(translated).then((parts) => {
+            $(elem).attr(attr, parts.join(' '));
+          });
         }
-      }
-    };
+      });
+    }
 
-    //- Dịch text nodes trước, rồi attributes
-    await traverseAndTranslate($('body')[0]);
-    await translateAttributes();
-
-    //- Trả về HTML fragment
     return $('body').html() || '';
   }
 
   /**
-   * Dịch dữ liệu module
-   * @param module Tên module (e.g., 'jobs')
-   * @param data Object data (DTO)
+   * Dịch dữ liệu module (giữ nguyên cấu trúc)
    */
   async translateModuleData<T extends Record<string, any>>(
     module: keyof typeof translationConfig,
@@ -118,20 +141,16 @@ export class TranslationService {
     const fieldsToTranslate = translationConfig[module];
     const result: any = { ...data };
 
-    //- lặp qua field cần dịch
     for (const field of fieldsToTranslate) {
       if (data[field]) {
         const vi = data[field];
         let en: string;
 
-        //- Kiểm tra xem có phải HTML không
         const isHTML = /<[^>]+>/.test(vi) || /&[a-zA-Z0-9#]+;/.test(vi);
 
         if (isHTML) {
-          //- bắt đầu dịch với html
           en = await this.translateHTML(vi, 'en', 'vi');
         } else {
-          //- bắt đầu dịch với văn bản thường
           en = await this.translateText(vi, 'en', 'vi');
         }
 

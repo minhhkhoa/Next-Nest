@@ -2,6 +2,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Search, X } from "lucide-react";
+import { Activity } from "react";
 
 interface SearchBarProps {
   value: string;
