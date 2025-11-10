@@ -10,88 +10,21 @@ import { DeleteConfirmModal } from "./components/modals/delete-confirm-modal";
 import { SearchBar } from "./components/search-bar";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { CategoryNewsResType } from "@/schemasvalidation/NewsCategory";
-import { useGetListCategories } from "@/queries/useNewsCategory";
-
-interface News {
-  _id: string;
-  title: string;
-  cateNewsID: string;
-  description: string;
-  image: string;
-  summary: string;
-  status: "active" | "inactive";
-  isDelete: boolean;
-}
+import {
+  CategoryNewsResType,
+  NewsResType,
+} from "@/schemasvalidation/NewsCategory";
+import {
+  useGetListCategories,
+  useGetListNews,
+} from "@/queries/useNewsCategory";
 
 export default function NewsCate() {
   const { data: categories } = useGetListCategories();
 
-  const [news, setNews] = useState<News[]>([
-    {
-      _id: "1",
-      title: "AI Đã Thay Đổi Thế Giới Công Nghệ",
-      cateNewsID: "1",
-      description:
-        "Trí tuệ nhân tạo đang trở thành một phần không thể tách rời của cuộc sống hàng ngày.",
-      image: "/ai-technology.png",
-      summary: "AI đang cách mạng hóa ngành công nghệ toàn cầu",
-      status: "active",
-      isDelete: false,
-    },
-    {
-      _id: "2",
-      title: "Thị Trường Chứng Khoán Đạt Đỉnh Mới",
-      cateNewsID: "3",
-      description: "Chứng chỉ lợi suất cao nhất trong 5 năm qua",
-      image: "/stock-market-analysis.png",
-      summary: "Thị trường chứng khoán tăng mạnh trong quý này",
-      status: "active",
-      isDelete: false,
-    },
-    {
-      _id: "3",
-      title: "AI Đã Thay Đổi Thế Giới Công Nghệ",
-      cateNewsID: "1",
-      description:
-        "Trí tuệ nhân tạo đang trở thành một phần không thể tách rời của cuộc sống hàng ngày.",
-      image: "/ai-technology.png",
-      summary: "AI đang cách mạng hóa ngành công nghệ toàn cầu",
-      status: "active",
-      isDelete: false,
-    },
-    {
-      _id: "4",
-      title: "Thị Trường Chứng Khoán Đạt Đỉnh Mới",
-      cateNewsID: "2",
-      description: "Chứng chỉ lợi suất cao nhất trong 5 năm qua",
-      image: "/stock-market-analysis.png",
-      summary: "Thị trường chứng khoán tăng mạnh trong quý này",
-      status: "active",
-      isDelete: false,
-    },
-    {
-      _id: "5",
-      title: "AI Đã Thay Đổi Thế Giới Công Nghệ",
-      cateNewsID: "2",
-      description:
-        "Trí tuệ nhân tạo đang trở thành một phần không thể tách rời của cuộc sống hàng ngày.",
-      image: "/ai-technology.png",
-      summary: "AI đang cách mạng hóa ngành công nghệ toàn cầu",
-      status: "active",
-      isDelete: false,
-    },
-    {
-      _id: "6",
-      title: "Thị Trường Chứng Khoán Đạt Đỉnh Mới",
-      cateNewsID: "3",
-      description: "Chứng chỉ lợi suất cao nhất trong 5 năm qua",
-      image: "/stock-market-analysis.png",
-      summary: "Thị trường chứng khoán tăng mạnh trong quý này",
-      status: "active",
-      isDelete: false,
-    },
-  ]);
+  const { data: news } = useGetListNews();
+
+  console.log("news: ", news);
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -100,7 +33,7 @@ export default function NewsCate() {
   >("all");
   const [newsModalState, setNewsModalState] = useState<{
     isOpen: boolean;
-    data?: News;
+    data?: NewsResType;
   }>({ isOpen: false });
   const [categoryModalState, setCategoryModalState] = useState<{
     isOpen: boolean;
@@ -117,20 +50,32 @@ export default function NewsCate() {
   const itemsPerPage = 10;
 
   const filteredNews = useMemo(() => {
-    return news
-      .filter((item) => !item.isDelete)
+    return (news?.data ?? [])
+      .filter((item) => !item.isDeleted) // sửa lại đúng tên field nếu là `isDeleted`
       .filter((item) => {
-        if (selectedCategory && item.cateNewsID !== selectedCategory)
-          return false;
-        if (statusFilter !== "all" && item.status !== statusFilter)
-          return false;
+        console.log("item: ", item);
+        // Kiểm tra category
         if (
-          searchQuery &&
-          !item.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-          !item.summary.toLowerCase().includes(searchQuery.toLowerCase())
+          selectedCategory &&
+          !item.cateNewsID.some((cate) => cate._id === selectedCategory)
         ) {
           return false;
         }
+
+        // Kiểm tra trạng thái
+        if (statusFilter !== "all" && item.status !== statusFilter)
+          return false;
+
+        // Kiểm tra tìm kiếm
+        const titleText = item?.title?.vi || item.title.en || "";
+
+        if (
+          searchQuery &&
+          !titleText.toLowerCase().includes(searchQuery.toLowerCase())
+        ) {
+          return false;
+        }
+
         return true;
       });
   }, [news, selectedCategory, searchQuery, statusFilter]);
@@ -141,9 +86,9 @@ export default function NewsCate() {
   const paginatedNews = filteredNews.slice(startIndex, endIndex);
 
   const handleDeleteNews = (id: string) => {
-    setNews(
-      news.map((item) => (item._id === id ? { ...item, isDelete: true } : item))
-    );
+    // setNews(
+    //   news.map((item) => (item._id === id ? { ...item, isDelete: true } : item))
+    // );
   };
 
   const handleDeleteCategory = (id: string) => {
@@ -185,7 +130,7 @@ export default function NewsCate() {
     <NewsLayout>
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Sidebar */}
-        <aside className="w-full lg:w-80">
+        <aside className="flex-1">
           <CategoriesSidebar
             categories={categories?.data || []}
             selectedCategory={selectedCategory}
@@ -201,7 +146,7 @@ export default function NewsCate() {
         </aside>
 
         {/* Main content */}
-        <main className="flex-1">
+        <main className="flex-3">
           <div className="space-y-6">
             {/* Header with search and add button */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -237,7 +182,7 @@ export default function NewsCate() {
                   size="sm"
                   onClick={() => handleStatusFilterChange("all")}
                 >
-                  Tất Cả ({news.filter((n) => !n.isDelete).length})
+                  Tất Cả ({news?.data?.filter((n) => !n.isDeleted).length})
                 </Button>
                 <Button
                   variant={statusFilter === "active" ? "default" : "outline"}
@@ -246,8 +191,9 @@ export default function NewsCate() {
                 >
                   Hoạt Động (
                   {
-                    news.filter((n) => !n.isDelete && n.status === "active")
-                      .length
+                    news?.data?.filter(
+                      (n) => !n.isDeleted && n.status === "active"
+                    ).length
                   }
                   )
                 </Button>
@@ -258,8 +204,9 @@ export default function NewsCate() {
                 >
                   Dừng Hoạt Động (
                   {
-                    news.filter((n) => !n.isDelete && n.status === "inactive")
-                      .length
+                    news?.data?.filter(
+                      (n) => !n.isDeleted && n.status === "inactive"
+                    ).length
                   }
                   )
                 </Button>
@@ -267,9 +214,9 @@ export default function NewsCate() {
             </div>
 
             {/* News table */}
-            {/* <NewsTable
+            <NewsTable
               news={paginatedNews}
-              categories={categories.filter((c) => !c.isDelete)}
+              categories={categories?.data || []}
               onEdit={(item) => setNewsModalState({ isOpen: true, data: item })}
               onDelete={(id) => {
                 setDeleteModal({ isOpen: true, type: "news", id });
@@ -278,7 +225,7 @@ export default function NewsCate() {
               totalPages={totalPages}
               totalItems={filteredNews.length}
               onPageChange={setCurrentPage}
-            /> */}
+            />
           </div>
         </main>
       </div>

@@ -10,29 +10,31 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit2, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Edit2,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  MoreVertical,
+} from "lucide-react";
 import Image from "next/image";
-
-interface Category {
-  _id: string;
-  name: string;
-}
-
-interface News {
-  _id: string;
-  title: string;
-  cateNewsID: string;
-  description: string;
-  image: string;
-  summary: string;
-  status: "active" | "inactive";
-  isDelete: boolean;
-}
+import {
+  CategoryNewsResType,
+  NewsResType,
+} from "@/schemasvalidation/NewsCategory";
+import { useState } from "react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface NewsTableProps {
-  news: News[];
-  categories: Category[];
-  onEdit: (news: News) => void;
+  news: NewsResType[];
+  categories: CategoryNewsResType[];
+  onEdit: (news: NewsResType) => void;
   onDelete: (id: string) => void;
   currentPage: number;
   totalPages: number;
@@ -73,9 +75,9 @@ export function NewsTable({
             <TableRow className="bg-secondary">
               <TableHead>Hình Ảnh</TableHead>
               <TableHead>Tiêu Đề</TableHead>
-              <TableHead>Danh Mục</TableHead>
-              <TableHead>Tóm Tắt</TableHead>
               <TableHead>Trạng Thái</TableHead>
+              <TableHead>Ngày viết</TableHead>
+              <TableHead>Tác giả</TableHead>
               <TableHead className="text-right">Hành Động</TableHead>
             </TableRow>
           </TableHeader>
@@ -85,49 +87,81 @@ export function NewsTable({
                 <TableCell>
                   <div className="relative w-16 h-16 rounded overflow-hidden">
                     <Image
-                      src={item.image || "/placeholder.svg"}
-                      alt={item.title}
+                      src={item?.image || "/placeholder.svg"}
+                      alt={item.title.vi}
                       fill
                       className="object-cover"
                     />
                   </div>
                 </TableCell>
                 <TableCell className="font-medium max-w-xs truncate">
-                  {item.title}
+                  {item.title.vi}
                 </TableCell>
-                <TableCell>
-                  <Badge variant="outline">
-                    {getCategoryName(item.cateNewsID)}
-                  </Badge>
-                </TableCell>
-                <TableCell className="max-w-xs truncate text-sm text-muted-foreground">
-                  {item.summary}
-                </TableCell>
+                {/* <TableCell className="max-w-xs truncate text-sm text-muted-foreground">
+                  {item.summary.vi}
+                </TableCell> */}
                 <TableCell>
                   <Badge
                     variant={item.status === "active" ? "default" : "secondary"}
+                    className="flex items-center gap-2"
                   >
+                    {/* Chấm màu */}
+                    <span
+                      className={`h-2 w-2 rounded-full ${
+                        item.status === "active" ? "bg-green-500" : "bg-red-500"
+                      }`}
+                    ></span>
+
+                    {/* Text */}
                     {item.status === "active" ? "Hoạt Động" : "Không Hoạt Động"}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onEdit(item)}
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onDelete(item._id)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
+
+                {/* ngay viet */}
+                <TableCell>
+                  <span>
+                    {new Date(item.createdAt).toLocaleDateString("vi-VN")}
+                  </span>
+                </TableCell>
+
+                {/* tac gia */}
+                <TableCell>
+                  <span>
+                    {item.createdBy?.name || ""}
+                  </span>
+                </TableCell>
+                <TableCell className="text-center">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      {/* <Button variant="outline">
+                      </Button> */}
+                      <button>
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-2">
+                      <div className="flex flex-col justify-items-start">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onEdit(item)}
+                          className="flex gap-2 !justify-start"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                          <span>Chỉnh sửa</span>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onDelete(item._id)}
+                          className="text-destructive hover:text-destructive flex gap-2 !justify-start"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          <span>Xóa</span>
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </TableCell>
               </TableRow>
             ))}

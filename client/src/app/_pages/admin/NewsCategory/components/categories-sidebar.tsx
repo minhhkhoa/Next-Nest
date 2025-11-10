@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MoreVertical, Plus, Trash2, Edit2, Search, X } from "lucide-react";
 import { CategoryNewsResType } from "@/schemasvalidation/NewsCategory";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface CategoriesSidebarProps {
   categories: CategoryNewsResType[];

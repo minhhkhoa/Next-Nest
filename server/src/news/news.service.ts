@@ -9,6 +9,7 @@ import { BadRequestCustom } from 'src/customExceptions/BadRequestCustom';
 import mongoose from 'mongoose';
 import { FindNewsQueryDto } from './dto/newsDto-dto';
 import aqp from 'api-query-params';
+import { UserDecoratorType } from 'src/utils/typeSchemas';
 
 @Injectable()
 export class NewsService {
@@ -18,14 +19,21 @@ export class NewsService {
     private newsModel: SoftDeleteModel<NewsDocument>,
   ) {}
 
-  async create(createNewsDto: CreateNewsDto) {
+  async create(createNewsDto: CreateNewsDto, user: UserDecoratorType) {
     try {
       const dataLang = await this.translationService.translateModuleData(
         'news',
         createNewsDto,
       );
 
-      const news = await this.newsModel.create(dataLang);
+      const news = await this.newsModel.create({
+        ...dataLang,
+        createdBy: {
+          _id: user.id,
+          name: user.name,
+          email: user.email,
+        },
+      });
 
       return {
         _id: news._id,
@@ -125,7 +133,11 @@ export class NewsService {
     }
   }
 
-  async update(id: string, updateNewsDto: UpdateNewsDto) {
+  async update(
+    id: string,
+    updateNewsDto: UpdateNewsDto,
+    user: UserDecoratorType,
+  ) {
     try {
       if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new BadRequestCustom('ID news không đúng định dạng', !!id);
@@ -140,7 +152,16 @@ export class NewsService {
         updateNewsDto,
       );
       const filter = { _id: id };
-      const update = { $set: dataTranslation };
+      const update = {
+        $set: {
+          ...dataTranslation,
+          updatedBy: {
+            _id: user.id,
+            name: user.name,
+            email: user.email,
+          },
+        },
+      };
 
       const result = await this.newsModel.updateOne(filter, update);
 

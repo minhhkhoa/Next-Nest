@@ -12,8 +12,9 @@ import { NewsService } from './news.service';
 import { CreateNewsDto } from './dto/create-news.dto';
 import { UpdateNewsDto } from './dto/update-news.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ResponseMessage } from 'src/decorator/customize';
+import { ResponseMessage, userDecorator } from 'src/decorator/customize';
 import { FindNewsQueryDto } from './dto/newsDto-dto';
+import { UserDecoratorType } from 'src/utils/typeSchemas';
 
 @ApiTags('news')
 @Controller('news')
@@ -23,8 +24,11 @@ export class NewsController {
   @ResponseMessage('Tạo mới tin tức thành công')
   @ApiOperation({ summary: 'Thêm mới tin tức' })
   @Post()
-  create(@Body() createNewsDto: CreateNewsDto) {
-    return this.newsService.create(createNewsDto);
+  create(
+    @Body() createNewsDto: CreateNewsDto,
+    @userDecorator() user: UserDecoratorType,
+  ) {
+    return this.newsService.create(createNewsDto, user);
   }
 
   @ResponseMessage('Lấy danh sách tin tức thành công')
@@ -51,8 +55,12 @@ export class NewsController {
   @ResponseMessage('Cập nhật tin tức thành công')
   @ApiOperation({ summary: 'Cập nhật tin tức' })
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateNewsDto: UpdateNewsDto) {
-    return this.newsService.update(id, updateNewsDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateNewsDto: UpdateNewsDto,
+    @userDecorator() user: UserDecoratorType,
+  ) {
+    return this.newsService.update(id, updateNewsDto, user);
   }
 
   @ResponseMessage('Xóa tin tức thành công')
