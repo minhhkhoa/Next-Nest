@@ -20,12 +20,9 @@ import {
 import Image from "next/image";
 import {
   CategoryNewsResType,
+  MetaFilterType,
   NewsResFilterType,
-  NewsResType,
 } from "@/schemasvalidation/NewsCategory";
-import { useState } from "react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
@@ -35,19 +32,12 @@ import { envConfig } from "../../../../../../config";
 
 const pageSize = Number(envConfig.NEXT_PUBLIC_PAGE_SIZE);
 
-interface MetaFilter {
-  current: number;
-  pageSize: number;
-  totalPages: number;
-  totalItems: number;
-}
-
 interface NewsTableProps {
   news: NewsResFilterType[];
   categories: CategoryNewsResType[];
   onEdit: (news: NewsResFilterType) => void;
   onDelete: (id: string) => void;
-  metaFilter?: MetaFilter;
+  metaFilter?: MetaFilterType;
   onPageChange: (page: number) => void;
 }
 
@@ -144,8 +134,7 @@ export function NewsTable({
                 <TableCell className="text-center">
                   <Popover>
                     <PopoverTrigger asChild>
-                      <button 
-                      className="group-hover:opacity-100 transition-opacity p-1.5 hover:bg-secondary rounded">
+                      <button className="group-hover:opacity-100 transition-opacity p-1.5 hover:bg-secondary rounded">
                         <MoreVertical className="w-4 h-4" />
                       </button>
                     </PopoverTrigger>
@@ -181,8 +170,7 @@ export function NewsTable({
 
       <div className="flex items-center justify-between py-4 px-2">
         <div className="text-sm text-muted-foreground">
-          Hiển thị {" "}
-          {metaFilter.totalItems} bài viết liên quan
+          Hiển thị {metaFilter.totalItems} bài viết liên quan
         </div>
         <div className="flex items-center gap-2">
           <Button

@@ -1,7 +1,6 @@
 "use client";
 
 import type React from "react";
-
 import { useState, useEffect } from "react";
 import {
   Dialog,
@@ -14,19 +13,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-
-interface Category {
-  _id?: string;
-  name: {
-    vi: string;
-    en: string;
-  };
-  summary: {
-    vi: string;
-    en: string;
-  };
-  isDelete: boolean;
-}
+import {
+  useCreateCategoryNewsMutation,
+  useUpdateCategoryNewsMutation,
+} from "@/queries/useNewsCategory";
+import { Category } from "@/schemasvalidation/NewsCategory";
+import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
 
 interface CategoryModalProps {
   category?: Category;
@@ -44,10 +37,17 @@ export function CategoryModal({ category, onClose }: CategoryModalProps) {
       vi: "",
       en: "",
     },
-    isDelete: false,
+  });
+  const [error, setError] = useState({
+    name: false,
+    summary: false,
   });
 
-  const onSubmit = (data: Category) => {};
+  const { mutateAsync: createCateNewsMutation, isPending: isCreating } =
+    useCreateCategoryNewsMutation();
+
+  const { mutateAsync: updateCateNewsMutation, isPending: isUpdating } =
+    useUpdateCategoryNewsMutation();
 
   useEffect(() => {
     if (category) {
@@ -55,13 +55,42 @@ export function CategoryModal({ category, onClose }: CategoryModalProps) {
     }
   }, [category]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.summary) {
-      alert("Vui lòng điền tất cả các trường bắt buộc");
-      return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    try {
+      e.preventDefault();
+      if (!formData.name.vi || !formData.summary.vi) {
+        setError({ name: !formData.name.vi, summary: !formData.summary.vi });
+        return;
+      }
+
+      const payload = {
+        name: formData.name.vi,
+        summary: formData.summary.vi,
+      };
+
+      if (isEditing) {
+        const resUpdate = await updateCateNewsMutation({
+          id: category?._id || "",
+          payload,
+        });
+        if (resUpdate.isError) return;
+
+        toast.success(resUpdate.message);
+      } else {
+        const resCreate = await createCateNewsMutation(payload);
+        if (resCreate.isError) return;
+
+        setFormData({
+          name: { vi: "", en: "" },
+          summary: { vi: "", en: "" },
+        });
+        setError({ name: false, summary: false });
+
+        toast.success(resCreate.message);
+      }
+    } catch (error) {
+      console.log("error handleSubmit CategoryNews: ", error);
     }
-    onSubmit(formData);
   };
 
   return (
@@ -69,7 +98,7 @@ export function CategoryModal({ category, onClose }: CategoryModalProps) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? "Chỉnh Sửa Danh Mục" : "Thêm Danh Mục Mới"}
+            {isEditing ? "Chỉnh sửa danh mục" : "Thêm danh mục mới"}
           </DialogTitle>
         </DialogHeader>
 
@@ -77,7 +106,9 @@ export function CategoryModal({ category, onClose }: CategoryModalProps) {
           <div className="grid gap-4">
             {/* Name */}
             <div>
-              <Label htmlFor="name">Tên Danh Mục *</Label>
+              <Label className="mb-2" htmlFor="name">
+                Tên danh mục
+              </Label>
               <Input
                 id="name"
                 placeholder="Nhập tên danh mục"
@@ -88,12 +119,20 @@ export function CategoryModal({ category, onClose }: CategoryModalProps) {
                     name: { ...formData.name, vi: e.target.value },
                   })
                 }
+                className={error.name ? "border-destructive" : ""}
               />
+              {error.name && (
+                <span className="text-sm text-destructive pl-1">
+                  Vui lọc nhập tên danh mục
+                </span>
+              )}
             </div>
 
             {/* Summary */}
             <div>
-              <Label htmlFor="summary">Tóm Tắt *</Label>
+              <Label className="mb-2" htmlFor="summary">
+                Tóm tắt
+              </Label>
               <Textarea
                 id="summary"
                 placeholder="Nhập tóm tắt danh mục"
@@ -104,8 +143,14 @@ export function CategoryModal({ category, onClose }: CategoryModalProps) {
                     summary: { ...formData.summary, vi: e.target.value },
                   })
                 }
+                className={error.summary ? "border-destructive" : ""}
                 rows={3}
               />
+              {error.summary && (
+                <span className="text-sm text-destructive pl-1">
+                  Vui lọc nhập tóm tắt danh mục
+                </span>
+              )}
             </div>
           </div>
 
@@ -113,7 +158,8 @@ export function CategoryModal({ category, onClose }: CategoryModalProps) {
             <Button type="button" variant="outline" onClick={onClose}>
               Hủy
             </Button>
-            <Button type="submit">
+            <Button disabled={isCreating || isUpdating} type="submit">
+              {(isCreating || isUpdating) && <Spinner />}
               {isEditing ? "Cập Nhật" : "Thêm Danh Mục"}
             </Button>
           </DialogFooter>

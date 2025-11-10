@@ -16,7 +16,6 @@ import { useUpdateUserMutate } from "@/queries/useUser";
 import { toast } from "sonner";
 
 export function BasicInfoSection() {
-  // const { mutateAsync: uploadMutate, isPending } = useCloudQuery();
   const { mutateAsync: userUpdateMutate } = useUpdateUserMutate();
   const { user } = useAppStore();
   const [isEditing, setIsEditing] = useState(false);

@@ -11,10 +11,12 @@ export const MetaFilter = z.object({
   current: z.number(),
   pageSize: z.number(),
   totalPages: z.number(),
-  totalItems: z.number()
-})
+  totalItems: z.number(),
+});
 
-//- category news
+export type MetaFilterType = z.infer<typeof MetaFilter>;
+
+//- start category news
 export const apiCategoryNewsRes = z.object({
   _id: z.string(),
   name: MultiLang,
@@ -36,6 +38,28 @@ export const apiCateNewsID = apiCategoryNewsRes.omit({
   updatedBy: true,
 });
 export type CateNewsIDType = z.infer<typeof apiCateNewsID>;
+
+export interface Category {
+  _id?: string;
+  name: {
+    vi: string;
+    en: string;
+  };
+  summary: {
+    vi: string;
+    en: string;
+  };
+}
+
+//- create
+export const cateNewsCreate = z.object({
+  name: z.string(),
+  summary: z.string(),
+});
+
+export type CateNewsCreateType = z.infer<typeof cateNewsCreate>;
+
+//- end category news
 
 //- News
 export const apiNewsRes = z.object({

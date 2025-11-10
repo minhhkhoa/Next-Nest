@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { NewsLayout } from "./components/news-layout";
 import { CategoriesSidebar } from "./components/categories-sidebar";
 import { NewsTable } from "./components/news-table";
@@ -13,15 +13,15 @@ import { Plus } from "lucide-react";
 import {
   CategoryNewsResType,
   NewsResFilterType,
-  NewsResType,
 } from "@/schemasvalidation/NewsCategory";
 import {
+  useDeleteCategoryNewsMutation,
   useGetListCategories,
-  useGetListNews,
   useGetListNewsFilter,
 } from "@/queries/useNewsCategory";
 import { envConfig } from "../../../../../config";
 import { useDebounce } from "use-debounce";
+import { toast } from "sonner";
 
 const pageSize = Number(envConfig.NEXT_PUBLIC_PAGE_SIZE);
 
@@ -60,20 +60,29 @@ export default function NewsCate() {
     status: statusFilter,
   });
 
+  const { mutateAsync: deleteCateNewsMutation, isPending: isDeleting } =
+    useDeleteCategoryNewsMutation();
+
   const handleDeleteNews = (id: string) => {
     // setNews(
     //   news.map((item) => (item._id === id ? { ...item, isDelete: true } : item))
     // );
   };
 
-  const handleDeleteCategory = (id: string) => {
-    // setCategories(
-    //   categories.map((item) =>
-    //     item._id === id ? { ...item, isDelete: true } : item
-    //   )
-    // );
-    if (selectedCategory === id) {
-      setSelectedCategory(null);
+  const handleDeleteCategory = async (id: string) => {
+    try {
+      const res = await deleteCateNewsMutation(id);
+
+      if (res.isError) return;
+
+      toast.success(res.message);
+
+      //- Remove category selected
+      if (selectedCategory === id) {
+        setSelectedCategory(null);
+      }
+    } catch (error) {
+      console.log("error handle Delete Category News: ", error);
     }
   };
 
@@ -104,7 +113,7 @@ export default function NewsCate() {
   return (
     <NewsLayout>
       <div className="flex flex-col lg:flex-row gap-6">
-        {/* Sidebar */}
+        {/* categories Sidebar */}
         <aside className="flex-1">
           <CategoriesSidebar
             categories={categories?.data || []}
@@ -136,7 +145,7 @@ export default function NewsCate() {
                           (c) => c._id === selectedCategory
                         )?.name.vi || "Danh mục"
                       } (${news?.data?.result.length || 0})`
-                    : `Tổng: ${news?.data?.result.length} bài viết`}
+                    : `Tổng: ${news?.data?.result.length || 0} bài viết`}
                 </p>
               </div>
               <Button

@@ -2,7 +2,8 @@ import {
   CategoryNewsApiRequest,
   NewsApiRequest,
 } from "@/apiRequest/newsCategory";
-import { useQuery } from "@tanstack/react-query";
+import { CateNewsCreateType } from "@/schemasvalidation/NewsCategory";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 //- category News
 export const useGetListCategories = () => {
@@ -11,6 +12,50 @@ export const useGetListCategories = () => {
     queryFn: CategoryNewsApiRequest.getListCategories,
   });
 };
+
+//- create category news
+export const useCreateCategoryNewsMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: CategoryNewsApiRequest.createCategory,
+    onSuccess: () => {
+      //- gọi lại api khi cập nhật thành công
+      queryClient.invalidateQueries({ queryKey: ["getListCategories"] });
+    },
+  });
+};
+
+//- update category news
+export const useUpdateCategoryNewsMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: CateNewsCreateType;
+    }) => CategoryNewsApiRequest.updateCategory(id, payload),
+    onSuccess: () => {
+      //- gọi lại api khi cập nhật thành công
+      queryClient.invalidateQueries({ queryKey: ["getListCategories"] });
+    },
+  });
+};
+
+//- delete category news
+export const useDeleteCategoryNewsMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: CategoryNewsApiRequest.deleteCategory,
+    onSuccess: () => {
+      //- gọi lại api khi cập nhật thông tin
+      queryClient.invalidateQueries({ queryKey: ["getListCategories"] });
+    },
+  });
+};
+
+//- end category news
 
 //- News
 export const useGetListNews = () => {
@@ -25,13 +70,13 @@ export const useGetListNewsFilter = ({
   pageSize,
   title,
   cateNewsID,
-  status
+  status,
 }: {
   currentPage: number;
   pageSize: number;
   title?: string;
   cateNewsID?: string | null;
-  status?: string
+  status?: string;
 }) => {
   return useQuery({
     queryKey: [
