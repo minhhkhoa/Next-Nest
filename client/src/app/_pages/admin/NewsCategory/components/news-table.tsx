@@ -144,13 +144,12 @@ export function NewsTable({
                 <TableCell className="text-center">
                   <Popover>
                     <PopoverTrigger asChild>
-                      {/* <Button variant="outline">
-                      </Button> */}
-                      <button>
+                      <button 
+                      className="group-hover:opacity-100 transition-opacity p-1.5 hover:bg-secondary rounded">
                         <MoreVertical className="w-4 h-4" />
                       </button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-2">
+                    <PopoverContent className="w-40 p-2">
                       <div className="flex flex-col justify-items-start">
                         <Button
                           variant="ghost"

@@ -26,10 +26,6 @@ import { useDebounce } from "use-debounce";
 const pageSize = Number(envConfig.NEXT_PUBLIC_PAGE_SIZE);
 
 export default function NewsCate() {
-  const { data: categories } = useGetListCategories();
-
-  // const { data: news } = useGetListNews();
-
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"" | "active" | "inactive">(
@@ -55,7 +51,7 @@ export default function NewsCate() {
   //- Debounce 500ms sau khi người dùng dừng gõ
   const [debouncedSearch] = useDebounce(searchQuery, 500); //- vlaue, time
 
-  // const { data: total } = useGetListNews();
+  const { data: categories } = useGetListCategories();
   const { data: news } = useGetListNewsFilter({
     currentPage,
     pageSize: pageSize,
@@ -63,8 +59,6 @@ export default function NewsCate() {
     cateNewsID: selectedCategory,
     status: statusFilter,
   });
-
-  console.log("news: ", news);
 
   const handleDeleteNews = (id: string) => {
     // setNews(
@@ -135,15 +129,15 @@ export default function NewsCate() {
                 <h1 className="text-3xl font-bold text-foreground mb-2">
                   Quản Lý Tin Tức
                 </h1>
-                {/* <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   {selectedCategory
                     ? `Đang xem: ${
                         categories?.data?.find(
                           (c) => c._id === selectedCategory
                         )?.name.vi || "Danh mục"
-                      }`
-                    : `Tổng: ${filteredNews.length} bài viết`}
-                </p> */}
+                      } (${news?.data?.result.length || 0})`
+                    : `Tổng: ${news?.data?.result.length} bài viết`}
+                </p>
               </div>
               <Button
                 onClick={() => setNewsModalState({ isOpen: true })}
