@@ -2,7 +2,6 @@
 
 import { Input } from "@/components/ui/input";
 import { Search, X } from "lucide-react";
-import { Activity } from "react";
 
 interface SearchBarProps {
   value: string;
@@ -14,7 +13,7 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
     <div className="relative">
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
       <Input
-        placeholder="Tìm kiếm theo tiêu đề hoặc tóm tắt..."
+        placeholder="Tìm kiếm theo tiêu đề..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="pl-10 pr-10"

@@ -95,3 +95,15 @@ export const apiNewsResFilterResult = z.object({
 });
 
 export type NewsResFilterResultType = z.infer<typeof apiNewsResFilterResult>;
+
+//- create News
+export const newsCreate = z.object({
+  title: z.string().min(1, "Vui lòng nhập tiêu đề"),
+  cateNewsID: z.string().min(1, "Chọn danh mục"),
+  summary: z.string().min(1, "Nhập tóm tắt"),
+  description: z.string().optional(),
+  image: z.string().optional(),
+  status: z.enum(["active", "inactive"]),
+});
+
+export type NewsCreateType = z.infer<typeof newsCreate>;

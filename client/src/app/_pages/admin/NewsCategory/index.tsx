@@ -188,7 +188,6 @@ export default function NewsCate() {
             {/* News table */}
             <NewsTable
               news={news?.data?.result || []}
-              categories={categories?.data || []}
               onEdit={(item) => setNewsModalState({ isOpen: true, data: item })}
               onDelete={(id) => {
                 setDeleteModal({ isOpen: true, type: "news", id });
@@ -201,13 +200,13 @@ export default function NewsCate() {
       </div>
 
       {/* Modals */}
-      {/* {newsModalState.isOpen && (
+      {newsModalState.isOpen && (
         <NewsModal
           news={newsModalState.data}
-          categories={categories.filter((c) => !c.isDelete)}
+          categories={categories?.data || []}
           onClose={() => setNewsModalState({ isOpen: false })}
         />
-      )} */}
+      )}
 
       {categoryModalState.isOpen && (
         <CategoryModal

@@ -97,3 +97,13 @@ export const useGetListNewsFilter = ({
       }),
   });
 };
+
+export const useCreateNews = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: NewsApiRequest.createNews,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["getListNewsFilter"] });
+    },
+  });
+};

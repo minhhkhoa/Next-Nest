@@ -1,8 +1,8 @@
 "use client";
 
-import type React from "react";
-
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
   DialogContent,
@@ -11,8 +11,16 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -20,183 +28,236 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 
-interface Category {
-  _id: string;
-  name: string;
-}
-
-interface News {
-  _id?: string;
-  title: string;
-  cateNewsID: string;
-  description: string;
-  image: string;
-  summary: string;
-  status: "active" | "inactive";
-  isDelete: boolean;
-}
+import {
+  CategoryNewsResType,
+  newsCreate,
+  NewsCreateType,
+  NewsResFilterType,
+} from "@/schemasvalidation/NewsCategory";
+import { Upload } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { handleInitName, uploadToCloudinary } from "@/lib/utils";
+import { Label } from "@/components/ui/label";
 
 interface NewsModalProps {
-  news?: News;
-  categories: Category[];
+  news?: NewsResFilterType;
+  categories: CategoryNewsResType[];
   onClose: () => void;
 }
 
-export function NewsModal({
-  news,
-  categories,
-  onClose,
-}: NewsModalProps) {
+export function NewsModal({ news, categories, onClose }: NewsModalProps) {
   const isEditing = !!news?._id;
-  const [formData, setFormData] = useState<News>({
-    title: "",
-    cateNewsID: categories[0]?._id || "",
-    description: "",
-    image: "/news-image.jpg",
-    summary: "",
-    status: "active",
-    isDelete: false,
+  const [isUploading, setIsUploading] = useState(false);
+
+  const form = useForm<NewsCreateType>({
+    resolver: zodResolver(newsCreate),
+    defaultValues: {
+      title: "",
+      cateNewsID: categories[0]?._id || "",
+      summary: "",
+      description: "",
+      image: "",
+      status: "active",
+    },
   });
 
-  const onSubmit = (data: News) => {};
-
+  // Cập nhật dữ liệu khi mở modal sửa
   useEffect(() => {
     if (news) {
-      setFormData(news);
+      form.reset({
+        title: news.title.vi,
+        cateNewsID: news.cateNewsID[0],
+        summary: news.summary.vi,
+        description: news.description.vi,
+        image: news.image,
+        status: news.status as "active" | "inactive",
+      });
     } else if (categories.length > 0) {
-      setFormData((prev) => ({
+      form.reset((prev) => ({
         ...prev,
         cateNewsID: categories[0]._id,
       }));
     }
-  }, [news, categories]);
+  }, [news, categories, form]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.title || !formData.cateNewsID || !formData.summary) {
-      alert("Vui lòng điền tất cả các trường bắt buộc");
-      return;
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setIsUploading(true);
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const url = await uploadToCloudinary(file);
+      // setFormData((prev) => ({ ...prev, avatar: url }));
+    } catch (error) {
+      console.log("Lỗi upload media: ", error);
+    } finally {
+      setIsUploading(false);
     }
-    onSubmit(formData);
+  };
+
+  const handleSubmit = (values: NewsCreateType) => {
+    console.log("Form data:", values);
+    // TODO: gọi API create/update
+    onClose();
   };
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[600px] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? "Chỉnh Sửa Tin Tức" : "Thêm Tin Tức Mới"}
+            {isEditing ? "Chỉnh sửa tin tức" : "Thêm tin tức mới"}
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid gap-4">
-            {/* Title */}
-            <div>
-              <Label htmlFor="title">Tiêu Đề *</Label>
-              <Input
-                id="title"
-                placeholder="Nhập tiêu đề tin tức"
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
-              />
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-4"
+          >
+            {/* Image */}
+            <div className="flex items-center gap-6">
+              <Avatar className="w-32 h-32">
+                <AvatarImage
+                  src={form?.watch("image") || ""}
+                  alt={form.getValues("title")}
+                />
+                <AvatarFallback>
+                  {handleInitName(form.getValues("title")) || "MK"}
+                </AvatarFallback>
+              </Avatar>
+
+              <div className="flex-1 space-y-3">
+                <div>
+                  <Label htmlFor="image" className="text-sm font-medium">
+                    Tải lên Avatar
+                  </Label>
+                  <div className="mt-2 flex items-center gap-2">
+                    <Input
+                      id="image"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarUpload}
+                      className="cursor-pointer"
+                    />
+                    <Upload className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    PNG, JPG, GIF (tối đa 2MB)
+                  </p>
+                </div>
+              </div>
             </div>
+
+            {/* Title */}
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tiêu đề</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Nhập tiêu đề tin tức" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {/* Category */}
-            <div>
-              <Label htmlFor="category">Danh Mục *</Label>
-              <Select
-                value={formData.cateNewsID}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, cateNewsID: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat._id} value={cat._id}>
-                      {cat.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <FormField
+              control={form.control}
+              name="cateNewsID"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Danh mục</FormLabel>
+                  <FormControl>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Chọn danh mục" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((cate) => (
+                          <SelectItem key={cate._id} value={cate._id}>
+                            {cate.name.vi}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {/* Summary */}
-            <div>
-              <Label htmlFor="summary">Tóm Tắt *</Label>
-              <Input
-                id="summary"
-                placeholder="Nhập tóm tắt"
-                value={formData.summary}
-                onChange={(e) =>
-                  setFormData({ ...formData, summary: e.target.value })
-                }
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="summary"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tóm tắt</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Nhập tóm tắt" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {/* Description */}
-            <div>
-              <Label htmlFor="description">Mô Tả</Label>
-              <Textarea
-                id="description"
-                placeholder="Nhập mô tả chi tiết"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                rows={4}
-              />
-            </div>
-
-            {/* Image URL */}
-            <div>
-              <Label htmlFor="image">URL Hình Ảnh</Label>
-              <Input
-                id="image"
-                placeholder="Nhập URL hình ảnh"
-                value={formData.image}
-                onChange={(e) =>
-                  setFormData({ ...formData, image: e.target.value })
-                }
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Mô tả</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Nhập mô tả chi tiết"
+                      rows={4}
+                      {...field}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
 
             {/* Status */}
-            <div>
-              <Label htmlFor="status">Trạng Thái</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value: "active" | "inactive") =>
-                  setFormData({ ...formData, status: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Hoạt Động</SelectItem>
-                  <SelectItem value="inactive">Không Hoạt Động</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Trạng thái</FormLabel>
+                  <FormControl>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Chọn trạng thái" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Hoạt Động</SelectItem>
+                        <SelectItem value="inactive">
+                          Không Hoạt Động
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                </FormItem>
+              )}
+            />
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
-              Hủy
-            </Button>
-            <Button type="submit">
-              {isEditing ? "Cập Nhật" : "Thêm Tin Tức"}
-            </Button>
-          </DialogFooter>
-        </form>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={onClose}>
+                Hủy
+              </Button>
+              <Button type="submit">
+                {isEditing ? "Cập nhật" : "Thêm tin tức"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

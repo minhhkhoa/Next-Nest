@@ -6,6 +6,7 @@ import {
   NewsResType,
 } from "@/schemasvalidation/NewsCategory";
 import { ApiResponse } from "@/types/apiResponse";
+import { create } from "domain";
 
 const prefixCategory = "/cate-news";
 const prefixNews = "/news";
@@ -36,6 +37,9 @@ const NewsApiRequest = {
     http.get<ApiResponse<NewsResFilterResultType>>(`${prefixNews}/filter`, {
       params,
     }),
+
+  createNews: (payload: FormData) =>
+    http.post<ApiResponse<any>>(`${prefixNews}`, payload),
 };
 
 export { CategoryNewsApiRequest, NewsApiRequest };

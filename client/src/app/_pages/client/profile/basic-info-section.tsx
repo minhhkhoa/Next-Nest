@@ -29,19 +29,6 @@ export function BasicInfoSection() {
   };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    // try {
-    //   const file = e.target.files?.[0];
-    //   if (file) {
-    //     const res = await uploadMutate(file);
-
-    //     if (res.isError) return;
-
-    //     const urlAvatar = res.data;
-    //     setFormData((prev) => ({ ...prev, avatar: urlAvatar }));
-    //   }
-    // } catch (error) {
-    //   console.log("error upload: ", error);
-    // }
     try {
       setIsUploading(true);
       const file = e.target.files?.[0];

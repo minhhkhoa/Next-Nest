@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import {
-  CategoryNewsResType,
   MetaFilterType,
   NewsResFilterType,
 } from "@/schemasvalidation/NewsCategory";
@@ -28,13 +27,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { envConfig } from "../../../../../../config";
-
-const pageSize = Number(envConfig.NEXT_PUBLIC_PAGE_SIZE);
 
 interface NewsTableProps {
   news: NewsResFilterType[];
-  categories: CategoryNewsResType[];
   onEdit: (news: NewsResFilterType) => void;
   onDelete: (id: string) => void;
   metaFilter?: MetaFilterType;
@@ -43,7 +38,6 @@ interface NewsTableProps {
 
 export function NewsTable({
   news,
-  categories,
   onEdit,
   onDelete,
   metaFilter,
@@ -56,9 +50,6 @@ export function NewsTable({
       </div>
     );
   }
-  const getCategoryName = (cateId: string) => {
-    return categories.find((c) => c._id === cateId)?.name || "N/A";
-  };
 
   if (metaFilter.totalItems === 0) {
     return (
@@ -67,8 +58,6 @@ export function NewsTable({
       </div>
     );
   }
-
-  const startIndex = (metaFilter.current - 1) * pageSize + 1;
 
   return (
     <div className="space-y-4">
@@ -97,12 +86,13 @@ export function NewsTable({
                     />
                   </div>
                 </TableCell>
+
+                {/* tieu de */}
                 <TableCell className="font-medium max-w-xs truncate">
                   {item.title.vi}
                 </TableCell>
-                {/* <TableCell className="max-w-xs truncate text-sm text-muted-foreground">
-                  {item.summary.vi}
-                </TableCell> */}
+
+                {/* trang thai */}
                 <TableCell>
                   <Badge
                     variant={item.status === "active" ? "default" : "secondary"}
@@ -131,6 +121,8 @@ export function NewsTable({
                 <TableCell>
                   <span>{item.createdBy?.name || ""}</span>
                 </TableCell>
+
+                {/* hanh dong */}
                 <TableCell className="text-center">
                   <Popover>
                     <PopoverTrigger asChild>
