@@ -7,6 +7,7 @@ import { CateNews, CateNewsDocument } from './schemas/cate-new.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { BadRequestCustom } from 'src/customExceptions/BadRequestCustom';
 import mongoose from 'mongoose';
+import { UserDecoratorType } from 'src/utils/typeSchemas';
 
 @Injectable()
 export class CateNewsService {
@@ -16,18 +17,26 @@ export class CateNewsService {
     private cateNewsModel: SoftDeleteModel<CateNewsDocument>,
   ) {}
 
-  async create(createCateNewsDto: CreateCateNewsDto) {
+  async create(createCateNewsDto: CreateCateNewsDto, user: UserDecoratorType) {
     try {
       const dataLang = await this.translationService.translateModuleData(
         'cateNews',
         createCateNewsDto,
       );
 
-      const cateNews = await this.cateNewsModel.create(dataLang);
+      const cateNews = await this.cateNewsModel.create({
+        ...dataLang,
+        createdBy: {
+          _id: user.id,
+          name: user.name,
+          email: user.email,
+        },
+      });
 
       return {
         _id: cateNews._id,
         name: cateNews.name.en,
+        createdAt: cateNews.createdAt,
       };
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
@@ -66,7 +75,11 @@ export class CateNewsService {
     }
   }
 
-  async update(id: string, updateCateNewDto: UpdateCateNewsDto) {
+  async update(
+    id: string,
+    updateCateNewDto: UpdateCateNewsDto,
+    user: UserDecoratorType,
+  ) {
     try {
       if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new BadRequestCustom('ID CateNews không đúng định dạng', !!id);
@@ -82,7 +95,16 @@ export class CateNewsService {
         updateCateNewDto,
       );
       const filter = { _id: id };
-      const update = { $set: dataTranslation };
+      const update = {
+        $set: {
+          ...dataTranslation,
+          updatedBy: {
+            _id: user.id,
+            name: user.name,
+            email: user.email,
+          },
+        },
+      };
 
       const result = await this.cateNewsModel.updateOne(filter, update);
 

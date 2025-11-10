@@ -5,3 +5,4 @@ export interface ApiResponse<T> {
   isOk: boolean;
   isError: boolean;
 }
+

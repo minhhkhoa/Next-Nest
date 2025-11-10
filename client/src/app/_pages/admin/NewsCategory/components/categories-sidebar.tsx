@@ -4,19 +4,13 @@ import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MoreVertical, Plus, Trash2, Edit2, Search, X } from "lucide-react";
-
-interface Category {
-  _id: string;
-  name: string;
-  summary: string;
-  isDelete: boolean;
-}
+import { CategoryNewsResType } from "@/schemasvalidation/NewsCategory";
 
 interface CategoriesSidebarProps {
-  categories: Category[];
+  categories: CategoryNewsResType[];
   selectedCategory: string | null;
   onSelectCategory: (id: string | null) => void;
-  onEditCategory: (category: Category) => void;
+  onEditCategory: (category: CategoryNewsResType) => void;
   onDeleteCategory: (id: string) => void;
   onShowAddCategory: () => void;
 }
@@ -35,8 +29,8 @@ export function CategoriesSidebar({
   const filteredCategories = useMemo(() => {
     return categories.filter(
       (category) =>
-        category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        category.summary.toLowerCase().includes(searchQuery.toLowerCase())
+        category.name.vi.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        category.summary.vi.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [categories, searchQuery]);
 
@@ -95,7 +89,7 @@ export function CategoriesSidebar({
                 className="w-full justify-start"
                 onClick={() => onSelectCategory(category._id)}
               >
-                <span className="truncate">{category.name}</span>
+                <span className="truncate">{category.name.vi}</span>
               </Button>
 
               <button
@@ -134,7 +128,7 @@ export function CategoriesSidebar({
 
               <div className="hidden group-hover:block absolute left-full ml-2 top-0 w-48 bg-popover border border-border rounded-md p-2 shadow-md z-40">
                 <p className="text-xs text-muted-foreground">
-                  {category.summary}
+                  {category.summary.vi}
                 </p>
               </div>
             </div>

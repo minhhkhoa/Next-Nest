@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import mongoose, { HydratedDocument, Types } from 'mongoose';
 import { MultiLang } from 'src/utils/typeSchemas';
 
 @Schema({ timestamps: true })
@@ -22,6 +22,28 @@ export class CateNews {
 
   @Prop()
   deletedAt?: Date;
+
+  //- update schema
+  @Prop({ type: Object })
+  createdBy: {
+    _id: mongoose.Schema.Types.ObjectId;
+    name: string;
+    email: string;
+  };
+
+  @Prop({ type: Object })
+  updatedBy: {
+    _id: mongoose.Schema.Types.ObjectId;
+    name: string;
+    email: string;
+  };
+
+  @Prop({ type: Object })
+  deletedBy: {
+    _id: mongoose.Schema.Types.ObjectId;
+    name: string;
+    email: string;
+  };
 }
 
 export const CateNewsSchema = SchemaFactory.createForClass(CateNews);

@@ -58,7 +58,7 @@ export default function PopoverAdmin() {
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="ghost" className="w-full h-12">
-          <div className="flex gap-2">
+          <div className="flex gap-2 max-w-[200px]">
             <Avatar className="relative flex size-8 shrink-0 overflow-hidden h-9 w-9 rounded-lg">
               <AvatarImage src={user.avatar || ""} alt={name} />
               <AvatarFallback>{name}</AvatarFallback>
@@ -67,14 +67,19 @@ export default function PopoverAdmin() {
             {openSidebar && (
               <div className="text-left">
                 <p>{name}</p>
-                <p className="text-muted-foreground">{user.email}</p>
+                <p className="text-muted-foreground truncate w-[150px]">
+                  {user.email}
+                </p>
               </div>
             )}
           </div>
         </Button>
       </PopoverTrigger>
       <PopoverContent side="right" className="w-60">
-        <div className="flex gap-2 items-center rounded-xl pl-3 cursor-pointer hover:bg-accent/50">
+        <div
+          className="flex gap-2 items-center rounded-xl pl-3 cursor-pointer hover:bg-accent/50"
+          onClick={onProfileClick}
+        >
           <Avatar className="relative flex size-8 shrink-0 overflow-hidden h-10 w-10 rounded-lg">
             <AvatarImage src={user.avatar || ""} alt={name} />
             <AvatarFallback>{name}</AvatarFallback>
@@ -82,7 +87,9 @@ export default function PopoverAdmin() {
 
           <div className="text-left">
             <p>{name}</p>
-            <p className="text-muted-foreground">{user.email}</p>
+            <p className="text-muted-foreground max-w-[150px] truncate">
+              {user.email}
+            </p>
           </div>
         </div>
 

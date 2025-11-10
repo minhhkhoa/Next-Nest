@@ -10,13 +10,8 @@ import { DeleteConfirmModal } from "./components/modals/delete-confirm-modal";
 import { SearchBar } from "./components/search-bar";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-
-interface Category {
-  _id: string;
-  name: string;
-  summary: string;
-  isDelete: boolean;
-}
+import { CategoryNewsResType } from "@/schemasvalidation/NewsCategory";
+import { useGetListCategories } from "@/queries/useNewsCategory";
 
 interface News {
   _id: string;
@@ -30,26 +25,7 @@ interface News {
 }
 
 export default function NewsCate() {
-  const [categories, setCategories] = useState<Category[]>([
-    {
-      _id: "1",
-      name: "Công nghệ",
-      summary: "Tin tức về công nghệ mới nhất",
-      isDelete: false,
-    },
-    {
-      _id: "2",
-      name: "Kinh doanh",
-      summary: "Tin tức kinh doanh và thị trường",
-      isDelete: false,
-    },
-    {
-      _id: "3",
-      name: "Sức khỏe",
-      summary: "Tin tức về sức khỏe và y tế",
-      isDelete: false,
-    },
-  ]);
+  const { data: categories } = useGetListCategories();
 
   const [news, setNews] = useState<News[]>([
     {
@@ -128,7 +104,7 @@ export default function NewsCate() {
   }>({ isOpen: false });
   const [categoryModalState, setCategoryModalState] = useState<{
     isOpen: boolean;
-    data?: Category;
+    data?: CategoryNewsResType;
   }>({
     isOpen: false,
   });
@@ -170,13 +146,12 @@ export default function NewsCate() {
     );
   };
 
-
   const handleDeleteCategory = (id: string) => {
-    setCategories(
-      categories.map((item) =>
-        item._id === id ? { ...item, isDelete: true } : item
-      )
-    );
+    // setCategories(
+    //   categories.map((item) =>
+    //     item._id === id ? { ...item, isDelete: true } : item
+    //   )
+    // );
     if (selectedCategory === id) {
       setSelectedCategory(null);
     }
@@ -212,7 +187,7 @@ export default function NewsCate() {
         {/* Sidebar */}
         <aside className="w-full lg:w-80">
           <CategoriesSidebar
-            categories={categories.filter((c) => !c.isDelete)}
+            categories={categories?.data || []}
             selectedCategory={selectedCategory}
             onSelectCategory={handleSelectCategory}
             onEditCategory={(category) =>
@@ -237,8 +212,9 @@ export default function NewsCate() {
                 <p className="text-sm text-muted-foreground">
                   {selectedCategory
                     ? `Đang xem: ${
-                        categories.find((c) => c._id === selectedCategory)
-                          ?.name || "Danh mục"
+                        categories?.data?.find(
+                          (c) => c._id === selectedCategory
+                        )?.name.vi || "Danh mục"
                       }`
                     : `Tổng: ${filteredNews.length} bài viết`}
                 </p>
@@ -291,7 +267,7 @@ export default function NewsCate() {
             </div>
 
             {/* News table */}
-            <NewsTable
+            {/* <NewsTable
               news={paginatedNews}
               categories={categories.filter((c) => !c.isDelete)}
               onEdit={(item) => setNewsModalState({ isOpen: true, data: item })}
@@ -302,19 +278,19 @@ export default function NewsCate() {
               totalPages={totalPages}
               totalItems={filteredNews.length}
               onPageChange={setCurrentPage}
-            />
+            /> */}
           </div>
         </main>
       </div>
 
       {/* Modals */}
-      {newsModalState.isOpen && (
+      {/* {newsModalState.isOpen && (
         <NewsModal
           news={newsModalState.data}
           categories={categories.filter((c) => !c.isDelete)}
           onClose={() => setNewsModalState({ isOpen: false })}
         />
-      )}
+      )} */}
 
       {categoryModalState.isOpen && (
         <CategoryModal

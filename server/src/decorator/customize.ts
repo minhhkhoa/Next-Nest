@@ -3,6 +3,7 @@ import {
   ExecutionContext,
   SetMetadata,
 } from '@nestjs/common';
+import { UserDecoratorType } from 'src/utils/typeSchemas';
 
 export const IS_PUBLIC_KEY = 'isPublic';
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true); //- key:value
@@ -14,7 +15,7 @@ export const ResponseMessage = (message: string) =>
 export const userDecorator = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
-    return request.user;
+    return request.user as UserDecoratorType;
   },
 );
 

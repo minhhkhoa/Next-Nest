@@ -17,8 +17,14 @@ import { Textarea } from "@/components/ui/textarea";
 
 interface Category {
   _id?: string;
-  name: string;
-  summary: string;
+  name: {
+    vi: string;
+    en: string;
+  };
+  summary: {
+    vi: string;
+    en: string;
+  };
   isDelete: boolean;
 }
 
@@ -30,8 +36,14 @@ interface CategoryModalProps {
 export function CategoryModal({ category, onClose }: CategoryModalProps) {
   const isEditing = !!category?._id;
   const [formData, setFormData] = useState<Category>({
-    name: "",
-    summary: "",
+    name: {
+      vi: "",
+      en: "",
+    },
+    summary: {
+      vi: "",
+      en: "",
+    },
     isDelete: false,
   });
 
@@ -69,9 +81,12 @@ export function CategoryModal({ category, onClose }: CategoryModalProps) {
               <Input
                 id="name"
                 placeholder="Nhập tên danh mục"
-                value={formData.name}
+                value={formData.name.vi}
                 onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
+                  setFormData({
+                    ...formData,
+                    name: { ...formData.name, vi: e.target.value },
+                  })
                 }
               />
             </div>
@@ -82,9 +97,12 @@ export function CategoryModal({ category, onClose }: CategoryModalProps) {
               <Textarea
                 id="summary"
                 placeholder="Nhập tóm tắt danh mục"
-                value={formData.summary}
+                value={formData.summary.vi}
                 onChange={(e) =>
-                  setFormData({ ...formData, summary: e.target.value })
+                  setFormData({
+                    ...formData,
+                    summary: { ...formData.summary, vi: e.target.value },
+                  })
                 }
                 rows={3}
               />
