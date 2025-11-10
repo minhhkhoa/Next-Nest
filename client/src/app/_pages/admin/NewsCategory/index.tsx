@@ -12,28 +12,32 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import {
   CategoryNewsResType,
+  NewsResFilterType,
   NewsResType,
 } from "@/schemasvalidation/NewsCategory";
 import {
   useGetListCategories,
   useGetListNews,
+  useGetListNewsFilter,
 } from "@/queries/useNewsCategory";
+import { envConfig } from "../../../../../config";
+import { useDebounce } from "use-debounce";
+
+const pageSize = Number(envConfig.NEXT_PUBLIC_PAGE_SIZE);
 
 export default function NewsCate() {
   const { data: categories } = useGetListCategories();
 
-  const { data: news } = useGetListNews();
-
-  console.log("news: ", news);
+  // const { data: news } = useGetListNews();
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<
-    "all" | "active" | "inactive"
-  >("all");
+  const [statusFilter, setStatusFilter] = useState<"" | "active" | "inactive">(
+    ""
+  );
   const [newsModalState, setNewsModalState] = useState<{
     isOpen: boolean;
-    data?: NewsResType;
+    data?: NewsResFilterType;
   }>({ isOpen: false });
   const [categoryModalState, setCategoryModalState] = useState<{
     isOpen: boolean;
@@ -47,43 +51,20 @@ export default function NewsCate() {
     id: string | null;
   }>({ isOpen: false, type: null, id: null });
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
 
-  const filteredNews = useMemo(() => {
-    return (news?.data ?? [])
-      .filter((item) => !item.isDeleted) // sửa lại đúng tên field nếu là `isDeleted`
-      .filter((item) => {
-        console.log("item: ", item);
-        // Kiểm tra category
-        if (
-          selectedCategory &&
-          !item.cateNewsID.some((cate) => cate._id === selectedCategory)
-        ) {
-          return false;
-        }
+  //- Debounce 500ms sau khi người dùng dừng gõ
+  const [debouncedSearch] = useDebounce(searchQuery, 500); //- vlaue, time
 
-        // Kiểm tra trạng thái
-        if (statusFilter !== "all" && item.status !== statusFilter)
-          return false;
+  // const { data: total } = useGetListNews();
+  const { data: news } = useGetListNewsFilter({
+    currentPage,
+    pageSize: pageSize,
+    title: debouncedSearch,
+    cateNewsID: selectedCategory,
+    status: statusFilter,
+  });
 
-        // Kiểm tra tìm kiếm
-        const titleText = item?.title?.vi || item.title.en || "";
-
-        if (
-          searchQuery &&
-          !titleText.toLowerCase().includes(searchQuery.toLowerCase())
-        ) {
-          return false;
-        }
-
-        return true;
-      });
-  }, [news, selectedCategory, searchQuery, statusFilter]);
-
-  const totalPages = Math.ceil(filteredNews.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedNews = filteredNews.slice(startIndex, endIndex);
+  console.log("news: ", news);
 
   const handleDeleteNews = (id: string) => {
     // setNews(
@@ -121,7 +102,7 @@ export default function NewsCate() {
     setCurrentPage(1);
   };
 
-  const handleStatusFilterChange = (status: "all" | "active" | "inactive") => {
+  const handleStatusFilterChange = (status: "" | "active" | "inactive") => {
     setStatusFilter(status);
     setCurrentPage(1);
   };
@@ -154,7 +135,7 @@ export default function NewsCate() {
                 <h1 className="text-3xl font-bold text-foreground mb-2">
                   Quản Lý Tin Tức
                 </h1>
-                <p className="text-sm text-muted-foreground">
+                {/* <p className="text-sm text-muted-foreground">
                   {selectedCategory
                     ? `Đang xem: ${
                         categories?.data?.find(
@@ -162,7 +143,7 @@ export default function NewsCate() {
                         )?.name.vi || "Danh mục"
                       }`
                     : `Tổng: ${filteredNews.length} bài viết`}
-                </p>
+                </p> */}
               </div>
               <Button
                 onClick={() => setNewsModalState({ isOpen: true })}
@@ -178,52 +159,38 @@ export default function NewsCate() {
               <SearchBar value={searchQuery} onChange={handleSearchChange} />
               <div className="flex gap-2 flex-wrap">
                 <Button
-                  variant={statusFilter === "all" ? "default" : "outline"}
+                  variant={statusFilter === "" ? "default" : "outline"}
                   size="sm"
-                  onClick={() => handleStatusFilterChange("all")}
+                  onClick={() => handleStatusFilterChange("")}
                 >
-                  Tất Cả ({news?.data?.filter((n) => !n.isDeleted).length})
+                  Tất Cả
                 </Button>
                 <Button
                   variant={statusFilter === "active" ? "default" : "outline"}
                   size="sm"
                   onClick={() => handleStatusFilterChange("active")}
                 >
-                  Hoạt Động (
-                  {
-                    news?.data?.filter(
-                      (n) => !n.isDeleted && n.status === "active"
-                    ).length
-                  }
-                  )
+                  Hoạt Động
                 </Button>
                 <Button
                   variant={statusFilter === "inactive" ? "default" : "outline"}
                   size="sm"
                   onClick={() => handleStatusFilterChange("inactive")}
                 >
-                  Dừng Hoạt Động (
-                  {
-                    news?.data?.filter(
-                      (n) => !n.isDeleted && n.status === "inactive"
-                    ).length
-                  }
-                  )
+                  Dừng Hoạt Động
                 </Button>
               </div>
             </div>
 
             {/* News table */}
             <NewsTable
-              news={paginatedNews}
+              news={news?.data?.result || []}
               categories={categories?.data || []}
               onEdit={(item) => setNewsModalState({ isOpen: true, data: item })}
               onDelete={(id) => {
                 setDeleteModal({ isOpen: true, type: "news", id });
               }}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalItems={filteredNews.length}
+              metaFilter={news?.data?.meta}
               onPageChange={setCurrentPage}
             />
           </div>

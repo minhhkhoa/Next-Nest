@@ -20,6 +20,7 @@ import {
 import Image from "next/image";
 import {
   CategoryNewsResType,
+  NewsResFilterType,
   NewsResType,
 } from "@/schemasvalidation/NewsCategory";
 import { useState } from "react";
@@ -30,15 +31,23 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { envConfig } from "../../../../../../config";
 
-interface NewsTableProps {
-  news: NewsResType[];
-  categories: CategoryNewsResType[];
-  onEdit: (news: NewsResType) => void;
-  onDelete: (id: string) => void;
-  currentPage: number;
+const pageSize = Number(envConfig.NEXT_PUBLIC_PAGE_SIZE);
+
+interface MetaFilter {
+  current: number;
+  pageSize: number;
   totalPages: number;
   totalItems: number;
+}
+
+interface NewsTableProps {
+  news: NewsResFilterType[];
+  categories: CategoryNewsResType[];
+  onEdit: (news: NewsResFilterType) => void;
+  onDelete: (id: string) => void;
+  metaFilter?: MetaFilter;
   onPageChange: (page: number) => void;
 }
 
@@ -47,16 +56,21 @@ export function NewsTable({
   categories,
   onEdit,
   onDelete,
-  currentPage,
-  totalPages,
-  totalItems,
+  metaFilter,
   onPageChange,
 }: NewsTableProps) {
+  if (!metaFilter || metaFilter.totalItems === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">Không có bài viết nào</p>
+      </div>
+    );
+  }
   const getCategoryName = (cateId: string) => {
     return categories.find((c) => c._id === cateId)?.name || "N/A";
   };
 
-  if (totalItems === 0) {
+  if (metaFilter.totalItems === 0) {
     return (
       <div className="text-center py-12">
         <p className="text-muted-foreground">Không có bài viết nào</p>
@@ -64,8 +78,7 @@ export function NewsTable({
     );
   }
 
-  const itemsPerPage = 10;
-  const startIndex = (currentPage - 1) * itemsPerPage + 1;
+  const startIndex = (metaFilter.current - 1) * pageSize + 1;
 
   return (
     <div className="space-y-4">
@@ -126,9 +139,7 @@ export function NewsTable({
 
                 {/* tac gia */}
                 <TableCell>
-                  <span>
-                    {item.createdBy?.name || ""}
-                  </span>
+                  <span>{item.createdBy?.name || ""}</span>
                 </TableCell>
                 <TableCell className="text-center">
                   <Popover>
@@ -171,40 +182,41 @@ export function NewsTable({
 
       <div className="flex items-center justify-between py-4 px-2">
         <div className="text-sm text-muted-foreground">
-          Hiển thị {startIndex}-
-          {Math.min(startIndex + news.length - 1, totalItems)} trong{" "}
-          {totalItems} bài viết
+          Hiển thị {" "}
+          {metaFilter.totalItems} bài viết liên quan
         </div>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1}
+            onClick={() => onPageChange(metaFilter.current - 1)}
+            disabled={metaFilter.current === 1}
           >
             <ChevronLeft className="w-4 h-4" />
             Trước
           </Button>
 
           <div className="flex items-center gap-1">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <Button
-                key={page}
-                variant={currentPage === page ? "default" : "outline"}
-                size="sm"
-                onClick={() => onPageChange(page)}
-                className="min-w-10"
-              >
-                {page}
-              </Button>
-            ))}
+            {Array.from({ length: metaFilter.totalPages }, (_, i) => i + 1).map(
+              (page) => (
+                <Button
+                  key={page}
+                  variant={metaFilter.current === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => onPageChange(page)}
+                  className="min-w-10"
+                >
+                  {page}
+                </Button>
+              )
+            )}
           </div>
 
           <Button
             variant="outline"
             size="sm"
-            onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
+            onClick={() => onPageChange(metaFilter.current + 1)}
+            disabled={metaFilter.current === metaFilter.totalPages}
           >
             Sau
             <ChevronRight className="w-4 h-4" />

@@ -19,3 +19,36 @@ export const useGetListNews = () => {
     queryFn: NewsApiRequest.getListNews,
   });
 };
+
+export const useGetListNewsFilter = ({
+  currentPage,
+  pageSize,
+  title,
+  cateNewsID,
+  status
+}: {
+  currentPage: number;
+  pageSize: number;
+  title?: string;
+  cateNewsID?: string | null;
+  status?: string
+}) => {
+  return useQuery({
+    queryKey: [
+      "getListNewsFilter",
+      currentPage,
+      pageSize,
+      title,
+      cateNewsID,
+      status,
+    ],
+    queryFn: () =>
+      NewsApiRequest.getListNewsFilter({
+        currentPage,
+        pageSize,
+        title: title ?? "",
+        cateNewsID: cateNewsID ?? "",
+        status: status ?? "",
+      }),
+  });
+};

@@ -7,6 +7,13 @@ export const ActionBy = z.object({
   email: z.string(),
 });
 
+export const MetaFilter = z.object({
+  current: z.number(),
+  pageSize: z.number(),
+  totalPages: z.number(),
+  totalItems: z.number()
+})
+
 //- category news
 export const apiCategoryNewsRes = z.object({
   _id: z.string(),
@@ -49,3 +56,18 @@ export const apiNewsRes = z.object({
 });
 
 export type NewsResType = z.infer<typeof apiNewsRes>;
+
+export const apiNewsResFilter = apiNewsRes
+  .omit({ cateNewsID: true }) //- Xóa field cũ
+  .extend({
+    cateNewsID: z.array(z.string()), //- Thêm field mới với kiểu string[]
+  });
+
+export type NewsResFilterType = z.infer<typeof apiNewsResFilter>;
+
+export const apiNewsResFilterResult = z.object({
+  meta: MetaFilter,
+  result: z.array(apiNewsResFilter),
+});
+
+export type NewsResFilterResultType = z.infer<typeof apiNewsResFilterResult>;

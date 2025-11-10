@@ -57,9 +57,9 @@ export class NewsService {
   }
 
   async findAllByFilter(query: FindNewsQueryDto) {
-    const { currentPage, pageSize, title, cateNewsID } = query;
+    const { currentPage, pageSize, title, cateNewsID, status } = query;
 
-    const queryForAqp = { title, cateNewsID };
+    const queryForAqp = { title, cateNewsID, status };
     const { filter, sort, population } = aqp(queryForAqp);
 
     //- Xây dựng điều kiện lọc
@@ -78,6 +78,11 @@ export class NewsService {
     //- Xử lý filter cho cateNewsID nếu truyền lên
     if (cateNewsID) {
       filterConditions.cateNewsID = { $in: cateNewsID }; //- Lọc theo mảng MongoID
+    }
+
+    //- Xử lý filter cho status nếu truyền lên
+    if (status) {
+      filterConditions.status = status;
     }
 
     const defaultPage = currentPage > 0 ? +currentPage : 1;

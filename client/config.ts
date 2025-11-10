@@ -5,6 +5,7 @@ export const configSchema = z.object({
   NEXT_PUBLIC_API_URL_CLIENT: z.string(),
   NEXT_PUBLIC_TOKEN_TEST: z.string(),
   NEXT_PUBLIC_CLOUD_API: z.string(),
+  NEXT_PUBLIC_PAGE_SIZE: z.string(),
 });
 
 const configProject = configSchema.safeParse({
@@ -12,6 +13,7 @@ const configProject = configSchema.safeParse({
   NEXT_PUBLIC_API_URL_CLIENT: process.env.NEXT_PUBLIC_API_URL_CLIENT,
   NEXT_PUBLIC_TOKEN_TEST: process.env.NEXT_PUBLIC_TOKEN_TEST,
   NEXT_PUBLIC_CLOUD_API: process.env.NEXT_PUBLIC_CLOUD_API,
+  NEXT_PUBLIC_PAGE_SIZE: process.env.NEXT_PUBLIC_PAGE_SIZE,
 });
 
 if (!configProject.success) {

@@ -1,10 +1,13 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsEnum,
   IsMongoId,
   IsNumber,
   IsOptional,
   IsString,
+  ValidateIf,
 } from 'class-validator';
+import { NewsStatus } from 'src/utils/typeSchemas';
 
 export class FindNewsQueryDto {
   @ApiPropertyOptional({ example: 1 })
@@ -22,9 +25,12 @@ export class FindNewsQueryDto {
 
   @ApiPropertyOptional({ example: '' })
   @IsOptional()
-  @IsMongoId({
-    each: true,
-    message: 'ID trong cateNewsID phải là MongoId hợp lệ',
-  })
+  @ValidateIf((o) => o.cateNewsID !== '' && o.cateNewsID != null)
+  @IsMongoId({ message: 'cateNewsID phải là MongoId hợp lệ' })
   cateNewsID?: string;
+
+  @ApiPropertyOptional()
+  // @IsEnum(NewsStatus, { message: 'Status phải là active hoặc inactive hoặc ""' })
+  @IsOptional()
+  status?: NewsStatus;
 }

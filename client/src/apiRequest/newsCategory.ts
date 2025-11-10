@@ -1,6 +1,7 @@
 import http from "@/lib/http";
 import {
   CategoryNewsResType,
+  NewsResFilterResultType,
   NewsResType,
 } from "@/schemasvalidation/NewsCategory";
 import { ApiResponse } from "@/types/apiResponse";
@@ -14,6 +15,16 @@ const CategoryNewsApiRequest = {
 
 const NewsApiRequest = {
   getListNews: () => http.get<ApiResponse<NewsResType[]>>(`${prefixNews}`),
+  getListNewsFilter: (params: {
+    currentPage: number;
+    pageSize: number;
+    title?: string;
+    cateNewsID?: string;
+    status?: string;
+  }) =>
+    http.get<ApiResponse<NewsResFilterResultType>>(`${prefixNews}/filter`, {
+      params,
+    }),
 };
 
 export { CategoryNewsApiRequest, NewsApiRequest };
