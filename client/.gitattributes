@@ -1,0 +1,2 @@
+# Bỏ qua thư mục tinymce khỏi quá trình phân tích ngôn ngữ của GitHub
+/public/tinymce/* linguist-vendored
