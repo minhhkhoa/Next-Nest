@@ -2,11 +2,11 @@ import http from "@/lib/http";
 import {
   CategoryNewsResType,
   CateNewsCreateType,
+  NewsCreateType,
   NewsResFilterResultType,
   NewsResType,
 } from "@/schemasvalidation/NewsCategory";
 import { ApiResponse } from "@/types/apiResponse";
-import { create } from "domain";
 
 const prefixCategory = "/cate-news";
 const prefixNews = "/news";
@@ -38,8 +38,14 @@ const NewsApiRequest = {
       params,
     }),
 
-  createNews: (payload: FormData) =>
+  createNews: (payload: NewsCreateType) =>
     http.post<ApiResponse<any>>(`${prefixNews}`, payload),
+
+  updateNews: (id: string, payload: NewsCreateType) =>
+    http.patch<ApiResponse<any>>(`${prefixNews}/${id}`, payload),
+
+  deleteNews: (id: string) =>
+    http.delete<ApiResponse<any>>(`${prefixNews}/${id}`),
 };
 
 export { CategoryNewsApiRequest, NewsApiRequest };

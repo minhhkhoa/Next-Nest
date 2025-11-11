@@ -16,6 +16,7 @@ import {
 } from "@/schemasvalidation/NewsCategory";
 import {
   useDeleteCategoryNewsMutation,
+  useDeleteNews,
   useGetListCategories,
   useGetListNewsFilter,
 } from "@/queries/useNewsCategory";
@@ -60,13 +61,21 @@ export default function NewsCate() {
     status: statusFilter,
   });
 
-  const { mutateAsync: deleteCateNewsMutation, isPending: isDeleting } =
+  const { mutateAsync: deleteCateNewsMutation } =
     useDeleteCategoryNewsMutation();
 
-  const handleDeleteNews = (id: string) => {
-    // setNews(
-    //   news.map((item) => (item._id === id ? { ...item, isDelete: true } : item))
-    // );
+  const { mutateAsync: deleteNewsMutation } = useDeleteNews();
+
+  const handleDeleteNews = async (id: string) => {
+    try {
+      const res = await deleteNewsMutation(id);
+
+      if (res.isError) return;
+
+      toast.success(res.message);
+    } catch (error) {
+      console.log("error handle Delete News: ", error);
+    }
   };
 
   const handleDeleteCategory = async (id: string) => {

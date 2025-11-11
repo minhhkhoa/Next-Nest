@@ -39,6 +39,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { handleInitName, uploadToCloudinary } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import TinyEditor from "@/components/tinyCustomize";
+import { useCreateNews, useUpdateNews } from "@/queries/useNewsCategory";
+import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
 
 interface NewsModalProps {
   news?: NewsResFilterType;
@@ -61,6 +64,12 @@ export function NewsModal({ news, categories, onClose }: NewsModalProps) {
       status: "active",
     },
   });
+
+  const { mutateAsync: createNewsMutation, isPending: isCreating } =
+    useCreateNews();
+
+  const { mutateAsync: updateNewsMutation, isPending: isUpdating } =
+    useUpdateNews();
 
   // Cập nhật dữ liệu khi mở modal sửa
   useEffect(() => {
@@ -88,7 +97,9 @@ export function NewsModal({ news, categories, onClose }: NewsModalProps) {
       if (!file) return;
 
       const url = await uploadToCloudinary(file);
-      // setFormData((prev) => ({ ...prev, avatar: url }));
+
+      //- save to form
+      form.setValue("image", url);
     } catch (error) {
       console.log("Lỗi upload media: ", error);
     } finally {
@@ -96,10 +107,31 @@ export function NewsModal({ news, categories, onClose }: NewsModalProps) {
     }
   };
 
-  const handleSubmit = (values: NewsCreateType) => {
-    console.log("Form data:", values);
-    // TODO: gọi API create/update
-    onClose();
+  const handleSubmit = async (values: NewsCreateType) => {
+    try {
+      const payload = {
+        ...values,
+      };
+      if (isEditing) {
+        const resUpdate = await updateNewsMutation({
+          id: news?._id || "",
+          payload,
+        });
+        if (resUpdate.isError) return;
+
+        toast.success(resUpdate.message);
+      } else {
+        const resCreate = await createNewsMutation(payload);
+
+        if (resCreate.isError) return;
+
+        toast.success(resCreate.message);
+
+        form.reset();
+      }
+    } catch (error) {
+      console.log("error handleSubmit News: ", error);
+    }
   };
 
   return (
@@ -159,6 +191,11 @@ export function NewsModal({ news, categories, onClose }: NewsModalProps) {
                   <p className="text-xs text-muted-foreground mt-1">
                     PNG, JPG, GIF (tối đa 2MB)
                   </p>
+                  {isUploading && (
+                    <p className="text-xs mt-1 text-green-400">
+                      Đang tải ảnh lên...
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -178,31 +215,63 @@ export function NewsModal({ news, categories, onClose }: NewsModalProps) {
               )}
             />
 
-            {/* Category */}
-            <FormField
-              control={form.control}
-              name="cateNewsID"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Danh mục</FormLabel>
-                  <FormControl>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Chọn danh mục" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((cate) => (
-                          <SelectItem key={cate._id} value={cate._id}>
-                            {cate.name.vi}
+            <div className="grid grid-cols-2 gap-4">
+              {/* Category */}
+              <FormField
+                control={form.control}
+                name="cateNewsID"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Danh mục</FormLabel>
+                    <FormControl>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Chọn danh mục" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map((cate) => (
+                            <SelectItem key={cate._id} value={cate._id}>
+                              {cate.name.vi}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Status */}
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Trạng thái</FormLabel>
+                    <FormControl>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Chọn trạng thái" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="active">Hoạt Động</SelectItem>
+                          <SelectItem value="inactive">
+                            Không Hoạt Động
                           </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
 
             {/* Summary */}
             <FormField
@@ -236,36 +305,26 @@ export function NewsModal({ news, categories, onClose }: NewsModalProps) {
               )}
             />
 
-            {/* Status */}
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Trạng thái</FormLabel>
-                  <FormControl>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Chọn trạng thái" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="active">Hoạt Động</SelectItem>
-                        <SelectItem value="inactive">
-                          Không Hoạt Động
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>
+            <DialogFooter className="relative">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={isCreating || isUpdating}
+              >
                 Hủy
               </Button>
-              <Button type="submit">
-                {isEditing ? "Cập nhật" : "Thêm tin tức"}
+              <Button type="submit" disabled={isCreating || isUpdating}>
+                {isCreating || isUpdating ? (
+                  <>
+                    <Spinner className="mr-2 h-4 w-4 animate-spin" />
+                    Đang xử lý...
+                  </>
+                ) : isEditing ? (
+                  "Cập nhật"
+                ) : (
+                  "Thêm tin tức"
+                )}
               </Button>
             </DialogFooter>
           </form>

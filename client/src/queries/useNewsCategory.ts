@@ -2,7 +2,10 @@ import {
   CategoryNewsApiRequest,
   NewsApiRequest,
 } from "@/apiRequest/newsCategory";
-import { CateNewsCreateType } from "@/schemasvalidation/NewsCategory";
+import {
+  CateNewsCreateType,
+  NewsCreateType,
+} from "@/schemasvalidation/NewsCategory";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 //- category News
@@ -102,6 +105,27 @@ export const useCreateNews = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: NewsApiRequest.createNews,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["getListNewsFilter"] });
+    },
+  });
+};
+
+export const useUpdateNews = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: NewsCreateType }) =>
+      NewsApiRequest.updateNews(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["getListNewsFilter"] });
+    },
+  });
+};
+
+export const useDeleteNews = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: NewsApiRequest.deleteNews,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["getListNewsFilter"] });
     },

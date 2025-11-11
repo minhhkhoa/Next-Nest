@@ -1,4 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IsBoolean, IsEnum, IsMongoId, IsNotEmpty, IsOptional } from "class-validator";
 import { NewsStatus } from "src/utils/typeSchemas";
 
@@ -28,7 +28,7 @@ export class CreateNewsDto {
   @IsOptional()
   status?: NewsStatus;
 
-  @ApiProperty({ required: false, default: false })
+  @ApiPropertyOptional({ required: false, default: false })
   @IsBoolean({ message: 'isDeleted phải là boolean' })
   @IsOptional()
   isDeleted?: boolean;

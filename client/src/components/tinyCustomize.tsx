@@ -52,8 +52,6 @@ export default function TinyEditor({ field, placeholder }: TinyEditorProps) {
         // gọi API upload
         const url = await uploadToCloudinary(file);
 
-        console.log("url: ", url);
-
         // enable Save
         saveBtn?.removeAttribute("disabled");
 
@@ -79,7 +77,7 @@ export default function TinyEditor({ field, placeholder }: TinyEditorProps) {
         value={field.value}
         onEditorChange={(content) => field.onChange(content)}
         init={{
-          height: 400,
+          height: 550,
           menubar: true,
           plugins: [
             "advlist",
