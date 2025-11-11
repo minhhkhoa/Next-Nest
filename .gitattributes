@@ -1,1 +1,3 @@
 client/public/tinymce/* linguist-vendored
+node_modules/* linguist-vendored
+dist/* linguist-vendored
