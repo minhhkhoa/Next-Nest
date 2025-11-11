@@ -39,6 +39,7 @@ import { Upload } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { handleInitName, uploadToCloudinary } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
+import TinyEditor from "@/components/tinyCustomize";
 
 interface NewsModalProps {
   news?: NewsResFilterType;
@@ -104,7 +105,20 @@ export function NewsModal({ news, categories, onClose }: NewsModalProps) {
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[600px] overflow-y-auto">
+      <DialogContent
+        className="!max-w-3xl max-h-[600px] overflow-y-auto"
+        onInteractOutside={(e) => {
+          //- Kiểm tra xem phần tử được click có phải là của TinyMCE không
+          const target = e.target as HTMLElement;
+          if (
+            target.closest(".tox-tinymce-aux") ||
+            target.closest(".tox-dialog-wrap")
+          ) {
+            //- Nếu là phần tử của TinyMCE (menu, popup, dialog), ngăn không cho modal đóng
+            e.preventDefault();
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Chỉnh sửa tin tức" : "Thêm tin tức mới"}
@@ -214,10 +228,9 @@ export function NewsModal({ news, categories, onClose }: NewsModalProps) {
                 <FormItem>
                   <FormLabel>Mô tả</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Nhập mô tả chi tiết"
-                      rows={4}
-                      {...field}
+                    <TinyEditor
+                      field={field}
+                      placeholder="Nhập mô tả tin tức..."
                     />
                   </FormControl>
                 </FormItem>

@@ -43,6 +43,21 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+body[data-scroll-locked="1"] .tox-tinymce-aux {
+  /* Cho các popup như color picker, menu */
+  pointer-events: auto !important;
+}
+
+body[data-scroll-locked="1"] .tox-dialog-wrap {
+  /* Cho các dialog lớn hơn (ví dụ: chèn ảnh, chèn link) */
+  pointer-events: auto !important;
+}
+
+body[data-scroll-locked="1"] .tox-pop {
+  /* Ghi đè thêm cho một số loại popup khác nếu cần */
+  pointer-events: auto !important;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
