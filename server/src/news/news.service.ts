@@ -92,11 +92,16 @@ export class NewsService {
     const totalItems = (await this.newsModel.find(filterConditions)).length;
     const totalPages = Math.ceil(totalItems / defaultLimit);
 
+    //- sort
+    const defaultSort = Object.keys(sort || {}).length
+      ? sort
+      : { createdAt: -1 };
+
     const result = await this.newsModel
       .find(filterConditions)
       .skip(offset)
       .limit(defaultLimit)
-      .sort(sort as any)
+      .sort(defaultSort as any)
       .populate(population)
       .exec();
 

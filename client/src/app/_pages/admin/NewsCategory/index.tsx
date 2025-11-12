@@ -53,7 +53,7 @@ export default function NewsCate() {
   const [debouncedSearch] = useDebounce(searchQuery, 500); //- vlaue, time
 
   const { data: categories } = useGetListCategories();
-  const { data: news } = useGetListNewsFilter({
+  const { data: news, isPending: newsPending } = useGetListNewsFilter({
     currentPage,
     pageSize: pageSize,
     title: debouncedSearch,
@@ -201,6 +201,7 @@ export default function NewsCate() {
               onDelete={(id) => {
                 setDeleteModal({ isOpen: true, type: "news", id });
               }}
+              newsPending={newsPending}
               metaFilter={news?.data?.meta}
               onPageChange={setCurrentPage}
             />

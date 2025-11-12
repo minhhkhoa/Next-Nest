@@ -10,13 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Edit2,
-  Trash2,
-  ChevronLeft,
-  ChevronRight,
-  MoreVertical,
-} from "lucide-react";
+import { Edit2, Trash2, MoreVertical } from "lucide-react";
 import Image from "next/image";
 import {
   MetaFilterType,
@@ -27,11 +21,22 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { Spinner } from "@/components/ui/spinner";
 
 interface NewsTableProps {
   news: NewsResFilterType[];
   onEdit: (news: NewsResFilterType) => void;
   onDelete: (id: string) => void;
+  newsPending: boolean;
   metaFilter?: MetaFilterType;
   onPageChange: (page: number) => void;
 }
@@ -40,9 +45,19 @@ export function NewsTable({
   news,
   onEdit,
   onDelete,
+  newsPending,
   metaFilter,
   onPageChange,
 }: NewsTableProps) {
+  if (newsPending) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <Spinner className="mb-3" />
+        <p className="text-muted-foreground">Đang tải...</p>
+      </div>
+    );
+  }
+
   if (!metaFilter || metaFilter.totalItems === 0) {
     return (
       <div className="text-center py-12">
@@ -161,47 +176,92 @@ export function NewsTable({
       </div>
 
       {/* pagination */}
-      <div className="flex items-center justify-between py-4 px-2">
-        <div className="text-sm text-muted-foreground">
+      <div className="flex items-center py-4 px-2">
+        <span className="text-sm text-muted-foreground whitespace-nowrap">
           Hiển thị {news.length}/{metaFilter.totalItems} bài viết liên quan
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPageChange(metaFilter.current - 1)}
-            disabled={metaFilter.current === 1}
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Trước
-          </Button>
+        </span>
 
-          <div className="flex items-center gap-1">
+        <Pagination className="flex justify-end">
+          <PaginationContent>
+            {/* Nút Trước */}
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => onPageChange(metaFilter.current - 1)}
+                aria-disabled={metaFilter.current === 1}
+                className={
+                  metaFilter.current === 1
+                    ? "pointer-events-none opacity-50"
+                    : ""
+                }
+              />
+            </PaginationItem>
+
+            {/* Các trang */}
             {Array.from({ length: metaFilter.totalPages }, (_, i) => i + 1).map(
-              (page) => (
-                <Button
-                  key={page}
-                  variant={metaFilter.current === page ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => onPageChange(page)}
-                  className="min-w-10"
-                >
-                  {page}
-                </Button>
-              )
-            )}
-          </div>
+              (page) => {
+                // Nếu tổng số trang lớn, hiển thị rút gọn với Ellipsis
+                if (metaFilter.totalPages > 5) {
+                  const firstPage = page === 1;
+                  const lastPage = page === metaFilter.totalPages;
+                  const nearCurrent = Math.abs(metaFilter.current - page) <= 1;
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPageChange(metaFilter.current + 1)}
-            disabled={metaFilter.current === metaFilter.totalPages}
-          >
-            Sau
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-        </div>
+                  if (firstPage || lastPage || nearCurrent) {
+                    return (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          isActive={metaFilter.current === page}
+                          onClick={() => onPageChange(page)}
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  }
+
+                  // Dấu "..." giữa các khoảng
+                  if (
+                    (page === 2 && metaFilter.current > 3) ||
+                    (page === metaFilter.totalPages - 1 &&
+                      metaFilter.current < metaFilter.totalPages - 2)
+                  ) {
+                    return (
+                      <PaginationItem key={page}>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                    );
+                  }
+
+                  return null;
+                }
+
+                // Trường hợp ít trang
+                return (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      isActive={metaFilter.current === page}
+                      onClick={() => onPageChange(page)}
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              }
+            )}
+
+            {/* Nút Sau */}
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => onPageChange(metaFilter.current + 1)}
+                aria-disabled={metaFilter.current === metaFilter.totalPages}
+                className={
+                  metaFilter.current === metaFilter.totalPages
+                    ? "pointer-events-none opacity-50"
+                    : ""
+                }
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </div>
     </div>
   );
