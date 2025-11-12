@@ -12,7 +12,7 @@ export class CreateNewsDto {
   cateNewsID: string;
 
   @ApiProperty()
-  @IsNotEmpty({ message: 'Thông tin tin tức không được để trống' })
+  @IsNotEmpty({ message: 'Mô tả tin tức không được để trống' })
   description: string;
 
   @ApiProperty()

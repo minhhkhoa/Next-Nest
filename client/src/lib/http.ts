@@ -73,7 +73,11 @@ instance.interceptors.response.use(
   },
   async (error) => {
     const originalRequest = error.config;
-    const message = error.response?.data?.message || "Có lỗi xảy ra";
+    let message = error.response?.data?.message || "Có lỗi xảy ra";
+    if (Array.isArray(message)) {
+      message = message.join(", ");
+    }
+
     const status = error.response?.data.statusCode;
 
     //- xử lý 401 riêng
@@ -153,6 +157,9 @@ instance.interceptors.response.use(
       case 423: //- khi refesh_token hết hạn ở cookie
         toast.error("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
         setTimeout(() => (window.location.href = "/login"), 1000);
+      case 400:
+        toast.error(message);
+        break;
       case 403:
         console.error("Resource not found.");
         break;
