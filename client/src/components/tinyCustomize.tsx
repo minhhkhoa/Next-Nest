@@ -98,6 +98,14 @@ export default function TinyEditor({ field, placeholder }: TinyEditorProps) {
             "help",
             "wordcount",
           ],
+          content_style: `
+            img {
+              max-width: 400px !important;
+              height: auto !important;
+              display: block;
+              margin: 0 auto;
+            }
+          `,
           toolbar:
             "undo redo | blocks | bold italic underline | " +
             "alignleft aligncenter alignright alignjustify | " +
@@ -107,6 +115,25 @@ export default function TinyEditor({ field, placeholder }: TinyEditorProps) {
           file_picker_types: "image",
           content_css: theme === "dark" ? "dark" : "default",
           skin: theme === "dark" ? "oxide-dark" : "oxide",
+
+          paste_postprocess: (plugin, args) => {
+            args.node.querySelectorAll("img").forEach((img) => {
+              img.setAttribute("width", "400");
+              img.removeAttribute("height");
+              img.style.height = "auto";
+              img.style.display = "block";
+              img.style.margin = "0 auto";
+            });
+          },
+
+          setup: (editor) => {
+            editor.on("NodeChange", (e) => {
+              if (e.element.nodeName === "IMG") {
+                (e.element as HTMLImageElement).style.width = "400px";
+                (e.element as HTMLImageElement).style.height = "auto";
+              }
+            });
+          },
 
           file_picker_callback: handleFilePicker,
         }}

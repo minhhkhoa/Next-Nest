@@ -3,7 +3,7 @@ export const translationConfig = {
   industry: ['name'],
   skill: ['name'],
   cateNews: ['name', 'summary'],
-  news: ['title', 'description', 'summary'],
+  news: ['title', 'summary'],
   company: ['description'],
 };
 

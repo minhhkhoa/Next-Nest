@@ -80,7 +80,7 @@ export function NewsTable({
                   <div className="relative w-16 h-16 rounded overflow-hidden">
                     <Image
                       src={item?.image || "/placeholder.svg"}
-                      alt={item.title.vi}
+                      alt={item.title.vi || "placeholder"}
                       fill
                       className="object-cover"
                     />
@@ -160,9 +160,10 @@ export function NewsTable({
         </Table>
       </div>
 
+      {/* pagination */}
       <div className="flex items-center justify-between py-4 px-2">
         <div className="text-sm text-muted-foreground">
-          Hiển thị {metaFilter.totalItems} bài viết liên quan
+          Hiển thị {news.length}/{metaFilter.totalItems} bài viết liên quan
         </div>
         <div className="flex items-center gap-2">
           <Button

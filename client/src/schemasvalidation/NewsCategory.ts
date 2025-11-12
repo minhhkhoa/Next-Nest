@@ -66,7 +66,7 @@ export const apiNewsRes = z.object({
   _id: z.string(),
   title: MultiLang,
   cateNewsID: z.array(apiCateNewsID),
-  description: MultiLang,
+  description: z.string(),
   image: z.string(),
   summary: MultiLang,
   status: z.enum(["inactive", "active"]),

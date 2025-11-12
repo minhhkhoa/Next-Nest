@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -52,6 +52,7 @@ interface NewsModalProps {
 export function NewsModal({ news, categories, onClose }: NewsModalProps) {
   const isEditing = !!news?._id;
   const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const form = useForm<NewsCreateType>({
     resolver: zodResolver(newsCreate),
@@ -78,7 +79,7 @@ export function NewsModal({ news, categories, onClose }: NewsModalProps) {
         title: news.title.vi,
         cateNewsID: news.cateNewsID[0],
         summary: news.summary.vi,
-        description: news.description.vi,
+        description: news.description,
         image: news.image,
         status: news.status as "active" | "inactive",
       });
@@ -128,6 +129,11 @@ export function NewsModal({ news, categories, onClose }: NewsModalProps) {
         toast.success(resCreate.message);
 
         form.reset();
+
+        //- xóa text file upload ở input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
       }
     } catch (error) {
       console.log("error handleSubmit News: ", error);
@@ -165,8 +171,9 @@ export function NewsModal({ news, categories, onClose }: NewsModalProps) {
             <div className="flex items-center gap-6">
               <Avatar className="w-32 h-32">
                 <AvatarImage
-                  src={form?.watch("image") || ""}
+                  src={form?.watch("image") || undefined}
                   alt={form.getValues("title")}
+                  className="object-cover"
                 />
                 <AvatarFallback>
                   {handleInitName(form.getValues("title")) || "MK"}
@@ -181,6 +188,7 @@ export function NewsModal({ news, categories, onClose }: NewsModalProps) {
                   <div className="mt-2 flex items-center gap-2">
                     <Input
                       id="image"
+                      ref={fileInputRef}
                       type="file"
                       accept="image/*"
                       onChange={handleAvatarUpload}
