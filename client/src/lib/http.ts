@@ -111,7 +111,7 @@ instance.interceptors.response.use(
           );
           removeTokensFromLocalStorage();
           await accessInstance.get("/auth/removeAccessToken");
-          setTimeout(() => (window.location.href = "/login"), 1000);
+          setTimeout(() => (window.location.href = "/"), 1000);
           return Promise.reject(error);
         }
 
@@ -144,10 +144,10 @@ instance.interceptors.response.use(
         }
       } catch (decodeError) {
         //- CASE 4: Token sai định dạng (người dùng chỉnh sửa)
-        toast.error("Token không hợp lệ. Vui lòng đăng nhập lại.");
+        toast.error("Token không hợp lệ. Vui lòng đăng nhập lại.2");
         removeTokensFromLocalStorage();
         await accessInstance.get("/auth/removeAccessToken");
-        setTimeout(() => (window.location.href = "/login"), 1000);
+        setTimeout(() => (window.location.href = "/"), 1000);
         return Promise.reject(decodeError);
       }
     }

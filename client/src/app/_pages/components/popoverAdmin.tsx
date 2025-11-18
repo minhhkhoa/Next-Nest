@@ -16,13 +16,15 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useLogoutMutation } from "@/queries/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function PopoverAdmin() {
   const router = useRouter();
   const { user, isLogin, setLogin } = useAppStore();
   const { mutateAsync: mutationLogout } = useLogoutMutation();
+  const queryClient = useQueryClient();
   const { state } = useSidebar();
-  const name = handleInitName(user.name);
+  const sortName = handleInitName(user.name);
 
   const openSidebar = state !== "collapsed";
 
@@ -33,6 +35,9 @@ export default function PopoverAdmin() {
     //- login success
     removeTokensFromLocalStorage();
     setLogin(false);
+
+    queryClient.removeQueries({ queryKey: ["profile"] });
+
     toast.success("Đăng xuất thành công!");
     router.push("/");
     router.refresh();
@@ -60,13 +65,13 @@ export default function PopoverAdmin() {
         <Button variant="ghost" className="w-full h-12">
           <div className="flex gap-2 max-w-[200px]">
             <Avatar className="relative flex size-8 shrink-0 overflow-hidden h-9 w-9 rounded-lg">
-              <AvatarImage src={user.avatar || ""} alt={name} />
-              <AvatarFallback>{name}</AvatarFallback>
+              <AvatarImage src={user.avatar || ""} alt={sortName} />
+              <AvatarFallback>{sortName}</AvatarFallback>
             </Avatar>
 
             {openSidebar && (
               <div className="text-left">
-                <p>{name}</p>
+                <p>{user.name}</p>
                 <p className="text-muted-foreground truncate w-[150px]">
                   {user.email}
                 </p>
@@ -81,12 +86,12 @@ export default function PopoverAdmin() {
           onClick={onProfileClick}
         >
           <Avatar className="relative flex size-8 shrink-0 overflow-hidden h-10 w-10 rounded-lg">
-            <AvatarImage src={user.avatar || ""} alt={name} />
-            <AvatarFallback>{name}</AvatarFallback>
+            <AvatarImage src={user.avatar || ""} alt={sortName} />
+            <AvatarFallback>{sortName}</AvatarFallback>
           </Avatar>
 
           <div className="text-left">
-            <p>{name}</p>
+            <p>{user.name}</p>
             <p className="text-muted-foreground max-w-[150px] truncate">
               {user.email}
             </p>
