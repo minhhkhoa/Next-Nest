@@ -14,5 +14,6 @@ import { CateNews, CateNewsSchema } from './schemas/cate-new.schema';
   ],
   controllers: [CateNewsController],
   providers: [CateNewsService],
+  exports: [CateNewsService],
 })
 export class CateNewsModule {}

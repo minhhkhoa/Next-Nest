@@ -28,6 +28,8 @@ export default function CategoriesPage() {
             việc phù hợp và phát triển bản thân.
           </p>
         </div>
+
+        
       </div>
     </div>
   );

@@ -10,11 +10,14 @@ import mongoose from 'mongoose';
 import { FindNewsQueryDto } from './dto/newsDto-dto';
 import aqp from 'api-query-params';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
+import { CateNewsService } from 'src/cate-news/cate-news.service';
+import slugify from 'slugify';
 
 @Injectable()
 export class NewsService {
   constructor(
     private readonly translationService: TranslationService,
+    private readonly cateNewsService: CateNewsService,
     @InjectModel(News.name)
     private newsModel: SoftDeleteModel<NewsDocument>,
   ) {}
@@ -51,6 +54,99 @@ export class NewsService {
         match: { isDeleted: false },
         select: 'name _id summary',
       });
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
+  async findAllNewsDashboard() {
+    try {
+      //- 1. Lấy bài viết nổi bật lấy bài viết mới nhất của 5 danh mục
+      const listCateNews = (await this.cateNewsService.findAll()).slice(0, 5); //- trong fillAll da them slug cho cateNews roi
+      const listCateNewsIDs = listCateNews.map((cate) => cate._id);
+
+      const listNews = await this.newsModel
+        .find({
+          cateNewsID: { $in: listCateNewsIDs },
+          isDeleted: false,
+        })
+        .sort({ createdAt: -1 })
+        .populate({
+          path: 'cateNewsID',
+          match: { isDeleted: false },
+          select: 'name _id summary',
+        })
+        .select('_id title image summary status createdBy createdAt');
+
+      const listNewsWithSlug = listNews.map((news) => {
+        const cateNews = listCateNews.find((cate) =>
+          news.cateNewsID.some((cateID) => cateID._id.equals(cate._id)),
+        );
+        const slugCateNews = cateNews ? cateNews.slug : '';
+
+        const slugNews = {
+          vi: slugify(news.title.vi, {
+            lower: true,
+            strict: true,
+            locale: 'vi',
+          }),
+          en: slugify(news.title.en, { lower: true, strict: true }),
+        };
+        return { ...news.toObject(), slugNews, slugCateNews };
+      }).slice(0, 5);
+
+      //- Mỗi danh mục lấy ra 5 bài viết mới nhất
+      const result = await Promise.all(
+        //- Khi dùng map với async function, kết quả sẽ là một mảng các Promise nên cần dùng Promise.all để chờ tất cả hoàn thành
+        listCateNews.map(async (cateNews) => {
+          const idCate = cateNews._id;
+          const nameCate = {
+            title: cateNews.name,
+            vi: slugify(cateNews.name.vi, {
+              lower: true,
+              strict: true,
+              locale: 'vi',
+            }),
+            en: slugify(cateNews.name.en, { lower: true, strict: true }),
+          };
+
+          const getNewsByCate = await this.newsModel
+            .find({
+              cateNewsID: idCate,
+              isDeleted: false,
+            })
+            .sort({ createdAt: -1 })
+            .limit(5)
+            .populate({
+              path: 'cateNewsID',
+              match: { isDeleted: false },
+              select: 'name _id summary',
+            })
+            .select('_id title image summary status createdBy createdAt');
+
+          const getNewsByCateWithSlug = getNewsByCate.map((news) => {
+            const slugNews = {
+              vi: slugify(news.title.vi, {
+                lower: true,
+                strict: true,
+                locale: 'vi',
+              }),
+              en: slugify(news.title.en, { lower: true, strict: true }),
+            };
+            return { ...news.toObject(), slugNews };
+          });
+
+          return {
+            nameCate,
+            listNews: getNewsByCateWithSlug,
+          };
+        }),
+      );
+
+      return {
+        NewsHot: listNewsWithSlug,
+        result,
+      };
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }

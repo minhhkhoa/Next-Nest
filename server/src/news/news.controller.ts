@@ -12,7 +12,7 @@ import { NewsService } from './news.service';
 import { CreateNewsDto } from './dto/create-news.dto';
 import { UpdateNewsDto } from './dto/update-news.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ResponseMessage, userDecorator } from 'src/decorator/customize';
+import { Public, ResponseMessage, userDecorator } from 'src/decorator/customize';
 import { FindNewsQueryDto } from './dto/newsDto-dto';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 
@@ -36,6 +36,14 @@ export class NewsController {
   @Get()
   findAll() {
     return this.newsService.findAll();
+  }
+
+  @Public()
+  @ResponseMessage('get all public news thành công')
+  @ApiOperation({ summary: 'get all public news' })
+  @Get('news-dashboard')
+  findAllNewsDashboard() {
+    return this.newsService.findAllNewsDashboard();
   }
 
   @ResponseMessage('pagination + filter theo title + cateNewsID')
