@@ -108,3 +108,40 @@ export const newsCreate = z.object({
 });
 
 export type NewsCreateType = z.infer<typeof newsCreate>;
+
+//- start schema news dashboard
+export const NewsHot = z.object({
+  _id: z.string(),
+  title: MultiLang,
+  cateNewsID: z.array(apiCateNewsID),
+  image: z.string(),
+  summary: MultiLang,
+  status: z.enum(["inactive", "active"]),
+  createdBy: ActionBy,
+  createdAt: z.date(),
+  slugNews: MultiLang,
+  slugCateNews: MultiLang,
+});
+
+export type NewsHotType = z.infer<typeof NewsHot>;
+const NewsHotWithoutSlugCate = NewsHot.omit({ slugCateNews: true });
+
+export const ResultListNews = z.object({
+  nameCate: z.object({
+    title: MultiLang,
+    vi: z.string(),
+    en: z.string(),
+  }),
+  listNews: z.array(NewsHotWithoutSlugCate),
+});
+
+export type ResultListNewsType = z.infer<typeof ResultListNews>;
+
+export const apiNewsDashboardRes = z.object({
+  NewsHot: z.array(NewsHot),
+  result: z.array(ResultListNews),
+});
+
+export type NewsDashboardType = z.infer<typeof apiNewsDashboardRes>;
+
+//- end schema news dashboard

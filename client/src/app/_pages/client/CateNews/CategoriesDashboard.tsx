@@ -1,10 +1,41 @@
 "use client";
 
-import { useGetListCategories } from "@/queries/useNewsCategory";
+import {
+  useGetListCategories,
+  useGetListNewsDashboard,
+} from "@/queries/useNewsCategory";
 import Image from "next/image";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import Link from "next/link";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  NewsHotType,
+  ResultListNewsType,
+} from "@/schemasvalidation/NewsCategory";
+import { formatDateInput } from "@/lib/utils";
+import { ArrowRight, PenIcon } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 export default function CategoriesPage() {
   const { data: listCateNews } = useGetListCategories();
+  const { data: listNewsDashboard, isLoading: isLoadingListNews } =
+    useGetListNewsDashboard();
+  const dataNews1 = listNewsDashboard?.data?.result[0];
+  const dataNews2 = listNewsDashboard?.data?.result[1];
+  const dataNews3 = listNewsDashboard?.data?.result[2];
+  const dataNews4 = listNewsDashboard?.data?.result[3];
+  const isMobile = useIsMobile();
 
   return (
     <div>
@@ -28,9 +59,246 @@ export default function CategoriesPage() {
             việc phù hợp và phát triển bản thân.
           </p>
         </div>
+      </div>
 
-        
+      {/* carousel category news */}
+      <div className="mt-10">
+        <Carousel
+          opts={{
+            align: "start",
+          }}
+          className="w-full"
+        >
+          <CarouselContent>
+            {listCateNews?.data?.map((cateNews) => {
+              return (
+                <CarouselItem
+                  key={cateNews._id}
+                  // basis theo mobile và desktop
+                  className="basis-1/2 sm:basis-1/3 md:basis-1/6 px-1"
+                >
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Link
+                        href={`/cate-news/${cateNews.slug.vi}`}
+                        className="truncate line-clamp-1 text-center px-1 py-0.5 border border-gray-700 rounded-lg cursor-pointer hover:bg-accent-foreground/20 block"
+                      >
+                        {cateNews.name.vi}
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{cateNews.name.vi}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </CarouselItem>
+              );
+            })}
+          </CarouselContent>
+          {!isMobile && (
+            <>
+              <CarouselPrevious />
+              <CarouselNext />
+            </>
+          )}
+        </Carousel>
+      </div>
+
+      <div>
+        {listNewsDashboard?.data && (
+          <BlockNewsHot
+            data={listNewsDashboard?.data?.NewsHot}
+            isLoadingListNews={isLoadingListNews}
+          />
+        )}
+      </div>
+
+      <div>{dataNews1 && <BlockStyle1 data={dataNews1} />}</div>
+
+      <div className="my-20">
+        {dataNews4 && <BlockStyle1 data={dataNews4} />}
       </div>
     </div>
   );
+}
+
+function BlockNewsHot({
+  data,
+  isLoadingListNews,
+}: {
+  data: NewsHotType[];
+  isLoadingListNews: boolean;
+}) {
+  if (isLoadingListNews || !data || data.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  const firstNews = data[0];
+  const restNews = data.slice(1);
+
+  const formatDateInput = (date: string | Date) => {
+    return new Date(date).toLocaleDateString("vi-VN");
+  };
+
+  return (
+    <div className="my-8 md:my-12 lg:my-16 px-4 md:px-6">
+      {/* Header */}
+      <div className="mb-6 md:mb-8">
+        <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-primary text-balance">
+          Tin tức nổi bật
+        </span>
+        <div className="h-1 w-[165px] md:w-[248px] bg-primary rounded-full mt-2"></div>
+      </div>
+
+      {/* Main Container - Split Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 lg:gap-8">
+        {/* Block Left - Featured News */}
+        {/* Block Left - Featured News */}
+        <div className="flex flex-col rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300">
+          <Link
+            href={`/news/${firstNews.slugNews.vi}`}
+            className="flex-1 flex flex-col"
+          >
+            <div className="relative overflow-hidden bg-slate-200 h-64 md:h-72 lg:h-80">
+              <Image
+                src={firstNews.image || "/placeholder.svg"}
+                alt={firstNews.title.vi}
+                fill
+                className="object-cover w-full h-full transform transition-transform duration-300 hover:scale-110"
+              />
+            </div>
+
+            {/* Content Section */}
+            <div className="p-4 md:p-6 flex flex-col flex-1 bg-white">
+              <p className="text-xs md:text-sm font-semibold text-primary uppercase tracking-wide mb-2">
+                {firstNews.cateNewsID[0]?.name.vi || "News"}
+              </p>
+              <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 line-clamp-3 mb-3 hover:text-primary transition-colors">
+                {firstNews.title.vi}
+              </h3>
+
+              <p className="text-xs md:text-sm text-gray-500 mb-3 flex items-center gap-1">
+                <PenIcon className="inline-block w-3 h-3 md:w-4 md:h-4 mr-1 mb-0.5" />
+                {firstNews.createdBy.name} •{" "}
+                {formatDateInput(firstNews.createdAt)}
+              </p>
+
+              <p className="text-sm md:text-base text-gray-700 line-clamp-2 mb-4 flex-1">
+                {firstNews.summary.vi}
+              </p>
+
+              <div className="flex items-center gap-1 text-primary font-semibold hover:gap-2 transition-all text-sm md:text-base">
+                Đọc thêm
+                <ArrowRight size={16} className="md:w-5 md:h-5" />
+              </div>
+            </div>
+          </Link>
+        </div>
+
+        {/* Block Right - News List */}
+        <div className="flex flex-col gap-3 md:gap-4">
+          {restNews.map((newsItem) => (
+            <Link
+              key={newsItem._id}
+              href={`/news/${newsItem.slugNews.vi}`}
+              className="group bg-gray-300 rounded-xl p-4 md:p-5 shadow-md hover:shadow-lg hover:bg-slate-50 transition-all duration-300 border border-slate-100 hover:border-primary/20 flex gap-4"
+            >
+              {/* Text Content */}
+              <div className="flex-1 flex flex-col min-w-0">
+                <p className="text-xs md:text-sm font-semibold text-primary uppercase tracking-wide mb-1">
+                  {newsItem.cateNewsID[0]?.name.vi || "News"}
+                </p>
+                <h4 className="text-base md:text-lg font-bold text-gray-900 line-clamp-2 mb-2 transition-colors">
+                  {newsItem.title.vi}
+                </h4>
+
+                <p className="text-xs md:text-sm text-gray-500 mb-2 flex items-center gap-1">
+                  <PenIcon className="inline-block w-3 h-3 md:w-4 md:h-4 mr-1 mb-0.5" />
+                  {newsItem.createdBy.name} •{" "}
+                  {formatDateInput(newsItem.createdAt)}
+                </p>
+
+                <p className="text-sm text-gray-600 line-clamp-2 mb-3 flex-1">
+                  {newsItem.summary.vi}
+                </p>
+
+                <div className="flex items-center gap-1 text-primary font-semibold text-xs md:text-sm group-hover:gap-2 transition-all">
+                  Đọc thêm
+                  <ArrowRight size={14} className="md:w-4 md:h-4" />
+                </div>
+              </div>
+
+              {/* Image */}
+              <div className="relative w-24 md:w-28 lg:w-32 h-24 md:h-28 lg:h-32 flex-shrink-0 rounded-lg overflow-hidden bg-slate-200">
+                <Image
+                  src={newsItem.image || "/placeholder.svg"}
+                  alt={newsItem.title.vi}
+                  fill
+                  className="object-cover w-full h-full transform transition-transform duration-300 group-hover:scale-110"
+                />
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BlockStyle1({ data }: { data: ResultListNewsType }) {
+  const isMobile = useIsMobile();
+  return (
+    <div className="">
+      <div className="flex justify-between items-center">
+        <div className="mb-6 md:mb-8">
+          <span className="text-xl md:text-3xl lg:text-4xl font-bold text-primary text-balance">
+            {data.nameCate.title.vi}
+          </span>
+          <div className="h-1 w-[165px] md:w-[248px] bg-primary rounded-full mt-2"></div>
+        </div>
+        <Link href={`/cate-news/${data.nameCate.vi}`}>Xem tất cả {">"}</Link>
+      </div>
+
+      <div className="flex gap-5 flex-col md:flex-wrap md:flex-row">
+        {data.listNews.slice(0, 4).map((news) => (
+          <Link
+            className="block flex-1"
+            href={`/news/${news.slugNews.vi}`}
+            key={news._id}
+          >
+            <div>
+              <Image
+                src={news.image}
+                alt={news.title.vi}
+                width={200}
+                height={200}
+                className="w-full h-[160px] object-cover rounded-lg"
+              />
+            </div>
+
+            <p className="line-clamp-2 text-base md:text-lg font-semibold">
+              {news.title.vi}
+            </p>
+
+            <p className="text-xs md:text-sm text-gray-500 my-1 flex items-center gap-1">
+              <PenIcon className="inline-block w-3 h-3 md:w-4 md:h-4 mr-1 mb-0.5" />
+              {news.createdBy.name} • {" "}
+              {formatDateInput(news.createdAt.toString())}
+            </p>
+
+            <p className="line-clamp-3 text-shadow-md">{news.summary.vi}</p>
+
+            {isMobile && <Separator className="my-2" />}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BlockStyle2({ data }: { data: ResultListNewsType }) {
+  return <div>haha</div>;
 }

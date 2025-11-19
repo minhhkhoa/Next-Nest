@@ -68,6 +68,13 @@ export const useGetListNews = () => {
   });
 };
 
+export const useGetListNewsDashboard = () => {
+  return useQuery({
+    queryKey: ["getListNewsDashboard"],
+    queryFn: NewsApiRequest.getListNewsDashboard,
+  });
+};
+
 export const useGetListNewsFilter = ({
   currentPage,
   pageSize,

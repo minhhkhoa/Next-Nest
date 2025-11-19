@@ -3,6 +3,7 @@ import {
   CategoryNewsResType,
   CateNewsCreateType,
   NewsCreateType,
+  NewsDashboardType,
   NewsResFilterResultType,
   NewsResType,
 } from "@/schemasvalidation/NewsCategory";
@@ -27,6 +28,8 @@ const CategoryNewsApiRequest = {
 
 const NewsApiRequest = {
   getListNews: () => http.get<ApiResponse<NewsResType[]>>(`${prefixNews}`),
+  getListNewsDashboard: () =>
+    http.get<ApiResponse<NewsDashboardType>>(`${prefixNews}/news-dashboard`),
   getListNewsFilter: (params: {
     currentPage: number;
     pageSize: number;

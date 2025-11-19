@@ -62,7 +62,7 @@ export class NewsService {
   async findAllNewsDashboard() {
     try {
       //- 1. Lấy bài viết nổi bật lấy bài viết mới nhất của 5 danh mục
-      const listCateNews = (await this.cateNewsService.findAll()).slice(0, 5); //- trong fillAll da them slug cho cateNews roi
+      const listCateNews = (await this.cateNewsService.findAll()).slice(0, 4); //- trong fillAll da them slug cho cateNews roi
       const listCateNewsIDs = listCateNews.map((cate) => cate._id);
 
       const listNews = await this.newsModel
@@ -78,24 +78,26 @@ export class NewsService {
         })
         .select('_id title image summary status createdBy createdAt');
 
-      const listNewsWithSlug = listNews.map((news) => {
-        const cateNews = listCateNews.find((cate) =>
-          news.cateNewsID.some((cateID) => cateID._id.equals(cate._id)),
-        );
-        const slugCateNews = cateNews ? cateNews.slug : '';
+      const listNewsWithSlug = listNews
+        .map((news) => {
+          const cateNews = listCateNews.find((cate) =>
+            news.cateNewsID.some((cateID) => cateID._id.equals(cate._id)),
+          );
+          const slugCateNews = cateNews ? cateNews.slug : '';
 
-        const slugNews = {
-          vi: slugify(news.title.vi, {
-            lower: true,
-            strict: true,
-            locale: 'vi',
-          }),
-          en: slugify(news.title.en, { lower: true, strict: true }),
-        };
-        return { ...news.toObject(), slugNews, slugCateNews };
-      }).slice(0, 5);
+          const slugNews = {
+            vi: slugify(news.title.vi, {
+              lower: true,
+              strict: true,
+              locale: 'vi',
+            }),
+            en: slugify(news.title.en, { lower: true, strict: true }),
+          };
+          return { ...news.toObject(), slugNews, slugCateNews };
+        })
+        .slice(0, 4);
 
-      //- Mỗi danh mục lấy ra 5 bài viết mới nhất
+      //- 2.Mỗi danh mục lấy ra 5 bài viết mới nhất
       const result = await Promise.all(
         //- Khi dùng map với async function, kết quả sẽ là một mảng các Promise nên cần dùng Promise.all để chờ tất cả hoàn thành
         listCateNews.map(async (cateNews) => {
@@ -302,5 +304,23 @@ export class NewsService {
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }
+  }
+
+  //- trộn mảng
+  shuffle(array: any[]) {
+    let currentIndex = array.length,
+      randomIndex;
+
+    while (currentIndex !== 0) {
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex--;
+
+      [array[currentIndex], array[randomIndex]] = [
+        array[randomIndex],
+        array[currentIndex],
+      ];
+    }
+
+    return array;
   }
 }
