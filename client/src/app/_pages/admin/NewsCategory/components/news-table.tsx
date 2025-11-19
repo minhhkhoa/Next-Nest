@@ -176,12 +176,12 @@ export function NewsTable({
       </div>
 
       {/* pagination */}
-      <div className="flex items-center py-4 px-2">
+      <div className="flex flex-col md:flex-row items-center py-4 px-2">
         <span className="text-sm text-muted-foreground whitespace-nowrap">
           Hiển thị {news.length}/{metaFilter.totalItems} bài viết liên quan
         </span>
 
-        <Pagination className="flex justify-end">
+        <Pagination className="flex justify-center md:justify-end">
           <PaginationContent>
             {/* Nút Trước */}
             <PaginationItem>

@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { useLogoutMutation } from "@/queries/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQueryClient } from "@tanstack/react-query";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function PopoverAdmin() {
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function PopoverAdmin() {
   const queryClient = useQueryClient();
   const { state } = useSidebar();
   const sortName = handleInitName(user.name);
+  const isMobile = useIsMobile();
 
   const openSidebar = state !== "collapsed";
 
@@ -80,7 +82,7 @@ export default function PopoverAdmin() {
           </div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent side="right" className="w-60">
+      <PopoverContent side={isMobile ? "top" : "right"} className="w-60">
         <div
           className="flex gap-2 items-center rounded-xl pl-3 cursor-pointer hover:bg-accent/50"
           onClick={onProfileClick}

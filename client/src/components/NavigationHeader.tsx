@@ -13,6 +13,7 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import { Separator } from "@/components/ui/separator";
 import { useGetListCategories } from "@/queries/useNewsCategory";
 
 const components: { title: string; href: string; description: string }[] = [
@@ -131,10 +132,16 @@ export default function NavigationHeaderMenu() {
                 {listCateNews?.data?.map((item) => (
                   <li key={item._id}>
                     <NavigationMenuLink asChild>
-                      <Link href={`/cate-news/${item.slug.vi}`}>
-                        <div className="font-medium">{item.name.vi}</div>
+                      <Link
+                        className="max-w-[200px]"
+                        href={`/cate-news/${item.slug.vi}`}
+                      >
+                        <div className="font-medium !whitespace-nowrap truncate">
+                          {item.name.vi}
+                        </div>
                       </Link>
                     </NavigationMenuLink>
+                    <Separator className="" />
                   </li>
                 ))}
               </ul>

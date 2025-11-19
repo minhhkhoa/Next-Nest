@@ -153,8 +153,8 @@ export default function NewsCate() {
                         categories?.data?.find(
                           (c) => c._id === selectedCategory
                         )?.name.vi || "Danh mục"
-                      } (${news?.data?.result.length || 0})`
-                    : `Tổng: ${news?.data?.result.length || 0} bài viết`}
+                      } (${news?.data?.meta.totalItems || 0})`
+                    : `Tổng: ${news?.data?.meta.totalItems || 0} bài viết`}
                 </p>
               </div>
               <Button

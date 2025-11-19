@@ -101,7 +101,7 @@ export function CategoriesSidebar({
                 <div className="absolute right-1 top-1/2 -translate-y-1/2 group-hover:opacity-100 transition-opacity z-index-50">
                   <Popover>
                     <PopoverTrigger asChild>
-                      <button className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-secondary rounded">
+                      <button className="opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-secondary rounded">
                         <MoreVertical className="w-4 h-4" />
                       </button>
                     </PopoverTrigger>
@@ -130,7 +130,7 @@ export function CategoriesSidebar({
                   </Popover>
                 </div>
 
-                <div className="hidden group-hover:block absolute left-full ml-2 top-0 w-48 bg-popover border border-border rounded-md p-2 shadow-md z-40">
+                <div className="hidden md:group-hover:block absolute left-full ml-2 top-0 w-48 bg-popover border border-border rounded-md p-2 shadow-md z-40">
                   <p className="text-xs text-muted-foreground">
                     {category.summary.vi}
                   </p>
