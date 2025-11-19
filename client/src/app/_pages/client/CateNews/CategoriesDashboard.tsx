@@ -9,7 +9,7 @@ export default function CategoriesPage() {
   return (
     <div>
       {/* header */}
-      <div className="relative -mx-30 z-0">
+      <div className="relative -mx-5 md:-mx-30 z-0">
         <Image
           src="/banner_CateNewsDashboard.webp"
           alt="logo"
@@ -19,7 +19,7 @@ export default function CategoriesPage() {
         ></Image>
 
         <div className="absolute top-[84%] left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <p className="text-center text-2xl font-bold text-primary ">
+          <p className="text-center text-2xl font-bold text-primary">
             Hành trang nghề nghiệp
           </p>
           <p className="hidden md:block text-center mt-2 text-gray-700 font-medium max-w-[690px] mx-auto">
