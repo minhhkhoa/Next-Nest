@@ -11,7 +11,7 @@ import { CateNewsService } from './cate-news.service';
 import { CreateCateNewsDto } from './dto/create-cate-new.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UpdateCateNewsDto } from './dto/update-cate-new.dto';
-import { ResponseMessage, userDecorator } from 'src/decorator/customize';
+import { Public, ResponseMessage, userDecorator } from 'src/decorator/customize';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 
 @ApiTags('cate-news')
@@ -29,6 +29,7 @@ export class CateNewsController {
     return this.cateNewsService.create(createCateNewsDto, user);
   }
 
+  @Public()
   @ResponseMessage('Lấy danh sách danh mục tin tức thành công')
   @ApiOperation({ summary: 'getAll' })
   @Get()

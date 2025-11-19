@@ -20,6 +20,7 @@ export type MetaFilterType = z.infer<typeof MetaFilter>;
 export const apiCategoryNewsRes = z.object({
   _id: z.string(),
   name: MultiLang,
+  slug: MultiLang,
   isDelete: z.boolean(),
   summary: MultiLang,
   deletedAt: z.date(),

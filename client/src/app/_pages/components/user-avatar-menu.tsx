@@ -14,12 +14,12 @@ import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/components/TanstackProvider";
 import { useLogoutMutation } from "@/queries/useAuth";
 import {
-  getAccessTokenFromLocalStorage,
+  // getAccessTokenFromLocalStorage,
   handleInitName,
   removeTokensFromLocalStorage,
 } from "@/lib/utils";
 import { toast } from "sonner";
-import { useEffect } from "react";
+// import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export function UserAvatarMenu() {
@@ -53,9 +53,9 @@ export function UserAvatarMenu() {
     router.push("/settings");
   };
 
-  useEffect(() => {
-    setLogin(!!getAccessTokenFromLocalStorage());
-  }, [setLogin]);
+  // useEffect(() => {
+  //   setLogin(!!getAccessTokenFromLocalStorage());
+  // }, [setLogin]);
 
   return (
     <DropdownMenu>

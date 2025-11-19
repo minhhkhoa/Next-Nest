@@ -8,6 +8,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { BadRequestCustom } from 'src/customExceptions/BadRequestCustom';
 import mongoose from 'mongoose';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
+import slugify from 'slugify';
 
 @Injectable()
 export class CateNewsService {
@@ -43,9 +44,21 @@ export class CateNewsService {
     }
   }
 
-  findAll() {
+  async findAll() {
     try {
-      return this.cateNewsModel.find({ isDeleted: false });
+      const list = await this.cateNewsModel.find({ isDeleted: false }).lean(); //- lean để chuyển về obj thường
+
+      return list.map((item) => ({
+        ...item,
+        slug: {
+          vi: slugify(item.name.vi, {
+            lower: true,
+            strict: true,
+            locale: 'vi',
+          }),
+          en: slugify(item.name.en, { lower: true, strict: true }),
+        },
+      }));
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }
