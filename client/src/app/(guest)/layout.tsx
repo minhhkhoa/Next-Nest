@@ -1,6 +1,7 @@
 import BlockWrap from "./BlockWrap";
 import { cookies } from "next/headers";
 import HeaderClient from "../_pages/components/HeaderClient";
+import Footer from "./Footer";
 
 export default async function ClientLayout({
   children,
@@ -16,6 +17,11 @@ export default async function ClientLayout({
       <div className="md:px-26">
         <HeaderClient isLoginSSR={isLoginSSR} />
         {children}
+
+        {/* footer */}
+        <div className="md:-mx-30">
+          <Footer/>
+        </div>
       </div>
     </BlockWrap>
   );

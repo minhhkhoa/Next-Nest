@@ -8,7 +8,7 @@ export default function AppLogo() {
   return (
     <>
       <h1 className="font-bold cursor-pointer" onClick={() => router.push("/")}>
-        Logo
+        JobHub
       </h1>
     </>
   );

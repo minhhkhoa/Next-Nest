@@ -26,6 +26,7 @@ import {
 import { formatDateInput } from "@/lib/utils";
 import { ArrowRight, PenIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function CategoriesPage() {
   const { data: listCateNews } = useGetListCategories();
@@ -131,10 +132,10 @@ function BlockNewsHot({
   data: NewsHotType[];
   isLoadingListNews: boolean;
 }) {
-  if (isLoadingListNews || !data || data.length === 0) {
+  if (isLoadingListNews) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary"></div>
+        <Spinner />
       </div>
     );
   }
@@ -174,7 +175,7 @@ function BlockNewsHot({
             </div>
 
             {/* Content Section */}
-            <div className="p-4 md:p-6 flex flex-col flex-1 bg-white">
+            <div className="p-4 md:p-6 flex flex-col flex-1 bg-slate-50">
               <p className="text-xs md:text-sm font-semibold text-primary uppercase tracking-wide mb-2">
                 {firstNews.cateNewsID[0]?.name.vi || "News"}
               </p>
@@ -227,7 +228,7 @@ function BlockNewsHot({
                   {newsItem.summary.vi}
                 </p>
 
-                <div className="flex items-center gap-1 text-primary font-semibold text-xs md:text-sm group-hover:gap-2 transition-all">
+                <div className="flex items-center gap-1 text-black font-semibold text-xs md:text-sm group-hover:gap-2 transition-all">
                   Đọc thêm
                   <ArrowRight size={14} className="md:w-4 md:h-4" />
                 </div>
