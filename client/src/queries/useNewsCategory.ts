@@ -16,6 +16,13 @@ export const useGetListCategories = () => {
   });
 };
 
+export const useGetCategoryById = (id: string) => {
+  return useQuery({
+    queryKey: ["getCategoryById"],
+    queryFn: () => CategoryNewsApiRequest.getCategoryById(id),
+  });
+};
+
 //- create category news
 export const useCreateCategoryNewsMutation = () => {
   const queryClient = useQueryClient();

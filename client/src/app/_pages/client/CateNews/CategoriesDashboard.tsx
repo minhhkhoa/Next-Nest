@@ -23,7 +23,7 @@ import {
   NewsHotType,
   ResultListNewsType,
 } from "@/schemasvalidation/NewsCategory";
-import { formatDateInput } from "@/lib/utils";
+import { formatDateInput, generateSlugUrl } from "@/lib/utils";
 import { ArrowRight, PenIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
@@ -80,7 +80,10 @@ export default function CategoriesPage() {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Link
-                        href={`/cate-news/${cateNews.slug.vi}`}
+                        href={`/cate-news/${generateSlugUrl({
+                          name: cateNews.slug.vi,
+                          id: cateNews._id,
+                        })}`}
                         className="truncate line-clamp-1 text-center px-1 py-0.5 border border-gray-700 rounded-lg cursor-pointer hover:bg-accent-foreground/20 block"
                       >
                         {cateNews.name.vi}
@@ -162,7 +165,10 @@ function BlockNewsHot({
         {/* Block Left - Featured News */}
         <div className="flex flex-col rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300">
           <Link
-            href={`/news/${firstNews.slugNews.vi}`}
+            href={`/news/${generateSlugUrl({
+              name: firstNews.slugNews.vi,
+              id: firstNews._id,
+            })}`}
             className="flex-1 flex flex-col"
           >
             <div className="relative overflow-hidden bg-slate-200 h-64 md:h-72 lg:h-80">
@@ -206,7 +212,10 @@ function BlockNewsHot({
           {restNews.map((newsItem) => (
             <Link
               key={newsItem._id}
-              href={`/news/${newsItem.slugNews.vi}`}
+              href={`/news/${generateSlugUrl({
+                name: newsItem.slugNews.vi,
+                id: newsItem._id,
+              })}`}
               className="group bg-gray-300 rounded-xl p-4 md:p-5 shadow-md hover:shadow-lg hover:bg-slate-50 transition-all duration-300 border border-slate-100 hover:border-primary/20 flex gap-4"
             >
               {/* Text Content */}
@@ -262,7 +271,12 @@ function BlockStyle1({ data }: { data: ResultListNewsType }) {
           </span>
           <div className="h-1 w-[165px] md:w-[248px] bg-primary rounded-full mt-2"></div>
         </div>
-        <Link href={`/cate-news/${data.nameCate.vi}`}>
+        <Link
+          href={`/cate-news/${generateSlugUrl({
+            name: data.nameCate.vi,
+            id: data.listNews[0].cateNewsID[0]._id,
+          })}`}
+        >
           Xem tất cả
           <ArrowRight size={16} className="inline-block ml-1 mb-0.5" />
         </Link>
@@ -272,7 +286,10 @@ function BlockStyle1({ data }: { data: ResultListNewsType }) {
         {data.listNews.slice(0, 4).map((news) => (
           <Link
             className="block flex-1"
-            href={`/news/${news.slugNews.vi}`}
+            href={`/news/${generateSlugUrl({
+              name: news.slugNews.vi,
+              id: news._id,
+            })}`}
             key={news._id}
           >
             <div>
@@ -324,7 +341,10 @@ function BlockStyle2({ data }: { data: ResultListNewsType[] }) {
             {data[0].listNews.slice(0, 5).map((news) => (
               <Link
                 key={news._id}
-                href={`/news/${news.slugNews.vi}`}
+                href={`/news/${generateSlugUrl({
+                  name: news.slugNews.vi,
+                  id: news._id,
+                })}`}
                 className="group rounded-lg md:rounded-xl p-3 md:p-4 lg:p-5 shadow-sm hover:shadow-md transition-all duration-300 border flex gap-3 md:gap-4 flex-shrink-0"
               >
                 {/* Text Content */}
@@ -361,7 +381,10 @@ function BlockStyle2({ data }: { data: ResultListNewsType[] }) {
 
           <Link
             className="w-full border text-center rounded-xl md:rounded-2xl py-1.5 px-4 mt-3 md:mt-4 flex-shrink-0 text-sm md:text-base hover:bg-accent-foreground/20 transition-colors"
-            href={`/cate-news/${data[0].nameCate.vi}`}
+            href={`/cate-news/${generateSlugUrl({
+              name: data[0].nameCate.vi,
+              id: data[0].listNews[0].cateNewsID[0]._id,
+            })}`}
           >
             Xem tất cả
             <ArrowRight size={16} className="inline-block ml-1 mb-0.5" />
@@ -385,7 +408,10 @@ function BlockStyle2({ data }: { data: ResultListNewsType[] }) {
             {data[1].listNews.slice(0, 5).map((news) => (
               <Link
                 key={news._id}
-                href={`/news/${news.slugNews.vi}`}
+                href={`/news/${generateSlugUrl({
+                  name: news.slugNews.vi,
+                  id: news._id,
+                })}`}
                 className="group rounded-lg md:rounded-xl p-3 md:p-4 lg:p-5 shadow-sm hover:shadow-md transition-all duration-300 border flex gap-3 md:gap-4 flex-shrink-0"
               >
                 {/* Text Content */}
@@ -412,7 +438,10 @@ function BlockStyle2({ data }: { data: ResultListNewsType[] }) {
 
           <Link
             className="w-full border text-center rounded-xl md:rounded-2xl py-1.5 px-4 mt-3 md:mt-4 flex-shrink-0 text-sm md:text-base hover:bg-accent-foreground/20 transition-colors"
-            href={`/cate-news/${data[1].nameCate.vi}`}
+            href={`/cate-news/${generateSlugUrl({
+              name: data[1].nameCate.vi,
+              id: data[1].listNews[0].cateNewsID[0]._id,
+            })}`}
           >
             Xem tất cả
             <ArrowRight size={16} className="inline-block ml-1 mb-0.5" />

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/navigation-menu";
 import { Separator } from "@/components/ui/separator";
 import { useGetListCategories } from "@/queries/useNewsCategory";
+import { generateSlugUrl } from "@/lib/utils";
 
 const components: { title: string; href: string; description: string }[] = [
   {
@@ -134,7 +135,10 @@ export default function NavigationHeaderMenu() {
                     <NavigationMenuLink asChild>
                       <Link
                         className="max-w-[200px]"
-                        href={`/cate-news/${item.slug.vi}`}
+                        href={`/cate-news/${generateSlugUrl({
+                          name: item.slug.vi,
+                          id: item._id,
+                        })}`}
                       >
                         <div className="font-medium !whitespace-nowrap truncate">
                           {item.name.vi}

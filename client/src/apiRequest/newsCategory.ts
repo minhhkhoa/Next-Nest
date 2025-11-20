@@ -8,6 +8,7 @@ import {
   NewsResType,
 } from "@/schemasvalidation/NewsCategory";
 import { ApiResponse } from "@/types/apiResponse";
+import { get } from "http";
 
 const prefixCategory = "/cate-news";
 const prefixNews = "/news";
@@ -15,6 +16,9 @@ const prefixNews = "/news";
 const CategoryNewsApiRequest = {
   getListCategories: () =>
     http.get<ApiResponse<CategoryNewsResType[]>>(`${prefixCategory}`),
+
+  getCategoryById: (id: string) =>
+    http.get<ApiResponse<CategoryNewsResType>>(`${prefixCategory}/${id}`),
 
   createCategory: (payload: CateNewsCreateType) =>
     http.post<ApiResponse<any>>(`${prefixCategory}`, payload),

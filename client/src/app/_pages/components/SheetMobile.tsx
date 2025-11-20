@@ -14,6 +14,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { generateSlugUrl } from "@/lib/utils";
 import { useGetListCategories } from "@/queries/useNewsCategory";
 import { Menu, Package2 } from "lucide-react";
 import Link from "next/link";
@@ -103,7 +104,12 @@ function NavItemSheetMobile() {
                 <ul className="grid w-[200px] gap-2">
                   {listCateNews?.data?.map((item) => (
                     <li key={item._id} className="">
-                      <Link href={`/cate-news/${item.slug.vi}`}>
+                      <Link
+                        href={`/cate-news/${generateSlugUrl({
+                          name: item.slug.vi,
+                          id: item._id,
+                        })}`}
+                      >
                         <div className="font-medium !whitespace-nowrap">
                           {item.name.vi}
                         </div>

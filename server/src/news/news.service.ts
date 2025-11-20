@@ -49,10 +49,29 @@ export class NewsService {
 
   async findAll() {
     try {
-      return this.newsModel.find({ isDeleted: false }).populate({
-        path: 'cateNewsID',
-        match: { isDeleted: false },
-        select: 'name _id summary',
+      const newsList = await this.newsModel
+        .find({ isDeleted: false })
+        .populate({
+          path: 'cateNewsID',
+          match: { isDeleted: false },
+          select: 'name _id summary',
+        })
+        .lean(); //- lean: trả về plain object thay vì mongoose document
+
+      return newsList.map((news) => {
+        const slugNews = {
+          vi: slugify(news.title.vi, {
+            lower: true,
+            strict: true,
+            locale: 'vi',
+          }),
+          en: slugify(news.title.en, {
+            lower: true,
+            strict: true,
+          }),
+        };
+
+        return { ...news, slugNews };
       });
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
@@ -195,13 +214,26 @@ export class NewsService {
       ? sort
       : { createdAt: -1 };
 
-    const result = await this.newsModel
+    let result = await this.newsModel
       .find(filterConditions)
       .skip(offset)
       .limit(defaultLimit)
       .sort(defaultSort as any)
       .populate(population)
       .exec();
+
+    //- thêm slug cho từng news
+    result = result.map((news) => {
+      const slugNews = {
+        vi: slugify(news.title.vi, {
+          lower: true,
+          strict: true,
+          locale: 'vi',
+        }),
+        en: slugify(news.title.en, { lower: true, strict: true }),
+      };
+      return { ...news.toObject(), slugNews };
+    });
 
     return {
       meta: {

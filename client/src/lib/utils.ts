@@ -65,7 +65,7 @@ export async function uploadToCloudinary(file: File): Promise<string> {
   if (!sigRes.isOk) {
     throw new Error("Failed to get Cloudinary signature");
   }
-  
+
   const { timestamp, signature, apiKey, cloudName, folder } =
     sigRes.data as CloudinarySignatureResponse;
 
@@ -92,4 +92,12 @@ export async function uploadToCloudinary(file: File): Promise<string> {
 export const formatDateInput = (date: string) => {
   if (!date) return "";
   return new Date(date).toISOString().split("T")[0];
+};
+
+export const generateSlugUrl = ({ name, id }: { name: string; id: string }) => {
+  return `${name}-i.${id}`;
+};
+
+export const getIdFromSlugUrl = (slug: string) => {
+  return String(slug.split("-i.")[1]);
 };

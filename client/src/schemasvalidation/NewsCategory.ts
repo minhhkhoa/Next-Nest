@@ -75,7 +75,7 @@ export const apiNewsRes = z.object({
   deletedAt: z.date(),
   createdAt: z.date(),
   updatedAt: z.date(),
-
+  slugNews: MultiLang,
   updatedBy: ActionBy,
   createdBy: ActionBy,
 });
@@ -121,6 +121,7 @@ export const NewsHot = z.object({
   createdAt: z.date(),
   slugNews: MultiLang,
   slugCateNews: MultiLang,
+  description: z.string().optional(),
 });
 
 export type NewsHotType = z.infer<typeof NewsHot>;
