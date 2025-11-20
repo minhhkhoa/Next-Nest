@@ -27,6 +27,7 @@ import { formatDateInput, generateSlugUrl } from "@/lib/utils";
 import { ArrowRight, PenIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
+import SlideCateNews from "./components/SlideCateNews";
 
 export default function CategoriesPage() {
   const { data: listCateNews } = useGetListCategories();
@@ -62,49 +63,9 @@ export default function CategoriesPage() {
       </div>
 
       {/* carousel category news */}
-      <div className="mt-10">
-        <Carousel
-          opts={{
-            align: "start",
-          }}
-          className="w-full"
-        >
-          <CarouselContent>
-            {listCateNews?.data?.map((cateNews) => {
-              return (
-                <CarouselItem
-                  key={cateNews._id}
-                  // basis theo mobile và desktop
-                  className="basis-1/2 sm:basis-1/3 md:basis-1/6 px-1"
-                >
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Link
-                        href={`/cate-news/${generateSlugUrl({
-                          name: cateNews.slug.vi,
-                          id: cateNews._id,
-                        })}`}
-                        className="truncate line-clamp-1 text-center px-1 py-0.5 border border-gray-700 rounded-lg cursor-pointer hover:bg-accent-foreground/20 block"
-                      >
-                        {cateNews.name.vi}
-                      </Link>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{cateNews.name.vi}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </CarouselItem>
-              );
-            })}
-          </CarouselContent>
-          {!isMobile && (
-            <>
-              <CarouselPrevious />
-              <CarouselNext />
-            </>
-          )}
-        </Carousel>
-      </div>
+      {listCateNews?.data && (
+        <SlideCateNews cateNews={listCateNews.data || []} />
+      )}
 
       <div>
         {listNewsDashboard?.data && (

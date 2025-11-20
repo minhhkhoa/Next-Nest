@@ -31,6 +31,10 @@ const CategoryNewsApiRequest = {
 
 const NewsApiRequest = {
   getListNews: () => http.get<ApiResponse<NewsResType[]>>(`${prefixNews}`),
+
+  getNewsById: (id: string) =>
+    http.get<ApiResponse<NewsResType>>(`${prefixNews}/${id}`),
+
   getListNewsDashboard: () =>
     http.get<ApiResponse<NewsDashboardType>>(`${prefixNews}/news-dashboard`),
   getListNewsFilter: (params: {

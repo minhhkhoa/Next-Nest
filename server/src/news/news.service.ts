@@ -267,7 +267,17 @@ export class NewsService {
         );
       }
 
-      return news;
+      //- thêm slug cho news
+      const slugNews = {
+        vi: slugify(news.title.vi, {
+          lower: true,
+          strict: true,
+          locale: 'vi',
+        }),
+        en: slugify(news.title.en, { lower: true, strict: true }),
+      };
+
+      return { ...news.toObject(), slugNews };
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }

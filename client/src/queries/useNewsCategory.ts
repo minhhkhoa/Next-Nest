@@ -18,7 +18,7 @@ export const useGetListCategories = () => {
 
 export const useGetCategoryById = (id: string) => {
   return useQuery({
-    queryKey: ["getCategoryById"],
+    queryKey: ["getCategoryById", id],
     queryFn: () => CategoryNewsApiRequest.getCategoryById(id),
   });
 };
@@ -72,6 +72,13 @@ export const useGetListNews = () => {
   return useQuery({
     queryKey: ["getListNews"],
     queryFn: NewsApiRequest.getListNews,
+  });
+};
+
+export const useGetNewsById = (id: string) => {
+  return useQuery({
+    queryKey: ["getNewsById", id],
+    queryFn: () => NewsApiRequest.getNewsById(id),
   });
 };
 

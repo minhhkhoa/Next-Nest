@@ -37,6 +37,7 @@ import Link from "next/link";
 import { NewsResFilterType } from "@/schemasvalidation/NewsCategory";
 import { Spinner } from "@/components/ui/spinner";
 import { ArrowRight, PenIcon } from "lucide-react";
+import SlideCateNews from "./components/SlideCateNews";
 
 export default function CategoryNewsPage({ slug }: { slug?: string }) {
   const idCateNews = getIdFromSlugUrl(slug || "");
@@ -55,12 +56,11 @@ export default function CategoryNewsPage({ slug }: { slug?: string }) {
   );
 
   //- do mình lười ko viết api lấy tin tức nổi bật nên call lại 1 api 2 lần tách ra để nó không bị hiện UI spin (ở tin tức nổi bật) khi change pagination của danh sách tin tức
-  const { data: listNews2 } =
-    useGetListNewsFilter({
-      currentPage: 1, //- ko phu thuoc vao state
-      pageSize: 5,
-      cateNewsID: idCateNews,
-    });
+  const { data: listNews2 } = useGetListNewsFilter({
+    currentPage: 1, //- ko phu thuoc vao state
+    pageSize: 5,
+    cateNewsID: idCateNews,
+  });
   const totalPages = listNews?.data?.meta?.totalPages || 1;
   const current = listNews?.data?.meta?.current || 1;
   const restCategories = data?.data?.filter((item) => item._id !== idCateNews);
@@ -94,47 +94,7 @@ export default function CategoryNewsPage({ slug }: { slug?: string }) {
       </div>
 
       {/* carousel category news */}
-      <div className="mt-5 md:mt-10">
-        <Carousel
-          opts={{
-            align: "start",
-          }}
-          className="w-full"
-        >
-          <CarouselContent>
-            {restCategories?.map((cateNews) => {
-              return (
-                <CarouselItem
-                  key={cateNews._id}
-                  // basis theo mobile và desktop
-                  className="basis-1/2 sm:basis-1/3 md:basis-1/5 px-2"
-                >
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Link
-                        href={`/cate-news/${generateSlugUrl({
-                          name: cateNews.slug.vi,
-                          id: cateNews._id,
-                        })}`}
-                        className="truncate line-clamp-1 text-center px-1 py-0.5 border border-gray-700 rounded-lg cursor-pointer hover:bg-accent-foreground/20 block"
-                      >
-                        {cateNews.name.vi}
-                      </Link>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{cateNews.name.vi}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </CarouselItem>
-              );
-            })}
-          </CarouselContent>
-          <div className="hidden md:flex">
-            <CarouselPrevious />
-            <CarouselNext />
-          </div>
-        </Carousel>
-      </div>
+      <SlideCateNews cateNews={restCategories || []} />
 
       <div>
         <div className="mt-6">
@@ -162,7 +122,14 @@ export default function CategoryNewsPage({ slug }: { slug?: string }) {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {listNews?.data?.result.map((newsItem) => (
-            <div key={newsItem._id} className="flex flex-col gap-2">
+            <Link
+              href={`/news/${generateSlugUrl({
+                name: newsItem.slugNews.vi,
+                id: newsItem._id,
+              })}`}
+              key={newsItem._id}
+              className="flex flex-col gap-2"
+            >
               <Image
                 src={newsItem.image}
                 alt={newsItem.title.vi}
@@ -184,7 +151,7 @@ export default function CategoryNewsPage({ slug }: { slug?: string }) {
               <p className="line-clamp-3 text-shadow-md">
                 {newsItem.summary.vi}
               </p>
-            </div>
+            </Link>
           ))}
         </div>
 
