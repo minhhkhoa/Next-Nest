@@ -55,7 +55,7 @@ export default function CategoryNewsPage({ slug }: { slug?: string }) {
   );
 
   //- do mình lười ko viết api lấy tin tức nổi bật nên call lại 1 api 2 lần tách ra để nó không bị hiện UI spin (ở tin tức nổi bật) khi change pagination của danh sách tin tức
-  const { data: listNews2, isLoading: isLoadingListNews2 } =
+  const { data: listNews2 } =
     useGetListNewsFilter({
       currentPage: 1, //- ko phu thuoc vao state
       pageSize: 5,

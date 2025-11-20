@@ -1,14 +1,11 @@
 import {
   Calendar,
-  Home,
   Search,
   Settings,
   User2,
   FolderKanban,
-  Users,
   ChevronDown,
   ChartNoAxesCombined,
-  Icon,
 } from "lucide-react";
 
 import {

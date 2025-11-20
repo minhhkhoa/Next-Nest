@@ -8,7 +8,6 @@ import {
   NewsResType,
 } from "@/schemasvalidation/NewsCategory";
 import { ApiResponse } from "@/types/apiResponse";
-import { get } from "http";
 
 const prefixCategory = "/cate-news";
 const prefixNews = "/news";

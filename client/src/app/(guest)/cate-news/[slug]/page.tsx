@@ -1,9 +1,13 @@
 import CategoryNewsPage from "@/app/_pages/client/CateNews/CategoryNews";
 import React from "react";
 
-export default function CateNewsPage({ params }: { params: { slug: string } }) {
+export default async function CateNewsPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   //- get slug from params
-  const { slug } = params;
+  const { slug } = await params;
 
   return (
     <div>
