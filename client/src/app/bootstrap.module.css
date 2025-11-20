@@ -1,0 +1,189 @@
+/* =============================== */
+/* Wrapper TinyMCE - Bootstrap style */
+/* =============================== */
+.wrapperBoostrap {
+  font-family: inherit;
+  /* color: #212529; */
+  line-height: 1.5;
+}
+
+/* --------- Paragraphs & headings --------- */
+.wrapperBoostrap p {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.wrapperBoostrap .lead {
+  font-size: 1.25rem;
+  font-weight: 300;
+}
+
+.wrapperBoostrap h1,
+.wrapperBoostrap h2,
+.wrapperBoostrap h3,
+.wrapperBoostrap h4,
+.wrapperBoostrap h5,
+.wrapperBoostrap h6 {
+  margin: 0.75rem 0;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+/* Kích thước giống Bootstrap */
+.wrapperBoostrap h1 {
+  font-size: 2rem;
+}
+.wrapperBoostrap h2 {
+  margin-top: -0.75rem !important;
+  font-size: 1.85rem;
+}
+.wrapperBoostrap h3 {
+  font-size: 1.5rem;
+}
+.wrapperBoostrap h4 {
+  font-size: 1.4rem;
+}
+.wrapperBoostrap h5 {
+  font-size: 1.25rem;
+}
+.wrapperBoostrap h6 {
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .wrapperBoostrap h1 {
+    font-size: 1.5rem;
+  }
+  .wrapperBoostrap h2 {
+    font-size: 1.25rem;
+  }
+  .wrapperBoostrap h3 {
+    font-size: 1rem;
+  }
+  .wrapperBoostrap h4 {
+    font-size: 0.875rem;
+  }
+  .wrapperBoostrap h5 {
+    font-size: 0.75rem;
+  }
+  .wrapperBoostrap h6 {
+    font-size: 0.7rem;
+  }
+}
+
+/* Nếu muốn thêm khoảng cách và font-weight như Bootstrap */
+.wrapperBoostrap h1,
+.wrapperBoostrap h2,
+.wrapperBoostrap h3,
+.wrapperBoostrap h4,
+.wrapperBoostrap h5,
+.wrapperBoostrap h6 {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+/* --------- Text alignment --------- */
+.wrapperBoostrap .text-start {
+  text-align: left !important;
+}
+.wrapperBoostrap .text-center {
+  text-align: center !important;
+}
+.wrapperBoostrap .text-end {
+  text-align: right !important;
+}
+
+/* --------- Images --------- */
+.wrapperBoostrap img,
+.wrapperBoostrap .img-fluid {
+  /* max-width: 100%; */
+  width: 600px;
+  height: auto;
+  display: block;
+  border-radius: 0.25rem;
+}
+
+/* --------- Tables --------- */
+.wrapperBoostrap figure table,
+.wrapperBoostrap .table {
+  width: 100%;
+  margin-bottom: 1rem;
+  border-collapse: collapse;
+}
+
+.wrapperBoostrap table.table-bordered,
+.wrapperBoostrap .table-bordered {
+  border: 1px solid #ffffff;
+}
+
+.wrapperBoostrap table th,
+.wrapperBoostrap table td {
+  padding: 0.75rem;
+  vertical-align: top;
+  border: 1px solid #929191;
+}
+
+.wrapperBoostrap table thead th {
+  vertical-align: bottom;
+  border-bottom: 2px solid #dee2e6;
+  background-color: #f8f9fa;
+}
+
+/* --------- Blockquotes --------- */
+.wrapperBoostrap blockquote {
+  margin: 0 0 1rem;
+  padding: 0.5rem 1rem;
+  border-left: 0.25rem solid #dee2e6;
+  color: #6c757d;
+  background-color: #f8f9fa;
+}
+
+/* --------- Lists --------- */
+.wrapperBoostrap ul,
+.wrapperBoostrap ol {
+  padding-left: 2rem;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  list-style: disc;
+}
+
+.wrapperBoostrap li {
+  margin-bottom: 0.5rem;
+}
+
+/* --------- Horizontal rule --------- */
+.wrapperBoostrap hr {
+  margin: 1rem 0;
+  border: 0;
+  border-top: 1px solid #dee2e6;
+}
+
+/* --------- Links --------- */
+.wrapperBoostrap a {
+  color: #0d6efd;
+  text-decoration: underline;
+}
+
+.wrapperBoostrap a:hover {
+  color: #0a58ca;
+  text-decoration: none;
+}
+
+/* --------- Code & pre --------- */
+.wrapperBoostrap code {
+  font-size: 0.875em;
+  color: #d63384;
+  background-color: #f8f9fa;
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+}
+
+.wrapperBoostrap pre {
+  display: block;
+  font-size: 0.875em;
+  color: #212529;
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 0.25rem;
+  overflow-x: auto;
+}

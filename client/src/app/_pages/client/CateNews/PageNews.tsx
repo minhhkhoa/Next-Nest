@@ -9,7 +9,7 @@ import Image from "next/image";
 import React from "react";
 import SlideCateNews from "./components/SlideCateNews";
 import { Spinner } from "@/components/ui/spinner";
-import "@/app/"
+import styles from "@/app/bootstrap.module.css";
 
 export default function PageNews({ slug }: { slug?: string }) {
   const idNews = getIdFromSlugUrl(slug || "");
@@ -33,23 +33,23 @@ export default function PageNews({ slug }: { slug?: string }) {
       {/* carousel category news */}
       <SlideCateNews cateNews={restCategories || []} />
 
-      <div className="mt-10">
+      <div className="mt-10 flex justify-center">
         {isLoading ? (
           <div className="w-full flex justify-center items-center">
             <Spinner />
           </div>
         ) : (
-          <div className="boder rounded-2xl p-3">
-            <h1 className="text-xl md:text-3xl font-bold text-primary">
+          <div className="boder rounded-2xl p-3 max-w-[850px] flex flex-col gap-3">
+            <p className="text-2xl md:text-4xl font-bold text-primary">
               {newsDetail?.title.vi}
-            </h1>
+            </p>
             <p>{newsDetail?.cateNewsID[0].name.vi}</p>
             <p className="text-xs md:text-sm text-gray-500 mb-3 flex items-center gap-1">
               Tác giả: {newsDetail?.createdBy.name} •{" "}
               {formatDateInput(newsDetail?.createdAt.toString() || "")}
             </p>
             <div
-              className="prose prose-img:rounded-xl max-w-none"
+              className={styles.wrapperBoostrap}
               dangerouslySetInnerHTML={{
                 __html: newsDetail?.description || "",
               }}
