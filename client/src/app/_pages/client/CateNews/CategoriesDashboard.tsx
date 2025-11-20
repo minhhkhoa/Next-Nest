@@ -5,19 +5,7 @@ import {
   useGetListNewsDashboard,
 } from "@/queries/useNewsCategory";
 import Image from "next/image";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
 import Link from "next/link";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   NewsHotType,
@@ -36,7 +24,6 @@ export default function CategoriesPage() {
   const dataNews1 = listNewsDashboard?.data?.result[0];
   const dataNews2 = listNewsDashboard?.data?.result[1];
   const dataNewsRest = listNewsDashboard?.data?.result.slice(2);
-  const isMobile = useIsMobile();
 
   return (
     <div>

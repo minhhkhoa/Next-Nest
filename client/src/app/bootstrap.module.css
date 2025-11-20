@@ -82,6 +82,12 @@
   font-weight: 500;
 }
 
+.wrapperBoostrap figcaption {
+  text-align: center;
+  margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
 /* --------- Text alignment --------- */
 .wrapperBoostrap .text-start {
   text-align: left !important;

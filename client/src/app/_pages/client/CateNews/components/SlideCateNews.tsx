@@ -43,7 +43,7 @@ export default function SlideCateNews({
                         name: cateNews.slug.vi,
                         id: cateNews._id,
                       })}`}
-                      className="truncate line-clamp-1 text-center px-1 py-0.5 border border-gray-700 rounded-lg cursor-pointer hover:bg-accent-foreground/20 block"
+                      className="truncate line-clamp-1 text-center px-1 py-0.5 border border-gray-700 rounded-lg cursor-pointer hover:bg-primary block"
                     >
                       {cateNews.name.vi}
                     </Link>

@@ -19,20 +19,8 @@ import {
   useGetListCategories,
   useGetListNewsFilter,
 } from "@/queries/useNewsCategory";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
 import Image from "next/image";
 import React from "react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import Link from "next/link";
 import { NewsResFilterType } from "@/schemasvalidation/NewsCategory";
 import { Spinner } from "@/components/ui/spinner";
