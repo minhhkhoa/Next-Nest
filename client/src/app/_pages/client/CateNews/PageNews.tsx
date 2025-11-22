@@ -3,6 +3,7 @@
 import { formatDateInput, getIdFromSlugUrl } from "@/lib/utils";
 import {
   useGetListCategories,
+  useGetListNewsFilter,
   useGetNewsById,
 } from "@/queries/useNewsCategory";
 import Image from "next/image";
@@ -10,6 +11,7 @@ import React from "react";
 import SlideCateNews from "./components/SlideCateNews";
 import { Spinner } from "@/components/ui/spinner";
 import styles from "@/app/bootstrap.module.css";
+import BlockNewsWithPagination from "./components/BlockNewsWithPagination";
 
 export default function PageNews({ slug }: { slug?: string }) {
   const idNews = getIdFromSlugUrl(slug || "");
@@ -18,6 +20,23 @@ export default function PageNews({ slug }: { slug?: string }) {
   const restCategories = data?.data?.filter((item) => item._id !== idNews);
   const { data: news, isLoading } = useGetNewsById(idNews);
   const newsDetail = news?.data;
+
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const idCateNewsDetail = newsDetail?.cateNewsID[0]._id;
+
+  const { data: listNews, isLoading: isLoadingListNews } = useGetListNewsFilter(
+    {
+      currentPage: currentPage,
+      pageSize: 6,
+      cateNewsID: idCateNewsDetail,
+      status: "active",
+    }
+  );
+  const totalPages = listNews?.data?.meta?.totalPages || 1;
+  const current = listNews?.data?.meta?.current || 1;
+  const onPageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   return (
     <div>
@@ -33,7 +52,7 @@ export default function PageNews({ slug }: { slug?: string }) {
       {/* carousel category news */}
       <SlideCateNews cateNews={restCategories || []} />
 
-      <div className="mt-10 flex justify-center">
+      <div className="mt-10 flex justify-center flex-col items-center gap-6">
         {isLoading ? (
           <div className="w-full flex justify-center items-center">
             <Spinner />
@@ -56,6 +75,17 @@ export default function PageNews({ slug }: { slug?: string }) {
             />
           </div>
         )}
+      </div>
+      {/* bài viết liên quan */}
+      <div>
+        <BlockNewsWithPagination
+          listNews={listNews?.data?.result || []}
+          current={current}
+          isLoadingListNews={isLoadingListNews}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+          textTitle="Bài viết liên quan"
+        />
       </div>
     </div>
   );
