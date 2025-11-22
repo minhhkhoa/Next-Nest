@@ -10,6 +10,7 @@ import {
   Twitter,
   Facebook,
 } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 interface FooterLink {
   title: string;
@@ -77,7 +78,7 @@ export default function Footer() {
 
   return (
     <footer className="bg-primary/5 dark:bg-primary-dark/5">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-5">
           {/* Brand section */}
           <div className="col-span-2 md:col-span-1">
@@ -129,12 +130,12 @@ export default function Footer() {
         </div>
 
         {/* Divider */}
-        <div className="my-12 border-t border-primary-foreground/10"></div>
+        <Separator className="my-12 border-t border-primary-foreground/10" />
 
         {/* Bottom section */}
         <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
           {/* Contact info */}
-          <div className="flex flex-col gap-4 md:flex-row md:gap-8">
+          <div className="flex flex-4 flex-col gap-4">
             <div className="flex items-center gap-2">
               <Mail size={18} className="text-primary" />
               <a
@@ -161,15 +162,27 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Copyright */}
-          <div className="text-center text-sm md:text-right">
-            <p>&copy; 2025 JobHub. Tất cả quyền được bảo lưu.</p>
+          {/* map */}
+          <div className="flex-4 h-[200px]">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.6376143503944!2d105.82223027431664!3d21.007158680636717!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ac8109765ba5%3A0xd84740ece05680ee!2zVHLGsOG7nW5nIMSQ4bqhaSBo4buNYyBUaOG7p3kgbOG7o2k!5e0!3m2!1svi!2s!4v1763820232822!5m2!1svi!2s"
+              width="100%"
+              height="200"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            ></iframe>
           </div>
         </div>
-      </div>
 
-      {/* Top accent line */}
-      <div className="h-1 bg-gradient-to-r from-accent via-accent to-accent/50"></div>
+        <Separator className="mt-12"/>
+
+        {/* Copyright */}
+        <div className="text-center text-sm py-5">
+          <b>&copy; 2025 JobHub. Tất cả quyền được bảo lưu.</b>
+        </div>
+      </div>
     </footer>
   );
 }
