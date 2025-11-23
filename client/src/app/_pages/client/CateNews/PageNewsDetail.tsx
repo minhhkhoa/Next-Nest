@@ -13,7 +13,7 @@ import { Spinner } from "@/components/ui/spinner";
 import styles from "@/app/bootstrap.module.css";
 import BlockNewsWithPagination from "./components/BlockNewsWithPagination";
 
-export default function PageNews({ slug }: { slug?: string }) {
+export default function PageNewsDetail({ slug }: { slug?: string }) {
   const idNews = getIdFromSlugUrl(slug || "");
 
   const { data } = useGetListCategories();

@@ -1,4 +1,5 @@
 import authApiRequest from "@/apiRequest/auth";
+import { getAccessTokenFromLocalStorage } from "@/lib/utils";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 export const useLoginMutation = () => {
@@ -19,12 +20,13 @@ export const useLogoutMutation = () => {
   });
 };
 
-//- thêm enabled để kiểm soát việc call api, true thì call
-export const useGetProfile = (enabled = true) => {
+export const useGetProfile = () => {
+  const token = getAccessTokenFromLocalStorage();
+
   return useQuery({
     queryKey: ["profile"],
     queryFn: authApiRequest.getProfile,
-    enabled,
+    enabled: !!token, //- không token = không call
   });
 };
 

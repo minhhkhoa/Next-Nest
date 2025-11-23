@@ -11,7 +11,11 @@ import { CateNewsService } from './cate-news.service';
 import { CreateCateNewsDto } from './dto/create-cate-new.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UpdateCateNewsDto } from './dto/update-cate-new.dto';
-import { Public, ResponseMessage, userDecorator } from 'src/decorator/customize';
+import {
+  Public,
+  ResponseMessage,
+  userDecorator,
+} from 'src/decorator/customize';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 
 @ApiTags('cate-news')
@@ -37,6 +41,7 @@ export class CateNewsController {
     return this.cateNewsService.findAll();
   }
 
+  @Public()
   @ResponseMessage('Lấy danh mục tin tức theo id thành công')
   @ApiOperation({ summary: 'Lấy danh mục tin tức theo id' })
   @Get(':id')

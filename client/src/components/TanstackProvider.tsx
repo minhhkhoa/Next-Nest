@@ -11,6 +11,7 @@ import {
 import { UserResponseType } from "@/schemasvalidation/user";
 import { usePathname } from "next/navigation";
 import { accessInstance } from "@/lib/http";
+import { jwtDecode } from "jwt-decode";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -39,29 +40,38 @@ export default function TanstackProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-
   const handleRemoveToken = useCallback(async () => {
     removeTokensFromLocalStorage();
     await accessInstance.get("/auth/removeAccessToken");
   }, []);
 
   useEffect(() => {
-    //- khi load lại trang thì store sẽ làm mới nên phải set lại giá trị login
-    const accessToken = getAccessTokenFromLocalStorage();
-    if (accessToken) {
-      useAppStore.getState().setLogin(true);
-    } else {
-      useAppStore.getState().setLogin(false);
-      if (pathname !== "/login") {
-        handleRemoveToken();
-      }
+    const token = getAccessTokenFromLocalStorage();
+    let valid = false;
+
+    try {
+      //- kiểm tra token có hợp lệ không
+      const decoded = token ? jwtDecode(token) : null;
+      valid = !!decoded;
+    } catch (err) {
+      valid = false;
+      console.log("err decode token in tanstack provider", err);
     }
-  }, [handleRemoveToken, pathname]);
+
+    useAppStore.getState().setLogin(valid);
+
+    //- nếu token không hợp lệ thì xoá token
+    if (!valid) handleRemoveToken();
+  }, [handleRemoveToken]);
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+      <ReactQueryDevtools
+        initialIsOpen={false}
+        // panelProps={{
+        //   style: { bottom: "80px", right: "20px" },
+        // }}
+      />
     </QueryClientProvider>
   );
 }

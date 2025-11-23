@@ -1,4 +1,4 @@
-import PageNews from "@/app/_pages/client/CateNews/PageNews";
+import PageNewsDetail from "@/app/_pages/client/CateNews/PageNewsDetail";
 import React from "react";
 
 export default async function NewsDetailPage({
@@ -9,7 +9,7 @@ export default async function NewsDetailPage({
   const { slug } = await params;
   return (
     <div>
-      <PageNews slug={slug} />
+      <PageNewsDetail slug={slug} />
     </div>
   );
 }

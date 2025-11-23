@@ -193,3 +193,13 @@
   border-radius: 0.25rem;
   overflow-x: auto;
 }
+
+.wrapperBoostrap :global(.quote-content) {
+  margin: 1.25rem 0 !important;
+  /* 
+    .wrapperBoostrap sẽ được hash, ví dụ thành .wrapperBoostrap__abc123.
+    .quote-content bên trong CSS Module cũng SẼ BỊ hash, nhưng trong trường hợp dangerouslySetInnerHTML từ TinyMCE, class(quote-content) thực tế trên DOM KHÔNG BỊ hash → selector không match → CSS không ăn. 
+
+    ==> dùng :global(.quote-content) để bỏ hash cho .quote-content, đảm bảo selector match và CSS ăn đúng.
+  */
+}

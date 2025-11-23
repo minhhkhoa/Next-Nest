@@ -46,6 +46,7 @@ export class NewsController {
     return this.newsService.findAllNewsDashboard();
   }
 
+  @Public()
   @ResponseMessage('pagination + filter theo title + cateNewsID')
   @ApiOperation({ summary: 'Get all news by filter' })
   @Get('filter')
@@ -53,6 +54,7 @@ export class NewsController {
     return this.newsService.findAllByFilter(query);
   }
 
+  @Public()
   @ResponseMessage('Lấy tin tức theo id thành công')
   @ApiOperation({ summary: 'GetById' })
   @Get(':id')
