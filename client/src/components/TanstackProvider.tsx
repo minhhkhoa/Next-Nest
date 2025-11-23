@@ -66,12 +66,7 @@ export default function TanstackProvider({
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      <ReactQueryDevtools
-        initialIsOpen={false}
-        // panelProps={{
-        //   style: { bottom: "80px", right: "20px" },
-        // }}
-      />
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 }

@@ -649,3 +649,8 @@ body[data-scroll-locked="1"] .tox-pop {
   --sidebar-border: hsl(240 3.7% 15.9%);
   --sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
+
+/* nút đóng mở devtools của tanstack query */
+.go1754112896 {
+  right: 80px !important;
+}
