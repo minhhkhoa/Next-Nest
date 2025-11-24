@@ -20,13 +20,11 @@ export const useLogoutMutation = () => {
   });
 };
 
-export const useGetProfile = () => {
-  const token = getAccessTokenFromLocalStorage();
-
+export const useGetProfile = (enabled = true) => {
   return useQuery({
     queryKey: ["profile"],
     queryFn: authApiRequest.getProfile,
-    enabled: !!token, //- không token = không call
+    enabled: enabled,
   });
 };
 

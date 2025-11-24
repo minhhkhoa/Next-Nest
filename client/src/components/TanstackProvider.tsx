@@ -9,9 +9,9 @@ import {
   removeTokensFromLocalStorage,
 } from "@/lib/utils";
 import { UserResponseType } from "@/schemasvalidation/user";
-import { usePathname } from "next/navigation";
 import { accessInstance } from "@/lib/http";
 import { jwtDecode } from "jwt-decode";
+import { toast } from "sonner";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -48,20 +48,28 @@ export default function TanstackProvider({
   useEffect(() => {
     const token = getAccessTokenFromLocalStorage();
     let valid = false;
+    const now = Date.now();
 
     try {
       //- kiểm tra token có hợp lệ không
       const decoded = token ? jwtDecode(token) : null;
+
       valid = !!decoded;
+
+      //- co token nhung token het han
+      if (decoded && decoded.exp && now >= decoded.exp * 1000) {
+        handleRemoveToken();
+        valid = false;
+
+        toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+        setTimeout(() => (window.location.href = "/"), 1000);
+      }
     } catch (err) {
       valid = false;
       console.log("err decode token in tanstack provider", err);
     }
 
     useAppStore.getState().setLogin(valid);
-
-    //- nếu token không hợp lệ thì xoá token
-    if (!valid) handleRemoveToken();
   }, [handleRemoveToken]);
   return (
     <QueryClientProvider client={queryClient}>

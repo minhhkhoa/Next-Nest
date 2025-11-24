@@ -118,7 +118,7 @@ export class UserService {
           //   select: 'name _id',
           // },
         ])
-        .select(getPassword ? 'password' : '-password -isDeleted -deletedAt -createdAt -updatedAt -refresh_token -__v');
+        .select(getPassword ? 'password' : '-password -isDeleted -deletedAt -createdAt -updatedAt -__v');
 
       if (!user) throw new BadRequestCustom('ID user không tìm thấy', !!id);
 

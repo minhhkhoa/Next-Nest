@@ -93,21 +93,22 @@ instance.interceptors.response.use(
 
       //- CASE 1: Không có token
       if (!token) {
-        toast.error("Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.");
+        toast.error("Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.1");
         removeTokensFromLocalStorage();
         await accessInstance.get("/auth/removeAccessToken");
-        setTimeout(() => (window.location.href = "/login"), 1000);
+        setTimeout(() => (window.location.href = "/"), 1000);
         return Promise.reject(error);
       }
 
       try {
         const decoded = jwtDecode(token);
         const now = Date.now();
+        console.log("decodeed: ", decoded)
 
         //- CASE 2: Token còn hạn mà vẫn 401 → có thể bị revoke
         if (decoded.exp && now < decoded.exp * 1000) {
           toast.error(
-            "Phiên đăng nhập không còn hợp lệ. Vui lòng đăng nhập lại."
+            "Phiên đăng nhập không còn hợp lệ. Vui lòng đăng nhập lại.2"
           );
           removeTokensFromLocalStorage();
           await accessInstance.get("/auth/removeAccessToken");
@@ -122,7 +123,7 @@ instance.interceptors.response.use(
             const newAccessToken = res.data?.data.access_token;
 
             if (!newAccessToken) {
-              toast.error("Không thể làm mới phiên đăng nhập!");
+              toast.error("Không thể làm mới phiên đăng nhập!3");
               removeTokensFromLocalStorage();
               await accessInstance.get("/auth/removeAccessToken");
               setTimeout(() => (window.location.href = "/login"), 1000);
@@ -135,7 +136,7 @@ instance.interceptors.response.use(
             //- gọi lại request cũ bằng íntance gốc
             return instance(originalRequest);
           } catch (refreshError) {
-            toast.error("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
+            toast.error("Lỗi lấy refresh token. Vui lòng đăng nhập lại.4");
             removeTokensFromLocalStorage();
             await accessInstance.get("/auth/removeAccessToken");
             setTimeout(() => (window.location.href = "/login"), 1000);
@@ -144,7 +145,7 @@ instance.interceptors.response.use(
         }
       } catch (decodeError) {
         //- CASE 4: Token sai định dạng (người dùng chỉnh sửa)
-        toast.error("Token không hợp lệ. Vui lòng đăng nhập lại.2");
+        toast.error("Token không hợp lệ. Vui lòng đăng nhập lại.5");
         removeTokensFromLocalStorage();
         await accessInstance.get("/auth/removeAccessToken");
         setTimeout(() => (window.location.href = "/"), 1000);
