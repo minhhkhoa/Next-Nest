@@ -15,3 +15,10 @@ export class FindIndustryQueryDto {
   @IsString()
   name?: string;
 }
+
+export class FindIndustryWithName {
+  @ApiPropertyOptional({ example: '' })
+  @IsOptional()
+  @IsString()
+  name?: string;
+}

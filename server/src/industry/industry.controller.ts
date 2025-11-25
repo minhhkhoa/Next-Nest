@@ -13,7 +13,7 @@ import { CreateIndustryDto } from './dto/create-industry.dto';
 import { UpdateIndustryDto } from './dto/update-industry.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ResponseMessage } from 'src/decorator/customize';
-import { FindIndustryQueryDto } from './dto/industryDto.dto';
+import { FindIndustryQueryDto, FindIndustryWithName } from './dto/industryDto.dto';
 
 @ApiTags('industry')
 @Controller('industry')
@@ -36,6 +36,16 @@ export class IndustryController {
       query.pageSize,
       query.name!,
     );
+  }
+
+  @ResponseMessage('Lấy tất cả ngành nghề theo cây thành công')
+  @ApiOperation({ summary: 'Get build tree' })
+  @Get('tree')
+  async getTree(@Query() query?: FindIndustryWithName) {
+    if (query?.name) {
+      return this.industryService.searchIndustryTree(query?.name);
+    }
+    return this.industryService.getTreeIndustry();
   }
 
   @ResponseMessage('Tìm kiếm ngành nghề theo ID thành công')
