@@ -6,6 +6,7 @@ import {
   FolderKanban,
   ChevronDown,
   ChartNoAxesCombined,
+  Factory,
 } from "lucide-react";
 
 import {
@@ -41,6 +42,7 @@ const items = [
   { title: "Jobs", url: "#", icon: Calendar },
   { title: "Nhà tuyển dụng", url: "#", icon: Search },
   { title: "Resumes & CV", url: "#", icon: Settings },
+  { title: "Ngành nghề & kỹ năng", url: "/admin/industry-skill", icon: Factory },
 ];
 
 export function AppSidebar() {
