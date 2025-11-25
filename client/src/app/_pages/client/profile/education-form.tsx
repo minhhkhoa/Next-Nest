@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -63,6 +63,22 @@ export function EducationForm({ education, onChange, setValidateForm }: Educatio
     onChange(education.filter((_, i) => i !== index));
   };
 
+  useEffect(() => {
+    let valid = true;
+    education.forEach((edu, index) => {
+      const start = new Date(edu.startDate);
+      const end = new Date(edu.endDate);
+      if (edu.startDate && edu.endDate && end < start) {
+        valid = false;
+        setErrors((prev) => ({
+          ...prev,
+          [index]: "Ngày kết thúc phải sau ngày bắt đầu",
+        }));
+      }
+    })
+
+    setValidateForm(valid);
+  }, [education, setValidateForm]);
 
   return (
     <div className="space-y-4">

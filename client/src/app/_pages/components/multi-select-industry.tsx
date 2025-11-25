@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import { X, ChevronDown } from "lucide-react";
+import { X, ChevronDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MultiLang {
@@ -13,6 +13,7 @@ interface MultiLang {
 interface Option {
   label: MultiLang;
   value: string;
+  indent?: number; //- thụt lề
 }
 
 interface MultiSelectProps {
@@ -23,7 +24,7 @@ interface MultiSelectProps {
   className?: string;
 }
 
-export function MultiSelect({
+export function MultiSelectIndustry({
   options,
   selected,
   onChange,
@@ -34,17 +35,24 @@ export function MultiSelect({
   const [searchTerm, setSearchTerm] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const filteredOptions = options.filter(
-    (option) =>
-      option.label.vi.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      !selected.some((s) => s.value === option.value)
+
+  const filteredOptions = options.filter((option) =>
+    option.label.vi.toLowerCase().includes(searchTerm.toLowerCase() || "")
   );
 
-
   const handleSelect = (option: Option) => {
-    onChange([...selected, option]);
+    if (selected.some((item) => item.value === option.value)) {
+      //- Click lần 2 → bỏ chọn
+      const updated = selected.filter((item) => item.value !== option.value);
+      onChange(updated);
+    } else {
+      //- Click lần 1 → chọn
+      onChange([...selected, option]);
+    }
+
     setSearchTerm("");
   };
+
 
   const handleRemove = (value: string) => {
     onChange(selected.filter((item) => item.value !== value));
@@ -111,9 +119,18 @@ export function MultiSelect({
                 <button
                   key={option.value}
                   onClick={() => handleSelect(option)}
-                  className="w-full text-left px-3 py-2 hover:bg-muted text-sm"
+                  className="w-full text-left px-3 py-2 hover:bg-muted text-sm flex items-center"
+                  style={{
+                    paddingLeft: `${(option.indent ?? 0) * 16 + 12}px`,
+                  }}
                 >
-                  {option.label.vi}
+                  {/* optional small bullet or caret to show hierarchy */}
+                  <div className="flex items-center w-full">
+                    <span>{option.label.vi}</span>
+                    {selected.some((item) => item.value === option.value) && (
+                      <Check className="w-4 h-4 ml-auto text-muted-foreground" />
+                    )}
+                  </div>
                 </button>
               ))
             ) : (

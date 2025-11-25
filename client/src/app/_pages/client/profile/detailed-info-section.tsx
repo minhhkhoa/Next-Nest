@@ -13,8 +13,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Edit2, Check, X } from "lucide-react";
-import { MultiSelect } from "../../components/multi-select";
+import { Edit2, Check, X, ChevronDown, ChevronRight, FolderOpen, Folder } from "lucide-react";
+import { MultiSelectIndustry } from "../../components/multi-select-industry";
 import { EducationForm } from "./education-form";
 import { useAppStore } from "@/components/TanstackProvider";
 import {
@@ -25,9 +25,9 @@ import { ADDRESS_OPTIONS, GENDER_OPTIONS, LEVEL_OPTIONS } from "@/lib/constant";
 import { useGetDetaiSkill } from "@/queries/useSkill";
 import { SkillResType } from "@/schemasvalidation/skill";
 import { useGetDetaiIndustry } from "@/queries/useIndustry";
-import { IndustryResType } from "@/schemasvalidation/industry";
 import { CustomizeSelect } from "../../components/CustomizeSelect";
 import { toast } from "sonner";
+import { formatDataIndustry } from "@/lib/utils";
 
 export function DetailedInfoSection() {
   const { user } = useAppStore();
@@ -96,8 +96,6 @@ export function DetailedInfoSection() {
     if(res.isError) return;
 
     toast.success(res.message);
-    console.log("res: ", res);
-
     setIsEditing(false);
   };
 
@@ -121,13 +119,6 @@ export function DetailedInfoSection() {
         value: skill?._id,
       };
     });
-  };
-
-  const fomatDataIndustry = (industries: IndustryResType[]) => {
-    return industries.map((industry) => ({
-      label: industry.name,
-      value: industry._id,
-    }));
   };
 
   useEffect(() => {
@@ -255,10 +246,10 @@ export function DetailedInfoSection() {
           <Label className="text-sm font-medium">Chuyên ngành</Label>
 
           {isEditing ? (
-            <MultiSelect
+            <MultiSelectIndustry
               options={
                 Array.isArray(industryData?.data?.result)
-                  ? fomatDataIndustry(industryData.data.result)
+                  ? formatDataIndustry(industryData.data.result)
                   : []
               }
               selected={
@@ -308,7 +299,7 @@ export function DetailedInfoSection() {
           <Label className="text-sm font-medium">Kỹ năng</Label>
 
           {isEditing ? (
-            <MultiSelect
+            <MultiSelectIndustry
               options={
                 Array.isArray(skillData?.data)
                   ? fomatDataSkill(skillData?.data)
@@ -445,7 +436,11 @@ export function DetailedInfoSection() {
               <X className="w-4 h-4" />
               Hủy
             </Button>
-            <Button onClick={handleSave} className="gap-2" disabled={!validateForm}>
+            <Button
+              onClick={handleSave}
+              className="gap-2"
+              disabled={!validateForm}
+            >
               <Check className="w-4 h-4" />
               Lưu
             </Button>
