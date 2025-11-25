@@ -1,19 +1,9 @@
 "use client";
 
 import {
-  formatDateInput,
   generateSlugUrl,
   getIdFromSlugUrl,
 } from "@/lib/utils";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import {
   useGetCategoryById,
   useGetListCategories,

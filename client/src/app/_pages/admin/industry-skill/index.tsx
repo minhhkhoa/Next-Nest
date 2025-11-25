@@ -74,6 +74,7 @@ export default function PageIndustrySkill() {
               ) : industries && industries.length > 0 ? (
                 /* Có dữ liệu → render tree */
                 <div className="space-y-1">
+                  {/* phải map qua từng con để vẽ tree */}
                   {industries.map((node) => (
                     <TreeNode
                       key={node._id}

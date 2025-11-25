@@ -1,5 +1,4 @@
 import authApiRequest from "@/apiRequest/auth";
-import { getAccessTokenFromLocalStorage } from "@/lib/utils";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 export const useLoginMutation = () => {

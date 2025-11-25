@@ -7,7 +7,6 @@ import { twMerge } from "tailwind-merge";
 import http from "./http";
 import { envConfig } from "../../config";
 import { ApiResponse } from "@/types/apiResponse";
-import { IndustryResType } from "@/schemasvalidation/industry";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

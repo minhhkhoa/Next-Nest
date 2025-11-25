@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Edit, Edit2, Trash2 } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface SkillItem {
