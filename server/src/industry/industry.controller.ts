@@ -34,7 +34,7 @@ export class IndustryController {
     return this.industryService.findAll(
       query.currentPage,
       query.pageSize,
-      query.query!,
+      query.name!,
     );
   }
 

@@ -4,7 +4,7 @@ import { MultiLang } from "./trans";
 export const apiIndustryRes = z.object({
   _id: z.string(),
   name: MultiLang,
-  relatedIndustries: z.array(z.string()),
+  parentId: z.string(),
 });
 
 export type IndustryResType = z.infer<typeof apiIndustryRes>;

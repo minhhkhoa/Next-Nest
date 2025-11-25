@@ -11,8 +11,8 @@ export class Industry {
   @Prop({ default: false })
   isDeleted: boolean;
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Industry' }] }) //- tham chiếu tới chính nó
-  relatedIndustries: Types.ObjectId[]; //- Mảng chứa _id của các ngành nghề liên quan
+  @Prop({ default: '000-00-000' })
+  parentId: string; //- mỗi industry chỉ có 1 cha(industrId) - 1 cha có nhiều industry con
 
   @Prop()
   createdAt?: Date;

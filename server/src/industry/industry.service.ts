@@ -8,10 +8,12 @@ import mongoose from 'mongoose';
 import { BadRequestCustom } from 'src/customExceptions/BadRequestCustom';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import aqp from 'api-query-params';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class IndustryService {
   constructor(
+    private configService: ConfigService,
     private readonly translationService: TranslationService,
     @InjectModel(Industry.name)
     private indusTryModel: SoftDeleteModel<IndustryDocument>,
@@ -22,6 +24,8 @@ export class IndustryService {
         'industry',
         createIndustryDto,
       );
+
+      //- quy ước các danh mục root thì có parentId: ROOT_PARENT_INDUSTRY_ID(.env)
 
       const industry = await this.indusTryModel.create(dataLang);
 
@@ -78,11 +82,7 @@ export class IndustryService {
         throw new BadRequestCustom('ID industry không đúng định dạng', !!id);
       }
 
-      const industry = await this.indusTryModel.findById(id).populate({
-        path: 'relatedIndustries',
-        match: { isDeleted: false }, //- Chỉ lấy khi chưa bị xóa mềm
-        select: 'name _id', //- Chỉ lấy name và _id
-      });
+      const industry = await this.indusTryModel.findById(id);
 
       if (!industry)
         throw new BadRequestCustom('ID industry không tìm thấy', !!id);
@@ -142,6 +142,15 @@ export class IndustryService {
 
       if (isDeleted)
         throw new BadRequestCustom('Industry này đã được xóa', !!isDeleted);
+
+      //- check xem industry này có con hay không, nếu có thì không cho xóa
+      const industryId = industry._id.toString();
+
+      const childIndustry = await this.indusTryModel.findOne({
+        parentId: industryId,
+      });
+      if (childIndustry)
+        throw new BadRequestCustom('Chưa thể xóa root industry', !!id);
 
       const filter = { _id: id };
       const result = this.indusTryModel.softDelete(filter);

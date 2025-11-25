@@ -13,5 +13,5 @@ export class FindIndustryQueryDto {
   @ApiPropertyOptional({ example: '' })
   @IsOptional()
   @IsString()
-  query?: string;
+  name?: string;
 }
