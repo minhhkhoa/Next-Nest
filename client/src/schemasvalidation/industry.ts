@@ -24,3 +24,15 @@ export const apiGetAllRes = z.object({
 export type GetAllResType = z.infer<typeof apiGetAllRes>;
 export type GetAllOmitMetaResType = Omit<GetAllResType, "meta">;
 
+//- res tree
+export const apiIndustryTreeNode: z.ZodType<any> = z.lazy(() =>
+  apiIndustryRes.extend({
+    isParent: z.boolean(),
+    children: z.array(apiIndustryTreeNode),
+  })
+);
+
+export type IndustryTreeNode = z.infer<typeof apiIndustryTreeNode>;
+
+export const apiIndustryTreeResponse = z.array(apiIndustryTreeNode);
+export type IndustryTreeResponse = z.infer<typeof apiIndustryTreeResponse>;

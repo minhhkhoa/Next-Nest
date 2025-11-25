@@ -13,8 +13,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Edit2, Check, X, ChevronDown, ChevronRight, FolderOpen, Folder } from "lucide-react";
-import { MultiSelectIndustry } from "../../components/multi-select-industry";
+import { Edit2, Check, X } from "lucide-react";
+import { MultiSelect } from "../../components/multi-select";
 import { EducationForm } from "./education-form";
 import { useAppStore } from "@/components/TanstackProvider";
 import {
@@ -27,7 +27,7 @@ import { SkillResType } from "@/schemasvalidation/skill";
 import { useGetDetaiIndustry } from "@/queries/useIndustry";
 import { CustomizeSelect } from "../../components/CustomizeSelect";
 import { toast } from "sonner";
-import { formatDataIndustry } from "@/lib/utils";
+import { MultiSelectTree } from "../../components/multi-select-industry";
 
 export function DetailedInfoSection() {
   const { user } = useAppStore();
@@ -246,12 +246,7 @@ export function DetailedInfoSection() {
           <Label className="text-sm font-medium">Chuyên ngành</Label>
 
           {isEditing ? (
-            <MultiSelectIndustry
-              options={
-                Array.isArray(industryData?.data?.result)
-                  ? formatDataIndustry(industryData.data.result)
-                  : []
-              }
+            <MultiSelectTree
               selected={
                 formData?.industryID.map((item) => {
                   return {
@@ -299,7 +294,7 @@ export function DetailedInfoSection() {
           <Label className="text-sm font-medium">Kỹ năng</Label>
 
           {isEditing ? (
-            <MultiSelectIndustry
+            <MultiSelect
               options={
                 Array.isArray(skillData?.data)
                   ? fomatDataSkill(skillData?.data)

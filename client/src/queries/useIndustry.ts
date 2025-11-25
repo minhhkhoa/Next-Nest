@@ -4,6 +4,13 @@ import { useQuery } from "@tanstack/react-query";
 export const useGetDetaiIndustry = () => {
   return useQuery({
     queryKey: ["getIndustry"],
-    queryFn: industryApiRequest.getAllKills
+    queryFn: industryApiRequest.getAllKills,
+  });
+};
+
+export const useGetTreeIndustry = ({name }: {name?: string}) => {
+  return useQuery({
+    queryKey: ["getTreeIndustry", name],
+    queryFn: () => industryApiRequest.getTreeIndustry(name),
   });
 };
