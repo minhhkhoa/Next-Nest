@@ -1,5 +1,6 @@
 import skillApiRequest from "@/apiRequest/skill";
-import { useQuery } from "@tanstack/react-query";
+import { SkillCreateType } from "@/schemasvalidation/skill";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useGetDetaiSkill = () => {
   return useQuery({
@@ -17,10 +18,49 @@ export const useGetSkillFilter = ({
   currentPage: number;
   pageSize: number;
   name?: string;
-  industryID?: Array<string>;
+  industryID?: string;
 }) => {
   return useQuery({
-    queryKey: ["getSkills", currentPage, pageSize, name, industryID],
-    queryFn: () => skillApiRequest.getSkillFilter({ currentPage, pageSize, name, industryID }),
+    queryKey: ["getSkills_filter", currentPage, pageSize, name, industryID],
+    queryFn: () =>
+      skillApiRequest.getSkillFilter({
+        currentPage,
+        pageSize,
+        name,
+        industryID,
+      }),
+  });
+};
+
+export const useCreateSkill = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: skillApiRequest.createSkill,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["getSkills_filter"] });
+    },
+  });
+};
+
+export const useUpdateSkill = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: SkillCreateType }) =>
+      skillApiRequest.updateSkill(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["getSkills_filter"] });
+    },
+  });
+};
+
+//- delete
+export const useDeleteSkill = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: skillApiRequest.deleteSkill,
+    onSuccess: () => {
+      //- gọi lại api khi cập nhật thông tin
+      queryClient.invalidateQueries({ queryKey: ["getSkills_filter"] });
+    },
   });
 };

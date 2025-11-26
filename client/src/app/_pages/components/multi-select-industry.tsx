@@ -6,6 +6,13 @@ import { X, ChevronDown, ChevronRight, Check, Search } from "lucide-react";
 import { useGetTreeIndustry } from "@/queries/useIndustry";
 import { cn } from "@/lib/utils";
 import { useDebounce } from "use-debounce";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface MultiLang {
   vi: string;
@@ -138,78 +145,78 @@ export function MultiSelectTree({
   }, []);
 
   return (
-    <div ref={containerRef} className={cn("relative", className)}>
-      {/* Input hiển thị selected + mở dropdown */}
-      <div
-        className="border border-input rounded-md bg-background p-2 min-h-10 flex flex-wrap gap-2 items-center cursor-pointer"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        {selected.length > 0 ? (
-          selected.map((item) => (
-            <span
-              key={item.value}
-              className="inline-flex items-center gap-1 px-2 py-1 rounded bg-primary text-primary-foreground text-sm"
-            >
-              {item.label.vi}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onChange(selected.filter((s) => s.value !== item.value));
-                }}
-                className="hover:opacity-70"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </span>
-          ))
-        ) : (
-          <span className="text-muted-foreground text-sm">{placeholder}</span>
-        )}
-        <ChevronDown className="w-4 h-4 ml-auto text-muted-foreground" />
-      </div>
+    <div ref={containerRef} className={cn("w-full", className)}>
+      {/* modal={true}: Khi bật chế độ này, Radix UI sẽ coi Popover là một "lớp phủ" độc lập (giống như một Modal nhỏ nằm trên Modal to). Nó sẽ thiết lập lại cơ chế quản lý sự kiện và focus, cho phép con lăn chuột hoạt động bên trong nó thay vì bị Dialog phía dưới chặn lại */}
+      <Popover modal={true}>
+        <PopoverTrigger asChild>
+          <div className="border border-input rounded-md bg-background p-2 min-h-10 flex flex-wrap gap-2 items-center cursor-pointer">
+            {selected.length ? (
+              selected.map((item) => (
+                <span
+                  key={item.value}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded bg-primary text-primary-foreground text-sm"
+                >
+                  {item.label.vi}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onChange(selected.filter((s) => s.value !== item.value));
+                    }}
+                    className="hover:opacity-70"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              ))
+            ) : (
+              <span className="text-muted-foreground text-sm">
+                {placeholder}
+              </span>
+            )}
 
-      {/* Dropdown Tree */}
-      {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 border border-input rounded-md bg-background shadow-lg z-50 max-h-96 overflow-hidden flex flex-col">
-          <div className="flex items-center">
+            <ChevronDown className="w-4 h-4 ml-auto text-muted-foreground" />
+          </div>
+        </PopoverTrigger>
+
+        <PopoverContent className="w-80 md:!w-114 p-0">
+          {/* Search box */}
+          <div className="flex items-center border-b">
             <Input
               placeholder="Tìm kiếm ngành nghề..."
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
-                setExpandedNodes(new Set()); // reset expand khi search
+                setExpandedNodes(new Set());
               }}
-              className="border-0 border-b rounded-none focus-visible:ring-0"
+              className="border-0 rounded-none focus-visible:ring-0"
               autoFocus
             />
+
             {searchTerm ? (
               <button
-                className="cursor-pointer bg-none rounded h-6 hover:bg-primary absolute top-1.5 right-2"
                 onClick={() => setSearchTerm("")}
+                className="absolute right-2 top-2 text-muted-foreground hover:text-foreground"
               >
-                <X className="w-4 h-3 ml-auto" />
+                <X className="w-4 h-4" />
               </button>
             ) : (
-              <>
-                <button
-                  className="cursor-pointer bg-none rounded h-6 hover:bg-primary absolute top-1.5 right-2"
-                >
-                  <Search className="w-4 h-4 ml-auto" />
-                </button>
-              </>
+              <Search className="w-4 h-4 absolute right-2 top-2 text-muted-foreground" />
             )}
           </div>
-          <div className="overflow-y-auto flex-1">
-            {displayNodes.length > 0 ? (
-              displayNodes
-            ) : (
-              <div className="px-3 py-8 text-center text-sm text-muted-foreground">
-                Không tìm thấy ngành nghề nào
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+
+          <ScrollArea className="h-40 w-full">
+            <div className="py-2">
+              {displayNodes.length > 0 ? (
+                displayNodes
+              ) : (
+                <div className="px-4 py-12 text-center text-sm text-muted-foreground">
+                  Không tìm thấy ngành nghề nào
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }

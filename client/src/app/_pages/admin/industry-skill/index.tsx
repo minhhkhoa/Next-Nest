@@ -18,13 +18,15 @@ import { SearchBar } from "../NewsCategory/components/search-bar";
 import { useDebounce } from "use-debounce";
 import { Spinner } from "@/components/ui/spinner";
 import SkillList from "./components/list-skill";
-import { useGetSkillFilter } from "@/queries/useSkill";
+import { useDeleteSkill, useGetSkillFilter } from "@/queries/useSkill";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { IndustryResType } from "@/schemasvalidation/industry";
 import IndustryModalForm from "./components/modals/industry-modal-form";
 import { DeleteConfirmModal } from "../NewsCategory/components/modals/delete-confirm-modal";
 import { toast } from "sonner";
+import { SkillRes2Type, SkillResType } from "@/schemasvalidation/skill";
+import SkillModalForm from "./components/modals/skill-modal-form";
 
 export default function PageIndustrySkill() {
   const [deleteModal, setDeleteModal] = React.useState<{
@@ -46,19 +48,25 @@ export default function PageIndustrySkill() {
   const industries = dataIndustry?.data;
 
   //- state skill
+  const [onSelectedIndustry, setOnSelectedIndustry] = React.useState("");
   const [searchSkill, setSearchSkill] = React.useState("");
   const [debouncedSearchSkill] = useDebounce(searchSkill, 500);
+  const [skillModalState, setSkillModalState] = React.useState<{
+    isOpen: boolean;
+    data?: SkillResType;
+  }>({ isOpen: false });
   const { data: dataSkills, isLoading: skillLoading } = useGetSkillFilter({
     currentPage: 1,
     pageSize: 100,
     name: debouncedSearchSkill,
-    industryID: [],
+    industryID: onSelectedIndustry,
   });
-
   const skills = dataSkills?.data?.result;
 
-  const { mutateAsync: deleteIndustry, isPending: isDeleting } =
+  const { mutateAsync: deleteIndustry, isPending: isDeletingIndustry } =
     useDeleteIndustry();
+  const { mutateAsync: deleteSkill, isPending: isDeletingSkill } =
+    useDeleteSkill();
 
   const handleDeleteIndustry = async (id: string) => {
     try {
@@ -72,15 +80,27 @@ export default function PageIndustrySkill() {
     }
   };
 
+  const handleDeleteSkill = async (id: string) => {
+    try {
+      const res = await deleteSkill(id);
+      if (res.isError) return;
+      toast.success(res.message);
+    } catch (error) {
+      console.log("error handle Delete industry: ", error);
+    } finally {
+      setDeleteModal({ isOpen: false, type: null, id: null });
+    }
+  };
+
   const handleConfirmDelete = () => {
     if (deleteModal.type === "industry" && deleteModal.id) {
       handleDeleteIndustry(deleteModal.id);
     } else if (deleteModal.type === "skill" && deleteModal.id) {
-      // handleDeleteCategory(deleteModal.id);
+      handleDeleteSkill(deleteModal.id);
     }
   };
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-5">
       {/* Industries Section */}
       <div className="space-y-4">
         <Card className="h-full">
@@ -127,6 +147,8 @@ export default function PageIndustrySkill() {
                       onDelete={(id) => {
                         setDeleteModal({ isOpen: true, type: "industry", id });
                       }}
+                      onSelect={(id) => setOnSelectedIndustry(id)}
+                      selected={onSelectedIndustry}
                     />
                   ))}
                 </div>
@@ -152,7 +174,7 @@ export default function PageIndustrySkill() {
                     Không tìm thấy ngành nghề nào
                   </p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Thử thay đổi từ khóa tìm kiếm
+                    Bạn hãy thử thay đổi từ khóa tìm kiếm
                   </p>
                 </div>
               )}
@@ -170,7 +192,7 @@ export default function PageIndustrySkill() {
           </CardHeader>
           <CardContent>
             <div className="text-end pb-3">
-              <Button>
+              <Button onClick={() => setSkillModalState({ isOpen: true })}>
                 <Plus className="mr-2 h-4 w-4" />
                 Thêm kỹ năng
               </Button>
@@ -191,8 +213,13 @@ export default function PageIndustrySkill() {
             ) : (
               <SkillList
                 data={skills || []}
-                onEdit={() => {}}
-                onDelete={() => {}}
+                onEdit={(item) =>
+                  setSkillModalState({ isOpen: true, data: item })
+                }
+                onDelete={(id) => {
+                  setDeleteModal({ isOpen: true, type: "skill", id });
+                }}
+                setOnSelectedIndustry={setOnSelectedIndustry}
               />
             )}
           </CardContent>
@@ -205,9 +232,16 @@ export default function PageIndustrySkill() {
           />
         )}
 
+        {skillModalState.isOpen && (
+          <SkillModalForm
+            skill={skillModalState.data}
+            onCancel={() => setSkillModalState({ isOpen: false })}
+          />
+        )}
+
         {deleteModal.isOpen && (
           <DeleteConfirmModal
-            isDeleting={isDeleting}
+            isDeleting={isDeletingIndustry || isDeletingSkill}
             title={
               deleteModal.type === "industry" ? "Xóa ngành nghề" : "Xóa kỹ năng"
             }

@@ -47,6 +47,7 @@ export default function SelectSearchIndustry({
 
   const industries = data?.data?.result || [];
 
+  //- ngành nghề được chọn khi edit
   const selectedLabel =
     value === envConfig.NEXT_PUBLIC_ROOT_PARENT_INDUSTRY_ID
       ? "Danh mục gốc"

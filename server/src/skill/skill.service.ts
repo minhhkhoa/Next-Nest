@@ -48,7 +48,7 @@ export class SkillService {
     const { currentPage, pageSize, name, industryID } = query;
 
     const queryForAqp = { name, industryID };
-    const { filter, sort, population } = aqp(queryForAqp);
+    const { filter, sort } = aqp(queryForAqp);
 
     //- Xây dựng điều kiện lọc
     let filterConditions: any = { ...filter };
@@ -82,7 +82,15 @@ export class SkillService {
       .skip(offset)
       .limit(defaultLimit)
       .sort(sort as any)
-      .populate(population)
+      .populate({
+        path: 'industryID',
+        select: '_id name parentId', // chỉ lấy những field cần
+        // Nếu muốn populate tiếp parentId thành object (ngành cha)
+        // populate: {
+        //   path: 'parentId',
+        //   select: '_id name'
+        // }
+      })
       .exec();
 
     return {

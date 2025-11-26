@@ -21,6 +21,8 @@ interface TreeNodeProps {
   level?: number;
   onEdit?: (industry: IndustryResType) => void;
   onDelete?: (nodeId: string) => void;
+  onSelect?: (nodeId: string) => void;
+  selected: string;
 }
 
 export default function TreeNode({
@@ -28,6 +30,8 @@ export default function TreeNode({
   level = 0,
   onEdit,
   onDelete,
+  onSelect,
+  selected,
 }: TreeNodeProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
@@ -43,11 +47,13 @@ export default function TreeNode({
       <div
         className={cn(
           "group flex justify-between items-center gap-2 py-2.5 px-3 rounded-lg transition-all duration-200",
-          isHovered && "bg-muted/80"
+          isHovered && "bg-muted/80", 
+          selected === node._id && "bg-muted/80"
         )}
         style={{ paddingLeft: `${paddingLeft + 12}px` }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
+        onClick={() => onSelect?.(node._id)}
       >
         {/* Nút mở rộng/thu gọn */}
         {hasChildren && (
@@ -117,6 +123,8 @@ export default function TreeNode({
               level={level + 1}
               onEdit={onEdit}
               onDelete={onDelete}
+              onSelect={onSelect}
+              selected={selected}
             />
           ))}
         </div>

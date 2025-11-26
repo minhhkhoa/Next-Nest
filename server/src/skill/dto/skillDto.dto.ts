@@ -21,15 +21,7 @@ export class FindSkillQueryDto {
   @IsString()
   name?: string;
 
-  @ApiPropertyOptional({
-    type: 'array', //- Chỉ định là mảng
-    items: { type: 'string' }, //- Mỗi phần tử là chuỗi
-    example: [''],
-  })
+  @ApiPropertyOptional({ example: '' })
   @IsOptional()
-  @IsMongoId({
-    each: true,
-    message: 'Mỗi ID trong industryID phải là MongoId hợp lệ',
-  })
-  industryID?: string | string[];
+  industryID?: string;
 }
