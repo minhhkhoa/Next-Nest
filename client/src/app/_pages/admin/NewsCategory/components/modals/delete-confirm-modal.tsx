@@ -8,15 +8,18 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 
 interface DeleteConfirmModalProps {
   title: string;
+  isDeleting?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
 export function DeleteConfirmModal({
   title,
+  isDeleting,
   onConfirm,
   onCancel,
 }: DeleteConfirmModalProps) {
@@ -35,8 +38,19 @@ export function DeleteConfirmModal({
           <Button variant="outline" onClick={onCancel}>
             Hủy
           </Button>
-          <Button variant="destructive" onClick={onConfirm}>
-            Xóa
+          <Button
+            variant="destructive"
+            onClick={onConfirm}
+            disabled={isDeleting}
+          >
+            {isDeleting ? (
+              <div className="flex gap-3">
+                <Spinner className="w-4 h-4 mr-2" />
+                xóa
+              </div>
+            ) : (
+              "Xóa"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

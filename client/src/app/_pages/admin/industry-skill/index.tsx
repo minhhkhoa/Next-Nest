@@ -8,7 +8,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useGetTreeIndustry } from "@/queries/useIndustry";
+import {
+  useCreateIndustry,
+  useDeleteIndustry,
+  useGetTreeIndustry,
+} from "@/queries/useIndustry";
 import TreeNode from "./components/tree-node-industry";
 import { SearchBar } from "../NewsCategory/components/search-bar";
 import { useDebounce } from "use-debounce";
@@ -17,11 +21,25 @@ import SkillList from "./components/list-skill";
 import { useGetSkillFilter } from "@/queries/useSkill";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { IndustryResType } from "@/schemasvalidation/industry";
+import IndustryModalForm from "./components/modals/industry-modal-form";
+import { DeleteConfirmModal } from "../NewsCategory/components/modals/delete-confirm-modal";
+import { toast } from "sonner";
 
 export default function PageIndustrySkill() {
+  const [deleteModal, setDeleteModal] = React.useState<{
+    isOpen: boolean;
+    type: "industry" | "skill" | null;
+    id: string | null;
+  }>({ isOpen: false, type: null, id: null });
+
+  //- state industry
   const [searchIndustry, setSearchIndustry] = React.useState("");
   const [debouncedSearchIndustry] = useDebounce(searchIndustry, 500);
-
+  const [industryModalState, setIndustryModalState] = React.useState<{
+    isOpen: boolean;
+    data?: IndustryResType;
+  }>({ isOpen: false });
   const { data: dataIndustry, isLoading: treeLoading } = useGetTreeIndustry({
     name: debouncedSearchIndustry,
   });
@@ -38,6 +56,29 @@ export default function PageIndustrySkill() {
   });
 
   const skills = dataSkills?.data?.result;
+
+  const { mutateAsync: deleteIndustry, isPending: isDeleting } =
+    useDeleteIndustry();
+
+  const handleDeleteIndustry = async (id: string) => {
+    try {
+      const res = await deleteIndustry(id);
+      if (res.isError) return;
+      toast.success(res.message);
+    } catch (error) {
+      console.log("error handle Delete industry: ", error);
+    } finally {
+      setDeleteModal({ isOpen: false, type: null, id: null });
+    }
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteModal.type === "industry" && deleteModal.id) {
+      handleDeleteIndustry(deleteModal.id);
+    } else if (deleteModal.type === "skill" && deleteModal.id) {
+      // handleDeleteCategory(deleteModal.id);
+    }
+  };
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Industries Section */}
@@ -49,7 +90,7 @@ export default function PageIndustrySkill() {
           </CardHeader>
           <CardContent>
             <div className="text-end pb-3">
-              <Button>
+              <Button onClick={() => setIndustryModalState({ isOpen: true })}>
                 <Plus className="mr-2 h-4 w-4" />
                 Thêm ngành nghề
               </Button>
@@ -80,8 +121,12 @@ export default function PageIndustrySkill() {
                       key={node._id}
                       node={node}
                       level={0}
-                      onEdit={() => {}}
-                      onDelete={() => {}}
+                      onEdit={(item) =>
+                        setIndustryModalState({ isOpen: true, data: item })
+                      }
+                      onDelete={(id) => {
+                        setDeleteModal({ isOpen: true, type: "industry", id });
+                      }}
                     />
                   ))}
                 </div>
@@ -152,6 +197,26 @@ export default function PageIndustrySkill() {
             )}
           </CardContent>
         </Card>
+
+        {industryModalState.isOpen && (
+          <IndustryModalForm
+            industry={industryModalState.data}
+            onCancel={() => setIndustryModalState({ isOpen: false })}
+          />
+        )}
+
+        {deleteModal.isOpen && (
+          <DeleteConfirmModal
+            isDeleting={isDeleting}
+            title={
+              deleteModal.type === "industry" ? "Xóa ngành nghề" : "Xóa kỹ năng"
+            }
+            onConfirm={handleConfirmDelete}
+            onCancel={() =>
+              setDeleteModal({ isOpen: false, type: null, id: null })
+            }
+          />
+        )}
       </div>
     </div>
   );

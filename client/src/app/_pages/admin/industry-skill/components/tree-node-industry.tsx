@@ -4,6 +4,7 @@ import { ChevronRight, Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { IndustryResType } from "@/schemasvalidation/industry";
 
 interface TreeNodeData {
   _id: string;
@@ -18,7 +19,7 @@ interface TreeNodeData {
 interface TreeNodeProps {
   node: TreeNodeData;
   level?: number;
-  onEdit?: (node: TreeNodeData) => void;
+  onEdit?: (industry: IndustryResType) => void;
   onDelete?: (nodeId: string) => void;
 }
 
@@ -83,7 +84,7 @@ export default function TreeNode({
             className="h-8 w-8 hover:cursor-pointer rounded hover:!bg-background/80 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
-              onEdit?.(node);
+              onEdit?.(node as any);
             }}
           >
             <Edit size={16} className="text-muted-foreground" />

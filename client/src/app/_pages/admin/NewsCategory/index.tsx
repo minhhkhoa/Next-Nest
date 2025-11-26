@@ -61,10 +61,11 @@ export default function NewsCate() {
     status: statusFilter,
   });
 
-  const { mutateAsync: deleteCateNewsMutation } =
+  const { mutateAsync: deleteCateNewsMutation, isPending: deleteCatePending } =
     useDeleteCategoryNewsMutation();
 
-  const { mutateAsync: deleteNewsMutation } = useDeleteNews();
+  const { mutateAsync: deleteNewsMutation, isPending: deleteNewsPending } =
+    useDeleteNews();
 
   const handleDeleteNews = async (id: string) => {
     try {
@@ -75,6 +76,8 @@ export default function NewsCate() {
       toast.success(res.message);
     } catch (error) {
       console.log("error handle Delete News: ", error);
+    } finally {
+      setDeleteModal({ isOpen: false, type: null, id: null });
     }
   };
 
@@ -92,6 +95,8 @@ export default function NewsCate() {
       }
     } catch (error) {
       console.log("error handle Delete Category News: ", error);
+    } finally {
+      setDeleteModal({ isOpen: false, type: null, id: null });
     }
   };
 
@@ -101,7 +106,6 @@ export default function NewsCate() {
     } else if (deleteModal.type === "category" && deleteModal.id) {
       handleDeleteCategory(deleteModal.id);
     }
-    setDeleteModal({ isOpen: false, type: null, id: null });
   };
 
   const handleSelectCategory = (categoryId: string | null) => {
@@ -229,6 +233,9 @@ export default function NewsCate() {
         <DeleteConfirmModal
           title={
             deleteModal.type === "news" ? "Xóa tin tức" : "Xóa danh mục tin tức"
+          }
+          isDeleting={
+            deleteModal.type === "news" ? deleteNewsPending : deleteCatePending
           }
           onConfirm={handleConfirmDelete}
           onCancel={() =>
