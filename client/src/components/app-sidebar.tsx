@@ -63,15 +63,16 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
+                  <SidebarMenuItem className="mr-2.5" key={item.title}>
                     <SidebarMenuButton
                       asChild
                       isActive={pathname.startsWith(item.url)}
-                      className="data-[active=true]:bg-primary data-[active=true]:text-white data-[active=true]:hover:bg-primary/90"
+                      tooltip={item.title}
+                      className="data-[active=true]:bg-primary data-[active=true]:text-white"
                     >
                       <Link href={item.url}>
                         <item.icon />
-                        <span>{item.title}</span>
+                        <span className="truncate">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -86,20 +87,11 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 <Collapsible defaultOpen>
-                  <SidebarMenuItem>
+                  <SidebarMenuItem className="mr-2.5">
                     <CollapsibleTrigger asChild>
-                      <SidebarMenuButton>
+                      <SidebarMenuButton tooltip="Cẩm nang nghề nghiệp">
                         <FolderKanban />
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="truncate">
-                              Cẩm nang nghề nghiệp
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Cẩm nang nghề nghiệp</p>
-                          </TooltipContent>
-                        </Tooltip>
+                        <span className="truncate">Cẩm nang nghề nghiệp</span>
                         <ChevronDown className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
                       </SidebarMenuButton>
                     </CollapsibleTrigger>
