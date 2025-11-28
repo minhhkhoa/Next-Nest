@@ -1,20 +1,24 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 import {
+  ChartNoAxesCombined,
+  User2,
   Calendar,
   Search,
   Settings,
-  User2,
+  Factory,
   FolderKanban,
   ChevronDown,
-  ChartNoAxesCombined,
-  Factory,
 } from "lucide-react";
 
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
-  SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -24,46 +28,51 @@ import {
   BackHome,
 } from "@/components/ui/sidebar";
 
-import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
-
 import {
   Collapsible,
   CollapsibleTrigger,
   CollapsibleContent,
 } from "@/components/ui/collapsible";
 import PopoverAdmin from "@/app/_pages/components/popoverAdmin";
-import { TooltipTrigger } from "@radix-ui/react-tooltip";
-import Link from "next/link";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
-// Menu items.
 const items = [
   { title: "Thống kê", url: "/charts", icon: ChartNoAxesCombined },
   { title: "Người dùng", url: "/users", icon: User2 },
-  { title: "Jobs", url: "#", icon: Calendar },
-  { title: "Nhà tuyển dụng", url: "#", icon: Search },
-  { title: "Resumes & CV", url: "#", icon: Settings },
-  { title: "Ngành nghề & kỹ năng", url: "/admin/industry-skill", icon: Factory },
+  { title: "Jobs", url: "/jobs", icon: Calendar },
+  { title: "Nhà tuyển dụng", url: "/employers", icon: Search },
+  { title: "Resumes & CV", url: "/resumes", icon: Settings },
+  {
+    title: "Ngành nghề & kỹ năng",
+    url: "/admin/industry-skill",
+    icon: Factory,
+  },
 ];
 
 export function AppSidebar() {
+  const pathname = usePathname();
+
   return (
     <Sidebar collapsible="icon">
-      <SidebarContent className="flex justify-between">
+      <SidebarContent className="flex flex-col justify-between">
         <div>
           <BackHome />
 
-          {/* Nhóm Application */}
           <SidebarGroup>
             <SidebarGroupLabel>Application</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {items.map((item) => (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <a href={item.url}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname.startsWith(item.url)}
+                      className="data-[active=true]:bg-primary data-[active=true]:text-white data-[active=true]:hover:bg-primary/90"
+                    >
+                      <Link href={item.url}>
                         <item.icon />
                         <span>{item.title}</span>
-                      </a>
+                      </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
@@ -71,12 +80,12 @@ export function AppSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
 
-          {/* Nhóm Collapsible */}
+          {/* Phần collapsible */}
           <SidebarGroup>
             <SidebarGroupLabel>Bài viết</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                <Collapsible defaultOpen className="group/collapsible">
+                <Collapsible defaultOpen>
                   <SidebarMenuItem>
                     <CollapsibleTrigger asChild>
                       <SidebarMenuButton>
@@ -91,31 +100,24 @@ export function AppSidebar() {
                             <p>Cẩm nang nghề nghiệp</p>
                           </TooltipContent>
                         </Tooltip>
-                        <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                        <ChevronDown className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
                       </SidebarMenuButton>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                       <SidebarMenuSub>
                         <SidebarMenuSubItem>
-                          <SidebarMenuSubButton asChild>
-                            <Link href="/admin/news">
-                              <span>Tin tức </span>
-                            </Link>
+                          <SidebarMenuSubButton
+                            asChild
+                            isActive={pathname === "/admin/news"}
+                            className="data-[active=true]:bg-primary data-[active=true]:text-white"
+                          >
+                            <Link href="/admin/news">Tin tức</Link>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
                       </SidebarMenuSub>
                     </CollapsibleContent>
                   </SidebarMenuItem>
                 </Collapsible>
-
-                {/* <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <a href="#">
-                      <Users />
-                      <span>Teams</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem> */}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
