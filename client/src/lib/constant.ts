@@ -58,4 +58,11 @@ export const ADDRESS_OPTIONS = [
   "Thanh Hóa",
 ];
 
-
+export const segmentNameMap: Record<string, string> = {
+  // -start page public
+  "cate-news": "Hành trang nghề nghiệp",
+  news: "Tin tức",
+  profile: "Trang cá nhân",
+  settings: "Cài đặt",
+  // - end page public
+};

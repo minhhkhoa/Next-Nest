@@ -101,3 +101,7 @@ export const generateSlugUrl = ({ name, id }: { name: string; id: string }) => {
 export const getIdFromSlugUrl = (slug: string) => {
   return String(slug.split("-i.")[1]);
 };
+
+export const getSlugFromSlugUrl = (slug: string) => {
+  return String(slug.split("-i.")[0]);
+};
