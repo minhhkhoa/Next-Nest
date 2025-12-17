@@ -65,12 +65,19 @@ export const apiUserRes = z.object({
     email: z.string(),
     avatar: z.string(),
     roleID: z.array(z.string()),
+    provider: z.object({
+      type: z.string(),
+      id: z.string(),
+    }).optional(),
     isDeleted: z.boolean(),
     deletedAt: z.date(),
     createdAt: z.date(),
     updatedAt: z.date(),
   }),
 });
+
+export type apiUserResType = z.infer<typeof apiUserRes>;
+
 export const getAllUserByFilterRes = z.object({
   result: z.array(apiUserRes),
   meta: MetaFilter,
