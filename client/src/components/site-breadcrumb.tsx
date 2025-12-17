@@ -1,4 +1,3 @@
-// components/dynamic-breadcrumb.tsx
 "use client";
 
 import {

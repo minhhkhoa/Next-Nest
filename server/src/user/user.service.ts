@@ -8,6 +8,7 @@ import { BadRequestCustom } from 'src/customExceptions/BadRequestCustom';
 import { hashPassword } from 'src/utils/hashPassword';
 import mongoose from 'mongoose';
 import { DetailProfileService } from 'src/detail-profile/detail-profile.service';
+import { FindUserQueryDto } from './dto/userDto.dto';
 
 @Injectable()
 export class UserService {
@@ -85,6 +86,9 @@ export class UserService {
   }
 
   //- sau thêm api getUser by filter name, email...
+  async findAllByFilter(query: FindUserQueryDto) {
+    return this.detailProfileService.findAllByFilter(query);
+  }
 
   async findAll() {
     try {
@@ -118,7 +122,11 @@ export class UserService {
           //   select: 'name _id',
           // },
         ])
-        .select(getPassword ? 'password' : '-password -isDeleted -deletedAt -createdAt -updatedAt -__v');
+        .select(
+          getPassword
+            ? 'password'
+            : '-password -isDeleted -deletedAt -createdAt -updatedAt -__v',
+        );
 
       if (!user) throw new BadRequestCustom('ID user không tìm thấy', !!id);
 
@@ -197,7 +205,7 @@ export class UserService {
 
   async updateUserByAnyBody(id: string, update: any) {
     try {
-      if(!mongoose.Types.ObjectId.isValid(id)) {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new BadRequestCustom('ID user không đúng định dạng', !!id);
       }
 
@@ -211,7 +219,6 @@ export class UserService {
         throw new BadRequestCustom('Lỗi sửa user', !!id);
 
       return result;
-
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }
@@ -245,7 +252,7 @@ export class UserService {
     await this.detailProfileService.createAuto({
       userID: user._id.toString(),
     });
-    
+
     return user;
   }
 

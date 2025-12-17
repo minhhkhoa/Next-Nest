@@ -1,6 +1,6 @@
 import userApiRequest from "@/apiRequest/user";
 import { UpdateUserType } from "@/schemasvalidation/user";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useUpdateUserMutate() {
   const queryClient = useQueryClient();
@@ -14,3 +14,36 @@ export function useUpdateUserMutate() {
     },
   });
 }
+
+export const useGetAllUserByFilter = ({
+  currentPage,
+  pageSize,
+  name,
+  email,
+  address,
+}: {
+  currentPage: number;
+  pageSize: number;
+  name?: string;
+  email?: string;
+  address?: string;
+}) => {
+  return useQuery({
+    queryKey: [
+      "getAllUserByFilter",
+      currentPage,
+      pageSize,
+      name,
+      email,
+      address,
+    ],
+    queryFn: () =>
+      userApiRequest.getAllUserByFilter({
+        currentPage,
+        pageSize,
+        name,
+        email,
+        address,
+      }),
+  });
+};

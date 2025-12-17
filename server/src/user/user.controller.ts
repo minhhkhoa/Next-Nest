@@ -6,12 +6,14 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ResponseMessage } from 'src/decorator/customize';
+import { FindUserQueryDto } from './dto/userDto.dto';
 
 @ApiTags('user')
 @Controller('user')
@@ -23,6 +25,13 @@ export class UserController {
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
+  }
+
+  @ResponseMessage('pagination + filter theo name + email + address ')
+  @ApiOperation({ summary: 'Get all news by filter' })
+  @Get('/filter')
+  findAllByFilter(@Query() query: FindUserQueryDto) {
+    return this.userService.findAllByFilter(query);
   }
 
   @ResponseMessage('Tìm kiếm toàn bộ người dùng thành công')

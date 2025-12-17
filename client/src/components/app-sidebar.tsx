@@ -34,11 +34,10 @@ import {
   CollapsibleContent,
 } from "@/components/ui/collapsible";
 import PopoverAdmin from "@/app/_pages/components/popoverAdmin";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 const items = [
   { title: "Thống kê", url: "/charts", icon: ChartNoAxesCombined },
-  { title: "Người dùng", url: "/users", icon: User2 },
+  { title: "Người dùng", url: "/admin/user", icon: User2 },
   { title: "Jobs", url: "/jobs", icon: Calendar },
   { title: "Nhà tuyển dụng", url: "/employers", icon: Search },
   { title: "Resumes & CV", url: "/resumes", icon: Settings },

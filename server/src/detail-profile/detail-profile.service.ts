@@ -9,6 +9,7 @@ import {
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { BadRequestCustom } from 'src/customExceptions/BadRequestCustom';
 import mongoose from 'mongoose';
+import { FindUserQueryDto } from 'src/user/dto/userDto.dto';
 
 @Injectable()
 export class DetailProfileService {
@@ -29,6 +30,98 @@ export class DetailProfileService {
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }
+  }
+
+  async findAllByFilter(query: FindUserQueryDto) {
+    const { currentPage = 1, pageSize = 10, name, email, address } = query;
+
+    const page = Number(currentPage) > 0 ? Number(currentPage) : 1;
+    const limit = Number(pageSize) > 0 ? Number(pageSize) : 10;
+    const skip = (page - 1) * limit;
+
+    const profileMatch: any = { isDeleted: false };
+
+    if (address) {
+      profileMatch.address = { $regex: address, $options: 'i' };
+    }
+
+    const userMatch: any = {};
+    if (name) userMatch['user.name'] = { $regex: name, $options: 'i' };
+    if (email) userMatch['user.email'] = { $regex: email, $options: 'i' };
+
+    const pipeline: any[] = [
+      // 1️⃣ Filter profile
+      { $match: profileMatch },
+
+      // 2️⃣ ÉP KIỂU userID (FIX LỖI CHÍNH)
+      {
+        $addFields: {
+          userObjectId: {
+            $cond: [
+              { $eq: [{ $type: '$userID' }, 'objectId'] },
+              '$userID',
+              { $toObjectId: '$userID' },
+            ],
+          },
+        },
+      },
+
+      // 3️⃣ Join User
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userObjectId',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+
+      // 4️⃣ Unwind KHÔNG GIẾT DATA
+      {
+        $unwind: {
+          path: '$user',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+
+      // 5️⃣ Filter theo user
+      Object.keys(userMatch).length ? { $match: userMatch } : null,
+
+      // 6️⃣ Pagination + total
+      {
+        $facet: {
+          data: [
+            { $sort: { createdAt: -1 } },
+            { $skip: skip },
+            { $limit: limit },
+            {
+              $project: {
+                userObjectId: 0,
+                'user.password': 0,
+                'user.refresh_token': 0,
+                'user.resetToken': 0,
+                'user.resetTokenExpiresAt': 0,
+              },
+            },
+          ],
+          total: [{ $count: 'count' }],
+        },
+      },
+    ].filter(Boolean);
+
+    const result = await this.detailProfileModel.aggregate(pipeline);
+
+    const totalItems = result[0]?.total[0]?.count || 0;
+
+    return {
+      meta: {
+        current: page,
+        pageSize: limit,
+        totalItems,
+        totalPages: Math.ceil(totalItems / limit),
+      },
+      result: result[0]?.data || [],
+    };
   }
 
   async findAll() {
