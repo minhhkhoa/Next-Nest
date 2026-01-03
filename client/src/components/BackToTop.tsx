@@ -51,20 +51,20 @@ export default function BackToTop({
       <AnimatePresence>
         {visible && (
           <motion.div
-            initial={{ opacity: 0, y: 12, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.98 }}
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0 }}
             transition={
-              prefersReducedMotion ? { duration: 0 } : { duration: 0.18 }
+              prefersReducedMotion ? { duration: 0 } : { duration: 0.3 }
             }
           >
             <Button
-              size="icon"
+              size="icon-lg"
               onClick={handleClick}
               aria-label="Back to top"
-              className="shadow-lg hover:scale-105 active:scale-95 focus:outline-none"
+              className="shadow-lg rounded-3xl hover:scale-105 active:scale-95 focus:outline-none"
             >
-              <ArrowUp className="h-4 w-4" />
+              <ArrowUp size={30} />
             </Button>
           </motion.div>
         )}

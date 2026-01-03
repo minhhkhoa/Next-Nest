@@ -10,7 +10,6 @@ import {
   MapPinOff,
   Copy,
   User,
-  Trash,
   Trash2,
   MoreVertical,
 } from "lucide-react";
@@ -22,7 +21,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -78,7 +76,7 @@ export const UserColumns: ColumnDef<apiUserResType>[] = [
 
   // ADDRESS
   {
-    accessorKey: "address",
+    id: "address",
     header: "Địa chỉ",
     cell: ({ row }) => {
       const address = row.original.address;

@@ -29,10 +29,10 @@ export default function TableUser({
   data,
   columns,
   meta,
-  setCurrentPage
+  setCurrentPage,
 }: DataTableProps) {
-
   const table = useReactTable({
+    //- useReactTable nhận data, nhận column, và nó tạo ra original(là data[]) - khi đó mình có thể ở trong UserColumn truy cập được vào row.original. Tóm lại: TanStack là người truyền data vào column thông qua context.
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),

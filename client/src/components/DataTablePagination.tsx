@@ -17,7 +17,7 @@ interface PaginationProps {
     totalPages: number;
     totalItems: number;
   };
-  onPageChange?: (page: number) => void;
+  onPageChange: (page: number) => void;
 }
 
 export default function DataTablePagination({ meta, onPageChange }: PaginationProps) {
@@ -27,7 +27,7 @@ export default function DataTablePagination({ meta, onPageChange }: PaginationPr
         {/* Nút Trước */}
         <PaginationItem>
           <PaginationPrevious
-            onClick={() => onPageChange?.(meta.current - 1)}
+            onClick={() => onPageChange(meta.current - 1)}
             aria-disabled={meta.current === 1}
             className={
               meta.current === 1 ? "pointer-events-none opacity-50" : ""
@@ -49,7 +49,7 @@ export default function DataTablePagination({ meta, onPageChange }: PaginationPr
                   <PaginationItem key={page}>
                     <PaginationLink
                       isActive={meta.current === page}
-                      onClick={() => onPageChange?.(page)}
+                      onClick={() => onPageChange(page)}
                     >
                       {page}
                     </PaginationLink>
@@ -78,7 +78,7 @@ export default function DataTablePagination({ meta, onPageChange }: PaginationPr
               <PaginationItem key={page}>
                 <PaginationLink
                   isActive={meta.current === page}
-                  onClick={() => onPageChange?.(page)}
+                  onClick={() => onPageChange(page)}
                 >
                   {page}
                 </PaginationLink>
@@ -90,7 +90,7 @@ export default function DataTablePagination({ meta, onPageChange }: PaginationPr
         {/* Nút Sau */}
         <PaginationItem>
           <PaginationNext
-            onClick={() => onPageChange?.(meta.current + 1)}
+            onClick={() => onPageChange(meta.current + 1)}
             aria-disabled={meta.current === meta.totalPages}
             className={
               meta.current === meta.totalPages
