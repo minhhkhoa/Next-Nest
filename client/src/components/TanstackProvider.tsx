@@ -11,7 +11,7 @@ import {
 import { UserResponseType } from "@/schemasvalidation/user";
 import { accessInstance } from "@/lib/http";
 import { jwtDecode } from "jwt-decode";
-import { toast } from "sonner";
+import SoftDestructiveSonner from "./shadcn-studio/sonner/SoftDestructiveSonner";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -61,7 +61,7 @@ export default function TanstackProvider({
         handleRemoveToken();
         valid = false;
 
-        toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+        SoftDestructiveSonner("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
         setTimeout(() => (window.location.href = "/"), 1000);
       }
     } catch (err) {

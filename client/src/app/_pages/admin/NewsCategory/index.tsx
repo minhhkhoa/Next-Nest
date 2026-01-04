@@ -22,7 +22,7 @@ import {
 } from "@/queries/useNewsCategory";
 import { envConfig } from "../../../../../config";
 import { useDebounce } from "use-debounce";
-import { toast } from "sonner";
+import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 
 const pageSize = Number(envConfig.NEXT_PUBLIC_PAGE_SIZE);
 
@@ -73,7 +73,7 @@ export default function NewsCate() {
 
       if (res.isError) return;
 
-      toast.success(res.message);
+      SoftSuccessSonner(res.message);
     } catch (error) {
       console.log("error handle Delete News: ", error);
     } finally {
@@ -87,7 +87,7 @@ export default function NewsCate() {
 
       if (res.isError) return;
 
-      toast.success(res.message);
+      SoftSuccessSonner(res.message);
 
       //- Remove category selected
       if (selectedCategory === id) {

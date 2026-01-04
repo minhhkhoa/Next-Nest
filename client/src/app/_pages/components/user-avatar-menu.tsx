@@ -18,9 +18,9 @@ import {
   handleInitName,
   removeTokensFromLocalStorage,
 } from "@/lib/utils";
-import { toast } from "sonner";
 // import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 
 export function UserAvatarMenu() {
   const { isLogin, setLogin, user } = useAppStore();
@@ -36,7 +36,7 @@ export function UserAvatarMenu() {
     //- login success
     removeTokensFromLocalStorage();
     setLogin(false);
-    toast.success("Đăng xuất thành công!");
+    SoftSuccessSonner("Đăng xuất thành công!");
     router.push("/");
     router.refresh();
   };

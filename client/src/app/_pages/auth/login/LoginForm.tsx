@@ -26,12 +26,13 @@ import {
 } from "@/components/ui/form";
 import { useTheme } from "next-themes";
 import { useLoginMutation } from "@/queries/useAuth";
-import { toast } from "sonner";
 import { setAccessTokenToLocalStorage } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/components/TanstackProvider";
 import { envConfig } from "../../../../../config";
 import Link from "next/link";
+import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
+import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 
 export default function LoginForm() {
   const { setLogin } = useAppStore();
@@ -59,7 +60,7 @@ export default function LoginForm() {
 
       //- chuyen trang
       router.push("/");
-      toast.success("Đăng nhập thành công!");
+      SoftSuccessSonner("Đăng nhập thành công!");
     }
   };
 
@@ -89,14 +90,14 @@ export default function LoginForm() {
 
           //- chuyen trang
           router.push("/");
-          toast.success(`Đăng nhập với ${provider} thành công!`);
+          SoftSuccessSonner(`Đăng nhập với ${provider} thành công!`);
         }
 
         if (error) {
           console.log("error: ", error);
           popup.close();
           window.removeEventListener("message", handleMessage);
-          toast.error(error);
+          SoftDestructiveSonner(error);
         }
       };
       window.addEventListener("message", handleMessage);

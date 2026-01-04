@@ -13,9 +13,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { toast } from "sonner";
 import { useCreateSkill, useUpdateSkill } from "@/queries/useSkill";
 import { Spinner } from "@/components/ui/spinner";
+import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 
 interface Option {
   value: string;
@@ -116,11 +116,11 @@ SkillFormProps) {
           payload,
         });
         if (resUpdate.isError) return;
-        toast.success(resUpdate.message);
+        SoftSuccessSonner(resUpdate.message);
       } else {
         const resCreate = await createSkillMutation(payload);
         if (resCreate.isError) return;
-        toast.success(resCreate.message);
+        SoftSuccessSonner(resCreate.message);
       }
       onCancel();
     } catch (error) {

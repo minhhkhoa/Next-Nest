@@ -18,8 +18,8 @@ import {
   useUpdateCategoryNewsMutation,
 } from "@/queries/useNewsCategory";
 import { Category } from "@/schemasvalidation/NewsCategory";
-import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
+import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 
 interface CategoryModalProps {
   category?: Category;
@@ -75,7 +75,7 @@ export function CategoryModal({ category, onClose }: CategoryModalProps) {
         });
         if (resUpdate.isError) return;
 
-        toast.success(resUpdate.message);
+        SoftSuccessSonner(resUpdate.message);
       } else {
         const resCreate = await createCateNewsMutation(payload);
         if (resCreate.isError) return;
@@ -86,7 +86,7 @@ export function CategoryModal({ category, onClose }: CategoryModalProps) {
         });
         setError({ name: false, summary: false });
 
-        toast.success(resCreate.message);
+        SoftSuccessSonner(resCreate.message);
       }
     } catch (error) {
       console.log("error handleSubmit CategoryNews: ", error);

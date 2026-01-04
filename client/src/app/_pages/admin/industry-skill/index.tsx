@@ -9,7 +9,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  useCreateIndustry,
   useDeleteIndustry,
   useGetTreeIndustry,
 } from "@/queries/useIndustry";
@@ -24,9 +23,9 @@ import { Plus } from "lucide-react";
 import { IndustryResType } from "@/schemasvalidation/industry";
 import IndustryModalForm from "./components/modals/industry-modal-form";
 import { DeleteConfirmModal } from "../NewsCategory/components/modals/delete-confirm-modal";
-import { toast } from "sonner";
-import { SkillRes2Type, SkillResType } from "@/schemasvalidation/skill";
+import { SkillResType } from "@/schemasvalidation/skill";
 import SkillModalForm from "./components/modals/skill-modal-form";
+import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 
 export default function PageIndustrySkill() {
   const [deleteModal, setDeleteModal] = React.useState<{
@@ -72,7 +71,7 @@ export default function PageIndustrySkill() {
     try {
       const res = await deleteIndustry(id);
       if (res.isError) return;
-      toast.success(res.message);
+      SoftSuccessSonner(res.message);
     } catch (error) {
       console.log("error handle Delete industry: ", error);
     } finally {
@@ -84,7 +83,7 @@ export default function PageIndustrySkill() {
     try {
       const res = await deleteSkill(id);
       if (res.isError) return;
-      toast.success(res.message);
+      SoftSuccessSonner(res.message);
     } catch (error) {
       console.log("error handle Delete industry: ", error);
     } finally {

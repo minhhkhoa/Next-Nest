@@ -26,8 +26,8 @@ import { useGetDetaiSkill } from "@/queries/useSkill";
 import { SkillResType } from "@/schemasvalidation/skill";
 import { useGetDetaiIndustry } from "@/queries/useIndustry";
 import { CustomizeSelect } from "../../components/CustomizeSelect";
-import { toast } from "sonner";
 import { MultiSelectTree } from "../../components/multi-select-industry";
+import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 
 export function DetailedInfoSection() {
   const { user } = useAppStore();
@@ -95,7 +95,7 @@ export function DetailedInfoSection() {
 
     if(res.isError) return;
 
-    toast.success(res.message);
+    SoftSuccessSonner(res.message);
     setIsEditing(false);
   };
 

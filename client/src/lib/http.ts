@@ -2,12 +2,12 @@
 
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { envConfig } from "../../config";
-import { toast } from "sonner";
 import {
   removeTokensFromLocalStorage,
   setAccessTokenToLocalStorage,
 } from "./utils";
 import { jwtDecode } from "jwt-decode";
+import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 
 //- Tạo instance Axios
 const instance = axios.create({
@@ -87,13 +87,13 @@ instance.interceptors.response.use(
 
       //- email or password wrong
       if (message === "Email hoặc mật khẩu không đúng") {
-        toast.error(message);
+        SoftDestructiveSonner(message);
         return Promise.reject(error);
       }
 
       //- CASE 1: Không có token
       if (!token) {
-        toast.error("Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.1");
+        SoftDestructiveSonner("Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.1");
         removeTokensFromLocalStorage();
         await accessInstance.get("/auth/removeAccessToken");
         setTimeout(() => (window.location.href = "/"), 1000);
@@ -107,7 +107,7 @@ instance.interceptors.response.use(
 
         //- CASE 2: Token còn hạn mà vẫn 401 → có thể bị revoke
         if (decoded.exp && now < decoded.exp * 1000) {
-          toast.error(
+          SoftDestructiveSonner(
             "Phiên đăng nhập không còn hợp lệ. Vui lòng đăng nhập lại.2"
           );
           removeTokensFromLocalStorage();
@@ -123,7 +123,7 @@ instance.interceptors.response.use(
             const newAccessToken = res.data?.data.access_token;
 
             if (!newAccessToken) {
-              toast.error("Không thể làm mới phiên đăng nhập!3");
+              SoftDestructiveSonner("Không thể làm mới phiên đăng nhập!3");
               removeTokensFromLocalStorage();
               await accessInstance.get("/auth/removeAccessToken");
               setTimeout(() => (window.location.href = "/login"), 1000);
@@ -136,7 +136,7 @@ instance.interceptors.response.use(
             //- gọi lại request cũ bằng íntance gốc
             return instance(originalRequest);
           } catch (refreshError) {
-            toast.error("Lỗi lấy refresh token. Vui lòng đăng nhập lại.4");
+            SoftDestructiveSonner("Lỗi lấy refresh token. Vui lòng đăng nhập lại.4");
             removeTokensFromLocalStorage();
             await accessInstance.get("/auth/removeAccessToken");
             setTimeout(() => (window.location.href = "/login"), 1000);
@@ -145,7 +145,7 @@ instance.interceptors.response.use(
         }
       } catch (decodeError) {
         //- CASE 4: Token sai định dạng (người dùng chỉnh sửa)
-        toast.error("Token không hợp lệ. Vui lòng đăng nhập lại.5");
+        SoftDestructiveSonner("Token không hợp lệ. Vui lòng đăng nhập lại.5");
         removeTokensFromLocalStorage();
         await accessInstance.get("/auth/removeAccessToken");
         setTimeout(() => (window.location.href = "/"), 1000);
@@ -156,10 +156,10 @@ instance.interceptors.response.use(
     //- Xử lý lỗi dựa trên status code
     switch (status) {
       case 423: //- khi refesh_token hết hạn ở cookie
-        toast.error("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
+        SoftDestructiveSonner("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
         setTimeout(() => (window.location.href = "/login"), 1000);
       case 400:
-        toast.error(message);
+        SoftDestructiveSonner(message);
         break;
       case 403:
         console.error("Resource not found.");
@@ -168,10 +168,10 @@ instance.interceptors.response.use(
         console.error("Resource not found.");
         break;
       case 500:
-        toast.error(message);
+        SoftDestructiveSonner(message);
         break;
       default:
-        toast.error(message);
+        SoftDestructiveSonner(message);
     }
 
     return Promise.reject(error.response?.data);

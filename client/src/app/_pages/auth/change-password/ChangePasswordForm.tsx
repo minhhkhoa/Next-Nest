@@ -24,7 +24,7 @@ import {
 } from "@/schemasvalidation/auth";
 import { useAppStore } from "@/components/TanstackProvider";
 import { useChangePassword } from "@/queries/useAuth";
-import { toast } from "sonner";
+import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 
 export default function ChangePasswordForm() {
   const { user } = useAppStore();
@@ -47,7 +47,7 @@ export default function ChangePasswordForm() {
         newPassword: values.newPassword,
       });
       if (result.isOk) {
-        toast.success(result.message);
+        SoftSuccessSonner(result.message);
         form.reset();
       } else {
         if (

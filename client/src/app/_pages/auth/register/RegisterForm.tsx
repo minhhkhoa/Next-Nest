@@ -31,6 +31,8 @@ import { toast } from "sonner";
 import { envConfig } from "../../../../../config";
 import { setAccessTokenToLocalStorage } from "@/lib/utils";
 import { useAppStore } from "@/components/TanstackProvider";
+import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
+import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 
 export default function RegisterForm() {
   const { setLogin } = useAppStore();
@@ -99,14 +101,13 @@ export default function RegisterForm() {
 
           //- chuyen trang
           router.push("/");
-          toast.success(`Đăng nhập với ${provider} thành công!`);
+          SoftSuccessSonner(`Đăng nhập với ${provider} thành công!`);
         }
 
         if (error) {
-          console.log("error: ", error);
           popup.close();
           window.removeEventListener("message", handleMessage);
-          toast.error(error);
+          SoftDestructiveSonner(error);
         }
       };
       window.addEventListener("message", handleMessage);

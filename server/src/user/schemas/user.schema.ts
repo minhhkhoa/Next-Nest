@@ -16,7 +16,7 @@ export class User {
   @Prop()
   avatar: string;
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Company' }] }) //- tham chiếu tới Company
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Company' })
   companyID?: Types.ObjectId;
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Role' }] }) //- tham chiếu tới Role

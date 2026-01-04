@@ -23,8 +23,8 @@ import {
 } from "@/components/ui/form";
 import { useSearchParams } from "next/navigation";
 import { useResetPassword, useValidateResetPassword } from "@/queries/useAuth";
-import { toast } from "sonner";
 import Link from "next/link";
+import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 
 const resetPasswordSchema = z
   .object({
@@ -65,7 +65,7 @@ export default function ResetPasswordForm() {
 
       if (res.isError) return;
 
-      toast.success(res.message);
+      SoftSuccessSonner(res.message);
 
       form.reset();
     } catch (error) {

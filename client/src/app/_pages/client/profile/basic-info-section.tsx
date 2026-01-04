@@ -13,7 +13,7 @@ import { handleInitName, uploadToCloudinary } from "@/lib/utils";
 // import { useCloudQuery } from "@/queries/useCloud";
 import { Spinner } from "@/components/ui/spinner";
 import { useUpdateUserMutate } from "@/queries/useUser";
-import { toast } from "sonner";
+import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 
 export function BasicInfoSection() {
   const { mutateAsync: userUpdateMutate } = useUpdateUserMutate();
@@ -56,7 +56,7 @@ export function BasicInfoSection() {
 
       if (res.isError) return;
 
-      toast.success(`${res.message}`);
+      SoftSuccessSonner(`${res.message}`);
 
       setIsEditing(false);
     } catch (error) {

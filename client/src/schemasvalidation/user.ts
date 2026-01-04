@@ -1,5 +1,4 @@
 import z from "zod";
-import { apiSkillRes } from "./skill";
 import { MetaFilter } from "./NewsCategory";
 
 export const apiProfileUserRes = z.object({

@@ -40,8 +40,8 @@ import { handleInitName, uploadToCloudinary } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import TinyEditor from "@/components/tinyCustomize";
 import { useCreateNews, useUpdateNews } from "@/queries/useNewsCategory";
-import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
+import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 
 interface NewsModalProps {
   news?: NewsResFilterType;
@@ -120,13 +120,13 @@ export function NewsModal({ news, categories, onClose }: NewsModalProps) {
         });
         if (resUpdate.isError) return;
 
-        toast.success(resUpdate.message);
+        SoftSuccessSonner(resUpdate.message);
       } else {
         const resCreate = await createNewsMutation(payload);
 
         if (resCreate.isError) return;
 
-        toast.success(resCreate.message);
+        SoftSuccessSonner(resCreate.message);
 
         form.reset();
 
@@ -183,7 +183,7 @@ export function NewsModal({ news, categories, onClose }: NewsModalProps) {
               <div className="flex-1 space-y-3">
                 <div>
                   <Label htmlFor="image" className="text-sm font-medium">
-                    Tải lên Avatar
+                    Tải ảnh lên
                   </Label>
                   <div className="mt-2 flex items-center gap-2">
                     <Input

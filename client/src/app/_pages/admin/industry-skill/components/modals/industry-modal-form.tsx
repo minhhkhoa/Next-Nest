@@ -29,7 +29,7 @@ import { useForm } from "react-hook-form";
 import { Spinner } from "@/components/ui/spinner";
 import SelectSearchIndustry from "../SelectSearchIndustry";
 import { useCreateIndustry, useUpdateIndustry } from "@/queries/useIndustry";
-import { toast } from "sonner";
+import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 
 interface IndustryFormProps {
   industry?: IndustryResType;
@@ -69,12 +69,12 @@ export default function IndustryModalForm({
         });
 
         if (resUpdate.isError) return;
-        toast.success(resUpdate.message);
+        SoftSuccessSonner(resUpdate.message);
       } else {
         const resCreate = await createIndustryMutation(payload);
 
         if (resCreate.isError) return;
-        toast.success(resCreate.message);
+        SoftSuccessSonner(resCreate.message);
       }
     } catch (error) {
       console.log("errorr submit form industry: ", error);
