@@ -1,3 +1,5 @@
+import { permission } from "process";
+
 //- định nghĩa những field cần dịch cho từng module
 export const translationConfig = {
   industry: ['name'],
@@ -5,6 +7,7 @@ export const translationConfig = {
   cateNews: ['name', 'summary'],
   news: ['title', 'summary'],
   company: ['description'],
+  permission: ['name'],
 };
 
 export type allModules = keyof typeof translationConfig;

@@ -21,6 +21,14 @@ export enum Gender {
   Other = 'Khác',
 }
 
+export enum typeMethods {
+  GET = 'GET',
+  POST = 'POST',
+  PUT = 'PUT',
+  PATCH = 'PATCH',
+  DELETE = 'DELETE',
+}
+
 export class MultiLang {
   @Prop() vi: string;
   @Prop() en: string;

@@ -16,6 +16,7 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { DetailProfileModule } from './detail-profile/detail-profile.module';
 import { MailModule } from './mail/mail.module';
+import { PermissionsModule } from './permissions/permissions.module';
 
 
 @Module({
@@ -52,6 +53,7 @@ import { MailModule } from './mail/mail.module';
     AuthModule,
     DetailProfileModule,
     MailModule,
+    PermissionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
