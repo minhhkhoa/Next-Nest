@@ -12,7 +12,11 @@ import { NewsService } from './news.service';
 import { CreateNewsDto } from './dto/create-news.dto';
 import { UpdateNewsDto } from './dto/update-news.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Public, ResponseMessage, userDecorator } from 'src/decorator/customize';
+import {
+  Public,
+  ResponseMessage,
+  userDecorator,
+} from 'src/decorator/customize';
 import { FindNewsQueryDto } from './dto/newsDto-dto';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 

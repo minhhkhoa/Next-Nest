@@ -45,63 +45,67 @@ export class SkillService {
   }
 
   async findAllByFilter(query: FindSkillQueryDto) {
-    const { currentPage, pageSize, name, industryID } = query;
+    try {
+      const { currentPage, pageSize, name, industryID } = query;
 
-    const queryForAqp = { name, industryID };
-    const { filter, sort } = aqp(queryForAqp);
+      const queryForAqp = { name, industryID };
+      const { filter, sort } = aqp(queryForAqp);
 
-    //- Xây dựng điều kiện lọc
-    let filterConditions: any = { ...filter };
+      //- Xây dựng điều kiện lọc
+      let filterConditions: any = { ...filter };
 
-    //- Xử lý filter cho name nếu truyền lên
-    if (name) {
-      delete filterConditions.name;
-      const searchRegex = new RegExp(name, 'i');
-      filterConditions.$or = [
-        { 'name.vi': { $regex: searchRegex } },
-        { 'name.en': { $regex: searchRegex } },
-      ];
+      //- Xử lý filter cho name nếu truyền lên
+      if (name) {
+        delete filterConditions.name;
+        const searchRegex = new RegExp(name, 'i');
+        filterConditions.$or = [
+          { 'name.vi': { $regex: searchRegex } },
+          { 'name.en': { $regex: searchRegex } },
+        ];
+      }
+
+      //- Xử lý filter cho industryID nếu truyền lên
+      if (industryID && industryID.length > 0) {
+        filterConditions.industryID = { $in: industryID }; //- Lọc theo mảng MongoID
+      }
+
+      const defaultPage = currentPage > 0 ? +currentPage : 1;
+      let offset = (+defaultPage - 1) * +pageSize;
+      let defaultLimit = +pageSize ? +pageSize : 10;
+
+      const totalItems = (await this.skillModel.find(filterConditions)).length;
+      const totalPages = Math.ceil(totalItems / defaultLimit);
+
+      // delete filterConditions.industryID;
+
+      const result = await this.skillModel
+        .find(filterConditions)
+        .skip(offset)
+        .limit(defaultLimit)
+        .sort(sort as any)
+        .populate({
+          path: 'industryID',
+          select: '_id name parentId', // chỉ lấy những field cần
+          // Nếu muốn populate tiếp parentId thành object (ngành cha)
+          // populate: {
+          //   path: 'parentId',
+          //   select: '_id name'
+          // }
+        })
+        .exec();
+
+      return {
+        meta: {
+          current: defaultPage,
+          pageSize: pageSize,
+          totalPages: totalPages,
+          totalItems: totalItems,
+        },
+        result,
+      };
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
     }
-
-    //- Xử lý filter cho industryID nếu truyền lên
-    if (industryID && industryID.length > 0) {
-      filterConditions.industryID = { $in: industryID }; //- Lọc theo mảng MongoID
-    }
-    
-    const defaultPage = currentPage > 0 ? +currentPage : 1;
-    let offset = (+defaultPage - 1) * +pageSize;
-    let defaultLimit = +pageSize ? +pageSize : 10;
-
-    const totalItems = (await this.skillModel.find(filterConditions)).length;
-    const totalPages = Math.ceil(totalItems / defaultLimit);
-
-    // delete filterConditions.industryID;
-
-    const result = await this.skillModel
-      .find(filterConditions)
-      .skip(offset)
-      .limit(defaultLimit)
-      .sort(sort as any)
-      .populate({
-        path: 'industryID',
-        select: '_id name parentId', // chỉ lấy những field cần
-        // Nếu muốn populate tiếp parentId thành object (ngành cha)
-        // populate: {
-        //   path: 'parentId',
-        //   select: '_id name'
-        // }
-      })
-      .exec();
-
-    return {
-      meta: {
-        current: defaultPage,
-        pageSize: pageSize,
-        totalPages: totalPages,
-        totalItems: totalItems,
-      },
-      result,
-    };
   }
 
   async findOne(id: string) {

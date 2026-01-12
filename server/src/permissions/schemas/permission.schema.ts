@@ -1,10 +1,11 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { HydratedDocument } from "mongoose";
+import { MultiLang } from "src/utils/typeSchemas";
 
 @Schema({ timestamps: true })
 export class Permission {
-  @Prop()
-  name: string;
+  @Prop({ type: MultiLang })
+  name: MultiLang;
 
   @Prop()
   apiPath: string;
