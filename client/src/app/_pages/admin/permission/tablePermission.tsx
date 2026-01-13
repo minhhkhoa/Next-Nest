@@ -85,7 +85,7 @@ export default function TablePermission({
       {/* pagination */}
       <div className="flex flex-col md:flex-row items-center py-4 px-2">
         <span className="text-sm text-muted-foreground whitespace-nowrap">
-          Hiển thị {data.length}/{meta?.totalItems} người dùng
+          Hiển thị {data.length}/{meta?.totalItems} quyền hạn
         </span>
 
         <DataTablePagination meta={meta} onPageChange={setCurrentPage} />

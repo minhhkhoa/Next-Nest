@@ -1,6 +1,9 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -9,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { HTTP_METHODS } from "@/lib/constant";
+import { useGetAllModuleBussiness } from "@/queries/permission";
 import { X } from "lucide-react";
 import React from "react";
 
@@ -29,12 +33,16 @@ interface PermissionFilterProps {
     module: string;
   };
   setFilters: React.Dispatch<React.SetStateAction<any>>;
+  listModules: string[];
 }
 
 export default function PermissionFilter({
   filters,
   setFilters,
+  listModules
 }: PermissionFilterProps) {
+
+
   return (
     <Card className="p-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
@@ -80,12 +88,14 @@ export default function PermissionFilter({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Methods</SelectItem>
-              {HTTP_METHODS.map((method) => (
-                <SelectItem key={method} value={method}>
-                  {method}
-                </SelectItem>
-              ))}
+              <ScrollArea className="max-h-52">
+                <SelectItem value="all">All Methods</SelectItem>
+                {HTTP_METHODS.map((method) => (
+                  <SelectItem key={method} value={method}>
+                    {method}
+                  </SelectItem>
+                ))}
+              </ScrollArea>
             </SelectContent>
           </Select>
         </div>
@@ -105,12 +115,20 @@ export default function PermissionFilter({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Modules</SelectItem>
-              {MODULES.map((module) => (
-                <SelectItem key={module} value={module}>
-                  {module}
-                </SelectItem>
-              ))}
+              <ScrollArea className="max-h-52">
+                <SelectItem value="all">All Modules</SelectItem>
+                {listModules?.map((module) => {
+                  const replaceNameModule = module.replace("Module", "");
+                  return (
+                    <SelectItem
+                      key={replaceNameModule}
+                      value={replaceNameModule}
+                    >
+                      {replaceNameModule}
+                    </SelectItem>
+                  );
+                })}
+              </ScrollArea>
             </SelectContent>
           </Select>
         </div>

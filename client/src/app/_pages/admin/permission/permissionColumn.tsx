@@ -11,15 +11,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { PermissionResType } from "@/schemasvalidation/permission";
 
-export const PermissionColumns: ColumnDef<PermissionResType>[] = [
+export const getPermissionColumns = (
+  onEdit: (permission: PermissionResType) => void,
+  onDelete: (permission: PermissionResType) => void
+): ColumnDef<PermissionResType>[] => [
   // EMAIL
   {
     id: "name",
-    header: "Tên quyền hạn",
+    header: () => <span className="!ml-5">Tên quyền hạn</span>,
     cell: ({ row }) => {
       const email = row.original.name;
       return (
-        <span className="text-sm text-foreground truncate max-w-[200px]">
+        <span className="text-sm text-foreground truncate max-w-[180px] !ml-5">
           {email.vi}
         </span>
       );
@@ -73,7 +76,7 @@ export const PermissionColumns: ColumnDef<PermissionResType>[] = [
   // Trạng thái
   {
     id: "createdBy",
-    header: "Người tạo",
+    header: "Tạo bởi",
     cell: ({ row }) => {
       const createdBy = row.original.createdBy;
       return (
@@ -94,6 +97,7 @@ export const PermissionColumns: ColumnDef<PermissionResType>[] = [
     id: "actions",
     header: "Thao tác",
     cell: ({ row }) => {
+      const permission = row.original;
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -103,13 +107,16 @@ export const PermissionColumns: ColumnDef<PermissionResType>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onEdit(permission)}>
               <div className="flex gap-3 items-center">
                 <Pen className="mr-2 h-4 w-4" />
                 Chỉnh sửa
               </div>
             </DropdownMenuItem>
-            <DropdownMenuItem className="hover:!bg-red-500 text-red-500">
+            <DropdownMenuItem
+              className="hover:!bg-red-500 text-red-500"
+              onClick={() => onDelete(permission)}
+            >
               <div className="flex gap-3 items-center ">
                 <Trash2 className="mr-2 h-4 w-4 hover:text-white" />
                 Xóa

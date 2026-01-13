@@ -5,11 +5,20 @@ import { Plus } from "lucide-react";
 import React, { useState } from "react";
 import PermissionFilter from "./component/permission-filter";
 import { useDebounce } from "use-debounce";
-import { useGetPermissionFilter } from "@/queries/permission";
+import {
+  useDeletePermission,
+  useGetAllModuleBussiness,
+  useGetPermissionFilter,
+} from "@/queries/permission";
 import { envConfig } from "../../../../../config";
-import TablePermission from "./tablePermission";
-import { PermissionColumns } from "./permissionColumn";
+import { getPermissionColumns } from "./permissionColumn";
 import { Spinner } from "@/components/ui/spinner";
+import { PermissionDialogForm } from "./component/permission-modal-form";
+import { PermissionResType } from "@/schemasvalidation/permission";
+import TablePermission from "./tablePermission";
+import { DeleteConfirmModal } from "../NewsCategory/components/modals/delete-confirm-modal";
+import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
+import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 
 export default function PagePermission() {
   const [filters, setFilters] = useState<{
@@ -23,6 +32,16 @@ export default function PagePermission() {
   });
   const [currentPage, setCurrentPage] = React.useState(1);
 
+  const [permissionModalState, setPermissionModalState] = useState<{
+    isOpen: boolean;
+    data?: PermissionResType;
+  }>({ isOpen: false });
+
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    id: string;
+  }>({ isOpen: false, id: "" });
+
   const [debouncedSearchName] = useDebounce(filters.name, 500);
   const [debouncedSearchMethod] = useDebounce(filters.method, 500);
   const [debouncedSearchModule] = useDebounce(filters.module, 500);
@@ -35,6 +54,40 @@ export default function PagePermission() {
       method: debouncedSearchMethod,
       module: debouncedSearchModule,
     });
+
+  const { data: listModules } = useGetAllModuleBussiness();
+
+  const {
+    mutateAsync: deletePermissionMutation,
+    isPending: isDeletePermission,
+  } = useDeletePermission();
+
+  const handleOpenEditModal = (permission: PermissionResType) => {
+    setPermissionModalState({ isOpen: true, data: permission });
+  };
+
+  const handleOpenDeleteModal = (permission: PermissionResType) => {
+    setDeleteModal({ isOpen: true, id: permission._id });
+  };
+
+  const columns = getPermissionColumns(
+    handleOpenEditModal,
+    handleOpenDeleteModal
+  );
+
+  const handleConfirmDelete = async () => {
+    try {
+      const res = await deletePermissionMutation(deleteModal.id);
+
+      if (res.isError) SoftDestructiveSonner("Có lỗi xảy ra khi xóa quyền hạn");
+
+      SoftSuccessSonner(res.message);
+      setDeleteModal({ isOpen: false, id: "" });
+    } catch (error) {
+      SoftDestructiveSonner("Có lỗi xảy ra khi xóa quyền hạn");
+      console.log("error delete permission: ", error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -51,7 +104,11 @@ export default function PagePermission() {
               </p>
             </div>
             <div className="flex gap-3">
-              <Button onClick={() => {}} size="sm" className="gap-2">
+              <Button
+                onClick={() => setPermissionModalState({ isOpen: true })}
+                size="sm"
+                className="gap-2"
+              >
                 <Plus className="h-4 w-4" />
                 Thêm mới
               </Button>
@@ -62,14 +119,18 @@ export default function PagePermission() {
       {/* Main Content */}
       <div className="mx-auto max-w-7xl px-6 py-8">
         <div className="mb-6">
-          <PermissionFilter filters={filters} setFilters={setFilters} />
+          <PermissionFilter
+            filters={filters}
+            setFilters={setFilters}
+            listModules={listModules?.data ?? []}
+          />
         </div>
 
         {/* Table */}
         {!isLoadingPermission ? (
           <TablePermission
             data={listPermissions?.data?.result ?? []}
-            columns={PermissionColumns}
+            columns={columns}
             meta={
               listPermissions?.data?.meta ?? {
                 current: 0,
@@ -87,12 +148,23 @@ export default function PagePermission() {
         )}
       </div>
       {/* Dialog */}
-      {/* <PermissionDialog
-        open={isDialogOpen}
-        onOpenChange={handleDialogClose}
-        permission={editingPermission}
-        onSaved={handlePermissionSaved}
-      /> */}
+      {permissionModalState.isOpen && (
+        <PermissionDialogForm
+          onClose={() => setPermissionModalState({ isOpen: false })}
+          permission={permissionModalState.data}
+          listModules={listModules?.data ?? []}
+        />
+      )}
+
+      {/* modal confirm delete */}
+      {deleteModal.isOpen && (
+        <DeleteConfirmModal
+          title="Xóa quyền hạn"
+          isDeleting={isDeletePermission}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setDeleteModal({ isOpen: false, id: "" })}
+        />
+      )}
     </div>
   );
 }

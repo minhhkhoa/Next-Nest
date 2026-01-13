@@ -19,6 +19,9 @@ const permissionApiRequest = {
       params,
     }),
 
+  getAllModuleBussiness: () =>
+    http.get<ApiResponse<Array<string>>>(`${prefix}/modules`),
+
   getDetailPermission: (id: string) =>
     http.get<ApiResponse<PermissionResType>>(`${prefix}/${id}`),
 

@@ -43,12 +43,12 @@ export type PermissionResTypeFilter = z.infer<typeof apiPermissionFilterRes>;
 export const permissionCreate = z.object({
   name: z
     .string()
-    .min(1, "Tên kỹ năng không được để trống")
-    .min(2, "Tên kỹ năng phải có ít nhất 2 ký tự")
-    .max(100, "Tên kỹ năng không được quá 100 ký tự"),
-  apiPath: z.string().min(1, "Tên kỹ năng không được để trống"),
-  method: z.string().min(1, "Tên kỹ năng không được để trống"),
-  module: z.string().min(1, "Tên kỹ năng không được để trống"),
+    .min(1, "Tên quyền hạn không được để trống")
+    .min(2, "Tên quyền hạn phải có ít nhất 2 ký tự")
+    .max(100, "Tên quyền hạn không được quá 100 ký tự"),
+  apiPath: z.string().min(1, "apiPath quyền hạn không được để trống"),
+  method: z.string().min(1, "Phương thức quyền hạn không được để trống"),
+  module: z.string().min(1, "Module quyền hạn không được để trống"),
 });
 
 export type PermissionCreateType = z.infer<typeof permissionCreate>;

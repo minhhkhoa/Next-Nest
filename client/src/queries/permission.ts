@@ -10,6 +10,13 @@ export const useGetDetaiPermission = (id: string) => {
   });
 };
 
+export const useGetAllModuleBussiness = () => {
+  return useQuery({
+    queryKey: ["getAllModuleBussiness"],
+    queryFn: permissionApiRequest.getAllModuleBussiness,
+  });
+};
+
 export const useGetPermissionFilter = ({
   currentPage,
   pageSize,
