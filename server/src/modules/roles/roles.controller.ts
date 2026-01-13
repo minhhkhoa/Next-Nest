@@ -16,8 +16,8 @@ import { ResponseMessage, userDecorator } from 'src/common/decorator/customize';
 import { FindRoleQueryDto } from './dto/roleDto.dto';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 
-@ApiTags('roles')
-@Controller('roles')
+@ApiTags('role')
+@Controller('role')
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 

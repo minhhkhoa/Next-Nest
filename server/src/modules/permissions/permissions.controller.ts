@@ -16,8 +16,8 @@ import { ResponseMessage, userDecorator } from 'src/common/decorator/customize';
 import { FindPermissionQueryDto } from './dto/permissionDto.dto';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 
-@ApiTags('permissions')
-@Controller('permissions')
+@ApiTags('permission')
+@Controller('permission')
 export class PermissionsController {
   constructor(private readonly permissionsService: PermissionsService) {}
 
