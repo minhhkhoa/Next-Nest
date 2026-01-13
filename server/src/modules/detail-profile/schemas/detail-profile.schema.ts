@@ -1,12 +1,15 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
+import { Industry } from 'src/modules/industry/schemas/industry.schema';
+import { Skill } from 'src/modules/skill/schemas/skill.schema';
+import { User } from 'src/modules/user/schemas/user.schema';
 import { Gender } from 'src/utils/typeSchemas';
 
 @Schema({ timestamps: true })
 //- Định nghĩa các field có trong collection DetailProfile
 export class DetailProfile {
   @Prop()
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }] }) //- tham chiếu tới user
+  @Prop({ type: [{ type: Types.ObjectId, ref: User.name }] }) //- tham chiếu tới user
   userID: Types.ObjectId;
 
   @Prop()
@@ -15,10 +18,10 @@ export class DetailProfile {
   @Prop({ type: String, enum: Gender, default: Gender.Boy })
   gender: Gender;
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Industry' }] }) //- tham chiếu tới Industry
+  @Prop({ type: [{ type: Types.ObjectId, ref: Industry.name }] }) //- tham chiếu tới Industry
   industryID: Types.ObjectId[];
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Skill' }] }) //- tham chiếu tới skill
+  @Prop({ type: [{ type: Types.ObjectId, ref: Skill.name }] }) //- tham chiếu tới skill
   skillID: Types.ObjectId[];
 
   @Prop({ type: Object })

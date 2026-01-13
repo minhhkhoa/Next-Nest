@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument, Types } from 'mongoose';
+import { Role } from 'src/modules/roles/schemas/role.schema';
 
 @Schema({ timestamps: true })
 //- Định nghĩa các field có trong collection User
@@ -19,7 +20,7 @@ export class User {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Company' })
   companyID?: Types.ObjectId;
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Role' }] }) //- tham chiếu tới Role
+  @Prop({ type: [{ type: Types.ObjectId, ref: Role.name }] }) //- tham chiếu tới Role
   roleID: Types.ObjectId;
 
   //- login bằng fb|gg thì có thêm field này

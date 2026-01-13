@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
+import { Industry } from 'src/modules/industry/schemas/industry.schema';
 import { MultiLang } from 'src/utils/typeSchemas';
 
 @Schema({ timestamps: true })
@@ -14,7 +15,7 @@ export class Company {
   @Prop({ type: MultiLang })
   description: MultiLang;
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Industry' }] }) //- tham chiếu tới Industry
+  @Prop({ type: [{ type: Types.ObjectId, ref: Industry.name }] }) //- tham chiếu tới Industry
   industryID: Types.ObjectId[];
 
   @Prop()
@@ -29,7 +30,7 @@ export class Company {
   @Prop()
   logo: string;
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }] }) //- tham chiếu tới User
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }] }) //- tham chiếu tới User tránh lỗi Circular Dependency vì 2 schema company và user nó đang gọi tới nhau nên không thể dùng User.name được
   userFollow: Types.ObjectId[];
 
   @Prop({ default: false })

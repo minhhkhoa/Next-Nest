@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
+import { Industry } from 'src/modules/industry/schemas/industry.schema';
 import { MultiLang } from 'src/utils/typeSchemas';
 
 @Schema({ timestamps: true })
@@ -11,7 +12,7 @@ export class Skill {
   @Prop({ default: false })
   isDeleted: boolean;
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Industry' }] }) //- tham chiếu tới industry
+  @Prop({ type: [{ type: Types.ObjectId, ref: Industry.name }] }) //- tham chiếu tới industry
   industryID: Types.ObjectId[]; //- Mảng chứa _id của các ngành nghề liên quan
 
   @Prop()

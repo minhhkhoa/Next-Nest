@@ -1,31 +1,21 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument, Types } from 'mongoose';
-import { CateNews } from 'src/modules/cate-news/schemas/cate-new.schema';
-import { MultiLang, NewsStatus } from 'src/utils/typeSchemas';
+import { Permission } from 'src/modules/permissions/schemas/permission.schema';
+import { MultiLang } from 'src/utils/typeSchemas';
 
 @Schema({ timestamps: true })
-//- Định nghĩa các field có trong collection News
-export class News {
+export class Role {
   @Prop({ type: MultiLang })
-  title: MultiLang;
-
-  @Prop({ type: [{ type: Types.ObjectId, ref: CateNews.name }] }) //- tham chiếu tới CateNews
-  cateNewsID: Types.ObjectId[];
+  name: MultiLang;
 
   @Prop({ type: MultiLang })
   description: MultiLang;
 
   @Prop()
-  image: string;
+  isActived: boolean;
 
-  @Prop({ type: MultiLang })
-  summary: MultiLang;
-
-  @Prop({ type: String, enum: NewsStatus, default: NewsStatus.INACTIVE })
-  status: NewsStatus;
-
-  @Prop({ default: false })
-  isDeleted: boolean;
+  @Prop({ type: [{ type: Types.ObjectId, ref: Permission.name }] })
+  permissions: Types.ObjectId[];
 
   @Prop()
   createdAt?: Date;
@@ -36,7 +26,6 @@ export class News {
   @Prop()
   deletedAt?: Date;
 
-  //- update schema
   @Prop({ type: Object })
   createdBy: {
     _id: mongoose.Schema.Types.ObjectId;
@@ -59,5 +48,5 @@ export class News {
   };
 }
 
-export const NewsSchema = SchemaFactory.createForClass(News);
-export type NewsDocument = HydratedDocument<News>;
+export const RoleSchema = SchemaFactory.createForClass(Role);
+export type RoleDocument = HydratedDocument<Role>;

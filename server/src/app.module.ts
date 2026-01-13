@@ -17,6 +17,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { DetailProfileModule } from './modules/detail-profile/detail-profile.module';
 import { MailModule } from './modules/mail/mail.module';
 import { PermissionsModule } from './modules/permissions/permissions.module';
+import { RolesModule } from './modules/roles/roles.module';
 
 
 @Module({
@@ -54,6 +55,7 @@ import { PermissionsModule } from './modules/permissions/permissions.module';
     DetailProfileModule,
     MailModule,
     PermissionsModule,
+    RolesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
