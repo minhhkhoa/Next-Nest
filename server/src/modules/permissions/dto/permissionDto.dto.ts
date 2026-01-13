@@ -1,5 +1,5 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsArray, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class FindPermissionQueryDto {
   @ApiPropertyOptional({ example: 1 })
@@ -24,4 +24,21 @@ export class FindPermissionQueryDto {
   @IsOptional()
   @IsString()
   module: string;
+}
+
+export class DeleteManyPermissionsDto {
+  @ApiProperty({
+    description: 'Array of permission IDs to delete',
+    type: [String],
+  })
+  @IsArray({ message: 'ids phải là một mảng' })
+  @IsNotEmpty({
+    each: true,
+    message: 'Mỗi phần tử trong mảng ids không được rỗng',
+  })
+  @IsMongoId({
+    each: true,
+    message: 'Mỗi phần tử trong mảng ids phải là một Mongo ID hợp lệ',
+  })
+  ids: string[];
 }

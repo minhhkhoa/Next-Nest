@@ -17,12 +17,14 @@ import {
 import { MetaFilterType } from "@/schemasvalidation/NewsCategory";
 import DataTablePagination from "@/components/DataTablePagination";
 import { PermissionResType } from "@/schemasvalidation/permission";
+import { useEffect, useState } from "react";
 
 interface DataTableProps {
   data: PermissionResType[];
   columns: ColumnDef<PermissionResType>[];
   meta: MetaFilterType;
   setCurrentPage: (page: number) => void;
+  setIdDeleteMany: (id: string[]) => void;
 }
 
 export default function TablePermission({
@@ -30,12 +32,31 @@ export default function TablePermission({
   columns,
   meta,
   setCurrentPage,
+  setIdDeleteMany,
 }: DataTableProps) {
+  const [rowSelection, setRowSelection] = useState({});
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+
+    onRowSelectionChange: setRowSelection,
+    state: {
+      rowSelection,
+    },
+
+    // Quan trọng: giúp mapping rowSelection với ID thực tế của data
+    getRowId: (row) => row._id,
   });
+
+  useEffect(() => {
+    // rowSelection lúc này sẽ có dạng: { "65a123...": true, "65b456...": true }
+    // Chúng ta lấy ra các keys của nó (chính là các ID)
+    const selectedIds = Object.keys(rowSelection);
+
+    // Đẩy danh sách ID này lên component cha
+    setIdDeleteMany(selectedIds);
+  }, [rowSelection, setIdDeleteMany]);
 
   return (
     <div className="overflow-hidden rounded-md border mb-10">

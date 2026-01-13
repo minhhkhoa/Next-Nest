@@ -17,7 +17,7 @@ import {
   ResponseMessage,
   userDecorator,
 } from 'src/common/decorator/customize';
-import { FindPermissionQueryDto } from './dto/permissionDto.dto';
+import { DeleteManyPermissionsDto, FindPermissionQueryDto } from './dto/permissionDto.dto';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { DiscoveryService } from './discovery.service';
 
@@ -76,6 +76,16 @@ export class PermissionsController {
     @userDecorator() user: UserDecoratorType,
   ) {
     return this.permissionsService.update(id, updatePermissionDto, user);
+  }
+
+  @ResponseMessage('Xóa nhiều quyền hạn thành công')
+  @ApiOperation({ summary: 'Xóa nhiều quyền hạn' })
+  @Delete('deleteMany')
+  removeMany(
+    @Body() deleteDto: DeleteManyPermissionsDto,
+    @userDecorator() user: UserDecoratorType,
+  ) {
+    return this.permissionsService.removeMany(deleteDto.ids, user);
   }
 
   @ResponseMessage('Xóa quyền hạn thành công')

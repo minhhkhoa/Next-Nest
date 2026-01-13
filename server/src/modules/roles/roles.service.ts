@@ -103,7 +103,7 @@ export class RolesService {
   async findOne(id: string) {
     try {
       if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new BadRequestCustom('ID quyền hạn không đúng định dạng', !!id);
+        throw new BadRequestCustom('ID vai trò không đúng định dạng', !!id);
       }
 
       const role = await this.roleModel.findById(id);

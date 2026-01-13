@@ -33,6 +33,13 @@ const permissionApiRequest = {
 
   deletePermission: (id: string) =>
     http.delete<ApiResponse<any>>(`${prefix}/${id}`),
+
+  deleteManyPermission: (ids: string[]) =>
+    http.delete<ApiResponse<any>>(`${prefix}/deleteMany`, {
+      data: {
+        ids,
+      },
+    }),
 };
 
 export default permissionApiRequest;

@@ -87,3 +87,14 @@ export const useDeletePermission = () => {
     },
   });
 };
+
+export const useDeleteManyPermission = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: permissionApiRequest.deleteManyPermission,
+    onSuccess: () => {
+      //- gọi lại api khi cập nhật thông tin
+      queryClient.invalidateQueries({ queryKey: ["getPermission_filter"] });
+    },
+  });
+};

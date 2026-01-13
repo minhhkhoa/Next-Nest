@@ -1,11 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import React, { useState } from "react";
+import { Plus, Trash2 } from "lucide-react";
+import React, { use, useState } from "react";
 import PermissionFilter from "./component/permission-filter";
 import { useDebounce } from "use-debounce";
 import {
+  useDeleteManyPermission,
   useDeletePermission,
   useGetAllModuleBussiness,
   useGetPermissionFilter,
@@ -19,6 +20,7 @@ import TablePermission from "./tablePermission";
 import { DeleteConfirmModal } from "../NewsCategory/components/modals/delete-confirm-modal";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
+import { set } from "zod";
 
 export default function PagePermission() {
   const [filters, setFilters] = useState<{
@@ -31,6 +33,7 @@ export default function PagePermission() {
     module: "",
   });
   const [currentPage, setCurrentPage] = React.useState(1);
+  const [idDeleteMany, setIdDeleteMany] = useState<string[]>([]);
 
   const [permissionModalState, setPermissionModalState] = useState<{
     isOpen: boolean;
@@ -62,6 +65,26 @@ export default function PagePermission() {
     isPending: isDeletePermission,
   } = useDeletePermission();
 
+  const {
+    mutateAsync: deleteManyPermissionMutation,
+  } = useDeleteManyPermission();
+
+  const handleDeleteManyPermission = async () => {
+    try {
+      if (idDeleteMany.length === 0) return;
+
+      const res = await deleteManyPermissionMutation(idDeleteMany);
+
+      if (res.isError) SoftDestructiveSonner("Có lỗi xảy ra khi xóa quyền hạn");
+
+      setIdDeleteMany([]);
+
+      SoftSuccessSonner(res.message);
+    } catch (error) {
+      console.log("error delete many permission");
+    }
+  };
+
   const handleOpenEditModal = (permission: PermissionResType) => {
     setPermissionModalState({ isOpen: true, data: permission });
   };
@@ -92,7 +115,7 @@ export default function PagePermission() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="border-b border-border">
+      <div className="">
         <div className="mx-auto max-w-7xl px-6 py-8">
           <div className="flex items-center justify-between">
             <div>
@@ -104,6 +127,17 @@ export default function PagePermission() {
               </p>
             </div>
             <div className="flex gap-3">
+              {idDeleteMany.length > 0 && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleDeleteManyPermission}
+                  className="gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete ({idDeleteMany.length})
+                </Button>
+              )}
               <Button
                 onClick={() => setPermissionModalState({ isOpen: true })}
                 size="sm"
@@ -117,7 +151,7 @@ export default function PagePermission() {
         </div>
       </div>
       {/* Main Content */}
-      <div className="mx-auto max-w-7xl px-6 py-8">
+      <div className="mx-auto max-w-7xl px-6">
         <div className="mb-6">
           <PermissionFilter
             filters={filters}
@@ -140,6 +174,7 @@ export default function PagePermission() {
               }
             }
             setCurrentPage={setCurrentPage}
+            setIdDeleteMany={setIdDeleteMany}
           />
         ) : (
           <div className="flex justify-center">

@@ -10,12 +10,36 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { PermissionResType } from "@/schemasvalidation/permission";
+import { Checkbox } from "@/components/ui/checkbox";
+
 
 export const getPermissionColumns = (
   onEdit: (permission: PermissionResType) => void,
   onDelete: (permission: PermissionResType) => void
 ): ColumnDef<PermissionResType>[] => [
-  // EMAIL
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  // NAME
   {
     id: "name",
     header: () => <span className="!ml-5">Tên quyền hạn</span>,

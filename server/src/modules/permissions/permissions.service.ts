@@ -6,7 +6,10 @@ import { Permission, PermissionDocument } from './schemas/permission.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
-import { FindPermissionQueryDto } from './dto/permissionDto.dto';
+import {
+  DeleteManyPermissionsDto,
+  FindPermissionQueryDto,
+} from './dto/permissionDto.dto';
 import aqp from 'api-query-params';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import mongoose from 'mongoose';
@@ -206,6 +209,62 @@ export class PermissionsService {
 
       return result;
     } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
+  async removeMany(ids: string[], user: UserDecoratorType) {
+    try {
+      if (!Array.isArray(ids)) {
+        throw new BadRequestCustom(
+          'Dữ liệu đầu vào không hợp lệ. `ids` phải là một mảng.',
+          true,
+        );
+      }
+      //- Validate all IDs
+      const validIds = ids.filter((id) => mongoose.Types.ObjectId.isValid(id));
+      if (validIds.length === 0) {
+        throw new BadRequestCustom(
+          'Không có ID hợp lệ nào được cung cấp.',
+          true,
+        );
+      }
+
+      const result = await this.permissionModel.updateMany(
+        { _id: { $in: validIds } },
+        {
+          $set: {
+            isDeleted: true,
+            deletedAt: new Date(),
+            deletedBy: {
+              _id: user.id,
+              name: user.name,
+              email: user.email,
+            },
+          },
+        },
+      );
+
+      if (result.modifiedCount === 0) {
+        return {
+          message:
+            'Không có quyền hạn nào được xóa. Có thể chúng đã bị xóa trước đó hoặc không tồn tại.',
+          data: {
+            deletedCount: 0,
+          },
+        };
+      }
+
+      return {
+        message: `Đã xóa thành công ${result.modifiedCount} quyền hạn.`,
+        data: {
+          deletedCount: result.modifiedCount,
+        },
+      };
+    } catch (error) {
+      if (error instanceof BadRequestCustom) {
+        throw error;
+      }
       throw new BadRequestCustom(error.message, !!error.message);
     }
   }
