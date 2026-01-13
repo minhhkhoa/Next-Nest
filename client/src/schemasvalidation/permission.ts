@@ -5,9 +5,9 @@ import { MetaFilter } from "./NewsCategory";
 export const apiPermissionRes = z.object({
   _id: z.string(),
   name: MultiLang,
-  description: MultiLang,
-  isActived: z.boolean(),
-  permissions: z.array(z.string()),
+  apiPath: z.string(),
+  method: z.string(),
+  module: z.string(),
   isDeleted: z.boolean(),
   deletedAt: z.date(),
   createdAt: z.date(),
@@ -31,15 +31,13 @@ export const apiPermissionRes = z.object({
 });
 
 export type PermissionResType = z.infer<typeof apiPermissionRes>;
-export type PermissionResTypeFilter = z.infer<typeof apiPermissionRes>;
-
 
 export const apiPermissionFilterRes = z.object({
   result: z.array(apiPermissionRes),
   meta: MetaFilter,
 });
 
-export type SkillFilterResType = z.infer<typeof apiPermissionFilterRes>;
+export type PermissionResTypeFilter = z.infer<typeof apiPermissionFilterRes>;
 
 //- create
 export const permissionCreate = z.object({

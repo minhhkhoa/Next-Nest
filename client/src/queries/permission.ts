@@ -10,7 +10,7 @@ export const useGetDetaiPermission = (id: string) => {
   });
 };
 
-export const useGetSkillFilter = ({
+export const useGetPermissionFilter = ({
   currentPage,
   pageSize,
   name,

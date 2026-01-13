@@ -112,6 +112,50 @@ export function AppSidebar() {
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+
+          <SidebarGroup>
+            <SidebarGroupLabel>Phân quyền</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <Collapsible defaultOpen>
+                  <SidebarMenuItem className="mr-2.5">
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton tooltip="Phân quyền">
+                        <FolderKanban />
+                        <span className="truncate">Phân quyền</span>
+                        <ChevronDown className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        <SidebarMenuSubItem>
+                          <SidebarMenuSubButton
+                            asChild
+                            isActive={pathname === "/admin/role"}
+                            className="data-[active=true]:bg-primary data-[active=true]:text-white"
+                          >
+                            <Link href="/admin/role">Vai trò</Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      </SidebarMenuSub>
+
+                      <SidebarMenuSub>
+                        <SidebarMenuSubItem>
+                          <SidebarMenuSubButton
+                            asChild
+                            isActive={pathname === "/admin/permission"}
+                            className="data-[active=true]:bg-primary data-[active=true]:text-white"
+                          >
+                            <Link href="/admin/permission">Quyền hạn</Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </SidebarMenuItem>
+                </Collapsible>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
         </div>
 
         <div className="mb-2">

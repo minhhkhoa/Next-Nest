@@ -58,6 +58,8 @@ export const ADDRESS_OPTIONS = [
   "Thanh Hóa",
 ];
 
+export const HTTP_METHODS = ["GET", "POST", "PUT", "DELETE", "PATCH"];
+
 export const segmentNameMap: Record<string, string> = {
   // -start page public
   "cate-news": "Hành trang nghề nghiệp",
