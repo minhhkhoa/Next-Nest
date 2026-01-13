@@ -31,6 +31,10 @@ async function bootstrap() {
     }),
   ); //- sử dụng pipe để validate dữ liệu trước khi vào controller
 
+  //- start global prefix
+  app.setGlobalPrefix('api');
+  //- end global prefix
+
   //- use cookie-parser
   app.use(cookieParser());
 

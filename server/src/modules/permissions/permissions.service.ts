@@ -99,7 +99,7 @@ export class PermissionsService {
         .find(filterConditions)
         .skip(offset)
         .limit(defaultLimit)
-        .sort(sort as any)
+        .sort('-createdAt')
         .exec();
 
       return {

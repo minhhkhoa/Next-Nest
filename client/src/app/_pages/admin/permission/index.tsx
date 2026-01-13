@@ -20,7 +20,6 @@ import TablePermission from "./tablePermission";
 import { DeleteConfirmModal } from "../NewsCategory/components/modals/delete-confirm-modal";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
-import { set } from "zod";
 
 export default function PagePermission() {
   const [filters, setFilters] = useState<{
@@ -52,7 +51,7 @@ export default function PagePermission() {
   const { data: listPermissions, isLoading: isLoadingPermission } =
     useGetPermissionFilter({
       currentPage,
-      pageSize: Number(envConfig.NEXT_PUBLIC_PAGE_SIZE),
+      pageSize: 5,
       name: debouncedSearchName,
       method: debouncedSearchMethod,
       module: debouncedSearchModule,

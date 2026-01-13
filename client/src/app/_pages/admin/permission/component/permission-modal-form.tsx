@@ -70,11 +70,19 @@ export function PermissionDialogForm({
     useUpdatePermission();
 
   const handleSubmit = async (values: PermissionCreateType) => {
+    // 1. Tạo payload mới, đảm bảo apiPath luôn có tiền tố "api/"
+    // Chúng ta dùng replace để tránh trường hợp bị lặp "api/api/" nếu có lỗi logic ở đâu đó
+    const finalPayload = {
+      ...values,
+      apiPath: values.apiPath.startsWith("api/")
+        ? values.apiPath
+        : `api/${values.apiPath.replace(/^\//, "")}`, // replace(/^\//, "") để bỏ dấu / dư thừa nếu user nhập "/users"
+    };
     try {
       if (permission) {
         const res = await updatePermissionMutation({
           id: permission._id,
-          payload: values,
+          payload: finalPayload,
         });
 
         if (res.isError)
@@ -82,7 +90,7 @@ export function PermissionDialogForm({
 
         SoftSuccessSonner(res.message);
       } else {
-        const res = await createPermissionMutation(values);
+        const res = await createPermissionMutation(finalPayload);
 
         if (res.isError)
           SoftDestructiveSonner("Có lỗi xảy ra khi Thêm mới quyền hạn");
@@ -99,7 +107,8 @@ export function PermissionDialogForm({
     if (permission) {
       form.reset({
         name: permission.name.vi,
-        apiPath: permission.apiPath,
+        // Loại bỏ api/ khi đưa vào input để tránh hiển thị thành api/api/users
+        apiPath: permission.apiPath.replace(/^api\//, ""),
         method: permission.method,
         module: permission.module,
       });
@@ -146,7 +155,26 @@ export function PermissionDialogForm({
                 <FormItem>
                   <FormLabel>Api path</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nhập đường dẫn path" {...field} />
+                    <div className="relative flex items-center">
+                      {/* Tiền tố cố định */}
+                      <span className="absolute left-3 text-muted-foreground text-sm font-medium select-none">
+                        api/
+                      </span>
+                      <Input
+                        placeholder="users"
+                        {...field}
+                        // Đẩy padding-left vào để không đè lên chữ api/
+                        className="pl-10"
+                        onChange={(e) => {
+                          let value = e.target.value;
+                          // Ngăn người dùng nhập lại api/ nếu họ copy-paste cả cụm
+                          if (value.startsWith("api/")) {
+                            value = value.replace("api/", "");
+                          }
+                          field.onChange(value);
+                        }}
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
