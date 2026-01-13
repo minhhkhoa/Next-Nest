@@ -24,8 +24,11 @@ export class PermissionsController {
   @ResponseMessage('Tạo mới quyền hạn thành công')
   @ApiOperation({ summary: 'Thêm mới quyền hạn' })
   @Post()
-  create(@Body() createPermissionDto: CreatePermissionDto) {
-    return this.permissionsService.create(createPermissionDto);
+  create(
+    @Body() createPermissionDto: CreatePermissionDto,
+    @userDecorator() user: UserDecoratorType,
+  ) {
+    return this.permissionsService.create(createPermissionDto, user);
   }
 
   @ResponseMessage('Lấy tất cả quyền hạn thành công')
@@ -63,7 +66,7 @@ export class PermissionsController {
   @ResponseMessage('Xóa quyền hạn thành công')
   @ApiOperation({ summary: 'Xóa quyền hạn' })
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.permissionsService.remove(id);
+  remove(@Param('id') id: string, @userDecorator() user: UserDecoratorType) {
+    return this.permissionsService.remove(id, user);
   }
 }

@@ -323,7 +323,7 @@ export class NewsService {
     }
   }
 
-  async remove(id: string) {
+  async remove(id: string, user: UserDecoratorType) {
     try {
       if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new BadRequestCustom('ID news không đúng định dạng', !!id);
@@ -341,6 +341,22 @@ export class NewsService {
       const result = this.newsModel.softDelete(filter);
 
       if (!result) throw new BadRequestCustom('Lỗi xóa news', !!id);
+
+      //- delete by
+      await this.newsModel.updateOne(
+        {
+          _id: id,
+        },
+        {
+          $set: {
+            deletedBy: {
+              _id: user.id,
+              name: user.name,
+              email: user.email,
+            },
+          },
+        },
+      );
 
       return result;
     } catch (error) {

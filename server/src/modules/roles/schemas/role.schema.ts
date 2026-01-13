@@ -11,7 +11,7 @@ export class Role {
   @Prop({ type: MultiLang })
   description: MultiLang;
 
-  @Prop()
+  @Prop({ default: true })
   isActived: boolean;
 
   @Prop({ type: [{ type: Types.ObjectId, ref: Permission.name }] })

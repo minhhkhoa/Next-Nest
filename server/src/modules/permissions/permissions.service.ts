@@ -19,14 +19,24 @@ export class PermissionsService {
     private permissionModel: SoftDeleteModel<PermissionDocument>,
   ) {}
 
-  async create(createPermissionDto: CreatePermissionDto) {
+  async create(
+    createPermissionDto: CreatePermissionDto,
+    user: UserDecoratorType,
+  ) {
     try {
       const dataLang = await this.translationService.translateModuleData(
         'permission',
         createPermissionDto,
       );
 
-      const permission = await this.permissionModel.create(dataLang);
+      const permission = await this.permissionModel.create({
+        ...dataLang,
+        createdBy: {
+          _id: user.id,
+          name: user.name,
+          email: user.email,
+        },
+      });
 
       return {
         _id: permission._id,
@@ -160,7 +170,7 @@ export class PermissionsService {
     }
   }
 
-  async remove(id: string) {
+  async remove(id: string, user: UserDecoratorType) {
     try {
       if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new BadRequestCustom('ID quyền hạn không đúng định dạng', !!id);
@@ -177,6 +187,20 @@ export class PermissionsService {
 
       const filter = { _id: id };
       const result = this.permissionModel.softDelete(filter);
+
+      //- delete by
+      await this.permissionModel.updateOne(
+        { _id: id },
+        {
+          $set: {
+            deletedBy: {
+              _id: user.id,
+              name: user.name,
+              email: user.email,
+            },
+          },
+        },
+      );
 
       if (!result) throw new BadRequestCustom('Lỗi xóa quyền hạn', !!id);
 

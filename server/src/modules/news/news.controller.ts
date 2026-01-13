@@ -80,7 +80,7 @@ export class NewsController {
   @ResponseMessage('Xóa tin tức thành công')
   @ApiOperation({ summary: 'Xóa tin tức' })
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.newsService.remove(id);
+  remove(@Param('id') id: string, @userDecorator() user: UserDecoratorType) {
+    return this.newsService.remove(id, user);
   }
 }
