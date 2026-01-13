@@ -4,19 +4,19 @@ import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Connection } from 'mongoose';
-import { IndustryModule } from './industry/industry.module';
-import { TranslationModule } from './translation/translation.module';
+import { IndustryModule } from './modules/industry/industry.module';
+import { TranslationModule } from './common/translation/translation.module';
 import { softDeletePlugin } from 'soft-delete-plugin-mongoose';
-import { SkillModule } from './skill/skill.module';
-import { CateNewsModule } from './cate-news/cate-news.module';
-import { CloudinaryModule } from './cloudinary/cloudinary.module';
-import { NewsModule } from './news/news.module';
-import { CompanyModule } from './company/company.module';
-import { UserModule } from './user/user.module';
-import { AuthModule } from './auth/auth.module';
-import { DetailProfileModule } from './detail-profile/detail-profile.module';
-import { MailModule } from './mail/mail.module';
-import { PermissionsModule } from './permissions/permissions.module';
+import { SkillModule } from './modules/skill/skill.module';
+import { CateNewsModule } from './modules/cate-news/cate-news.module';
+import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
+import { NewsModule } from './modules/news/news.module';
+import { CompanyModule } from './modules/company/company.module';
+import { UserModule } from './modules/user/user.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { DetailProfileModule } from './modules/detail-profile/detail-profile.module';
+import { MailModule } from './modules/mail/mail.module';
+import { PermissionsModule } from './modules/permissions/permissions.module';
 
 
 @Module({

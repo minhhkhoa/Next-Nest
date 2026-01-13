@@ -3,8 +3,8 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
-import { TransformInterceptor } from './core/transform.interceptor';
-import { JwtAuthGuard } from './auth/passport-guard/jwt-auth.guard';
+import { TransformInterceptor } from './common/core/transform.interceptor';
+import { JwtAuthGuard } from './modules/auth/passport-guard/jwt-auth.guard';
 import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
