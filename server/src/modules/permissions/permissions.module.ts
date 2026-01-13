@@ -4,7 +4,10 @@ import { PermissionsController } from './permissions.controller';
 import { TranslationModule } from 'src/common/translation/translation.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Permission, PermissionSchema } from './schemas/permission.schema';
+import { BusinessModule } from 'src/common/decorator/customize';
+import { DiscoveryService } from './discovery.service';
 
+@BusinessModule()
 @Module({
   imports: [
     TranslationModule,
@@ -13,6 +16,6 @@ import { Permission, PermissionSchema } from './schemas/permission.schema';
     ]),
   ],
   controllers: [PermissionsController],
-  providers: [PermissionsService],
+  providers: [PermissionsService, DiscoveryService],
 })
 export class PermissionsModule {}

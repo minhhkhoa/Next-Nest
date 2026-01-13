@@ -12,14 +12,22 @@ import { PermissionsService } from './permissions.service';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ResponseMessage, userDecorator } from 'src/common/decorator/customize';
+import {
+  Public,
+  ResponseMessage,
+  userDecorator,
+} from 'src/common/decorator/customize';
 import { FindPermissionQueryDto } from './dto/permissionDto.dto';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
+import { DiscoveryService } from './discovery.service';
 
 @ApiTags('permission')
 @Controller('permission')
 export class PermissionsController {
-  constructor(private readonly permissionsService: PermissionsService) {}
+  constructor(
+    private readonly permissionsService: PermissionsService,
+    private readonly discoveryService: DiscoveryService,
+  ) {}
 
   @ResponseMessage('Tạo mới quyền hạn thành công')
   @ApiOperation({ summary: 'Thêm mới quyền hạn' })
@@ -43,6 +51,13 @@ export class PermissionsController {
   @Get('filter')
   findByFilter(@Query() query: FindPermissionQueryDto) {
     return this.permissionsService.findByFilter(query);
+  }
+
+  @Get('modules')
+  async getModules() {
+    //- lấy các module đã được đánh dấu bởi decorator: @BusinessModule()
+    const modules = this.discoveryService.getBusinessModules();
+    return modules;
   }
 
   @ResponseMessage('Lấy quyền hạn theo id thành công')

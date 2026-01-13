@@ -4,7 +4,9 @@ import { SkillController } from './skill.controller';
 import { TranslationModule } from 'src/common/translation/translation.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Skill, SkillSchema } from './schemas/skill.schema';
+import { BusinessModule } from 'src/common/decorator/customize';
 
+@BusinessModule()
 @Module({
   imports: [
     TranslationModule,

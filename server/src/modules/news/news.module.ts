@@ -5,7 +5,9 @@ import { TranslationModule } from 'src/common/translation/translation.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { News, NewsSchema } from './schemas/news.schema';
 import { CateNewsModule } from 'src/modules/cate-news/cate-news.module';
+import { BusinessModule } from 'src/common/decorator/customize';
 
+@BusinessModule()
 @Module({
   imports: [
     TranslationModule,
