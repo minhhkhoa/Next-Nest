@@ -42,12 +42,13 @@ export class DetailProfileService {
     const limit = Number(pageSize) > 0 ? Number(pageSize) : 10;
     const skip = (page - 1) * limit;
 
-    const profileMatch: any = { isDeleted: false };
-
+    // 1. Điều kiện lọc cho Profile
+    const profileMatch: any = { };
     if (address) {
       profileMatch.address = { $regex: address, $options: 'i' };
     }
 
+    // 2. Điều kiện lọc cho User (sau khi lookup)
     const userMatch: any = {};
     if (name) userMatch['user.name'] = { $regex: name, $options: 'i' };
     if (email) userMatch['user.email'] = { $regex: email, $options: 'i' };
@@ -55,6 +56,7 @@ export class DetailProfileService {
     const pipeline: any[] = [
       { $match: profileMatch },
 
+      // Chuyển userID sang ObjectId để lookup chính xác
       {
         $addFields: {
           userObjectId: {
@@ -67,6 +69,7 @@ export class DetailProfileService {
         },
       },
 
+      // Lookup lấy User
       {
         $lookup: {
           from: 'users',
@@ -75,7 +78,6 @@ export class DetailProfileService {
           as: 'user',
         },
       },
-
       {
         $unwind: {
           path: '$user',
@@ -83,6 +85,31 @@ export class DetailProfileService {
         },
       },
 
+      // --- XỬ LÝ TRƯỜNG HỢP USER BỊ XÓA HOẶC BỊ ẨN ---
+      // Nếu Khoa dùng Soft Delete cho User, hãy lọc thêm ở đây
+      {
+        $match: {
+          user: { $ne: null }, // Loại bỏ các Profile mà không tìm thấy User tương ứng
+        },
+      },
+
+      // Lookup lấy Role từ trong User vừa tìm được
+      {
+        $lookup: {
+          from: 'roles',
+          localField: 'user.roleID',
+          foreignField: '_id',
+          as: 'user.roleID',
+        },
+      },
+      {
+        $unwind: {
+          path: '$user.roleID',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+
+      // Lọc theo name/email của User (nếu có truyền query)
       Object.keys(userMatch).length ? { $match: userMatch } : null,
 
       {
@@ -96,8 +123,6 @@ export class DetailProfileService {
                 userObjectId: 0,
                 'user.password': 0,
                 'user.refresh_token': 0,
-                'user.resetToken': 0,
-                'user.resetTokenExpiresAt': 0,
               },
             },
           ],
@@ -107,7 +132,6 @@ export class DetailProfileService {
     ].filter(Boolean);
 
     const result = await this.detailProfileModel.aggregate(pipeline);
-
     const totalItems = result[0]?.total[0]?.count || 0;
 
     return {
@@ -210,6 +234,27 @@ export class DetailProfileService {
 
       if (result.modifiedCount === 0)
         throw new BadRequestCustom('Lỗi sửa detailProfile', !!id);
+      return result;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
+  async softCheckDeleteByUserId(
+    userID: string,
+    session: mongoose.ClientSession,
+  ) {
+    try {
+      const result = await this.detailProfileModel.findOneAndUpdate(
+        { userID: userID, isDeleted: false },
+        {
+          $set: {
+            isDeleted: true,
+            deletedAt: new Date(),
+          },
+        },
+        { session, new: true }, // Quan trọng: truyền session vào đây
+      );
       return result;
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);

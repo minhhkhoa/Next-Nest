@@ -55,6 +55,13 @@ export class UserController {
     return this.userService.findOne(id);
   }
 
+  // API Cập nhật vai trò
+  @Patch(':id/role')
+  @ResponseMessage('Cập nhật vai trò người dùng thành công')
+  updateRole(@Param('id') id: string, @Body('roleID') roleID: string) {
+    return this.userService.updateUserRole(id, roleID);
+  }
+
   @ResponseMessage('Cập nhật thông tin người dùng thành công')
   @ApiOperation({ summary: 'update user' })
   @Patch(':id')
@@ -62,10 +69,17 @@ export class UserController {
     return this.userService.update(id, updateUserDto);
   }
 
-  @ResponseMessage('Xóa người dùng thành công')
-  @ApiOperation({ summary: 'Delete user' })
+  // @ResponseMessage('Xóa người dùng thành công')
+  // @ApiOperation({ summary: 'Delete user' })
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.userService.remove(id);
+  // }
+
+  // API Xóa mềm đồng bộ
   @Delete(':id')
+  @ResponseMessage('Xóa người dùng thành công')
   remove(@Param('id') id: string) {
-    return this.userService.remove(id);
+    return this.userService.softDeleteUserAndProfile(id);
   }
 }

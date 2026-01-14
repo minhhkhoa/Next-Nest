@@ -1,5 +1,6 @@
 import z from "zod";
 import { MetaFilter } from "./NewsCategory";
+import { apiRoleRes } from "./role";
 
 export const apiProfileUserRes = z.object({
   user: z.object({
@@ -63,11 +64,13 @@ export const apiUserRes = z.object({
     name: z.string(),
     email: z.string(),
     avatar: z.string(),
-    roleID: z.array(z.string()),
-    provider: z.object({
-      type: z.string(),
-      id: z.string(),
-    }).optional(),
+    roleID: apiRoleRes,
+    provider: z
+      .object({
+        type: z.string(),
+        id: z.string(),
+      })
+      .optional(),
     isDeleted: z.boolean(),
     deletedAt: z.date(),
     createdAt: z.date(),

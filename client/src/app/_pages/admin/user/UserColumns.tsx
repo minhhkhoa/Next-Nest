@@ -24,7 +24,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-export const UserColumns: ColumnDef<apiUserResType>[] = [
+export const getUserColumns = (
+  onEdit: (role: apiUserResType) => void,
+  onDelete: (role: apiUserResType) => void
+): ColumnDef<apiUserResType>[] => [
   // AVATAR
   {
     id: "avatar",
@@ -60,7 +63,7 @@ export const UserColumns: ColumnDef<apiUserResType>[] = [
     header: "Email",
     cell: ({ row }) => {
       const email = row.original.user?.email;
-      const showEmail = email.length > 0 ? email : "Đăng ký với fb";
+      const showEmail = email?.length > 0 ? email : "Đăng ký với fb";
       return (
         <>
           <div className="flex items-center gap-2">
@@ -116,6 +119,23 @@ export const UserColumns: ColumnDef<apiUserResType>[] = [
     },
   },
 
+  {
+    id: "roleID",
+    header: "Vai trò",
+    cell: ({ row }) => {
+      const roleName = row.original.user?.roleID.name.vi;
+      return (
+        <>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-foreground truncate max-w-[200px]">
+              {roleName}
+            </span>
+          </div>
+        </>
+      );
+    },
+  },
+
   // Trạng thái
   {
     id: "isDeleted",
@@ -143,7 +163,7 @@ export const UserColumns: ColumnDef<apiUserResType>[] = [
     header: "Thao tác",
     cell: ({ row }) => {
       const name = row.original.user?.name;
-
+      
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -163,13 +183,16 @@ export const UserColumns: ColumnDef<apiUserResType>[] = [
               </div>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onEdit(row.original)}>
               <div className="flex gap-3 items-center">
                 <User className="mr-2 h-4 w-4" />
                 Chi tiết
               </div>
             </DropdownMenuItem>
-            <DropdownMenuItem className="hover:!bg-red-500 text-red-500">
+            <DropdownMenuItem
+              className="hover:!bg-red-500 text-red-500"
+              onClick={() => onDelete(row.original)}
+            >
               <div className="flex gap-3 items-center ">
                 <Trash2 className="mr-2 h-4 w-4 hover:text-white" />
                 Xóa

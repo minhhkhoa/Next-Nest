@@ -15,6 +15,17 @@ export function useUpdateUserMutate() {
   });
 }
 
+export function useUpdateRoleMutate() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, roleID }: { id: string; roleID: string }) =>
+      userApiRequest.updateRole(id, roleID),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["getAllUserByFilter"] });
+    },
+  });
+}
+
 export const useGetAllUserByFilter = ({
   currentPage,
   pageSize,
@@ -45,5 +56,15 @@ export const useGetAllUserByFilter = ({
         email,
         address,
       }),
+  });
+};
+
+export const useDeleteUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => userApiRequest.deleteUser(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["getAllUserByFilter"] });
+    },
   });
 };

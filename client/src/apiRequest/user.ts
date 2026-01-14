@@ -10,6 +10,9 @@ const userApiRequest = {
   update: (id: string, payload: UpdateUserType) =>
     http.patch<ApiResponse<any>>(`${prefix}/${id}`, payload),
 
+  updateRole: (id: string, roleID: string) =>
+    http.patch<ApiResponse<any>>(`${prefix}/${id}/role`, { roleID }),
+
   getAllUserByFilter: (params: {
     currentPage: number;
     pageSize: number;
@@ -20,6 +23,8 @@ const userApiRequest = {
     http.get<ApiResponse<GetAllUserByFilterResType>>(`${prefix}/filter`, {
       params,
     }),
+
+  deleteUser: (id: string) => http.delete<ApiResponse<any>>(`${prefix}/${id}`),
 };
 
 export default userApiRequest;

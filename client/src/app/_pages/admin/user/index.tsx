@@ -1,21 +1,35 @@
 "use client";
 
-import { useGetAllUserByFilter } from "@/queries/useUser";
+import { useDeleteUser, useGetAllUserByFilter } from "@/queries/useUser";
 import React from "react";
 import TableUser from "./TableUser";
-import { UserColumns } from "./UserColumns";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "use-debounce";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
+import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
+import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
+import { apiUserResType } from "@/schemasvalidation/user";
+import { getUserColumns } from "./UserColumns";
+import { DeleteConfirmModal } from "../NewsCategory/components/modals/delete-confirm-modal";
 
 export default function UserPageManagement() {
   const [currentPage, setCurrentPage] = React.useState(1);
   const [searchName, setSearchName] = React.useState("");
   const [searchEmail, setSearchEmail] = React.useState("");
   const [searchAddress, setSearchAddress] = React.useState("");
+
+  const [userModalState, setUserModalState] = React.useState<{
+    isOpen: boolean;
+    data?: apiUserResType;
+  }>({ isOpen: false });
+
+  const [deleteModal, setDeleteModal] = React.useState<{
+    isOpen: boolean;
+    id: string;
+  }>({ isOpen: false, id: "" });
 
   const [debouncedSearchName] = useDebounce(searchName, 500);
   const [debouncedSearchEmail] = useDebounce(searchEmail, 500);
@@ -45,6 +59,33 @@ export default function UserPageManagement() {
     }
   };
 
+  const { mutateAsync: deleteUserMutation, isPending: isDeleteRole } =
+    useDeleteUser();
+
+  const handleConfirmDelete = async () => {
+    try {
+      const res = await deleteUserMutation(deleteModal.id);
+
+      if (res.isError) SoftDestructiveSonner("Có lỗi xảy ra khi xóa quyền hạn");
+
+      SoftSuccessSonner(res.message);
+      setDeleteModal({ isOpen: false, id: "" });
+    } catch (error) {
+      SoftDestructiveSonner("Có lỗi xảy ra khi xóa quyền hạn");
+      console.log("error delete permission: ", error);
+    }
+  };
+
+  const handleOpenEditModal = (user: apiUserResType) => {
+    setUserModalState({ isOpen: true, data: user });
+  };
+
+  const handleOpenDeleteModal = (user: apiUserResType) => {
+    setDeleteModal({ isOpen: true, id: user.user._id });
+  };
+
+  const columns = getUserColumns(handleOpenEditModal, handleOpenDeleteModal);
+
   return (
     <div>
       <div className="mb-8">
@@ -56,13 +97,6 @@ export default function UserPageManagement() {
         <p className="text-muted-foreground">
           Tổng cộng {listUser?.data?.meta.totalItems} người dùng
         </p>
-      </div>
-
-      <div className="flex mb-3 flex-row-reverse">
-        <Button onClick={() => {}} className="w-full sm:w-auto flex items-center">
-          <Plus className="w-4 h-4 mr-2" />
-          Thêm người dùng
-        </Button>
       </div>
 
       <Card className="mb-6 border border-border !p-0">
@@ -116,7 +150,7 @@ export default function UserPageManagement() {
       {!isLoadingUser ? (
         <TableUser
           data={listUser?.data?.result ?? []}
-          columns={UserColumns}
+          columns={columns}
           meta={
             listUser?.data?.meta ?? {
               current: 0,
@@ -131,6 +165,16 @@ export default function UserPageManagement() {
         <div className="flex justify-center">
           <Spinner />
         </div>
+      )}
+
+      {/* modal confirm delete */}
+      {deleteModal.isOpen && (
+        <DeleteConfirmModal
+          title="Xóa vai trò"
+          isDeleting={isDeleteRole}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setDeleteModal({ isOpen: false, id: "" })}
+        />
       )}
     </div>
   );

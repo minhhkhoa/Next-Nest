@@ -9,7 +9,7 @@ import { Gender } from 'src/utils/typeSchemas';
 //- Định nghĩa các field có trong collection DetailProfile
 export class DetailProfile {
   @Prop()
-  @Prop({ type: [{ type: Types.ObjectId, ref: User.name }] }) //- tham chiếu tới user
+  @Prop({ type: Types.ObjectId, ref: User.name }) //- tham chiếu tới user
   userID: Types.ObjectId;
 
   @Prop()

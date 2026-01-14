@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateUserDto, RegisterDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument, UserResponse } from './schemas/user.schema';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 import { hashPassword } from 'src/utils/hashPassword';
@@ -20,6 +20,7 @@ export class UserService {
     private detailProfileService: DetailProfileService,
     private readonly configService: ConfigService,
     private readonly roleService: RolesService,
+    @InjectConnection() private readonly connection: mongoose.Connection,
   ) {}
   async create(createUserDto: CreateUserDto) {
     try {
@@ -282,6 +283,64 @@ export class UserService {
       return user;
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
+  // 1. Chức năng cập nhật duy nhất Vai trò
+  async updateUserRole(id: string, roleID: string) {
+    if (
+      !mongoose.Types.ObjectId.isValid(id) ||
+      !mongoose.Types.ObjectId.isValid(roleID)
+    ) {
+      throw new BadRequestCustom('ID không đúng định dạng');
+    }
+
+    const result = await this.userModel.updateOne(
+      { _id: id, isDeleted: false },
+      { $set: { roleID: roleID } },
+    );
+
+    if (result.modifiedCount === 0) {
+      throw new BadRequestCustom(
+        'Không tìm thấy người dùng hoặc vai trò không thay đổi',
+      );
+    }
+
+    return result;
+  }
+
+  // 2. Chức năng xóa mềm đồng bộ cả 2 collection user & detailProfile (Transaction)
+  async softDeleteUserAndProfile(id: string) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new BadRequestCustom('ID không đúng định dạng');
+    }
+
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
+    try {
+      // 1. Xóa mềm User
+      const userUpdate = await this.userModel.findOneAndUpdate(
+        { _id: id, isDeleted: false },
+        { $set: { isDeleted: true, deletedAt: new Date() } },
+        { session, new: true },
+      );
+
+      if (!userUpdate) {
+        throw new Error('Người dùng không tồn tại hoặc đã bị xóa');
+      }
+
+      // 2. Gọi hàm xóa bên DetailProfileService và truyền session vào
+      await this.detailProfileService.softCheckDeleteByUserId(id, session);
+
+      // Hoàn tất transaction
+      await session.commitTransaction();
+      return { message: 'Đã xóa đồng bộ User và Profile' };
+    } catch (error) {
+      await session.abortTransaction();
+      throw new BadRequestCustom(error.message);
+    } finally {
+      session.endSession();
     }
   }
 

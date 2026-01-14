@@ -1,7 +1,6 @@
 import z from "zod";
 import { MultiLang } from "./trans";
 import { MetaFilter } from "./NewsCategory";
-import { is } from "zod/v4/locales";
 
 export const apiRoleRes = z.object({
   _id: z.string(),
