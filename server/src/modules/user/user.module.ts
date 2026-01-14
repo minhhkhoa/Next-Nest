@@ -5,10 +5,12 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './schemas/user.schema';
 import { DetailProfileModule } from 'src/modules/detail-profile/detail-profile.module';
 import { BusinessModule } from 'src/common/decorator/customize';
+import { RolesModule } from '../roles/roles.module';
 
 @BusinessModule()
 @Module({
   imports: [
+    RolesModule,
     DetailProfileModule,
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],

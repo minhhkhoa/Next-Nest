@@ -1,14 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, Profile } from 'passport-facebook';
 import { AuthService } from '../auth.service';
 import { ConfigService } from '@nestjs/config';
+import { RolesService } from 'src/modules/roles/roles.service';
 
 @Injectable()
 export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
   constructor(
     private authService: AuthService,
     private configService: ConfigService,
+    private roleService: RolesService,
   ) {
     super({
       clientID: configService.get<string>('FACEBOOK_CLIENT_ID') as string,
@@ -33,6 +35,12 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
   async validate(accessToken: string, refreshToken: string, profile: Profile) {
     const { name, emails, photos, id } = profile;
 
+    //- gán quyền là người dùng bình thường
+    const nameRole = this.configService.get<string>('role_gest') as string;
+    const idRole = await this.roleService.getRoleByName(nameRole);
+
+    if (!idRole) throw new BadRequestException('Role không tồn tại');
+
     const userData = {
       provider: 'facebook',
       providerId: id,
@@ -40,6 +48,7 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
       firstName: name?.givenName,
       lastName: name?.familyName,
       avatar: photos?.[0]?.value,
+      roleID: idRole._id,
     };
 
     return userData; //- gắn vào req.user

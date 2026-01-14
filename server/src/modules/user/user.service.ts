@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateUserDto, RegisterDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
@@ -9,6 +9,8 @@ import { hashPassword } from 'src/utils/hashPassword';
 import mongoose from 'mongoose';
 import { DetailProfileService } from 'src/modules/detail-profile/detail-profile.service';
 import { FindUserQueryDto } from './dto/userDto.dto';
+import { ConfigService } from '@nestjs/config';
+import { RolesService } from '../roles/roles.service';
 
 @Injectable()
 export class UserService {
@@ -16,6 +18,8 @@ export class UserService {
     @InjectModel(User.name)
     private userModel: SoftDeleteModel<UserDocument>,
     private detailProfileService: DetailProfileService,
+    private readonly configService: ConfigService,
+    private readonly roleService: RolesService,
   ) {}
   async create(createUserDto: CreateUserDto) {
     try {
@@ -244,16 +248,30 @@ export class UserService {
 
   //- func register
   async register(registerDto: RegisterDto) {
-    if (!registerDto) return;
+    try {
+      if (!registerDto) return;
 
-    const user = await this.userModel.create(registerDto);
+      //- khi đăng ký người dùng bình thường
+      const nameRole = this.configService.get<string>('role_gest') as string;
+      const idRole = await this.roleService.getRoleByName(nameRole);
 
-    //- đồng thời tạo luôn detail profile cho người dùng
-    await this.detailProfileService.createAuto({
-      userID: user._id.toString(),
-    });
+      if (!idRole) throw new BadRequestException('Role không tồn tại');
 
-    return user;
+      const user = await this.userModel.create({
+        ...registerDto,
+        roleID: idRole,
+        companyID: null,
+      });
+
+      //- đồng thời tạo luôn detail profile cho người dùng
+      await this.detailProfileService.createAuto({
+        userID: user._id.toString(),
+      });
+
+      return user;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
   }
 
   async remove(id: string) {

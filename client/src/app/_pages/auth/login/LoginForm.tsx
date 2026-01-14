@@ -78,17 +78,32 @@ export default function LoginForm() {
 
     if (popup) {
       const handleMessage = (event: MessageEvent) => {
-        if (event.origin !== envConfig.NEXT_PUBLIC_API_URL_SERVER) return;
+        // 1. Chuyển "http://localhost:2302/api" thành "http://localhost:2302"
+        const serverOrigin = new URL(envConfig.NEXT_PUBLIC_API_URL_SERVER)
+          .origin;
+
+        // 2. So sánh origin chuẩn
+        if (event.origin !== serverOrigin) {
+          console.warn(
+            "Origin không khớp:",
+            event.origin,
+            "kỳ vọng:",
+            serverOrigin
+          );
+          return;
+        }
+
         const { token, error } = event.data;
 
         if (token) {
-          console.log("[OAuth] Received token:", token);
           setAccessTokenToLocalStorage(token);
+
+          // Xử lý dọn dẹp
           popup.close();
           window.removeEventListener("message", handleMessage);
-          setLogin(true);
 
-          //- chuyen trang
+          // Cập nhật trạng thái và điều hướng
+          setLogin(true);
           router.push("/");
           SoftSuccessSonner(`Đăng nhập với ${provider} thành công!`);
         }

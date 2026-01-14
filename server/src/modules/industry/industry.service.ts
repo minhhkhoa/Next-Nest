@@ -61,7 +61,7 @@ export class IndustryService {
       .find(filter) //- nó tự động bỏ document có isDeleted: true.
       .skip(offset)
       .limit(defaultLimit)
-      .sort(sort as any)
+      .sort('-createdAt')
       .populate(population)
       .exec();
 

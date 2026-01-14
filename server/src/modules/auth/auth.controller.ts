@@ -26,11 +26,15 @@ import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { ConfigService } from '@nestjs/config';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Public()
   @UseGuards(LocalAuthGuard)
@@ -139,8 +143,8 @@ export class AuthController {
         email: req.user.email || '',
         name: req.user.firstName + ' ' + req.user.lastName,
         avatar: req.user.avatar,
-        companyID: req.user.companyID || [],
-        roleID: req.user.roleID || [],
+        companyID: req.user.companyID ?? null,
+        roleID: req.user.roleID,
       };
 
       const loginUser = await this.authService.loginWithSocial(
@@ -149,6 +153,9 @@ export class AuthController {
         'facebook',
       );
       const access_token = loginUser.access_token;
+      const clientUrl = this.configService.get<string>(
+        'FRONTEND_URL',
+      ) as string;
 
       const html = `
       <html>
@@ -156,7 +163,7 @@ export class AuthController {
           <script>
             window.opener.postMessage(
               { token: "${access_token}" },
-              "http://localhost:3000"
+              "${clientUrl}"
             );
             window.close();
           </script>
@@ -205,8 +212,8 @@ export class AuthController {
         email: req.user.email || '',
         name: req.user.name,
         avatar: req.user.avatar,
-        companyID: req.user.companyID || [],
-        roleID: req.user.roleID || [],
+        companyID: req.user.companyID ?? null,
+        roleID: req.user.roleID,
       };
 
       //- để cho đỡ rối, lần này sẽ xử lý hết ở đây

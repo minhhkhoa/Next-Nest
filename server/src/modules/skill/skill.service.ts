@@ -82,7 +82,7 @@ export class SkillService {
         .find(filterConditions)
         .skip(offset)
         .limit(defaultLimit)
-        .sort(sort as any)
+        .sort('-createdAt')
         .populate({
           path: 'industryID',
           select: '_id name parentId', // chỉ lấy những field cần

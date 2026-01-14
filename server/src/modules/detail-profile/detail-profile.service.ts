@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { AutoCreateDetailProfileDto, CreateDetailProfileDto } from './dto/create-detail-profile.dto';
+import {
+  AutoCreateDetailProfileDto,
+  CreateDetailProfileDto,
+} from './dto/create-detail-profile.dto';
 import { UpdateDetailProfileDto } from './dto/update-detail-profile.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import {
@@ -50,10 +53,8 @@ export class DetailProfileService {
     if (email) userMatch['user.email'] = { $regex: email, $options: 'i' };
 
     const pipeline: any[] = [
-      // 1️⃣ Filter profile
       { $match: profileMatch },
 
-      // 2️⃣ ÉP KIỂU userID (FIX LỖI CHÍNH)
       {
         $addFields: {
           userObjectId: {
@@ -66,7 +67,6 @@ export class DetailProfileService {
         },
       },
 
-      // 3️⃣ Join User
       {
         $lookup: {
           from: 'users',
@@ -76,7 +76,6 @@ export class DetailProfileService {
         },
       },
 
-      // 4️⃣ Unwind KHÔNG GIẾT DATA
       {
         $unwind: {
           path: '$user',
@@ -84,10 +83,8 @@ export class DetailProfileService {
         },
       },
 
-      // 5️⃣ Filter theo user
       Object.keys(userMatch).length ? { $match: userMatch } : null,
 
-      // 6️⃣ Pagination + total
       {
         $facet: {
           data: [

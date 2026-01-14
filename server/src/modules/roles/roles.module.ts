@@ -14,5 +14,6 @@ import { BusinessModule } from 'src/common/decorator/customize';
   ],
   controllers: [RolesController],
   providers: [RolesService],
+  exports: [RolesService],
 })
 export class RolesModule {}

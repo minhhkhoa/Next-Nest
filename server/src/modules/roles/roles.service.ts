@@ -44,6 +44,17 @@ export class RolesService {
     }
   }
 
+  async getRoleByName(name: string) {
+    try {
+      const role = await this.roleModel.findOne({
+        $or: [{ 'name.vi': name }, { 'name.en': name }],
+      });
+      return role;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
   async findAll() {
     try {
       return await this.roleModel.find({ isDeleted: false });
@@ -83,7 +94,7 @@ export class RolesService {
         .find(filterConditions)
         .skip(offset)
         .limit(defaultLimit)
-        .sort(sort as any)
+        .sort('-createdAt')
         .exec();
 
       return {

@@ -11,11 +11,13 @@ import * as ms from 'ms';
 import { FacebookStrategy } from './passport-strategy/facebook.strategy';
 import { GoogleStrategy } from './passport-strategy/google.strategy';
 import { MailModule } from 'src/modules/mail/mail.module';
+import { RolesModule } from '../roles/roles.module';
 
 @Module({
   imports: [
     UserModule,
     PassportModule,
+    RolesModule,
     MailModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
