@@ -27,6 +27,13 @@ const roleApiRequest = {
     http.patch<ApiResponse<any>>(`${prefix}/${id}`, payload),
 
   deleteRole: (id: string) => http.delete<ApiResponse<any>>(`${prefix}/${id}`),
+
+  deleteManyRole: (ids: string[]) =>
+    http.delete<ApiResponse<any>>(`${prefix}/deleteMany`, {
+      data: {
+        ids,
+      },
+    }),
 };
 
 export default roleApiRequest;

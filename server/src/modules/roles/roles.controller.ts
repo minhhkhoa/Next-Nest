@@ -13,7 +13,7 @@ import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ResponseMessage, userDecorator } from 'src/common/decorator/customize';
-import { FindRoleQueryDto } from './dto/roleDto.dto';
+import { DeleteManyRoleDto, FindRoleQueryDto } from './dto/roleDto.dto';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 
 @ApiTags('role')
@@ -61,6 +61,16 @@ export class RolesController {
     @userDecorator() user: UserDecoratorType,
   ) {
     return this.rolesService.update(id, updateRoleDto, user);
+  }
+
+  @ResponseMessage('Xóa nhiều vai trò thành công')
+  @ApiOperation({ summary: 'Xóa nhiều vai trò' })
+  @Delete('deleteMany')
+  removeMany(
+    @Body() deleteDto: DeleteManyRoleDto,
+    @userDecorator() user: UserDecoratorType,
+  ) {
+    return this.rolesService.removeMany(deleteDto.ids, user);
   }
 
   @ResponseMessage('Xóa vai trò thành công')

@@ -62,3 +62,14 @@ export const useDeleteRole = () => {
     },
   });
 };
+
+export const useDeleteManyRole = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: roleApiRequest.deleteManyRole,
+    onSuccess: () => {
+      //- gọi lại api khi cập nhật thông tin
+      queryClient.invalidateQueries({ queryKey: ["getRole_filter"] });
+    },
+  });
+};

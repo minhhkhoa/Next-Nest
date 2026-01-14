@@ -108,8 +108,7 @@ export class RolesService {
 
       const role = await this.roleModel.findById(id);
 
-      if (!role)
-        throw new BadRequestCustom('ID quyền hạn không tìm thấy', !!id);
+      if (!role) throw new BadRequestCustom('ID vai trò không tìm thấy', !!id);
 
       return role;
     } catch (error) {
@@ -182,6 +181,62 @@ export class RolesService {
 
       return result;
     } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
+  async removeMany(ids: string[], user: UserDecoratorType) {
+    try {
+      if (!Array.isArray(ids)) {
+        throw new BadRequestCustom(
+          'Dữ liệu đầu vào không hợp lệ. `ids` phải là một mảng.',
+          true,
+        );
+      }
+      //- Validate all IDs
+      const validIds = ids.filter((id) => mongoose.Types.ObjectId.isValid(id));
+      if (validIds.length === 0) {
+        throw new BadRequestCustom(
+          'Không có ID hợp lệ nào được cung cấp.',
+          true,
+        );
+      }
+
+      const result = await this.roleModel.updateMany(
+        { _id: { $in: validIds } },
+        {
+          $set: {
+            isDeleted: true,
+            deletedAt: new Date(),
+            deletedBy: {
+              _id: user.id,
+              name: user.name,
+              email: user.email,
+            },
+          },
+        },
+      );
+
+      if (result.modifiedCount === 0) {
+        return {
+          message:
+            'Không có vai trò nào được xóa. Có thể chúng đã bị xóa trước đó hoặc không tồn tại.',
+          data: {
+            deletedCount: 0,
+          },
+        };
+      }
+
+      return {
+        message: `Đã xóa thành công ${result.modifiedCount} vai trò.`,
+        data: {
+          deletedCount: result.modifiedCount,
+        },
+      };
+    } catch (error) {
+      if (error instanceof BadRequestCustom) {
+        throw error;
+      }
       throw new BadRequestCustom(error.message, !!error.message);
     }
   }
