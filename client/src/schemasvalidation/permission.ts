@@ -52,3 +52,5 @@ export const permissionCreate = z.object({
 });
 
 export type PermissionCreateType = z.infer<typeof permissionCreate>;
+
+export type GroupedPermissionRes = Record<string, PermissionResType[]>;

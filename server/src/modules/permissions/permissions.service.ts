@@ -6,9 +6,7 @@ import { Permission, PermissionDocument } from './schemas/permission.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
-import {
-  FindPermissionQueryDto,
-} from './dto/permissionDto.dto';
+import { FindPermissionQueryDto } from './dto/permissionDto.dto';
 import aqp from 'api-query-params';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import mongoose from 'mongoose';
@@ -110,6 +108,26 @@ export class PermissionsService {
         },
         result,
       };
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
+  async getGroupModule() {
+    try {
+      //- gom nhóm các module lại với nhau
+      const permissions = await this.permissionModel.find({});
+
+      const groupedPermissions = permissions.reduce((acc, permission) => {
+        const moduleName = permission.module;
+        if (!acc[moduleName]) {
+          acc[moduleName] = [];
+        }
+        acc[moduleName].push(permission);
+        return acc;
+      }, {});
+
+      return groupedPermissions;
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }

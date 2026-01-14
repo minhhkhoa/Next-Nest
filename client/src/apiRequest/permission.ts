@@ -1,5 +1,6 @@
 import http from "@/lib/http";
 import {
+  GroupedPermissionRes,
   PermissionCreateType,
   PermissionResType,
   PermissionResTypeFilter,
@@ -18,6 +19,9 @@ const permissionApiRequest = {
     http.get<ApiResponse<PermissionResTypeFilter>>(`${prefix}/filter`, {
       params,
     }),
+
+  getGroupModule: () =>
+    http.get<ApiResponse<GroupedPermissionRes>>(`${prefix}/get-group-module`),
 
   getAllModuleBussiness: () =>
     http.get<ApiResponse<Array<string>>>(`${prefix}/modules`),

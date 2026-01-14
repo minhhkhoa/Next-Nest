@@ -17,7 +17,10 @@ import {
   ResponseMessage,
   userDecorator,
 } from 'src/common/decorator/customize';
-import { DeleteManyPermissionsDto, FindPermissionQueryDto } from './dto/permissionDto.dto';
+import {
+  DeleteManyPermissionsDto,
+  FindPermissionQueryDto,
+} from './dto/permissionDto.dto';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { DiscoveryService } from './discovery.service';
 
@@ -51,6 +54,13 @@ export class PermissionsController {
   @Get('filter')
   findByFilter(@Query() query: FindPermissionQueryDto) {
     return this.permissionsService.findByFilter(query);
+  }
+
+  @ResponseMessage('Gom nhóm quyền hạn theo module thành công')
+  @ApiOperation({ summary: 'get group module permission' })
+  @Get('get-group-module')
+  getGroupModule() {
+    return this.permissionsService.getGroupModule();
   }
 
   @Get('modules')
