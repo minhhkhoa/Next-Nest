@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -71,12 +71,11 @@ export function PermissionDialogForm({
 
   const handleSubmit = async (values: PermissionCreateType) => {
     // 1. Tạo payload mới, đảm bảo apiPath luôn có tiền tố "api/"
-    // Chúng ta dùng replace để tránh trường hợp bị lặp "api/api/" nếu có lỗi logic ở đâu đó
     const finalPayload = {
       ...values,
       apiPath: values.apiPath.startsWith("api/")
         ? values.apiPath
-        : `api/${values.apiPath.replace(/^\//, "")}`, // replace(/^\//, "") để bỏ dấu / dư thừa nếu user nhập "/users"
+        : `api/${values.apiPath.replace(/^\//, "")}`, // replace(/^\//, "") để bỏ dấu / dư thừa nếu người dùng nhập "/users"
     };
     try {
       if (permission) {

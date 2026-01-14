@@ -7,7 +7,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 import {
-  DeleteManyPermissionsDto,
   FindPermissionQueryDto,
 } from './dto/permissionDto.dto';
 import aqp from 'api-query-params';
