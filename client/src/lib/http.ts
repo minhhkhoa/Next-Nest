@@ -162,7 +162,7 @@ instance.interceptors.response.use(
         SoftDestructiveSonner(message);
         break;
       case 403:
-        console.error("Resource not found.");
+        SoftDestructiveSonner(message);
         break;
       case 404:
         console.error("Resource not found.");

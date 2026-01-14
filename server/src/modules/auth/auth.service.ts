@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -35,9 +36,9 @@ export class AuthService {
 
     if (!user) return null;
 
-    const isDeleted = user.isDeleted;
+    // const isDeleted = user.isDeleted;
 
-    if (isDeleted) return null;
+    // if (isDeleted) return null;
 
     //- tới được đây thì check pasword
     const { password } = user;
@@ -111,6 +112,13 @@ export class AuthService {
       //- B1: check xem có tài khoản chưa
       const userLoginSocial =
         await this.usersService.findUserByProviderIDSocial(idProvider);
+
+      //- check xem account có bị khóa không
+      if (userLoginSocial?.isDeleted) {
+        throw new ForbiddenException(
+          'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Admin để biết thêm chi tiết.',
+        );
+      }
 
       if (!userLoginSocial) {
         //- B2: tạo người dùng

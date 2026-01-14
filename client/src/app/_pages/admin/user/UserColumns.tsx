@@ -148,7 +148,7 @@ export const getUserColumns = (
           className="bg-destructive/10 text-destructive"
         >
           <UserX className="w-3 h-3 mr-1" />
-          Đã xóa
+          Đã khóa
         </Badge>
       ) : (
         <Badge variant="secondary" className="bg-chart-2/10 text-chart-2">

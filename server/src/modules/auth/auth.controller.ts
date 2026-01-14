@@ -175,23 +175,24 @@ export class AuthController {
       response.setHeader('Content-Type', 'text/html');
       return response.send(html);
     } catch (error) {
-      //- xử lý lỗi
-      const mess = error.message;
+      const message = error.message;
       const html = `
-        <html>
-          <body>
-            <script>
-              window.opener.postMessage(
-                { error: "${mess}" },
-                "http://localhost:3000"
-              );
-              window.close();
-            </script>
-          </body>
-        </html>
-      `;
+                <html>
+                  <body>
+                    <script>
+                      window.opener.postMessage(
+                        { 
+                          error: "${message}",
+                          status: "FORBIDDEN" 
+                        },
+                        "${this.configService.get('FRONTEND_URL')}"
+                      );
+                      window.close();
+                    </script>
+                  </body>
+                </html>
+              `;
       response.status(200).send(html);
-      return null;
     }
   }
 
@@ -242,23 +243,24 @@ export class AuthController {
       res.setHeader('Content-Type', 'text/html');
       return res.send(html);
     } catch (error) {
-      //- xử lý lỗi
-      const mess = error.message;
+      const message = error.message;
       const html = `
-        <html>
-          <body>
-            <script>
-              window.opener.postMessage(
-                { error: "${mess}" },
-                "http://localhost:3000"
-              );
-              window.close();
-            </script>
-          </body>
-        </html>
-      `;
+                <html>
+                  <body>
+                    <script>
+                      window.opener.postMessage(
+                        { 
+                          error: "${message}",
+                          status: "FORBIDDEN" 
+                        },
+                        "${this.configService.get('FRONTEND_URL')}"
+                      );
+                      window.close();
+                    </script>
+                  </body>
+                </html>
+              `;
       res.status(200).send(html);
-      return null;
     }
   }
 

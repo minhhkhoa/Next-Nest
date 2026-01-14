@@ -50,17 +50,21 @@ export default function LoginForm() {
   const router = useRouter();
 
   const onSubmit = async (data: LoginBodyType) => {
-    const result = await loginMutation(data);
-    if (result.statusCode === 201) {
-      const access_token = result?.data?.access_token as string;
+    try {
+      const result = await loginMutation(data);
+      if (result.statusCode === 201) {
+        const access_token = result?.data?.access_token as string;
 
-      //- ghi vao localStorage
-      setAccessTokenToLocalStorage(access_token);
-      setLogin(true);
+        //- ghi vao localStorage
+        setAccessTokenToLocalStorage(access_token);
+        setLogin(true);
 
-      //- chuyen trang
-      router.push("/");
-      SoftSuccessSonner("Đăng nhập thành công!");
+        //- chuyen trang
+        router.push("/");
+        SoftSuccessSonner("Đăng nhập thành công!");
+      }
+    } catch (error) {
+      console.log("error login: ", error);
     }
   };
 
