@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { ModulesContainer, Reflector } from '@nestjs/core';
 import { IS_BUSINESS_MODULE } from 'src/common/decorator/customize';
 
+//- lấy ra các module đang đánh dấu
+
 @Injectable()
 export class DiscoveryService {
   constructor(

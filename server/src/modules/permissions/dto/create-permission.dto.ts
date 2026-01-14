@@ -1,11 +1,15 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty } from "class-validator";
-import { typeMethods } from "src/utils/typeSchemas";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty } from 'class-validator';
+import { typeMethods } from 'src/utils/typeSchemas';
 
 export class CreatePermissionDto {
   @ApiProperty()
   @IsNotEmpty({ message: 'Tên quyền không được để trống' })
   name: string;
+
+  @ApiProperty()
+  @IsNotEmpty({ message: 'Mã quyền không được để trống' })
+  code: string;
 
   @ApiProperty()
   @IsNotEmpty({ message: 'apiPath không được để trống' })

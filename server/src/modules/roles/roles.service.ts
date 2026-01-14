@@ -55,6 +55,29 @@ export class RolesService {
     }
   }
 
+  async getPermissionsByRoleID(roleID: string) {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(roleID))
+        throw new BadRequestCustom('ID vai trò không đúng định dạng', !!roleID);
+
+      // Sử dụng populate để "điền đầy" dữ liệu từ collection permissions vào
+      const role = await this.roleModel
+        .findById(roleID)
+        .populate({
+          path: 'permissions',
+          select: 'code -_id',
+        })
+        .lean(); // Dùng lean để trả về Plain Object thay vì Mongoose Document
+
+      if (!role)
+        throw new BadRequestCustom('ID vai trò không tìm thấy', !!roleID);
+
+      return role.permissions || [];
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
   async findAll() {
     try {
       return await this.roleModel.find({ isDeleted: false });

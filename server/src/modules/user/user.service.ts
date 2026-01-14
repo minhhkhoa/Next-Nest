@@ -120,28 +120,39 @@ export class UserService {
             match: { isDeleted: false },
             select: 'name _id',
           },
-          // {
-          //   path: 'roleID',
-          //   match: { isDeleted: false },
-          //   select: 'name _id',
-          // },
+          {
+            path: 'roleID',
+            match: { isDeleted: false },
+            select: 'name _id',
+          },
         ])
         .select(
           getPassword
             ? 'password'
             : '-password -isDeleted -deletedAt -createdAt -updatedAt -__v',
-        );
+        )
+        .lean();
 
       if (!user) throw new BadRequestCustom('ID user không tìm thấy', !!id);
 
-      if (user?.isDeleted) {
-        throw new BadRequestCustom(
-          'user này hiện đã bị xóa',
-          !!user?.isDeleted,
-        );
+      if (user.isDeleted) {
+        throw new BadRequestCustom('user này hiện đã bị xóa', !!user.isDeleted);
       }
 
-      return user;
+      const roleID = (user.roleID as any)?._id?.toString();
+
+      if (!roleID) {
+        //- user có thể không có vai trò, nên sẽ gán quyền rỗng và trả về
+        (user as any).permissions = [];
+        return user;
+      }
+
+      const permissions = await this.roleService.getPermissionsByRoleID(roleID);
+
+      return {
+        ...user,
+        permissions: permissions, // Mảng chứa các ID permissions
+      };
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }

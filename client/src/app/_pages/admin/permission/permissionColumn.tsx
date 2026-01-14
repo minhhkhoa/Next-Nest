@@ -44,11 +44,25 @@ export const getPermissionColumns = (
     id: "name",
     header: () => <span className="!ml-5">Tên quyền hạn</span>,
     cell: ({ row }) => {
-      const email = row.original.name;
+      const name = row.original.name;
       return (
         <span className="text-sm text-foreground truncate max-w-[180px] !ml-5">
-          {email.vi}
+          {name.vi}
         </span>
+      );
+    },
+  },
+
+  //- code permission
+  {
+    id: "code",
+    header: () => <span className="!ml-5">Mã quyền hạn</span>,
+    cell: ({ row }) => {
+      const code = row.original.code;
+      return (
+        <code className="text-sm text-foreground truncate max-w-[180px] !ml-5">
+          {code}
+        </code>
       );
     },
   },

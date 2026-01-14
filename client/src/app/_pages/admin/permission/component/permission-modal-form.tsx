@@ -56,6 +56,7 @@ export function PermissionDialogForm({
     resolver: zodResolver(permissionCreate),
     defaultValues: {
       name: "",
+      code: "",
       apiPath: "",
       method: "GET",
       module: "",
@@ -105,11 +106,14 @@ export function PermissionDialogForm({
   useEffect(() => {
     if (permission) {
       form.reset({
-        name: permission.name.vi,
-        // Loại bỏ api/ khi đưa vào input để tránh hiển thị thành api/api/users
-        apiPath: permission.apiPath.replace(/^api\//, ""),
-        method: permission.method,
-        module: permission.module,
+        // Đảm bảo lấy đúng giá trị vi và không bao giờ để undefined
+        name: permission.name?.vi ?? "",
+        code: permission.code ?? "",
+        // Loại bỏ api/ và phòng hờ apiPath bị null
+        apiPath: (permission.apiPath ?? "").replace(/^api\//, ""),
+        method: permission.method ?? "GET",
+        // Trường module rất hay bị undefined nếu DB chưa chuẩn, cần ép về ""
+        module: permission.module ?? "",
       });
     }
   }, [permission, form]);
@@ -141,6 +145,20 @@ export function PermissionDialogForm({
                   <FormLabel>Tên quyền hạn</FormLabel>
                   <FormControl>
                     <Input placeholder="Nhập tên quyền hạn" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="code"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Mã quyền hạn</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Nhập mã quyền hạn" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

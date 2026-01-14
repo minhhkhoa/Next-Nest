@@ -5,6 +5,7 @@ import { MetaFilter } from "./NewsCategory";
 export const apiPermissionRes = z.object({
   _id: z.string(),
   name: MultiLang,
+  code: z.string(),
   apiPath: z.string(),
   method: z.string(),
   module: z.string(),
@@ -46,6 +47,7 @@ export const permissionCreate = z.object({
     .min(1, "Tên quyền hạn không được để trống")
     .min(2, "Tên quyền hạn phải có ít nhất 2 ký tự")
     .max(100, "Tên quyền hạn không được quá 100 ký tự"),
+  code: z.string().min(1, "Mã quyền hạn không được để trống"),
   apiPath: z.string().min(1, "apiPath quyền hạn không được để trống"),
   method: z.string().min(1, "Phương thức quyền hạn không được để trống"),
   module: z.string().min(1, "Module quyền hạn không được để trống"),

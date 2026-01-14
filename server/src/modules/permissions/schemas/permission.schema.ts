@@ -7,6 +7,9 @@ export class Permission {
   @Prop({ type: MultiLang })
   name: MultiLang;
 
+  @Prop({ required: true, unique: true })
+  code: string;
+
   @Prop()
   apiPath: string;
 

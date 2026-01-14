@@ -70,6 +70,7 @@ export class AuthController {
       const id = user.id;
 
       const userProfile = await this.authService.getProfile(id);
+
       return {
         user: userProfile,
       };
