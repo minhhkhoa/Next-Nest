@@ -11,7 +11,6 @@ import {
   useGetAllModuleBussiness,
   useGetPermissionFilter,
 } from "@/queries/permission";
-import { envConfig } from "../../../../../config";
 import { getPermissionColumns } from "./permissionColumn";
 import { Spinner } from "@/components/ui/spinner";
 import { PermissionDialogForm } from "./component/permission-modal-form";
