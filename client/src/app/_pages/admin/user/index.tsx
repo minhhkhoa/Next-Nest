@@ -14,6 +14,8 @@ import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonn
 import { apiUserResType } from "@/schemasvalidation/user";
 import { getUserColumns } from "./UserColumns";
 import { DeleteConfirmModal } from "../NewsCategory/components/modals/delete-confirm-modal";
+import { useGetAllRole } from "@/queries/role";
+import { UserDialogForm } from "./components/user-modal-form";
 
 export default function UserPageManagement() {
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -42,6 +44,8 @@ export default function UserPageManagement() {
     email: debouncedSearchEmail,
     address: debouncedSearchAddress,
   });
+
+  const { data: listRoles, isLoading: isLoadingRoles } = useGetAllRole();
 
   const changeTypeSearch = (type: string, value: string) => {
     switch (type) {
@@ -165,6 +169,14 @@ export default function UserPageManagement() {
         <div className="flex justify-center">
           <Spinner />
         </div>
+      )}
+
+      {userModalState.isOpen && (
+        <UserDialogForm
+          onClose={() => setUserModalState({ isOpen: false })}
+          data={userModalState.data!}
+          listRoles={listRoles?.data ?? []}
+        />
       )}
 
       {/* modal confirm delete */}

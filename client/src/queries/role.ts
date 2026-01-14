@@ -10,6 +10,13 @@ export const useGetDetaiRole = (id: string) => {
   });
 };
 
+export const useGetAllRole = () => {
+  return useQuery({
+    queryKey: ["getAllRole"],
+    queryFn: roleApiRequest.getAllRole,
+  });
+};
+
 export const useGetRoleFilter = ({
   currentPage,
   pageSize,

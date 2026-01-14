@@ -8,6 +8,8 @@ import { ApiResponse } from "@/types/apiResponse";
 
 const prefix = "/role";
 const roleApiRequest = {
+  getAllRole: () => http.get<ApiResponse<RoleResType[]>>(`${prefix}`),
+
   getRoleFilter: (params: {
     currentPage: number;
     pageSize: number;

@@ -309,6 +309,41 @@ export class UserService {
     return result;
   }
 
+  async restoreUserAndProfile(id: string) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new BadRequestCustom('ID không đúng định dạng');
+    }
+
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
+    try {
+      // 1. Khôi phục User
+      const user = await this.userModel.findOneAndUpdate(
+        { _id: id, isDeleted: true },
+        { $set: { isDeleted: false, deletedAt: null } },
+        { session, new: true },
+      );
+
+      if (!user) {
+        throw new Error(
+          'Không tìm thấy người dùng bị xóa hoặc tài khoản đang hoạt động',
+        );
+      }
+
+      // 2. Gọi Service khôi phục Profile (Sửa lỗi báo đỏ ở đây)
+      await this.detailProfileService.restoreByUserId(id, session);
+
+      await session.commitTransaction();
+      return { message: 'Khôi phục tài khoản thành công' };
+    } catch (error) {
+      await session.abortTransaction();
+      throw new BadRequestCustom(error.message);
+    } finally {
+      session.endSession();
+    }
+  }
+
   // 2. Chức năng xóa mềm đồng bộ cả 2 collection user & detailProfile (Transaction)
   async softDeleteUserAndProfile(id: string) {
     if (!mongoose.Types.ObjectId.isValid(id)) {

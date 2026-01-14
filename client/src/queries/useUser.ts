@@ -26,6 +26,18 @@ export function useUpdateRoleMutate() {
   });
 }
 
+export const useRestoreUser = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => userApiRequest.restore(id),
+    onSuccess: () => {
+      // Làm tươi lại danh sách người dùng sau khi khôi phục thành công
+      queryClient.invalidateQueries({ queryKey: ["getAllUserByFilter"] });
+    },
+  });
+};
+
 export const useGetAllUserByFilter = ({
   currentPage,
   pageSize,

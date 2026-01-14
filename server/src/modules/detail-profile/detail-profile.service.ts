@@ -43,7 +43,7 @@ export class DetailProfileService {
     const skip = (page - 1) * limit;
 
     // 1. Điều kiện lọc cho Profile
-    const profileMatch: any = { };
+    const profileMatch: any = {};
     if (address) {
       profileMatch.address = { $regex: address, $options: 'i' };
     }
@@ -238,6 +238,16 @@ export class DetailProfileService {
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }
+  }
+
+  // src/modules/detail-profile/detail-profile.service.ts
+
+  async restoreByUserId(userID: string, session: mongoose.ClientSession) {
+    return await this.detailProfileModel.findOneAndUpdate(
+      { userID: userID },
+      { $set: { isDeleted: false, deletedAt: null } },
+      { session, new: true },
+    );
   }
 
   async softCheckDeleteByUserId(

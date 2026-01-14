@@ -13,6 +13,9 @@ const userApiRequest = {
   updateRole: (id: string, roleID: string) =>
     http.patch<ApiResponse<any>>(`${prefix}/${id}/role`, { roleID }),
 
+  restore: (id: string) =>
+    http.patch<ApiResponse<any>>(`${prefix}/${id}/restore`, {}),
+
   getAllUserByFilter: (params: {
     currentPage: number;
     pageSize: number;

@@ -62,6 +62,12 @@ export class UserController {
     return this.userService.updateUserRole(id, roleID);
   }
 
+  @Patch(':id/restore')
+  @ResponseMessage('Khôi phục tài khoản thành công')
+  restoreUser(@Param('id') id: string) {
+    return this.userService.restoreUserAndProfile(id);
+  }
+
   @ResponseMessage('Cập nhật thông tin người dùng thành công')
   @ApiOperation({ summary: 'update user' })
   @Patch(':id')
