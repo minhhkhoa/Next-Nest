@@ -10,6 +10,13 @@ export const useGetDetaiPermission = (id: string) => {
   });
 };
 
+export const useGetGroupModule = () => {
+  return useQuery({
+    queryKey: ["getGroupModule"],
+    queryFn: permissionApiRequest.getGroupModule,
+  });
+};
+
 export const useGetAllModuleBussiness = () => {
   return useQuery({
     queryKey: ["getAllModuleBussiness"],

@@ -1,6 +1,7 @@
 import z from "zod";
 import { MultiLang } from "./trans";
 import { MetaFilter } from "./NewsCategory";
+import { is } from "zod/v4/locales";
 
 export const apiRoleRes = z.object({
   _id: z.string(),
@@ -47,6 +48,7 @@ export const roleCreate = z.object({
     .min(1, "Tên vai trò không được để trống")
     .min(2, "Tên vai trò phải có ít nhất 2 ký tự")
     .max(100, "Tên vai trò không được quá 100 ký tự"),
+  isActived: z.boolean(),
   description: z.string().min(1, "apiPath vai trò không được để trống"),
   permissions: z.array(z.string()),
 });

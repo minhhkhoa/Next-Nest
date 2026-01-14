@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useGetRoleFilter } from "@/queries/role";
+import { useDeleteRole, useGetRoleFilter } from "@/queries/role";
 import { RoleResType } from "@/schemasvalidation/role";
 import { Plus, Trash2 } from "lucide-react";
 import React, { useState } from "react";
@@ -11,6 +11,10 @@ import { Spinner } from "@/components/ui/spinner";
 import { getRoleColumns } from "./roleColumn";
 import TableRole from "./tableRole";
 import { DeleteConfirmModal } from "../NewsCategory/components/modals/delete-confirm-modal";
+import { RoleDialogForm } from "./components/role-modal-form";
+import { useGetGroupModule } from "@/queries/permission";
+import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
+import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 
 export default function PageRole() {
   const [filtersName, setFiltersName] = useState("");
@@ -34,6 +38,25 @@ export default function PageRole() {
     pageSize: 5,
     name: debouncedSearchName,
   });
+
+  const { data: listModules } = useGetGroupModule();
+
+  const { mutateAsync: deleteRoleMutation, isPending: isDeleteRole } =
+    useDeleteRole();
+
+  const handleConfirmDelete = async () => {
+    try {
+      const res = await deleteRoleMutation(deleteModal.id);
+
+      if (res.isError) SoftDestructiveSonner("Có lỗi xảy ra khi xóa quyền hạn");
+
+      SoftSuccessSonner(res.message);
+      setDeleteModal({ isOpen: false, id: "" });
+    } catch (error) {
+      SoftDestructiveSonner("Có lỗi xảy ra khi xóa quyền hạn");
+      console.log("error delete permission: ", error);
+    }
+  };
 
   const handleOpenEditModal = (role: RoleResType) => {
     setRoleModalState({ isOpen: true, data: role });
@@ -112,23 +135,23 @@ export default function PageRole() {
         )}
       </div>
       {/* Dialog */}
-      {/* {permissionModalState.isOpen && (
-        <PermissionDialogForm
-          onClose={() => setPermissionModalState({ isOpen: false })}
-          permission={permissionModalState.data}
-          listModules={listModules?.data ?? []}
+      {roleModalState.isOpen && (
+        <RoleDialogForm
+          onClose={() => setRoleModalState({ isOpen: false })}
+          role={roleModalState.data}
+          groupModules={listModules?.data || {}}
         />
-      )} */}
+      )}
 
       {/* modal confirm delete */}
-      {/* {deleteModal.isOpen && (
+      {deleteModal.isOpen && (
         <DeleteConfirmModal
           title="Xóa vai trò"
           isDeleting={isDeleteRole}
           onConfirm={handleConfirmDelete}
           onCancel={() => setDeleteModal({ isOpen: false, id: "" })}
         />
-      )} */}
+      )}
     </div>
   );
 }
