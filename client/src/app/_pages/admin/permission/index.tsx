@@ -50,7 +50,7 @@ export default function PagePermission() {
   const { data: listPermissions, isLoading: isLoadingPermission } =
     useGetPermissionFilter({
       currentPage,
-      pageSize: 5,
+      pageSize: 8,
       name: debouncedSearchName,
       method: debouncedSearchMethod,
       module: debouncedSearchModule,

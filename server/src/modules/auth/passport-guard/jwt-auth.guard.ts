@@ -30,6 +30,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     if (err || !user) {
       throw err || new UnauthorizedException();
     }
-    return user;
+    return user;//- gán lại vào req.user và đi về controller
   }
 }

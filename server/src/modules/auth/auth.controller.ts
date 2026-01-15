@@ -27,6 +27,7 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ConfigService } from '@nestjs/config';
+import { RolesService } from '../roles/roles.service';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -34,6 +35,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
+    private roleService: RolesService,
   ) {}
 
   @Public()
@@ -44,6 +46,9 @@ export class AuthController {
     @Request() req: any, //- nó lấy từ req.user của middleware LocalAuthGuard
     @Res({ passthrough: true }) response: Response,
   ) {
+    const idRoleUser = req.user.roleID.toString();
+    const roleSchema = await this.roleService.findOne(idRoleUser);
+    const roleCodeName = roleSchema.name.vi;
     //- truyền response sang để lưu cookie
     const user: UserResponse = {
       id: req.user._id.toString(),
@@ -52,6 +57,7 @@ export class AuthController {
       avatar: req.user.avatar,
       companyID: req.user.companyID,
       roleID: req.user.roleID,
+      roleCodeName: roleCodeName,
     };
     return this.authService.login(user, response);
   }
@@ -139,6 +145,10 @@ export class AuthController {
   @UseGuards(FacebookAuthGuard)
   async facebookLoginCallback(@Req() req, @Res() response: Response) {
     try {
+      const idRoleUser = req.user.roleID.toString();
+      const roleSchema = await this.roleService.findOne(idRoleUser);
+      const roleCodeName = roleSchema.name.vi;
+
       const user: UserResponse = {
         id: req.user.providerId,
         email: req.user.email || '',
@@ -146,6 +156,7 @@ export class AuthController {
         avatar: req.user.avatar,
         companyID: req.user.companyID ?? null,
         roleID: req.user.roleID,
+        roleCodeName: roleCodeName,
       };
 
       const loginUser = await this.authService.loginWithSocial(
@@ -209,6 +220,10 @@ export class AuthController {
   @UseGuards(GoogleAuthGuard)
   async googleLoginCallback(@Req() req, @Res() res: Response) {
     try {
+      const idRoleUser = req.user.roleID.toString();
+      const roleSchema = await this.roleService.findOne(idRoleUser);
+      const roleCodeName = roleSchema.name.vi;
+
       const user: UserResponse = {
         id: req.user.providerId,
         email: req.user.email || '',
@@ -216,6 +231,7 @@ export class AuthController {
         avatar: req.user.avatar,
         companyID: req.user.companyID ?? null,
         roleID: req.user.roleID,
+        roleCodeName: roleCodeName,
       };
 
       //- để cho đỡ rối, lần này sẽ xử lý hết ở đây

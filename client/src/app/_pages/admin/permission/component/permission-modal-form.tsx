@@ -71,13 +71,12 @@ export function PermissionDialogForm({
     useUpdatePermission();
 
   const handleSubmit = async (values: PermissionCreateType) => {
-    // 1. Tạo payload mới, đảm bảo apiPath luôn có tiền tố "api/"
+    const cleanPath = values.apiPath.replace(/^\//, "");
     const finalPayload = {
       ...values,
-      apiPath: values.apiPath.startsWith("api/")
-        ? values.apiPath
-        : `api/${values.apiPath.replace(/^\//, "")}`, // replace(/^\//, "") để bỏ dấu / dư thừa nếu người dùng nhập "/users"
+      apiPath: `/api/${cleanPath}`,
     };
+    
     try {
       if (permission) {
         const res = await updatePermissionMutation({
@@ -106,13 +105,11 @@ export function PermissionDialogForm({
   useEffect(() => {
     if (permission) {
       form.reset({
-        // Đảm bảo lấy đúng giá trị vi và không bao giờ để undefined
         name: permission.name?.vi ?? "",
         code: permission.code ?? "",
-        // Loại bỏ api/ và phòng hờ apiPath bị null
-        apiPath: (permission.apiPath ?? "").replace(/^api\//, ""),
+        // Loại bỏ tiền tố /api/ hoặc api/ khi đưa vào ô Input để người dùng nhập tiếp
+        apiPath: (permission.apiPath ?? "").replace(/^\/?api\//, ""),
         method: permission.method ?? "GET",
-        // Trường module rất hay bị undefined nếu DB chưa chuẩn, cần ép về ""
         module: permission.module ?? "",
       });
     }
@@ -173,19 +170,21 @@ export function PermissionDialogForm({
                   <FormLabel>Api path</FormLabel>
                   <FormControl>
                     <div className="relative flex items-center">
-                      {/* Tiền tố cố định */}
+                      {/* Đổi thành /api/ */}
                       <span className="absolute left-3 text-muted-foreground text-sm font-medium select-none">
-                        api/
+                        /api/
                       </span>
                       <Input
                         placeholder="users"
                         {...field}
-                        // Đẩy padding-left vào để không đè lên chữ api/
-                        className="pl-10"
+                        // Tăng padding left lên một chút vì có thêm dấu /
+                        className="pl-12"
                         onChange={(e) => {
                           let value = e.target.value;
-                          // Ngăn người dùng nhập lại api/ nếu họ copy-paste cả cụm
-                          if (value.startsWith("api/")) {
+                          // Xử lý nếu người dùng paste cả link vào
+                          if (value.startsWith("/api/")) {
+                            value = value.replace("/api/", "");
+                          } else if (value.startsWith("api/")) {
                             value = value.replace("api/", "");
                           }
                           field.onChange(value);
@@ -238,7 +237,7 @@ export function PermissionDialogForm({
                   <FormControl>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger id="module" className="mt-2 w-full">
-                        <SelectValue placeholder="Chọn phương thức" />
+                        <SelectValue placeholder="Chọn module" />
                       </SelectTrigger>
                       <SelectContent>
                         <ScrollArea>

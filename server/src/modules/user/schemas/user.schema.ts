@@ -91,4 +91,4 @@ export type UserResponse = Omit<
   | 'deletedBy'
   | 'resetToken'
   | 'resetTokenExpiresAt'
-> & { id: string };
+> & { id: string; roleCodeName: string };

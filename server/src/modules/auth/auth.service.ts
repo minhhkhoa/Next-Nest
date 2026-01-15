@@ -55,11 +55,7 @@ export class AuthService {
 
   async login(user: UserResponse, response: Response) {
     try {
-      const { avatar, email, name, companyID, roleID, id } = user;
-
-      //- thêm roleCodeName
-      const role = await this.roleService.findOne(roleID.toString());
-      const roleCodeName = role.name.vi;
+      const { avatar, email, name, companyID, roleID, id, roleCodeName } = user;
 
       const payload = {
         email,
@@ -123,11 +119,15 @@ export class AuthService {
     provider: string,
   ) {
     try {
-      const { avatar, email, id: idProvider, name, companyID, roleID } = user;
-
-      //- thêm roleCodeName
-      const role = await this.roleService.findOne(roleID.toString());
-      const roleCodeName = role.name.vi;
+      const {
+        avatar,
+        email,
+        id: idProvider,
+        name,
+        companyID,
+        roleID,
+        roleCodeName,
+      } = user;
 
       //- B1: check xem có tài khoản chưa
       const userLoginSocial =
@@ -371,6 +371,9 @@ export class AuthService {
         throw new BadRequestException('Refresh token không khớp');
       }
 
+      const roleSchema = await this.roleService.findOne(user.roleID.toString());
+      const roleCodeName = roleSchema.name.vi;
+
       //-update refresh_token
       const { email, name, avatar, companyID, roleID, id } = user;
 
@@ -381,6 +384,7 @@ export class AuthService {
         email,
         roleID,
         companyID,
+        roleCodeName,
       };
 
       const result = await this.login(payload, response);

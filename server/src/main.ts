@@ -6,6 +6,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { TransformInterceptor } from './common/core/transform.interceptor';
 import { JwtAuthGuard } from './modules/auth/passport-guard/jwt-auth.guard';
 import * as cookieParser from 'cookie-parser';
+import { PermissionGuard } from './common/guard/permission.guard';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -16,6 +17,9 @@ async function bootstrap() {
 
   //- use global JwtAuthGuard
   app.useGlobalGuards(new JwtAuthGuard(reflector)); //- check xem có gửi token kèm theo không
+
+  //- use global permission guard
+  app.useGlobalGuards(new PermissionGuard(reflector, configService));
 
   //- use global interceptor
   app.useGlobalInterceptors(new TransformInterceptor(reflector));

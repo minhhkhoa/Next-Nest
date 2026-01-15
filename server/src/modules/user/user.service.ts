@@ -159,6 +159,23 @@ export class UserService {
     }
   }
 
+  async findOneWithRole(id: string) {
+    return await this.userModel
+      .findById(id)
+      .populate({
+        path: 'roleID',
+        match: { isDeleted: false }, // Chỉ lấy role chưa bị xóa
+        select: 'name _id', // Lấy thông tin role
+        populate: {
+          path: 'permissions',
+          match: { isDeleted: false }, // Chỉ lấy quyền chưa bị xóa
+          select: 'name apiPath method _id', // Lấy các thông tin cần để check quyền
+        },
+      })
+      .select('-password') // Không bao giờ lấy password ở đây
+      .lean();
+  }
+
   async findUserByEmail(email: string): Promise<UserDocument | null> {
     try {
       if (!email)

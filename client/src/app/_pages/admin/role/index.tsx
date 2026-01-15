@@ -35,7 +35,7 @@ export default function PageRole() {
 
   const { data: listRole, isLoading: isLoadingRole } = useGetRoleFilter({
     currentPage,
-    pageSize: 5,
+    pageSize: 8,
     name: debouncedSearchName,
   });
 
