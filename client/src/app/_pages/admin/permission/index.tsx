@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
-import React, { use, useState } from "react";
+import React, { useState } from "react";
 import PermissionFilter from "./component/permission-filter";
 import { useDebounce } from "use-debounce";
 import {
@@ -79,7 +79,7 @@ export default function PagePermission() {
 
       SoftSuccessSonner(res.message);
     } catch (error) {
-      console.log("error delete many permission");
+      console.log("error delete many permission", error);
     }
   };
 

@@ -43,7 +43,7 @@ export default function UserPageManagement() {
     address: debouncedSearchAddress,
   });
 
-  const { data: listRoles, isLoading: isLoadingRoles } = useGetAllRole();
+  const { data: listRoles } = useGetAllRole();
 
   const changeTypeSearch = (type: string, value: string) => {
     switch (type) {

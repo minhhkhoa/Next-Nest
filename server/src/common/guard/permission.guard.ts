@@ -19,7 +19,7 @@ export class PermissionGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    // 1. Bypass cho các route Public (Lấy từ Decorator @Public)
+    // 1. Bypass cho các route Public
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -31,11 +31,10 @@ export class PermissionGuard implements CanActivate {
     const apiPath = request.route?.path; // Đây là path có chứa param dạng /users/:id
 
     // 3. Bypass tự động cho các route thuộc /api/auth
-    // (Phòng trường hợp Khoa quên gắn @Public)
     if (apiPath?.startsWith('/api/auth')) return true;
 
     // 4. Bypass cho SUPER_ADMIN
-    const roleAdmin = this.configService.get<string>('role_system_admin');
+    const roleAdmin = this.configService.get<string>('role_super_admin');
     if (user?.roleCodeName === roleAdmin) return true;
 
 

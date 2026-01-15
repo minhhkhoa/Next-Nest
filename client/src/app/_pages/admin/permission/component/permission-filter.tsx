@@ -12,19 +12,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { HTTP_METHODS } from "@/lib/constant";
-import { useGetAllModuleBussiness } from "@/queries/permission";
 import { X } from "lucide-react";
 import React from "react";
-
-const MODULES = [
-  "Users",
-  "Roles",
-  "Permissions",
-  "Products",
-  "Settings",
-  "Dashboard",
-  "Reports",
-];
 
 interface PermissionFilterProps {
   filters: {
