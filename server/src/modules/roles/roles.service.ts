@@ -140,7 +140,7 @@ export class RolesService {
         throw new BadRequestCustom('ID vai trò không đúng định dạng', !!id);
       }
 
-      const role = await this.roleModel.findById(id);
+      const role = await this.roleModel.findById(id).lean();
 
       if (!role) throw new BadRequestCustom('ID vai trò không tìm thấy', !!id);
 

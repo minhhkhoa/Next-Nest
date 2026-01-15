@@ -21,6 +21,7 @@ import {
 } from 'src/utils/hashPassword';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { RolesService } from '../roles/roles.service';
 
 @Injectable()
 export class AuthService {
@@ -29,6 +30,7 @@ export class AuthService {
     private usersService: UserService,
     private mailService: MailService,
     private jwtService: JwtService,
+    private roleService: RolesService,
   ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
@@ -54,7 +56,20 @@ export class AuthService {
   async login(user: UserResponse, response: Response) {
     try {
       const { avatar, email, name, companyID, roleID, id } = user;
-      const payload = { email, id, name, roleID, companyID, avatar };
+
+      //- thêm roleCodeName
+      const role = await this.roleService.findOne(roleID.toString());
+      const roleCodeName = role.name.vi;
+
+      const payload = {
+        email,
+        id,
+        name,
+        roleID,
+        companyID,
+        avatar,
+        roleCodeName,
+      };
 
       //- create refresh_token/access_token
       const accessToken = this.jwtService.sign(payload);
@@ -94,6 +109,7 @@ export class AuthService {
           name,
           companyID,
           roleID,
+          roleCodeName,
         },
       };
     } catch (error) {
@@ -108,6 +124,10 @@ export class AuthService {
   ) {
     try {
       const { avatar, email, id: idProvider, name, companyID, roleID } = user;
+
+      //- thêm roleCodeName
+      const role = await this.roleService.findOne(roleID.toString());
+      const roleCodeName = role.name.vi;
 
       //- B1: check xem có tài khoản chưa
       const userLoginSocial =
@@ -132,6 +152,7 @@ export class AuthService {
           roleID,
           companyID,
           avatar,
+          roleCodeName,
         };
 
         const resfreshToken = this.createRefreshToken(payload);
@@ -199,6 +220,7 @@ export class AuthService {
           roleID,
           companyID,
           avatar,
+          roleCodeName,
         };
 
         const resfreshToken = this.createRefreshToken(payload);
@@ -248,6 +270,7 @@ export class AuthService {
             name,
             companyID,
             roleID,
+            roleCodeName,
           },
         };
       }

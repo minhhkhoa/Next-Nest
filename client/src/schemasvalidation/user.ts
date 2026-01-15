@@ -1,6 +1,7 @@
 import z from "zod";
 import { MetaFilter } from "./NewsCategory";
 import { apiRoleRes } from "./role";
+import { MultiLang } from "./trans";
 
 export const apiProfileUserRes = z.object({
   user: z.object({
@@ -9,7 +10,10 @@ export const apiProfileUserRes = z.object({
     email: z.string().nullable(),
     avatar: z.string().nullable().optional(),
     companyID: z.string().array().optional().nullable(),
-    roleID: z.string().array().optional().nullable(),
+    roleID: z.object({
+      name: MultiLang,
+      _id: z.string(),
+    }),
     provider: z
       .object({
         type: z.string(),
@@ -85,7 +89,5 @@ export const getAllUserByFilterRes = z.object({
   meta: MetaFilter,
 });
 
-export type GetAllUserByFilterResType = z.infer<
-  typeof getAllUserByFilterRes
->;
+export type GetAllUserByFilterResType = z.infer<typeof getAllUserByFilterRes>;
 //- end getAllUserByFilter

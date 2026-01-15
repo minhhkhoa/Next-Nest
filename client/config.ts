@@ -7,6 +7,7 @@ export const configSchema = z.object({
   NEXT_PUBLIC_CLOUD_API: z.string(),
   NEXT_PUBLIC_PAGE_SIZE: z.string(),
   NEXT_PUBLIC_ROOT_PARENT_INDUSTRY_ID: z.string(),
+  NEXT_PUBLIC_JWT_SECRET: z.string(),
 });
 
 const configProject = configSchema.safeParse({
@@ -17,6 +18,7 @@ const configProject = configSchema.safeParse({
   NEXT_PUBLIC_PAGE_SIZE: process.env.NEXT_PUBLIC_PAGE_SIZE,
   NEXT_PUBLIC_ROOT_PARENT_INDUSTRY_ID:
     process.env.NEXT_PUBLIC_ROOT_PARENT_INDUSTRY_ID,
+  NEXT_PUBLIC_JWT_SECRET: process.env.NEXT_PUBLIC_JWT_SECRET,
 });
 
 if (!configProject.success) {

@@ -14,13 +14,12 @@ import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/components/TanstackProvider";
 import { useLogoutMutation } from "@/queries/useAuth";
 import {
-  // getAccessTokenFromLocalStorage,
   handleInitName,
   removeTokensFromLocalStorage,
 } from "@/lib/utils";
-// import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
+import { allowedRoles } from "@/middleware";
 
 export function UserAvatarMenu() {
   const { isLogin, setLogin, user } = useAppStore();
@@ -28,6 +27,7 @@ export function UserAvatarMenu() {
   const { mutateAsync: mutationLogout } = useLogoutMutation();
 
   const name = handleInitName(user.name);
+  const roleName = user?.roleID?.name?.vi;
 
   const handleLogout = async () => {
     const res = await mutationLogout();
@@ -52,10 +52,6 @@ export function UserAvatarMenu() {
   const onSettingsClick = () => {
     router.push("/settings");
   };
-
-  // useEffect(() => {
-  //   setLogin(!!getAccessTokenFromLocalStorage());
-  // }, [setLogin]);
 
   return (
     <DropdownMenu>
@@ -91,10 +87,12 @@ export function UserAvatarMenu() {
         <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground">
           Quản lý
         </DropdownMenuLabel>
-        <DropdownMenuItem onClick={onManageClick} className="cursor-pointer">
-          <LayoutDashboard className="mr-2 h-4 w-4" />
-          <span>Trang quản lý</span>
-        </DropdownMenuItem>
+        {allowedRoles.includes(roleName) && (
+          <DropdownMenuItem onClick={onManageClick} className="cursor-pointer">
+            <LayoutDashboard className="mr-2 h-4 w-4" />
+            <span>Trang quản lý</span>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onClick={onProfileClick} className="cursor-pointer">
           <User className="mr-2 h-4 w-4" />
           <span>Hồ sơ cá nhân</span>
