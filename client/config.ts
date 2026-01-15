@@ -8,6 +8,11 @@ export const configSchema = z.object({
   NEXT_PUBLIC_PAGE_SIZE: z.string(),
   NEXT_PUBLIC_ROOT_PARENT_INDUSTRY_ID: z.string(),
   NEXT_PUBLIC_JWT_SECRET: z.string(),
+
+  NEXT_PUBLIC_ROLE_SUPER_ADMIN: z.string(),
+  NEXT_PUBLIC_ROLE_RECRUITER: z.string(),
+  NEXT_PUBLIC_ROLE_CANDIDATE: z.string(),
+  NEXT_PUBLIC_ROLE_GUEST: z.string(),
 });
 
 const configProject = configSchema.safeParse({
@@ -19,6 +24,11 @@ const configProject = configSchema.safeParse({
   NEXT_PUBLIC_ROOT_PARENT_INDUSTRY_ID:
     process.env.NEXT_PUBLIC_ROOT_PARENT_INDUSTRY_ID,
   NEXT_PUBLIC_JWT_SECRET: process.env.NEXT_PUBLIC_JWT_SECRET,
+
+  NEXT_PUBLIC_ROLE_SUPER_ADMIN: process.env.NEXT_PUBLIC_ROLE_SUPER_ADMIN,
+  NEXT_PUBLIC_ROLE_RECRUITER: process.env.NEXT_PUBLIC_ROLE_RECRUITER,
+  NEXT_PUBLIC_ROLE_CANDIDATE: process.env.NEXT_PUBLIC_ROLE_CANDIDATE,
+  NEXT_PUBLIC_ROLE_GUEST: process.env.NEXT_PUBLIC_ROLE_GUEST,
 });
 
 if (!configProject.success) {

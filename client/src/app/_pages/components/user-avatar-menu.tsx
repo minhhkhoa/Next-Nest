@@ -46,7 +46,7 @@ export function UserAvatarMenu() {
   };
 
   const onManageClick = () => {
-    router.push("/admin");
+    router.push("/admin/dashboard");
   };
 
   const onSettingsClick = () => {

@@ -7,10 +7,11 @@ import {
   User2,
   Calendar,
   Search,
-  Settings,
   Factory,
   FolderKanban,
   ChevronDown,
+  DoorClosedLocked,
+  FileUser,
 } from "lucide-react";
 
 import {
@@ -34,13 +35,16 @@ import {
   CollapsibleContent,
 } from "@/components/ui/collapsible";
 import PopoverAdmin from "@/app/_pages/components/popoverAdmin";
+import { useAppStore } from "./TanstackProvider";
+import { envConfig } from "../../config";
+import { Skeleton } from "./ui/skeleton";
 
 const items = [
-  { title: "Thống kê", url: "/charts", icon: ChartNoAxesCombined },
+  { title: "Thống kê", url: "/admin/dashboard", icon: ChartNoAxesCombined },
   { title: "Người dùng", url: "/admin/user", icon: User2 },
-  { title: "Jobs", url: "/jobs", icon: Calendar },
-  { title: "Nhà tuyển dụng", url: "/employers", icon: Search },
-  { title: "Resumes & CV", url: "/resumes", icon: Settings },
+  { title: "Jobs", url: "/admin/jobs", icon: Calendar },
+  { title: "Nhà tuyển dụng", url: "/admin/recruiter", icon: Search },
+  { title: "Resumes & CV", url: "/admin/resumes", icon: FileUser },
   {
     title: "Ngành nghề & kỹ năng",
     url: "/admin/industry-skill",
@@ -50,6 +54,30 @@ const items = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { user } = useAppStore();
+
+  // Sử dụng roleCodeName để đồng bộ với logic Middleware và JWT
+  const roleCode = user?.roleID?.name?.vi;
+  const isRecruiter = roleCode === envConfig.NEXT_PUBLIC_ROLE_RECRUITER;
+  const isSuperAdmin = roleCode === envConfig.NEXT_PUBLIC_ROLE_SUPER_ADMIN;
+
+  // 1. Lọc danh sách items chính (Sửa lỗi map nhầm mảng gốc)
+  const filteredItems = items.filter((item) => {
+    if (isRecruiter) {
+      //- các route mà recruiter được phép truy cập và hiển thị
+      const recruiterAllowed = [
+        "/admin/dashboard",
+        "/admin/jobs",
+        "/admin/resumes",
+      ];
+      return recruiterAllowed.includes(item.url);
+    }
+    return true; //- admin hiện hết
+  });
+
+  if (!roleCode) {
+    return <SidebarSkeleton />;
+  }
 
   return (
     <Sidebar collapsible="icon">
@@ -61,7 +89,7 @@ export function AppSidebar() {
             <SidebarGroupLabel>Application</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {items.map((item) => (
+                {filteredItems.map((item) => (
                   <SidebarMenuItem className="mr-2.5" key={item.title}>
                     <SidebarMenuButton
                       asChild
@@ -80,86 +108,127 @@ export function AppSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
 
-          {/* Phần collapsible */}
-          <SidebarGroup>
-            <SidebarGroupLabel>Bài viết</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <Collapsible defaultOpen>
-                  <SidebarMenuItem className="mr-2.5">
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuButton tooltip="Cẩm nang nghề nghiệp">
-                        <FolderKanban />
-                        <span className="truncate">Cẩm nang nghề nghiệp</span>
-                        <ChevronDown className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
-                      </SidebarMenuButton>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <SidebarMenuSub>
-                        <SidebarMenuSubItem>
-                          <SidebarMenuSubButton
-                            asChild
-                            isActive={pathname === "/admin/news"}
-                            className="data-[active=true]:bg-primary data-[active=true]:text-white"
-                          >
-                            <Link href="/admin/news">Tin tức</Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  </SidebarMenuItem>
-                </Collapsible>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+          {/* 2. Phần Bài viết - Chỉ dành cho Super Admin */}
+          {isSuperAdmin && (
+            <SidebarGroup>
+              <SidebarGroupLabel>Bài viết</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <Collapsible defaultOpen>
+                    <SidebarMenuItem className="mr-2.5">
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton tooltip="Cẩm nang nghề nghiệp">
+                          <FolderKanban />
+                          <span className="truncate">Cẩm nang nghề nghiệp</span>
+                          <ChevronDown className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <SidebarMenuSub>
+                          <SidebarMenuSubItem>
+                            <SidebarMenuSubButton
+                              asChild
+                              isActive={pathname === "/admin/news"}
+                              className="data-[active=true]:bg-primary data-[active=true]:text-white"
+                            >
+                              <Link href="/admin/news">Tin tức</Link>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    </SidebarMenuItem>
+                  </Collapsible>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
 
-          <SidebarGroup>
-            <SidebarGroupLabel>Phân quyền</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <Collapsible defaultOpen>
-                  <SidebarMenuItem className="mr-2.5">
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuButton tooltip="Phân quyền">
-                        <FolderKanban />
-                        <span className="truncate">Phân quyền</span>
-                        <ChevronDown className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
-                      </SidebarMenuButton>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <SidebarMenuSub>
-                        <SidebarMenuSubItem>
-                          <SidebarMenuSubButton
-                            asChild
-                            isActive={pathname === "/admin/role"}
-                            className="data-[active=true]:bg-primary data-[active=true]:text-white"
-                          >
-                            <Link href="/admin/role">Vai trò</Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      </SidebarMenuSub>
+          {/* 3. Phần Phân quyền - Chỉ dành cho Super Admin */}
+          {isSuperAdmin && (
+            <SidebarGroup>
+              <SidebarGroupLabel>Phân quyền</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <Collapsible defaultOpen>
+                    <SidebarMenuItem className="mr-2.5">
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton tooltip="Phân quyền">
+                          <DoorClosedLocked />
+                          <span className="truncate">Phân quyền</span>
+                          <ChevronDown className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <SidebarMenuSub>
+                          <SidebarMenuSubItem>
+                            <SidebarMenuSubButton
+                              asChild
+                              isActive={pathname === "/admin/role"}
+                              className="data-[active=true]:bg-primary data-[active=true]:text-white"
+                            >
+                              <Link href="/admin/role">Vai trò</Link>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        </SidebarMenuSub>
 
-                      <SidebarMenuSub>
-                        <SidebarMenuSubItem>
-                          <SidebarMenuSubButton
-                            asChild
-                            isActive={pathname === "/admin/permission"}
-                            className="data-[active=true]:bg-primary data-[active=true]:text-white"
-                          >
-                            <Link href="/admin/permission">Quyền hạn</Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  </SidebarMenuItem>
-                </Collapsible>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+                        <SidebarMenuSub>
+                          <SidebarMenuSubItem>
+                            <SidebarMenuSubButton
+                              asChild
+                              isActive={pathname === "/admin/permission"}
+                              className="data-[active=true]:bg-primary data-[active=true]:text-white"
+                            >
+                              <Link href="/admin/permission">Quyền hạn</Link>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    </SidebarMenuItem>
+                  </Collapsible>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
         </div>
 
         <div className="mb-2">
           <PopoverAdmin />
+        </div>
+      </SidebarContent>
+    </Sidebar>
+  );
+}
+
+function SidebarSkeleton() {
+  return (
+    <Sidebar collapsible="icon">
+      <SidebarContent>
+        <div className="flex flex-col justify-between p-4 h-full">
+          <div>
+            <Skeleton className="h-10 w-full mb-6" /> {/* Chỗ của BackHome */}
+            <SidebarGroup>
+              <SidebarGroupLabel>
+                <Skeleton className="h-4 w-24" />
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <SidebarMenuItem key={i} className="mb-2">
+                      <div className="flex items-center gap-3 px-2 py-2">
+                        <Skeleton className="h-5 w-5 rounded-md" /> {/* Icon */}
+                        <Skeleton className="h-4 w-full" /> {/* Title */}
+                      </div>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </div>
+
+          {/* skeleton cho block ng dung */}
+          <div className="px-4">
+            <Skeleton className="w-full h-12" />
+          </div>
         </div>
       </SidebarContent>
     </Sidebar>

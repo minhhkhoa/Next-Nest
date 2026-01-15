@@ -6,7 +6,21 @@ import { envConfig } from "../config";
 //- Vì Middleware chạy trên Edge Runtime, dùng jose thay vì jwt-decode (do jwt-decode không hỗ trợ xác thực chữ ký ở Edge
 const SECRET_KEY = new TextEncoder().encode(envConfig.NEXT_PUBLIC_JWT_SECRET);
 
-export const allowedRoles = ["SUPER_ADMIN", "RECRUITER"];
+//- các role được phép vào trang quản trị
+export const allowedRoles = [
+  envConfig.NEXT_PUBLIC_ROLE_SUPER_ADMIN,
+  envConfig.NEXT_PUBLIC_ROLE_RECRUITER,
+];
+
+//- các route bị cấm vào với RECRUITER
+export const forbiddenPathsForRecruiter = [
+  "/admin/user",
+  "/admin/recruiter",
+  "/admin/industry-skill",
+  "/admin/news",
+  "/admin/role",
+  "/admin/permission",
+];
 
 export async function middleware(request: NextRequest) {
   const token = request.cookies.get("access_token")?.value;
@@ -34,6 +48,21 @@ export async function middleware(request: NextRequest) {
       // Nếu là CANDIDATE hoặc GUEST mà cố vào /admin thì đá về trang chủ
       if (!allowedRoles.includes(role)) {
         return NextResponse.redirect(new URL("/", request.url));
+      }
+
+      // 2. PHÂN QUYỀN CHI TIẾT CHO RECRUITER
+      if (role === envConfig.NEXT_PUBLIC_ROLE_RECRUITER) {
+        // Nếu path hiện tại nằm trong danh sách cấm của Recruiter
+        const isForbidden = forbiddenPathsForRecruiter.some((p) =>
+          path.startsWith(p)
+        );
+
+        if (isForbidden) {
+          // Đá về Dashboard nếu cố tình truy cập trang cấm
+          return NextResponse.redirect(
+            new URL("/admin/dashboard", request.url)
+          );
+        }
       }
 
       // Nếu đúng role (SUPER_ADMIN hoặc RECRUITER), cho phép đi tiếp (NextResponse.next())
