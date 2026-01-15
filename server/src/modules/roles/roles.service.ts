@@ -80,7 +80,7 @@ export class RolesService {
 
   async findAll() {
     try {
-      return await this.roleModel.find({ isDeleted: false });
+      return await this.roleModel.find({ isDeleted: false, isActived: true });
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }

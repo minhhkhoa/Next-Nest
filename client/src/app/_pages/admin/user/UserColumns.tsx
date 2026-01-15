@@ -10,8 +10,8 @@ import {
   MapPinOff,
   Copy,
   User,
-  Trash2,
   MoreVertical,
+  Lock,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -163,7 +163,7 @@ export const getUserColumns = (
     header: "Thao tác",
     cell: ({ row }) => {
       const name = row.original.user?.name;
-      
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -194,8 +194,8 @@ export const getUserColumns = (
               onClick={() => onDelete(row.original)}
             >
               <div className="flex gap-3 items-center ">
-                <Trash2 className="mr-2 h-4 w-4 hover:text-white" />
-                Xóa
+                <Lock className="mr-2 h-4 w-4 hover:text-white" />
+                Khóa tài khoản
               </div>
             </DropdownMenuItem>
           </DropdownMenuContent>

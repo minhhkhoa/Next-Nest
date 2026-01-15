@@ -4,12 +4,10 @@ import { useDeleteUser, useGetAllUserByFilter } from "@/queries/useUser";
 import React from "react";
 import TableUser from "./TableUser";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "use-debounce";
 import { Spinner } from "@/components/ui/spinner";
-import { Button } from "@/components/ui/button";
-import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import { apiUserResType } from "@/schemasvalidation/user";
 import { getUserColumns } from "./UserColumns";
@@ -70,12 +68,11 @@ export default function UserPageManagement() {
     try {
       const res = await deleteUserMutation(deleteModal.id);
 
-      if (res.isError) SoftDestructiveSonner("Có lỗi xảy ra khi xóa quyền hạn");
+      if (res.isError) return;
 
       SoftSuccessSonner(res.message);
       setDeleteModal({ isOpen: false, id: "" });
     } catch (error) {
-      SoftDestructiveSonner("Có lỗi xảy ra khi xóa quyền hạn");
       console.log("error delete permission: ", error);
     }
   };

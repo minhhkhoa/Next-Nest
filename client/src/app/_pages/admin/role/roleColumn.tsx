@@ -81,7 +81,7 @@ export const getRoleColumns = (
               : "bg-red-100 text-red-800"
           }`}
         >
-          {isActived ? "Hoạt động" : "Không hoạt động"}
+          {isActived ? "Hoạt động" : "Dừng hoạt động"}
         </span>
       );
     },
