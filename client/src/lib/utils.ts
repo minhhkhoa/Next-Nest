@@ -7,6 +7,8 @@ import { twMerge } from "tailwind-merge";
 import http from "./http";
 import { envConfig } from "../../config";
 import { ApiResponse } from "@/types/apiResponse";
+import axios, { isAxiosError } from "axios";
+
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -49,13 +51,16 @@ export const handleInitName = (name: string) => {
   return (first + last).toUpperCase();
 };
 
+
 //- start cloudinary
 /**
  * Upload file trực tiếp lên Cloudinary (signed upload)
  * @param file File từ input
  * @returns Promise<string> secure_url sau khi upload thành công
  */
-export async function uploadToCloudinary(file: File): Promise<string | undefined> {
+export async function uploadToCloudinary(
+  file: File
+): Promise<string | undefined> {
   try {
     if (!file) throw new Error("No file provided");
 
@@ -72,23 +77,29 @@ export async function uploadToCloudinary(file: File): Promise<string | undefined
 
     // --- Tạo formData để gửi lên Cloudinary ---
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("api_key", apiKey);
-    formData.append("timestamp", timestamp.toString());
-    formData.append("signature", signature);
-    if (folder) formData.append("folder", folder);
+    formData.append('file', file);
+    formData.append('api_key', apiKey);
+    formData.append('timestamp', timestamp.toString());
+    formData.append('signature', signature);
+    if (folder) formData.append('folder', folder);
 
-    // --- Gửi trực tiếp lên Cloudinary ---
-    const uploadUrl = `${envConfig.NEXT_PUBLIC_CLOUD_API}/${cloudName}/auto/upload`;
+    // --- Gửi trực tiếp lên Cloudinary bằng axios mới, không qua interceptor ---
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
 
-    const res = await http.post<CloudinaryUploadResponse>(uploadUrl, formData, {
+    const res = await axios.post<CloudinaryUploadResponse>(uploadUrl, formData, {
       headers: { "Content-Type": "multipart/form-data" },
-      withCredentials: false,
     });
 
-    return res.secure_url;
+    return res.data.secure_url;
   } catch (error) {
-    console.log("error cloudinary: ", error);
+    if (isAxiosError(error)) {
+      console.error(
+        "Lỗi upload từ Cloudinary:",
+        error.response?.data?.error?.message || error.message
+      );
+    } else {
+      console.error("Lỗi không xác định khi upload:", error);
+    }
     return undefined;
   }
 }
