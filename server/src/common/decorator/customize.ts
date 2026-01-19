@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 
+//- Cái này là để bypass mạnh hơn không login hay login đều bypass
 export const IS_PUBLIC_KEY = 'isPublic';
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true); //- key:value
 
@@ -20,9 +21,11 @@ export const userDecorator = createParamDecorator(
 );
 
 export const IS_PUBLIC_PERMISSION = 'isPublicPermission';
-export const skipCheckPermission = () =>
+export const PublicPermission = () =>
   SetMetadata(IS_PUBLIC_PERMISSION, true);
 
 //- decorator để gắn các module cho việc phân vai trò
 export const IS_BUSINESS_MODULE = 'isBusinessModule';
 export const BusinessModule = () => SetMetadata(IS_BUSINESS_MODULE, true);
+
+

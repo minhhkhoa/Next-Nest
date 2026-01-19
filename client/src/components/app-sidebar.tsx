@@ -59,9 +59,11 @@ export function AppSidebar() {
   // Sử dụng roleCodeName để đồng bộ với logic Middleware và JWT
   const roleCode = user?.roleID?.name?.vi;
   const isRecruiter = roleCode === envConfig.NEXT_PUBLIC_ROLE_RECRUITER;
+  const isContentManager =
+    roleCode === envConfig.NEXT_PUBLIC_ROLE_CONTENT_MANAGER;
   const isSuperAdmin = roleCode === envConfig.NEXT_PUBLIC_ROLE_SUPER_ADMIN;
 
-  // 1. Lọc danh sách items chính (Sửa lỗi map nhầm mảng gốc)
+  // 1. Lọc danh sách items chính
   const filteredItems = items.filter((item) => {
     if (isRecruiter) {
       //- các route mà recruiter được phép truy cập và hiển thị
@@ -71,6 +73,11 @@ export function AppSidebar() {
         "/admin/resumes",
       ];
       return recruiterAllowed.includes(item.url);
+    }
+    if (isContentManager) {
+      //- các route mà content manager được phép truy cập và hiển thị
+      const contentManagerAllowed = ["/admin/news"];
+      return contentManagerAllowed.includes(item.url);
     }
     return true; //- admin hiện hết
   });
@@ -108,8 +115,8 @@ export function AppSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
 
-          {/* 2. Phần Bài viết - Chỉ dành cho Super Admin */}
-          {isSuperAdmin && (
+          {/* 2. Phần Bài viết*/}
+          {(isSuperAdmin || isContentManager) && (
             <SidebarGroup>
               <SidebarGroupLabel>Bài viết</SidebarGroupLabel>
               <SidebarGroupContent>

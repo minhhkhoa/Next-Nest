@@ -19,6 +19,20 @@ import { FindNotifycationQueryDto } from './dto/notifycationDto-dto';
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
+  @Get('count-unread')
+  @ResponseMessage('Lấy số lượng thông báo chưa đọc')
+  @ApiOperation({ summary: 'Lấy số lượng thông báo chưa đọc' })
+  getCountUnread(@userDecorator() user: UserDecoratorType) {
+    return this.notificationsService.countUnread(user.id);
+  }
+
+  @Patch('mark-all-read')
+  @ResponseMessage('Đã đánh dấu tất cả là đã đọc')
+  @ApiOperation({ summary: 'Đánh dấu tất cả là đã đọc' })
+  markAllRead(@userDecorator() user: UserDecoratorType) {
+    return this.notificationsService.markAllAsRead(user.id);
+  }
+
   @ResponseMessage('Tạo mới thông báo thành công')
   @ApiOperation({ summary: 'tạo mới thông báo' })
   @Post()
@@ -42,5 +56,19 @@ export class NotificationsController {
   @ApiOperation({ summary: 'Đánh dấu là đã đọc' })
   update(@Param('id') id: string, @userDecorator() user: UserDecoratorType) {
     return this.notificationsService.markAsRead(id, user.id);
+  }
+
+  @Delete('clear-all')
+  @ResponseMessage('Đã dọn sạch tất cả thông báo')
+  @ApiOperation({ summary: 'Xóa tất cả thông báo của người dùng' })
+  clearAll(@userDecorator() user: UserDecoratorType) {
+    return this.notificationsService.removeAll(user.id);
+  }
+
+  @Delete(':id')
+  @ResponseMessage('Xóa thông báo thành công')
+  @ApiOperation({ summary: 'Xóa một thông báo' })
+  remove(@Param('id') id: string, @userDecorator() user: UserDecoratorType) {
+    return this.notificationsService.remove(id, user.id);
   }
 }

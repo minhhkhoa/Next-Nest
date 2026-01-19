@@ -13,6 +13,7 @@ export const configSchema = z.object({
   NEXT_PUBLIC_ROLE_RECRUITER: z.string(),
   NEXT_PUBLIC_ROLE_CANDIDATE: z.string(),
   NEXT_PUBLIC_ROLE_GUEST: z.string(),
+  NEXT_PUBLIC_ROLE_CONTENT_MANAGER: z.string(),
 });
 
 const configProject = configSchema.safeParse({
@@ -29,6 +30,8 @@ const configProject = configSchema.safeParse({
   NEXT_PUBLIC_ROLE_RECRUITER: process.env.NEXT_PUBLIC_ROLE_RECRUITER,
   NEXT_PUBLIC_ROLE_CANDIDATE: process.env.NEXT_PUBLIC_ROLE_CANDIDATE,
   NEXT_PUBLIC_ROLE_GUEST: process.env.NEXT_PUBLIC_ROLE_GUEST,
+  NEXT_PUBLIC_ROLE_CONTENT_MANAGER:
+    process.env.NEXT_PUBLIC_ROLE_CONTENT_MANAGER,
 });
 
 if (!configProject.success) {

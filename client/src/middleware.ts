@@ -10,6 +10,7 @@ const SECRET_KEY = new TextEncoder().encode(envConfig.NEXT_PUBLIC_JWT_SECRET);
 export const allowedRoles = [
   envConfig.NEXT_PUBLIC_ROLE_SUPER_ADMIN,
   envConfig.NEXT_PUBLIC_ROLE_RECRUITER,
+  envConfig.NEXT_PUBLIC_ROLE_CONTENT_MANAGER,
 ];
 
 //- các route bị cấm vào với RECRUITER

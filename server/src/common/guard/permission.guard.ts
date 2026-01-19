@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
-import { IS_PUBLIC_KEY } from '../decorator/customize';
+import { IS_PUBLIC_KEY, IS_PUBLIC_PERMISSION } from '../decorator/customize';
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
@@ -36,7 +36,6 @@ export class PermissionGuard implements CanActivate {
     // 4. Bypass cho SUPER_ADMIN
     const roleAdmin = this.configService.get<string>('role_super_admin');
     if (user?.roleCodeName === roleAdmin) return true;
-
 
     // 5. Kiểm tra quyền
     const permissions = user?.permissions ?? [];

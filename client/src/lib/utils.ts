@@ -8,7 +8,9 @@ import http from "./http";
 import { envConfig } from "../../config";
 import { ApiResponse } from "@/types/apiResponse";
 import axios, { isAxiosError } from "axios";
-
+import { NotificationType } from "./constant";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { NotificationResType } from "@/schemasvalidation/notification";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -51,7 +53,6 @@ export const handleInitName = (name: string) => {
   return (first + last).toUpperCase();
 };
 
-
 //- start cloudinary
 /**
  * Upload file trực tiếp lên Cloudinary (signed upload)
@@ -77,18 +78,22 @@ export async function uploadToCloudinary(
 
     // --- Tạo formData để gửi lên Cloudinary ---
     const formData = new FormData();
-    formData.append('file', file);
-    formData.append('api_key', apiKey);
-    formData.append('timestamp', timestamp.toString());
-    formData.append('signature', signature);
-    if (folder) formData.append('folder', folder);
+    formData.append("file", file);
+    formData.append("api_key", apiKey);
+    formData.append("timestamp", timestamp.toString());
+    formData.append("signature", signature);
+    if (folder) formData.append("folder", folder);
 
     // --- Gửi trực tiếp lên Cloudinary bằng axios mới, không qua interceptor ---
     const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
 
-    const res = await axios.post<CloudinaryUploadResponse>(uploadUrl, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const res = await axios.post<CloudinaryUploadResponse>(
+      uploadUrl,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
 
     return res.data.secure_url;
   } catch (error) {
@@ -120,4 +125,43 @@ export const getIdFromSlugUrl = (slug: string) => {
 
 export const getSlugFromSlugUrl = (slug: string) => {
   return String(slug.split("-i.")[0]);
+};
+
+export const handleNotificationNavigation = (
+  item: NotificationResType,
+  router: AppRouterInstance
+) => {
+  const resourceId = item.metadata?.resourceId;
+  const type = item.type as NotificationType;
+
+  switch (type) {
+    case NotificationType.NEWS_CREATED:
+      router.push(`/admin/news`);
+      break;
+
+    case NotificationType.COMPANY_CREATED:
+      router.push(`/admin/companies/approve`);
+      break;
+
+    case NotificationType.COMPANY_APPROVED:
+    case NotificationType.COMPANY_REJECTED:
+      router.push(`/profile/company`);
+      break;
+
+    case NotificationType.RESUME_SUBMITTED:
+      router.push(`/recruiter/resumes`);
+      break;
+
+    case NotificationType.RESUME_STATUS_CHANGED:
+      router.push(`/my-jobs/applied`);
+      break;
+
+    case NotificationType.SYSTEM_ANNOUNCEMENT:
+      router.push(`/notifications/${item._id}`);
+      break;
+
+    default:
+      console.warn("Unhandled notification type:", type);
+      break;
+  }
 };

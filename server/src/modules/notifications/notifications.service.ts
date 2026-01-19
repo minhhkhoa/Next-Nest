@@ -118,4 +118,42 @@ export class NotificationsService {
       throw new BadRequestCustom(error.message, !!error.message);
     }
   }
+
+  // Lấy số lượng chưa đọc
+  async countUnread(userId: string) {
+    const count = await this.notificationModel.countDocuments({
+      receiverId: userId,
+      isRead: false,
+    });
+    return { count };
+  }
+
+  // Đánh dấu tất cả là đã đọc
+  async markAllAsRead(userId: string) {
+    return await this.notificationModel.updateMany(
+      { receiverId: userId, isRead: false },
+      { isRead: true, readAt: new Date() },
+    );
+  }
+
+  // Xóa 1 thông báo
+  async remove(id: string, userId: string) {
+    const res = await this.notificationModel.deleteOne({
+      _id: id,
+      receiverId: userId,
+    });
+    if (res.deletedCount === 0) {
+      throw new BadRequestCustom(
+        'Thông báo không tồn tại hoặc không thuộc quyền sở hữu của bạn',
+      );
+    }
+    return res;
+  }
+
+  // Xóa tất cả thông báo của một user (Dọn sạch hòm thư)
+  async removeAll(userId: string) {
+    return await this.notificationModel.deleteMany({
+      receiverId: userId,
+    });
+  }
 }
