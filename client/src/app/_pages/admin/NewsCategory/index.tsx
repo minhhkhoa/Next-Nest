@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NewsLayout } from "./components/news-layout";
 import { CategoriesSidebar } from "./components/categories-sidebar";
 import { NewsTable } from "./components/news-table";
@@ -9,7 +9,7 @@ import { CategoryModal } from "./components/modals/category-modal";
 import { DeleteConfirmModal } from "./components/modals/delete-confirm-modal";
 import { SearchBar } from "./components/search-bar";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Badge, Plus } from "lucide-react";
 import {
   CategoryNewsResType,
   NewsResFilterType,
@@ -23,6 +23,7 @@ import {
 import { envConfig } from "../../../../../config";
 import { useDebounce } from "use-debounce";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
+import { useQueryFilter } from "@/hooks/useQueryFilter";
 
 const pageSize = Number(envConfig.NEXT_PUBLIC_PAGE_SIZE);
 
@@ -123,6 +124,13 @@ export default function NewsCate() {
     setCurrentPage(1);
   };
 
+  //- custom Hook
+  useQueryFilter("statusFilterNews", (value) => {
+    if (value === "inactive") {
+      setStatusFilter(value);
+    }
+  });
+
   return (
     <NewsLayout>
       <div className="flex flex-col lg:flex-row gap-6">
@@ -174,8 +182,8 @@ export default function NewsCate() {
             <div className="space-y-4">
               <SearchBar value={searchQuery} onChange={handleSearchChange} />
 
-              <span>Bộ lọc</span>
-              <div className="flex gap-2 flex-wrap">
+              <span>Lọc trạng thái các bài viết</span>
+              <div className="flex gap-2 flex-wrap mt-2">
                 <Button
                   variant={statusFilter === "" ? "default" : "outline"}
                   size="sm"
@@ -194,6 +202,7 @@ export default function NewsCate() {
                   variant={statusFilter === "inactive" ? "default" : "outline"}
                   size="sm"
                   onClick={() => handleStatusFilterChange("inactive")}
+                  className="relative"
                 >
                   Cần kích hoạt
                 </Button>

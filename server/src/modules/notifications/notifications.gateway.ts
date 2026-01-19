@@ -9,7 +9,6 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { WsJwtGuard } from 'src/common/guard/ws-jwt.guard';
-// import { WsJwtGuard } from './guards/ws-jwt.guard'; // Khoa cần viết thêm Guard này để check Token socket
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class NotificationsGateway implements OnGatewayConnection {

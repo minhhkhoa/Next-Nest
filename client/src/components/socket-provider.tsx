@@ -19,7 +19,8 @@ export const SocketListener = () => {
     // 1. Chỉ kết nối khi đã login và có thông tin user
     if (isLogin && user?._id) {
       if (!socket) {
-        socket = io(envConfig.NEXT_PUBLIC_API_URL_SERVER, {
+        //- cần dùng url base không có /api
+        socket = io(envConfig.NEXT_PUBLIC_API_URL_SERVER_BASE, {
           auth: {
             // Lấy token mới nhất từ local storage
             token: getAccessTokenFromLocalStorage(),
@@ -51,7 +52,7 @@ export const SocketListener = () => {
 
         // Kích hoạt React Query làm mới dữ liệu (Xóa cache cũ)
         // Làm mới danh sách thông báo
-        queryClient.invalidateQueries({ queryKey: ["notifications"] });
+        queryClient.invalidateQueries({ queryKey: ["notifications-filter"] });
 
         // Làm mới số lượng thông báo chưa đọc (Badge trên chuông)
         queryClient.invalidateQueries({ queryKey: ["notifications-count"] });

@@ -136,7 +136,8 @@ export const handleNotificationNavigation = (
 
   switch (type) {
     case NotificationType.NEWS_CREATED:
-      router.push(`/admin/news`);
+      //- cần cho nó filer luôn các news đang cần duyệt
+      router.push(`/admin/news?statusFilterNews=inactive`);
       break;
 
     case NotificationType.COMPANY_CREATED:

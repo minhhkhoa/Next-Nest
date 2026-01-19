@@ -8,7 +8,7 @@ import {
 import { CloudinaryService } from './cloudinary.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { fileUploadOptions } from './cloudinary/file-upload.options';
-import { Public } from 'src/common/decorator/customize';
+import { Public, PublicPermission } from 'src/common/decorator/customize';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { v2 as cloudinary } from 'cloudinary';
 import { ConfigService } from '@nestjs/config';
@@ -55,6 +55,7 @@ export class CloudinaryController {
     }
   }
 
+  @PublicPermission()
   @Get('signature')
   getSignature() {
     const timestamp = Math.floor(Date.now() / 1000);

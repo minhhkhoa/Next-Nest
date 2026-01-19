@@ -117,6 +117,7 @@ export class NewsService {
         .find({
           cateNewsID: { $in: listCateNewsIDs },
           isDeleted: false,
+          status: 'active',
         })
         .sort({ createdAt: -1 })
         .populate({
