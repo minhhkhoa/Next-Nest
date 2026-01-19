@@ -113,7 +113,7 @@ export function NewsTable({
                     ></span>
 
                     {/* Text */}
-                    {item.status === "active" ? "Hoạt Động" : "Không Hoạt Động"}
+                    {item.status === "active" ? "Hoạt Động" : "Cần phê duyệt"}
                   </Badge>
                 </TableCell>
 

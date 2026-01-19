@@ -19,7 +19,7 @@ import { MailModule } from './modules/mail/mail.module';
 import { PermissionsModule } from './modules/permissions/permissions.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
-
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -37,6 +37,12 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
         },
       }),
       inject: [ConfigService],
+    }),
+
+    //- config socket
+    EventEmitterModule.forRoot({
+      wildcard: false, // Không cần dùng ký tự đại diện để tối ưu hiệu năng
+      delimiter: '.',
     }),
 
     //- configModule giúp sử dụng file .env

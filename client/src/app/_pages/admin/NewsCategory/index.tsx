@@ -173,6 +173,8 @@ export default function NewsCate() {
             {/* Search and filters */}
             <div className="space-y-4">
               <SearchBar value={searchQuery} onChange={handleSearchChange} />
+
+              <span>Bộ lọc</span>
               <div className="flex gap-2 flex-wrap">
                 <Button
                   variant={statusFilter === "" ? "default" : "outline"}
@@ -193,7 +195,7 @@ export default function NewsCate() {
                   size="sm"
                   onClick={() => handleStatusFilterChange("inactive")}
                 >
-                  Dừng Hoạt Động
+                  Cần kích hoạt
                 </Button>
               </div>
             </div>

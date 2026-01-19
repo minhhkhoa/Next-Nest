@@ -12,12 +12,19 @@ import aqp from 'api-query-params';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { CateNewsService } from 'src/modules/cate-news/cate-news.service';
 import slugify from 'slugify';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { NotificationType } from 'src/common/constants/notification-type.enum';
+import { UserService } from '../user/user.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class NewsService {
   constructor(
     private readonly translationService: TranslationService,
     private readonly cateNewsService: CateNewsService,
+    private eventEmitter: EventEmitter2,
+    private userService: UserService,
+    private configService: ConfigService,
     @InjectModel(News.name)
     private newsModel: SoftDeleteModel<NewsDocument>,
   ) {}
@@ -37,6 +44,28 @@ export class NewsService {
           email: user.email,
         },
       });
+
+      //- start ping event
+      //- bắn thông báo cho super_admin
+      const textRole = this.configService.get<string>('role_super_admin');
+      const userAdmin = await this.userService.getUserByRoleSuperAdmin(
+        textRole!,
+      );
+
+      // Bắn sự kiện - Xong việc của Company, không quan tâm notify xử lý thế nào
+      this.eventEmitter.emit(NotificationType.NEWS_CREATED, {
+        receiverId: userAdmin?._id.toString(), // Lấy từ cấu hình hoặc DB
+        senderId: user.id,
+        title: 'Yêu cầu duyệt bài viết mới',
+        content: `Người dùng ${user.name} vừa tạo bài viết "${news.title.vi}", vui lòng phê duyệt.`,
+        metadata: {
+          module: 'NEWS',
+          action: 'CREATE',
+          resourceId: news._id,
+        },
+      });
+      //- nó sẽ được gửi tới NotificationListener
+      //- end ping event
 
       return {
         _id: news._id,

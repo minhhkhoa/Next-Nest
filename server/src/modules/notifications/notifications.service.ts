@@ -1,12 +1,13 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateNotificationDto } from './dto/create-notification.dto';
-import { UpdateNotificationDto } from './dto/update-notification.dto';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 import { TranslationService } from 'src/common/translation/translation.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
-import { NotificationDocument } from './schemas/notification.schema';
-import aqp from 'api-query-params';
+import {
+  Notification,
+  NotificationDocument,
+} from './schemas/notification.schema';
 import { FindNotifycationQueryDto } from './dto/notifycationDto-dto';
 import mongoose from 'mongoose';
 

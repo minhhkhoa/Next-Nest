@@ -188,6 +188,24 @@ export class UserService {
     }
   }
 
+  async getUserByRoleSuperAdmin(name: string) {
+    try {
+      if (!name) throw new BadRequestCustom('name khong duoc de trong', !!name);
+
+      const role = await this.roleService.getRoleByName(name);
+
+      if (!role) throw new BadRequestCustom('Không tìm thấy vai trò admin');
+
+      const userAdmin = await this.userModel.findOne({
+        roleID: role._id,
+      });
+
+      return userAdmin;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
   async findUserByProviderIDSocial(
     idProvider: string,
   ): Promise<UserDocument | null> {

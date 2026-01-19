@@ -55,37 +55,42 @@ export const handleInitName = (name: string) => {
  * @param file File từ input
  * @returns Promise<string> secure_url sau khi upload thành công
  */
-export async function uploadToCloudinary(file: File): Promise<string> {
-  if (!file) throw new Error("No file provided");
+export async function uploadToCloudinary(file: File): Promise<string | undefined> {
+  try {
+    if (!file) throw new Error("No file provided");
 
-  // --- Gọi BE để lấy chữ ký Cloudinary ---
-  const sigRes = await http.get<ApiResponse<CloudinarySignatureResponse>>(
-    `${envConfig.NEXT_PUBLIC_API_URL_SERVER}/cloudinary/signature`
-  );
-  if (!sigRes.isOk) {
-    throw new Error("Failed to get Cloudinary signature");
+    // --- Gọi BE để lấy chữ ký Cloudinary ---
+    const sigRes = await http.get<ApiResponse<CloudinarySignatureResponse>>(
+      `${envConfig.NEXT_PUBLIC_API_URL_SERVER}/cloudinary/signature`
+    );
+    if (!sigRes.isOk) {
+      throw new Error("Failed to get Cloudinary signature");
+    }
+
+    const { timestamp, signature, apiKey, cloudName, folder } =
+      sigRes.data as CloudinarySignatureResponse;
+
+    // --- Tạo formData để gửi lên Cloudinary ---
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("api_key", apiKey);
+    formData.append("timestamp", timestamp.toString());
+    formData.append("signature", signature);
+    if (folder) formData.append("folder", folder);
+
+    // --- Gửi trực tiếp lên Cloudinary ---
+    const uploadUrl = `${envConfig.NEXT_PUBLIC_CLOUD_API}/${cloudName}/auto/upload`;
+
+    const res = await http.post<CloudinaryUploadResponse>(uploadUrl, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+      withCredentials: false,
+    });
+
+    return res.secure_url;
+  } catch (error) {
+    console.log("error cloudinary: ", error);
+    return undefined;
   }
-
-  const { timestamp, signature, apiKey, cloudName, folder } =
-    sigRes.data as CloudinarySignatureResponse;
-
-  // --- Tạo formData để gửi lên Cloudinary ---
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("api_key", apiKey);
-  formData.append("timestamp", timestamp.toString());
-  formData.append("signature", signature);
-  if (folder) formData.append("folder", folder);
-
-  // --- Gửi trực tiếp lên Cloudinary ---
-  const uploadUrl = `${envConfig.NEXT_PUBLIC_CLOUD_API}/${cloudName}/auto/upload`;
-
-  const res = await http.post<CloudinaryUploadResponse>(uploadUrl, formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-    withCredentials: false,
-  });
-
-  return res.secure_url;
 }
 //- end cloudinary
 

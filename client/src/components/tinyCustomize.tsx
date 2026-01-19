@@ -51,6 +51,8 @@ export default function TinyEditor({ field, placeholder }: TinyEditorProps) {
         // gọi API upload
         const url = await uploadToCloudinary(file);
 
+        if (!url) throw new Error("Upload failed");
+
         // enable Save
         saveBtn?.removeAttribute("disabled");
 

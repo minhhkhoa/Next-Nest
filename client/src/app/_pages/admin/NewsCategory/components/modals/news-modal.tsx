@@ -98,6 +98,7 @@ export function NewsModal({ news, categories, onClose }: NewsModalProps) {
       if (!file) return;
 
       const url = await uploadToCloudinary(file);
+      console.log("check>>> url: ", url);
 
       //- save to form
       form.setValue("image", url);
@@ -110,10 +111,8 @@ export function NewsModal({ news, categories, onClose }: NewsModalProps) {
 
   const handleSubmit = async (values: NewsCreateType) => {
     try {
-      const payload = {
-        ...values,
-      };
       if (isEditing) {
+        const payload = { ...values };
         const resUpdate = await updateNewsMutation({
           id: news?._id || "",
           payload,
@@ -122,7 +121,10 @@ export function NewsModal({ news, categories, onClose }: NewsModalProps) {
 
         SoftSuccessSonner(resUpdate.message);
       } else {
-        const resCreate = await createNewsMutation(payload);
+        //- ko gửi status về server
+        const { status, ...rest } = values;
+        const newPayload = { ...rest };
+        const resCreate = await createNewsMutation(newPayload);
 
         if (resCreate.isError) return;
 
@@ -254,31 +256,33 @@ export function NewsModal({ news, categories, onClose }: NewsModalProps) {
               />
 
               {/* Status */}
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Trạng thái</FormLabel>
-                    <FormControl>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Chọn trạng thái" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="active">Hoạt Động</SelectItem>
-                          <SelectItem value="inactive">
-                            Không Hoạt Động
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
+              {isEditing && (
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Trạng thái</FormLabel>
+                      <FormControl>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Chọn trạng thái" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active">Hoạt Động</SelectItem>
+                            <SelectItem value="inactive">
+                              Không Hoạt Động
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
 
             {/* Summary */}

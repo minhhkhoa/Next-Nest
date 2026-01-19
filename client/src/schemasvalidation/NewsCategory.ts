@@ -104,7 +104,7 @@ export const newsCreate = z.object({
   summary: z.string().min(1, "Nhập tóm tắt"),
   description: z.string().optional(),
   image: z.string().optional(),
-  status: z.enum(["active", "inactive"]),
+  status: z.enum(["active", "inactive"]).optional(),
 });
 
 export type NewsCreateType = z.infer<typeof newsCreate>;
