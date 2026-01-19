@@ -1,3 +1,4 @@
+import { AuthModule } from '../auth/auth.module';
 import { Module } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { NotificationsController } from './notifications.controller';
@@ -13,6 +14,7 @@ import { NotificationsListener } from './notifications.listener';
 
 @Module({
   imports: [
+    AuthModule,
     TranslationModule,
     MongooseModule.forFeature([
       { name: Notification.name, schema: NotificationSchema },

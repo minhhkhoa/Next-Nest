@@ -42,6 +42,6 @@ import { RolesModule } from '../roles/roles.module';
     FacebookStrategy,
     GoogleStrategy,
   ],
-  exports: [AuthService],
+  exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

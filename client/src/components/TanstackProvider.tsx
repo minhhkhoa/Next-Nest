@@ -12,6 +12,8 @@ import { UserResponseType } from "@/schemasvalidation/user";
 import { accessInstance } from "@/lib/http";
 import { jwtDecode } from "jwt-decode";
 import SoftDestructiveSonner from "./shadcn-studio/sonner/SoftDestructiveSonner";
+import { SocketListener } from "./socket-provider";
+import { Socket } from "socket.io-client";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,6 +28,10 @@ interface AppStoreType {
   setLogin: (value: boolean) => void;
   user: UserResponseType;
   setUser: (value: UserResponseType) => void;
+
+  //- config socket
+  socket: Socket | null;
+  setSocket: (socket: Socket | null) => void;
 }
 
 export const useAppStore = create<AppStoreType>((set) => ({
@@ -33,6 +39,9 @@ export const useAppStore = create<AppStoreType>((set) => ({
   setLogin: (value) => set({ isLogin: value }),
   user: {} as UserResponseType,
   setUser: (value) => set({ user: value }),
+
+  socket: null,
+  setSocket: (value) => set({ socket: value }),
 }));
 
 export default function TanstackProvider({
@@ -73,6 +82,7 @@ export default function TanstackProvider({
   }, [handleRemoveToken]);
   return (
     <QueryClientProvider client={queryClient}>
+      <SocketListener />
       {children}
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>

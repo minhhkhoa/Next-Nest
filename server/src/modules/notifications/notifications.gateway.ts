@@ -1,35 +1,48 @@
+import { UseGuards } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import {
   WebSocketGateway,
   WebSocketServer,
   OnGatewayConnection,
-  OnGatewayDisconnect,
+  SubscribeMessage,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { WsJwtGuard } from 'src/common/guard/ws-jwt.guard';
 // import { WsJwtGuard } from './guards/ws-jwt.guard'; // Khoa cần viết thêm Guard này để check Token socket
 
-@WebSocketGateway({
-  cors: { origin: '*' }, // Trong thực tế Khoa nên giới hạn domain Next.js
-})
-export class NotificationsGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
-{
-  @WebSocketServer()
-  server: Server;
+@WebSocketGateway({ cors: { origin: '*' } })
+export class NotificationsGateway implements OnGatewayConnection {
+  @WebSocketServer() server: Server;
 
-  handleConnection(client: Socket) {
-    // 1. Lấy userId từ handshake (đã qua Guard validate)
-    const userId = client.handshake.query.userId as string;
-    if (userId) {
-      client.join(userId); // Cho user vào phòng riêng của họ
-      console.log(`Client connected: ${userId}`);
+  constructor(
+    private jwtService: JwtService,
+    private configService: ConfigService,
+  ) {}
+
+  // Khi có người kết nối, ta verify thủ công một lần để join room
+  async handleConnection(client: Socket) {
+    try {
+      const token = client.handshake.auth?.token;
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: this.configService.get<string>('JWT_ACCESS_TOKEN_SECRET'),
+      });
+
+      const userId = payload.id;
+      client.join(userId);
+      console.log(`Socket joined room: ${userId}`);
+    } catch (e) {
+      client.disconnect(); // Ngắt nếu không hợp lệ
     }
   }
 
-  handleDisconnect(client: Socket) {
-    console.log('Client disconnected');
+  // Dùng Guard cho các event cụ thể nếu cần (ví dụ client gửi tin lên)
+  @UseGuards(WsJwtGuard)
+  @SubscribeMessage('subscribe_to_topic')
+  handleEvent(client: Socket, data: any) {
+    // Logic xử lý
   }
 
-  // Hàm helper để các service khác gọi tới
   sendToUser(userId: string, payload: any) {
     this.server.to(userId).emit('new-notification', payload);
   }
