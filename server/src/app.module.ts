@@ -41,6 +41,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 
     //- config socket
     EventEmitterModule.forRoot({
+      global: true, //- giúp các module khác có thể dùng mà không cần import
       wildcard: false, // Không cần dùng ký tự đại diện để tối ưu hiệu năng
       delimiter: '.',
     }),

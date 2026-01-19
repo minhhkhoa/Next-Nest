@@ -54,7 +54,7 @@ export class NewsService {
 
       // Bắn sự kiện - Xong việc của Company, không quan tâm notify xử lý thế nào
       this.eventEmitter.emit(NotificationType.NEWS_CREATED, {
-        receiverId: userAdmin?._id.toString(), // Lấy từ cấu hình hoặc DB
+        receiverId: userAdmin?.id, // Lấy từ cấu hình hoặc DB
         senderId: user.id,
         title: 'Yêu cầu duyệt bài viết mới',
         content: `Người dùng ${user.name} vừa tạo bài viết "${news.title.vi}", vui lòng phê duyệt.`,
