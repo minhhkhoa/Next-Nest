@@ -20,12 +20,10 @@ export const userDecorator = createParamDecorator(
   },
 );
 
-export const IS_PUBLIC_PERMISSION = 'isPublicPermission';
-export const PublicPermission = () =>
-  SetMetadata(IS_PUBLIC_PERMISSION, true);
-
 //- decorator để gắn các module cho việc phân vai trò
 export const IS_BUSINESS_MODULE = 'isBusinessModule';
 export const BusinessModule = () => SetMetadata(IS_BUSINESS_MODULE, true);
 
-
+export const IS_PUBLIC_PERMISSION_KEY = 'isPublicPermission';
+export const PublicPermission = () =>
+  SetMetadata(IS_PUBLIC_PERMISSION_KEY, true);

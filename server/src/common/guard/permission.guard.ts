@@ -6,7 +6,10 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
-import { IS_PUBLIC_KEY, IS_PUBLIC_PERMISSION } from '../decorator/customize';
+import {
+  IS_PUBLIC_KEY,
+  IS_PUBLIC_PERMISSION_KEY,
+} from '../decorator/customize';
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
@@ -19,12 +22,19 @@ export class PermissionGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    // 1. Bypass cho các route Public
+    // 1. Bypass cho các route Public (không cần login)
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
     if (isPublic) return true;
+
+    // 1.1. Bypass cho các route Public Permission (chỉ cần login)
+    const isPublicPermission = this.reflector.getAllAndOverride<boolean>(
+      IS_PUBLIC_PERMISSION_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+    if (isPublicPermission) return true;
 
     // 2. Lấy thông tin Request
     const method = request.method;

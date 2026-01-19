@@ -10,7 +10,11 @@ import {
 } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
-import { ResponseMessage, userDecorator } from 'src/common/decorator/customize';
+import {
+  PublicPermission,
+  ResponseMessage,
+  userDecorator,
+} from 'src/common/decorator/customize';
 import { ApiOperation } from '@nestjs/swagger';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { FindNotifycationQueryDto } from './dto/notifycationDto-dto';
@@ -20,6 +24,7 @@ export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
   @Get('count-unread')
+  @PublicPermission()
   @ResponseMessage('Lấy số lượng thông báo chưa đọc')
   @ApiOperation({ summary: 'Lấy số lượng thông báo chưa đọc' })
   getCountUnread(@userDecorator() user: UserDecoratorType) {
@@ -27,6 +32,7 @@ export class NotificationsController {
   }
 
   @Patch('mark-all-read')
+  @PublicPermission()
   @ResponseMessage('Đã đánh dấu tất cả là đã đọc')
   @ApiOperation({ summary: 'Đánh dấu tất cả là đã đọc' })
   markAllRead(@userDecorator() user: UserDecoratorType) {
@@ -42,6 +48,7 @@ export class NotificationsController {
 
   @ResponseMessage('Lấy tất cả thông báo có lọc nâng cao')
   @ApiOperation({ summary: 'get notification by filter' })
+  @PublicPermission()
   @Get()
   findAll(
     @userDecorator() user: UserDecoratorType,
@@ -52,6 +59,7 @@ export class NotificationsController {
 
   // Đánh dấu 1 thông báo là đã đọc
   @Patch(':id')
+  @PublicPermission()
   @ResponseMessage('Đã đánh dấu là đã đọc')
   @ApiOperation({ summary: 'Đánh dấu là đã đọc' })
   update(@Param('id') id: string, @userDecorator() user: UserDecoratorType) {
@@ -59,6 +67,7 @@ export class NotificationsController {
   }
 
   @Delete('clear-all')
+  @PublicPermission()
   @ResponseMessage('Đã dọn sạch tất cả thông báo')
   @ApiOperation({ summary: 'Xóa tất cả thông báo của người dùng' })
   clearAll(@userDecorator() user: UserDecoratorType) {
@@ -66,6 +75,7 @@ export class NotificationsController {
   }
 
   @Delete(':id')
+  @PublicPermission()
   @ResponseMessage('Xóa thông báo thành công')
   @ApiOperation({ summary: 'Xóa một thông báo' })
   remove(@Param('id') id: string, @userDecorator() user: UserDecoratorType) {
