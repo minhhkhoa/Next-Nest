@@ -1,4 +1,4 @@
-import PageRecruiter from "@/app/_pages/admin/recuiter";
+import PageRecruiter from "@/_pages/admin/recuiter";
 import React from "react";
 
 export default function RecruiterPage() {

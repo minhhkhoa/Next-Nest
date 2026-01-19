@@ -1,8 +1,8 @@
 "use client";
 
+import { BasicInfoSection } from "@/_pages/client/profile/basic-info-section";
+import { DetailedInfoSection } from "@/_pages/client/profile/detailed-info-section";
 import { Card } from "@/components/ui/card";
-import { BasicInfoSection } from "@/app/_pages/client/profile/basic-info-section";
-import { DetailedInfoSection } from "@/app/_pages/client/profile/detailed-info-section";
 
 export default function ProfilePage() {
   return (

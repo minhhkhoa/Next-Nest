@@ -1,4 +1,4 @@
-import UserPageManagement from "@/app/_pages/admin/user";
+import UserPageManagement from "@/_pages/admin/user";
 import React from "react";
 
 export default function UserPage() {

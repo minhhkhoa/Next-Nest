@@ -1,8 +1,8 @@
 import BlockWrap from "./BlockWrap";
 import { cookies } from "next/headers";
-import HeaderClient from "../_pages/components/HeaderClient";
 import Footer from "./Footer";
 import BreadcrumbSite from "@/components/site-breadcrumb";
+import HeaderClient from "@/_pages/components/HeaderClient";
 
 export default async function ClientLayout({
   children,

@@ -1,8 +1,8 @@
 import React from "react";
-import BlockSettings from "@/app/_pages/client/settings/BlockSettings";
 import { cookies } from "next/headers";
 import { envConfig } from "../../../../config";
 import { UserResponseType } from "@/schemasvalidation/user";
+import BlockSettings from "@/_pages/client/settings/BlockSettings";
 
 export default async function SettingsPage() {
   const cookieStore = await cookies();

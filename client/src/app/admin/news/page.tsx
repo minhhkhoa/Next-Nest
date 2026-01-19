@@ -1,6 +1,10 @@
-import NewsCate from "@/app/_pages/admin/NewsCategory";
-import React from "react";
+import NewsCate from "@/_pages/admin/NewsCategory";
+import React, { Suspense } from "react";
 
 export default function NewsPage() {
-  return <NewsCate />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <NewsCate />
+    </Suspense>
+  );
 }

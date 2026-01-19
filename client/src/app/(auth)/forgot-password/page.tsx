@@ -1,4 +1,4 @@
-import ForgotPasswordForm from "@/app/_pages/auth/forgot-password/ForgotPasswordForm";
+import ForgotPasswordForm from "@/_pages/auth/forgot-password/ForgotPasswordForm";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 

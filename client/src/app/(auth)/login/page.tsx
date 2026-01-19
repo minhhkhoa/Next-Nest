@@ -1,4 +1,4 @@
-import LoginForm from "@/app/_pages/auth/login/LoginForm";
+import LoginForm from "@/_pages/auth/login/LoginForm";
 
 export default function LoginPage() {
   return (

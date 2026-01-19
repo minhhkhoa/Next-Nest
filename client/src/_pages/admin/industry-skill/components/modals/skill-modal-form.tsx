@@ -1,6 +1,5 @@
 "use client";
 
-import { MultiSelectTree } from "@/app/_pages/components/multi-select-industry";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +15,7 @@ import {
 import { useCreateSkill, useUpdateSkill } from "@/queries/useSkill";
 import { Spinner } from "@/components/ui/spinner";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
+import { MultiSelectTree } from "@/_pages/components/multi-select-industry";
 
 interface Option {
   value: string;

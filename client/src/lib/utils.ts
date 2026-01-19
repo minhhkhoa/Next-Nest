@@ -131,7 +131,6 @@ export const handleNotificationNavigation = (
   item: NotificationResType,
   router: AppRouterInstance
 ) => {
-  const resourceId = item.metadata?.resourceId;
   const type = item.type as NotificationType;
 
   switch (type) {

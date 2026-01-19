@@ -20,7 +20,7 @@ import { Check, ChevronsUpDown } from "lucide-react";
 import { useState } from "react";
 import { useGetIndustryFilter } from "@/queries/useIndustry";
 import { useDebounce } from "use-debounce";
-import { envConfig } from "../../../../../../config";
+import { envConfig } from "../../../../../config";
 
 interface SelectSearchIndustryProps {
   value: string;

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Facebook, Mail, Eye, EyeClosed } from "lucide-react";
-import { RegisterBody, RegisterBodyType } from "@/schemasvalidation/auth";
+import { LoginBody, LoginBodyType } from "@/schemasvalidation/auth";
 import {
   Form,
   FormControl,
@@ -25,53 +25,46 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useTheme } from "next-themes";
-import { useRegisterMutation } from "@/queries/useAuth";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { envConfig } from "../../../../../config";
+import { useLoginMutation } from "@/queries/useAuth";
 import { setAccessTokenToLocalStorage } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 import { useAppStore } from "@/components/TanstackProvider";
+import Link from "next/link";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
+import { envConfig } from "../../../../config";
 
-export default function RegisterForm() {
+export default function LoginForm() {
   const { setLogin } = useAppStore();
   const [isClient, setIsClient] = useState(false);
   const { theme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
-  const { isPending, mutateAsync: registerMutation } = useRegisterMutation();
-  const form = useForm<RegisterBodyType>({
-    resolver: zodResolver(RegisterBody),
+  const { isPending, mutateAsync: loginMutation } = useLoginMutation();
+  const form = useForm<LoginBodyType>({
+    resolver: zodResolver(LoginBody),
     defaultValues: {
-      name: "",
       email: "",
       password: "",
     },
   });
   const router = useRouter();
 
-  const onSubmit = async (data: RegisterBodyType) => {
+  const onSubmit = async (data: LoginBodyType) => {
     try {
-      const res = await registerMutation(data);
-      if (res.isError) return;
+      const result = await loginMutation(data);
+      if (result.statusCode === 201) {
+        const access_token = result?.data?.access_token as string;
 
-      toast.success(() => (
-        <div className="flex items-center justify-center">
-          <p>Chúc mừng bạn đã đăng ký tài khoản thành công🎇</p>
+        //- ghi vao localStorage
+        setAccessTokenToLocalStorage(access_token);
+        setLogin(true);
 
-          <Button
-            variant={"outline"}
-            onClick={() => router.push("/login")}
-            className="!text-white"
-          >
-            Đăng nhập
-          </Button>
-        </div>
-      ));
+        //- chuyen trang
+        router.push("/");
+        SoftSuccessSonner("Đăng nhập thành công!");
+      }
     } catch (error) {
-      console.log("error: ", error);
-    } finally {
-      onResetField();
+      console.log("error login: ", error);
     }
   };
 
@@ -89,22 +82,38 @@ export default function RegisterForm() {
 
     if (popup) {
       const handleMessage = (event: MessageEvent) => {
-        if (event.origin !== envConfig.NEXT_PUBLIC_API_URL_SERVER) return;
+        // 1. Chuyển "http://localhost:2302/api" thành "http://localhost:2302"
+        const serverOrigin = new URL(envConfig.NEXT_PUBLIC_API_URL_SERVER)
+          .origin;
+
+        // 2. So sánh origin chuẩn
+        if (event.origin !== serverOrigin) {
+          console.warn(
+            "Origin không khớp:",
+            event.origin,
+            "kỳ vọng:",
+            serverOrigin
+          );
+          return;
+        }
+
         const { token, error } = event.data;
 
         if (token) {
-          console.log("[OAuth] Received token:", token);
           setAccessTokenToLocalStorage(token);
+
+          // Xử lý dọn dẹp
           popup.close();
           window.removeEventListener("message", handleMessage);
-          setLogin(true);
 
-          //- chuyen trang
+          // Cập nhật trạng thái và điều hướng
+          setLogin(true);
           router.push("/");
           SoftSuccessSonner(`Đăng nhập với ${provider} thành công!`);
         }
 
         if (error) {
+          console.log("error: ", error);
           popup.close();
           window.removeEventListener("message", handleMessage);
           SoftDestructiveSonner(error);
@@ -112,12 +121,6 @@ export default function RegisterForm() {
       };
       window.addEventListener("message", handleMessage);
     }
-  };
-
-  const onResetField = () => {
-    form.resetField("name");
-    form.resetField("email");
-    form.resetField("password");
   };
 
   useEffect(() => {
@@ -133,10 +136,10 @@ export default function RegisterForm() {
     <Card className="w-full max-w-md shadow-2xl border-border/50">
       <CardHeader className="space-y-2 text-center">
         <CardTitle className="text-3xl font-bold tracking-tight">
-          Đăng ký
+          Đăng nhập
         </CardTitle>
         <CardDescription className="text-base">
-          Nhập thông tin của bạn để hoàn tất đăng ký tài khoản
+          Nhập thông tin của bạn để tiếp tục
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -148,26 +151,16 @@ export default function RegisterForm() {
           >
             <FormField
               control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tên</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Nguyễn Văn A" {...field} autoFocus />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="example@gmail.com" {...field} />
+                    <Input
+                      placeholder="example@gmail.com"
+                      {...field}
+                      autoFocus
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -210,12 +203,22 @@ export default function RegisterForm() {
               </div>
             </div>
 
+            {/* quên mật khẩu */}
+            <div className="flex justify-end">
+              <Link
+                href="/forgot-password"
+                className="text-sm text-muted-foreground hover:text-primary"
+              >
+                Quên mật khẩu?
+              </Link>
+            </div>
+
             <Button
               type="submit"
               className="w-full select-none" //- select-none: giúp click đúp không bôi text
               disabled={isPending}
             >
-              {isPending ? "Đang đăng ký..." : "Đăng ký"}
+              {isPending ? "Đang đăng nhập..." : "Đăng nhập"}
             </Button>
           </form>
         </Form>
@@ -226,7 +229,7 @@ export default function RegisterForm() {
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-card px-2 text-muted-foreground">
-              Hoặc đăng ký với
+              Hoặc tiếp tục với
             </span>
           </div>
         </div>
@@ -255,9 +258,12 @@ export default function RegisterForm() {
       </CardContent>
       <CardFooter className="flex justify-center">
         <p className="text-sm text-muted-foreground">
-          Bạn đã có tài khoản?{" "}
-          <a href="/login" className="text-primary font-medium hover:underline">
-            Đăng nhập ngay
+          Bạn chưa có tài khoản?{" "}
+          <a
+            href="/register"
+            className="text-primary font-medium hover:underline"
+          >
+            Đăng ký ngay
           </a>
         </p>
       </CardFooter>

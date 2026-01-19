@@ -1,4 +1,4 @@
-import RegisterForm from "@/app/_pages/auth/register/RegisterForm";
+import RegisterForm from "@/_pages/auth/register/RegisterForm";
 
 export default function RegisterPage() {
   return (

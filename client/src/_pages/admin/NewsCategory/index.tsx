@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { NewsLayout } from "./components/news-layout";
 import { CategoriesSidebar } from "./components/categories-sidebar";
 import { NewsTable } from "./components/news-table";
@@ -9,7 +9,7 @@ import { CategoryModal } from "./components/modals/category-modal";
 import { DeleteConfirmModal } from "./components/modals/delete-confirm-modal";
 import { SearchBar } from "./components/search-bar";
 import { Button } from "@/components/ui/button";
-import { Badge, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import {
   CategoryNewsResType,
   NewsResFilterType,
@@ -20,10 +20,10 @@ import {
   useGetListCategories,
   useGetListNewsFilter,
 } from "@/queries/useNewsCategory";
-import { envConfig } from "../../../../../config";
 import { useDebounce } from "use-debounce";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import { useQueryFilter } from "@/hooks/useQueryFilter";
+import { envConfig } from "../../../../config";
 
 const pageSize = Number(envConfig.NEXT_PUBLIC_PAGE_SIZE);
 

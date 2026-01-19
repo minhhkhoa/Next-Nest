@@ -1,4 +1,4 @@
-import CategoryNewsPage from "@/app/_pages/client/CateNews/CategoryNews";
+import CategoryNewsPage from "@/_pages/client/CateNews/CategoryNews";
 import React from "react";
 
 export default async function CateNewsPage({
