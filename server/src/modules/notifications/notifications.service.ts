@@ -26,12 +26,9 @@ export class NotificationsService {
         createNotificationDto,
       );
 
-      const notifycation = await this.notificationModel.create(dataLang);
+      const notification = await this.notificationModel.create(dataLang);
 
-      return {
-        _id: notifycation._id,
-        title: notifycation.title.en,
-      };
+      return notification.toObject();
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }

@@ -52,7 +52,7 @@ export class NewsService {
         textRole!,
       );
 
-      // Bắn sự kiện - Xong việc của Company, không quan tâm notify xử lý thế nào
+      // Bắn sự kiện - Xong việc của News, không quan tâm notify xử lý thế nào
       this.eventEmitter.emit(NotificationType.NEWS_CREATED, {
         receiverId: userAdmin?.id, // Lấy từ cấu hình hoặc DB
         senderId: user.id,

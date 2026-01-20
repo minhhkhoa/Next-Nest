@@ -8,7 +8,7 @@ import SoftSuccessSonner from "./shadcn-studio/sonner/SoftSuccessSonner";
 import { envConfig } from "../../config";
 import { getAccessTokenFromLocalStorage } from "@/lib/utils";
 
-// Biến instance bên ngoài để tránh khởi tạo lại khi re-render
+//- Biến instance bên ngoài để tránh khởi tạo lại khi re-render
 let socket: Socket | null = null;
 
 export const SocketListener = () => {
@@ -16,10 +16,11 @@ export const SocketListener = () => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    // 1. Chỉ kết nối khi đã login và có thông tin user
+    //- 1. Chỉ kết nối khi đã login và có thông tin user
     if (isLogin && user?._id) {
       if (!socket) {
-        //- cần dùng url base không có /api
+        //- Cần dùng url base không có /api
+        //- Bắt đầu tạo kết nối tới socket server
         socket = io(envConfig.NEXT_PUBLIC_API_URL_SERVER_BASE, {
           auth: {
             // Lấy token mới nhất từ local storage
@@ -33,47 +34,45 @@ export const SocketListener = () => {
           reconnectionAttempts: 5,
         });
 
-        // Lưu instance vào Zustand để NotificationBell có thể sử dụng
+        //- Lưu instance vào Zustand để NotificationBell có thể sử dụng
         setSocket(socket);
       }
 
-      // 2. Lắng nghe sự kiện kết nối thành công
+      //- 2. Lắng nghe sự kiện kết nối thành công
       socket.on("connect", () => {
         console.log("✅ Socket connected:", socket?.id);
       });
 
-      // 3. Lắng nghe sự kiện thông báo mới từ NestJS
+      //- 3. Lắng nghe sự kiện thông báo mới từ NestJS
       socket.on("new-notification", (data) => {
         console.log("📩 Receive new notification:", data);
 
-        // Hiển thị Toast thông báo nhanh (Ưu tiên tiếng Việt)
-        const title = data.title?.vi || data.title?.en || "Thông báo mới";
-        SoftSuccessSonner(title);
+        //- Hiển thị Toast thông báo nhanh
+        SoftSuccessSonner("Bạn có một thông báo mới!");
 
-        // Kích hoạt React Query làm mới dữ liệu (Xóa cache cũ)
-        // Làm mới danh sách thông báo
+        //- Làm mới danh sách thông báo
         queryClient.invalidateQueries({ queryKey: ["notifications-filter"] });
 
-        // Làm mới số lượng thông báo chưa đọc (Badge trên chuông)
+        //- Làm mới số lượng thông báo chưa đọc (Badge trên chuông)
         queryClient.invalidateQueries({ queryKey: ["notifications-count"] });
       });
 
-      // 4. Lắng nghe lỗi kết nối (Ví dụ: Sai token hoặc server sập)
+      //- 4. Lắng nghe lỗi kết nối
       socket.on("connect_error", (err) => {
         console.error("❌ Socket connection error:", err.message);
       });
     }
 
-    // Cleanup function: Chạy khi component unmount hoặc khi logout
+    //- Cleanup function: Chạy khi component unmount hoặc khi logout
     return () => {
       if (socket) {
         console.log("🔌 Socket disconnecting...");
         socket.disconnect();
         socket = null;
-        setSocket(null); // Xóa instance trong Zustand
+        setSocket(null); //- Xóa instance trong Zustand
       }
     };
   }, [isLogin, user?._id, queryClient, setSocket]);
 
-  return null; // Component này chỉ đóng vai trò logic, không render UI
+  return null; //- Component này chỉ đóng vai trò logic, không render UI
 };
