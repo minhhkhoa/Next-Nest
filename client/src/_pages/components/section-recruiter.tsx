@@ -9,6 +9,13 @@ import { envConfig } from "../../../config";
 
 export default function SectionRecruiter() {
   const { user } = useAppStore();
+
+  //- ngăn nháy vì server không biết biến user nên nó sẽ show bạn là nhà tuyển dụng
+  //- và khi hydrat thì thấy có user và vi phạm if isRecruiter nên tắt ==> Nháy
+  if (!user?._id) {
+    return null;
+  }
+
   const isRecruiter =
     user?.roleCodeName === envConfig.NEXT_PUBLIC_ROLE_RECRUITER;
   const isRecruiterAdmin =
