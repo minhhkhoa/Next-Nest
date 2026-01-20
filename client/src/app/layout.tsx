@@ -6,6 +6,7 @@ import TanstackProvider from "@/components/TanstackProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { ColorThemeProvider } from "@/components/ColorThemeProvider";
 import BackToTop from "@/components/BackToTop";
+import BlockWrap from "./BlockWrap";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -66,7 +67,7 @@ export default function RootLayout({
           >
             <ColorThemeProvider>
               <BackToTop />
-              {children}
+              <BlockWrap>{children}</BlockWrap>
               <Toaster position="top-right" richColors />
             </ColorThemeProvider>
           </ThemeProvider>

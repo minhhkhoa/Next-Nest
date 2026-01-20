@@ -1,4 +1,3 @@
-import BlockWrap from "./BlockWrap";
 import { cookies } from "next/headers";
 import Footer from "./Footer";
 import BreadcrumbSite from "@/components/site-breadcrumb";
@@ -14,21 +13,19 @@ export default async function ClientLayout({
   const isLoginSSR = !!accessToken;
 
   return (
-    <BlockWrap>
-      <div className="md:px-26">
-        <HeaderClient isLoginSSR={isLoginSSR} />
+    <div className="md:px-26">
+      <HeaderClient isLoginSSR={isLoginSSR} />
 
-        {/* breadcrumb */}
-        <div className="mt-2">
-          <BreadcrumbSite />
-        </div>
-        {children}
-
-        {/* footer */}
-        <div className="md:-mx-30">
-          <Footer />
-        </div>
+      {/* breadcrumb */}
+      <div className="mt-2">
+        <BreadcrumbSite />
       </div>
-    </BlockWrap>
+      {children}
+
+      {/* footer */}
+      <div className="md:-mx-30">
+        <Footer />
+      </div>
+    </div>
   );
 }

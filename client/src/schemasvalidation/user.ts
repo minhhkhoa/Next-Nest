@@ -9,6 +9,7 @@ export const apiProfileUserRes = z.object({
     name: z.string(),
     email: z.string().nullable(),
     avatar: z.string().nullable().optional(),
+    roleCodeName: z.string(),
     employerInfo: z
       .object({
         companyID: z.string(),

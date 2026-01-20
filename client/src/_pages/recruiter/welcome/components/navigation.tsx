@@ -66,7 +66,9 @@ export default function Navigation({
             <Button variant="ghost" size="sm" onClick={handleLogout}>
               <Link href={"/login"}>Đăng nhập</Link>
             </Button>
-            <Button size="sm">Đăng ký</Button>
+            <Button size="sm">
+              <Link href={"/recruiter/register"}>Đăng ký</Link>
+            </Button>
           </div>
         </div>
       </motion.header>

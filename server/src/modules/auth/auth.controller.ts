@@ -85,12 +85,19 @@ export class AuthController {
   @ApiOperation({ summary: 'Lấy thông tin cá nhân tài khoản đang đăng nhập' })
   async getProfile(@userDecorator() user: UserResponse) {
     try {
-      const id = user.id;
+      const id = user?.id;
 
       const userProfile = await this.authService.getProfile(id);
 
+      const idRoleUser = userProfile?.roleID?._id.toString();
+      const roleSchema = await this.roleService.findOne(idRoleUser);
+      const roleCodeName = roleSchema.name.vi;
+
       return {
-        user: userProfile,
+        user: {
+          ...userProfile,
+          roleCodeName: roleCodeName,
+        },
       };
     } catch (error) {
       console.log('error getProfile: ', error);
