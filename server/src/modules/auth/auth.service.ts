@@ -305,7 +305,7 @@ export class AuthService {
       const user = await this.usersService.findUserByEmail(email);
       if (user)
         throw new BadRequestCustom(
-          'Email đã tồn tại, vui lòng đăng ký bằng email khác',
+          'Email này đã được sử dụng, vui lòng đăng ký bằng email khác',
         );
 
       const hashedPassword = await hashPassword(password);
@@ -327,6 +327,36 @@ export class AuthService {
       throw new BadRequestCustom(error.message, !!error.message);
     }
   }
+
+  async recruiterRegister(registerDto: RegisterDto) {
+    try {
+      const { email, password } = registerDto;
+      const user = await this.usersService.findUserByEmail(email);
+      if (user)
+        throw new BadRequestCustom(
+          'Email này đã được sử dụng, vui lòng đăng ký bằng email khác',
+        );
+
+      const hashedPassword = await hashPassword(password);
+
+      const newUser = {
+        ...registerDto,
+        password: hashedPassword,
+      };
+
+      const resultUser = await this.usersService.recruiterRegister(newUser);
+
+      if (!resultUser) throw new BadRequestCustom('Tạo người dùng thất bại');
+
+      return {
+        _id: resultUser.id,
+        createdAt: resultUser.createdAt,
+      };
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+  
 
   //- func logout
   async logout(response: Response, user: UserResponse) {

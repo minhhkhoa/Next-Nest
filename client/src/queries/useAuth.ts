@@ -13,6 +13,12 @@ export const useRegisterMutation = () => {
   });
 };
 
+export const useRecruiterRegisterMutation = () => {
+  return useMutation({
+    mutationFn: authApiRequest.recruiterRegister,
+  });
+};
+
 export const useLogoutMutation = () => {
   return useMutation({
     mutationFn: authApiRequest.logout,

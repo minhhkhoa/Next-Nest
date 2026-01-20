@@ -145,7 +145,7 @@ export function RoleDialogForm({
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Tên vai trò</FormLabel>
+                      <FormLabel>Mô tả vai trò</FormLabel>
                       <FormControl>
                         <Textarea placeholder="Nhập mô tả vai trò" {...field} />
                       </FormControl>

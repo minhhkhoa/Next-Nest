@@ -42,7 +42,7 @@ export default function HeaderClient({
 
           <div className="hidden md:flex flex-col">
             <span className="text-xs">Bạn là nhà tuyển dụng?</span>
-            <div className="flex items-center gap-1 text-[15px] hover:text-primary cursor-pointer">
+            <div className="flex items-center gap-1 text-[15px] hover:text-primary cursor-pointer hover:translate-x-1 transition-all duration-100 ease-out">
               <Link href="/recruiter/welcome">Đăng tuyển ngay</Link>
               <ArrowRight size={15} className="mt-1" />
             </div>

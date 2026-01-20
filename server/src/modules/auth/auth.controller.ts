@@ -40,6 +40,7 @@ export class AuthController {
 
   @Public()
   @UseGuards(LocalAuthGuard)
+  @ApiOperation({ summary: 'Đăng nhập email/password' })
   @Post('login')
   @ApiBody({ type: LoginDto })
   async login(
@@ -63,14 +64,25 @@ export class AuthController {
   }
 
   @Public()
+  @ApiOperation({ summary: 'Đăng ký tài khoản' })
   @ResponseMessage('Đăng ký người dùng thành công')
   @Post('register')
   async register(@Body() registerUserDto: RegisterDto) {
     return this.authService.register(registerUserDto);
   }
 
+  @Public()
+  @ApiOperation({ summary: 'Đăng ký tài khoản nhà tuyển dụng' })
+  @ResponseMessage('Đăng ký nhà tuyển dụng thành công')
+  @Post('recruiter-register')
+  async recruiterRegister(@Body() registerUserDto: RegisterDto) {
+    return this.authService.recruiterRegister(registerUserDto);
+  }
+
   //- cần query xuống db chứ không phải lấy ở jwt vì khi update song mà vẫn lấy ở jwt thì data đã cũ
   @Get('profile')
+  @ResponseMessage('Get User Profile')
+  @ApiOperation({ summary: 'Lấy thông tin cá nhân tài khoản đang đăng nhập' })
   async getProfile(@userDecorator() user: UserResponse) {
     try {
       const id = user.id;
@@ -87,6 +99,7 @@ export class AuthController {
 
   @Public() //- phải để public vì khi này access_token đâu còn hợp lệ
   @ResponseMessage('Get User by refresh token')
+  @ApiOperation({ summary: 'refresh token' })
   @Get('refresh')
   async handleRefreshToken(
     @Req() request: any,
@@ -113,6 +126,7 @@ export class AuthController {
 
   @Public() //- phải để public vì khi này access_token đâu còn hợp lệ
   @ResponseMessage('Success')
+  @ApiOperation({ summary: 'Xóa access_token trong cookie' })
   @Get('removeAccessToken')
   async handleRemoveAccessTokenInCookie(
     @Res({ passthrough: true }) response: Response,
@@ -126,6 +140,7 @@ export class AuthController {
 
   @Post('logout')
   @ResponseMessage('Logout User thành công')
+  @ApiOperation({ summary: 'Đăng xuất tài khoản' })
   handleLogout(
     @Res({ passthrough: true }) response: Response,
     @userDecorator() user: UserResponse,

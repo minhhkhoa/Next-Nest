@@ -16,6 +16,12 @@ const authApiRequest = {
   register: (body: RegisterBodyType) =>
     http.post<ApiResponse<RegisterResType>>(`${prefix}/register`, body),
 
+  recruiterRegister: (body: RegisterBodyType) =>
+    http.post<ApiResponse<RegisterResType>>(
+      `${prefix}/recruiter-register`,
+      body,
+    ),
+
   logout: () => http.post<ApiResponse<string>>(`${prefix}/logout`),
 
   getProfile: () => http.get<ApiResponse<ProfileResType>>(`${prefix}/profile`),
@@ -27,7 +33,7 @@ const authApiRequest = {
 
   validateTokenResetPassword: (token: string, email: string) =>
     http.get<ApiResponse<{ valid: boolean }>>(
-      `${prefix}/validate-reset?token=${token}&email=${email}`
+      `${prefix}/validate-reset?token=${token}&email=${email}`,
     ),
 
   resetPassword: (data: {
@@ -37,7 +43,7 @@ const authApiRequest = {
   }) =>
     http.post<ApiResponse<{ message: string }>>(
       `${prefix}/reset-password`,
-      data
+      data,
     ),
 
   changePassword: (data: {
@@ -47,7 +53,7 @@ const authApiRequest = {
   }) =>
     http.post<ApiResponse<{ message: string }>>(
       `${prefix}/change-password`,
-      data
+      data,
     ),
 };
 

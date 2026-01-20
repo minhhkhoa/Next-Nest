@@ -330,6 +330,35 @@ export class UserService {
     }
   }
 
+  //- func register
+  async recruiterRegister(registerDto: RegisterDto) {
+    try {
+      if (!registerDto) return;
+
+      //- khi đăng ký làm nhà tuyển dụng
+      const nameRole = this.configService.get<string>(
+        'role_recruiter',
+      ) as string;
+      const idRole = await this.roleService.getRoleByName(nameRole);
+
+      if (!idRole) throw new BadRequestException('Role không tồn tại');
+
+      const user = await this.userModel.create({
+        ...registerDto,
+        roleID: idRole,
+      });
+
+      //- đồng thời tạo luôn detail profile cho người dùng
+      await this.detailProfileService.createAuto({
+        userID: user._id.toString(),
+      });
+
+      return user;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
   // 1. Chức năng cập nhật duy nhất Vai trò
   async updateUserRole(id: string, roleID: string) {
     if (

@@ -2,6 +2,12 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { removeTokensFromLocalStorage } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import { useAppStore } from "@/components/TanstackProvider";
+import { useLogoutMutation } from "@/queries/useAuth";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface NavigationProps {
   onAboutClick: () => void;
@@ -16,6 +22,28 @@ export default function Navigation({
   onVerificationClick,
   onPricingClick,
 }: NavigationProps) {
+  const router = useRouter();
+  const { setLogin } = useAppStore();
+  const { mutateAsync: mutationLogout } = useLogoutMutation();
+  const queryClient = useQueryClient();
+
+  const handleLogout = async () => {
+    try {
+      const res = await mutationLogout();
+      if (res.isError) return;
+
+      removeTokensFromLocalStorage();
+      setLogin(false);
+
+      queryClient.removeQueries({ queryKey: ["profile"] });
+
+      router.push("/login");
+      router.refresh();
+    } catch (error) {
+      console.log("error logout: ", error);
+    }
+  };
+
   return (
     <>
       {/* Main Header */}
@@ -35,8 +63,8 @@ export default function Navigation({
             </span>
           </div>
           <div className="flex gap-4">
-            <Button variant="ghost" size="sm">
-              Đăng nhập
+            <Button variant="ghost" size="sm" onClick={handleLogout}>
+              <Link href={"/login"}>Đăng nhập</Link>
             </Button>
             <Button size="sm">Đăng ký</Button>
           </div>

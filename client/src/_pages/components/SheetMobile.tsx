@@ -42,7 +42,9 @@ export default function SheetMobile() {
 
           <NavItemSheetMobile />
         </nav>
-        <Button className="mx-4">Đăng tin tuyển dụng</Button>
+        <Button className="mx-4">
+          <Link href={"/recruiter/welcome"}>Đăng tin tuyển dụng</Link>
+        </Button>
       </SheetContent>
     </Sheet>
   );
