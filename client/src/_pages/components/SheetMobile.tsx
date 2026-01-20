@@ -42,6 +42,7 @@ export default function SheetMobile() {
 
           <NavItemSheetMobile />
         </nav>
+        <Button className="mx-4">Đăng tin tuyển dụng</Button>
       </SheetContent>
     </Sheet>
   );
@@ -101,7 +102,7 @@ function NavItemSheetMobile() {
                 </div>
               </div>
               <AccordionContent className="flex flex-col gap-4 text-balance ml-5">
-                <ul className="grid w-[200px] gap-2">
+                <ul className="grid gap-2">
                   {listCateNews?.data?.map((item) => (
                     <li key={item._id} className="">
                       <Link

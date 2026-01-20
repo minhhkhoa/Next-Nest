@@ -15,9 +15,9 @@ import {
 export function ModeToggle() {
   const { setTheme, theme } = useTheme();
   const themes = [
-    { value: "light", label: "Light" },
-    { value: "dark", label: "Dark" },
-    { value: "system", label: "System" },
+    { value: "light", label: "Sáng" },
+    { value: "dark", label: "Tối" },
+    { value: "system", label: "Hệ thống" },
   ];
 
   return (

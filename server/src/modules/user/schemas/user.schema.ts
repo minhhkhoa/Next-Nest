@@ -11,7 +11,7 @@ class EmployerInfo {
     enum: ['PENDING', 'ACTIVE', 'INACTIVE'],
     default: 'PENDING',
   })
-  userStatus: string;
+  userStatus: string; //- Recruiter_admin duyệt
 
   @Prop({ default: false })
   isOwner: boolean;

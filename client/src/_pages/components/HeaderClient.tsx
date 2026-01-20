@@ -6,6 +6,10 @@ import { ModeToggle } from "@/components/ModeToggle";
 import NavigationHeaderMenu from "@/components/NavigationHeader";
 import SheetMobile from "./SheetMobile";
 import NotificationBell from "@/components/NotificationBell";
+import { ArrowRight } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function HeaderClient({
   isLoginSSR,
@@ -32,6 +36,17 @@ export default function HeaderClient({
           {!isLoginSSR && <UserSection />}
           {isLoginSSR && <UserAvatarMenu />}
           <ModeToggle />
+
+          {/* vách ngăn thêm màu xám cho nó */}
+          <Separator orientation="vertical" className="hidden md:block !h-8" />
+
+          <div className="hidden md:flex flex-col">
+            <span className="text-xs">Bạn là nhà tuyển dụng?</span>
+            <div className="flex items-center gap-1 text-[15px] hover:text-primary cursor-pointer">
+              <Link href="/recruiter/welcome">Đăng tuyển ngay</Link>
+              <ArrowRight size={15} className="mt-1" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
