@@ -24,7 +24,13 @@ export const LoginRes = z.object({
     avatar: z.string(),
     email: z.string(),
     name: z.string(),
-    companyID: z.array(z.string()),
+    employerInfo: z
+      .object({
+        companyID: z.string(),
+        userStatus: z.string(),
+        isOwner: z.boolean(),
+      })
+      .optional(),
     roleID: z.array(z.string()),
   }),
 });

@@ -2,6 +2,21 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument, Types } from 'mongoose';
 import { Role } from 'src/modules/roles/schemas/role.schema';
 
+class EmployerInfo {
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Company' })
+  companyID: Types.ObjectId;
+
+  @Prop({
+    type: String,
+    enum: ['PENDING', 'ACTIVE', 'INACTIVE'],
+    default: 'PENDING',
+  })
+  userStatus: string;
+
+  @Prop({ default: false })
+  isOwner: boolean;
+}
+
 @Schema({ timestamps: true })
 //- Định nghĩa các field có trong collection User
 export class User {
@@ -17,9 +32,6 @@ export class User {
   @Prop()
   avatar: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Company' })
-  companyID?: Types.ObjectId;
-
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Role.name }) //- tham chiếu tới Role
   roleID: Types.ObjectId;
 
@@ -29,6 +41,10 @@ export class User {
     type: string;
     id: string;
   };
+
+  // Trường dành riêng cho nhà tuyển dụng (Chỉ xuất hiện nếu là RECRUITER)
+  @Prop({ type: EmployerInfo, _id: false })
+  employerInfo?: EmployerInfo;
 
   @Prop()
   refresh_token: string;
@@ -91,4 +107,12 @@ export type UserResponse = Omit<
   | 'deletedBy'
   | 'resetToken'
   | 'resetTokenExpiresAt'
-> & { id: string; roleCodeName: string };
+> & {
+  id: string;
+  roleCodeName: string;
+  employerInfo?: {
+    companyID: any;
+    userStatus: string;
+    isOwner: boolean;
+  };
+};

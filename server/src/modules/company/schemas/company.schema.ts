@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import mongoose, { HydratedDocument, Types } from 'mongoose';
 import { Industry } from 'src/modules/industry/schemas/industry.schema';
 import { MultiLang } from 'src/utils/typeSchemas';
 
@@ -8,6 +8,16 @@ import { MultiLang } from 'src/utils/typeSchemas';
 export class Company {
   @Prop({ type: MultiLang })
   name: MultiLang;
+
+  @Prop({ required: true, unique: true }) //- Lưu mã số thuế
+  taxCode: string;
+
+  @Prop({
+    type: String,
+    enum: ['PENDING', 'APPROVED', 'REJECTED'],
+    default: 'PENDING',
+  })
+  status: string; // Phục vụ Giai đoạn 3: Super Admin duyệt công ty
 
   @Prop()
   address: string;
@@ -44,6 +54,27 @@ export class Company {
 
   @Prop()
   deletedAt?: Date;
+
+  @Prop({ type: Object })
+  createdBy: {
+    _id: mongoose.Schema.Types.ObjectId;
+    name: string;
+    email: string;
+  };
+
+  @Prop({ type: Object })
+  updatedBy: {
+    _id: mongoose.Schema.Types.ObjectId;
+    name: string;
+    email: string;
+  };
+
+  @Prop({ type: Object })
+  deletedBy: {
+    _id: mongoose.Schema.Types.ObjectId;
+    name: string;
+    email: string;
+  };
 }
 
 export const CompanySchema = SchemaFactory.createForClass(Company);

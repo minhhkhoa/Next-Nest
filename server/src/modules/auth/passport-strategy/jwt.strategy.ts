@@ -39,11 +39,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       id: payload.id,
       name: payload.name,
       email: payload.email,
-      companyID: payload.companyID,
       roleID: payload.roleID,
       roleCodeName: payload.roleCodeName,
       permissions: permissions, // Mảng permissions chi tiết
       avatar: payload.avatar,
+      employerInfo: user.employerInfo,
     }; //- no gan vao req.user
   }
 }

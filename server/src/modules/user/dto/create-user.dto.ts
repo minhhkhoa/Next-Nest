@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsBoolean,
   IsEmail,
-  IsMongoId,
   IsNotEmpty,
   IsOptional,
 } from 'class-validator';
@@ -25,14 +24,6 @@ export class CreateUserDto {
   @ApiProperty({ default: '', required: false })
   @IsOptional()
   avatar?: string;
-
-  @ApiProperty()
-  @IsMongoId({ message: 'ID công ty phải là MongoId hợp lệ' })
-  companyID: string;
-
-  // @ApiProperty()
-  // @IsMongoId({ message: 'ID role phải là MongoId hợp lệ' })
-  // roleID: string;
 
   @ApiProperty({ required: false, default: false })
   @IsBoolean({ message: 'isDeleted phải là boolean' })

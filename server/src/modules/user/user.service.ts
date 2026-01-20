@@ -97,11 +97,14 @@ export class UserService {
 
   async findAll() {
     try {
-      return this.userModel.find({ isDeleted: false }).populate({
-        path: 'companyID',
-        match: { isDeleted: false },
-        select: 'name _id',
-      });
+      return this.userModel
+        .find({ isDeleted: false })
+        .populate({
+          path: 'employerInfo.companyID',
+          match: { isDeleted: false },
+          select: 'name _id',
+        })
+        .exec();
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }
@@ -117,7 +120,7 @@ export class UserService {
         .findById(id)
         .populate([
           {
-            path: 'companyID',
+            path: 'employerInfo.companyID',
             match: { isDeleted: false },
             select: 'name _id',
           },
@@ -160,20 +163,27 @@ export class UserService {
   }
 
   async findOneWithRole(id: string) {
-    return await this.userModel
-      .findById(id)
-      .populate({
-        path: 'roleID',
-        match: { isDeleted: false }, // Chỉ lấy role chưa bị xóa
-        select: 'name _id', // Lấy thông tin role
-        populate: {
-          path: 'permissions',
-          match: { isDeleted: false }, // Chỉ lấy quyền chưa bị xóa
-          select: 'name apiPath method _id', // Lấy các thông tin cần để check quyền
-        },
-      })
-      .select('-password') // Không bao giờ lấy password ở đây
-      .lean();
+    try {
+      const user = await this.userModel
+        .findById(id)
+        .populate({
+          path: 'roleID',
+          match: { isDeleted: false }, // Chỉ lấy role chưa bị xóa
+          select: 'name _id', // Lấy thông tin role
+          populate: {
+            path: 'permissions',
+            match: { isDeleted: false }, // Chỉ lấy quyền chưa bị xóa
+            select: 'name apiPath method _id', // Lấy các thông tin cần để check quyền
+          },
+        })
+        .select('-password') // Không bao giờ lấy password ở đây
+        .lean();
+
+      if (!user) throw new BadRequestCustom('ID user không tìm thấy', !!id);
+      return user;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
   }
 
   async findUserByEmail(email: string): Promise<UserDocument | null> {
@@ -307,7 +317,6 @@ export class UserService {
       const user = await this.userModel.create({
         ...registerDto,
         roleID: idRole,
-        companyID: null,
       });
 
       //- đồng thời tạo luôn detail profile cho người dùng

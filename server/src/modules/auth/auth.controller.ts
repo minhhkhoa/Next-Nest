@@ -55,9 +55,9 @@ export class AuthController {
       email: req.user.email,
       name: req.user.name,
       avatar: req.user.avatar,
-      companyID: req.user.companyID,
       roleID: req.user.roleID,
       roleCodeName: roleCodeName,
+      employerInfo: req.user.employerInfo,
     };
     return this.authService.login(user, response);
   }
@@ -149,14 +149,15 @@ export class AuthController {
       const roleSchema = await this.roleService.findOne(idRoleUser);
       const roleCodeName = roleSchema.name.vi;
 
+      //- không cho recruiter đăng ký tài khoản bằng provider là được, ép nó dùng email/password
       const user: UserResponse = {
         id: req.user.providerId,
         email: req.user.email || '',
         name: req.user.firstName + ' ' + req.user.lastName,
         avatar: req.user.avatar,
-        companyID: req.user.companyID ?? null,
         roleID: req.user.roleID,
         roleCodeName: roleCodeName,
+        employerInfo: undefined,
       };
 
       const loginUser = await this.authService.loginWithSocial(
@@ -224,14 +225,15 @@ export class AuthController {
       const roleSchema = await this.roleService.findOne(idRoleUser);
       const roleCodeName = roleSchema.name.vi;
 
+      //- không cho recruiter đăng ký tài khoản bằng provider là được, ép nó dùng email/password
       const user: UserResponse = {
         id: req.user.providerId,
         email: req.user.email || '',
         name: req.user.name,
         avatar: req.user.avatar,
-        companyID: req.user.companyID ?? null,
         roleID: req.user.roleID,
         roleCodeName: roleCodeName,
+        employerInfo: undefined,
       };
 
       //- để cho đỡ rối, lần này sẽ xử lý hết ở đây

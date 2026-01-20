@@ -55,16 +55,16 @@ export class AuthService {
 
   async login(user: UserResponse, response: Response) {
     try {
-      const { avatar, email, name, companyID, roleID, id, roleCodeName } = user;
+      const { avatar, email, name, roleID, id, roleCodeName, employerInfo } = user;
 
       const payload = {
         email,
         id,
         name,
         roleID,
-        companyID,
         avatar,
         roleCodeName,
+        employerInfo,
       };
 
       //- create refresh_token/access_token
@@ -103,9 +103,9 @@ export class AuthService {
           avatar,
           email,
           name,
-          companyID,
           roleID,
           roleCodeName,
+          employerInfo,
         },
       };
     } catch (error) {
@@ -124,9 +124,9 @@ export class AuthService {
         email,
         id: idProvider,
         name,
-        companyID,
         roleID,
         roleCodeName,
+        employerInfo
       } = user;
 
       //- B1: check xem có tài khoản chưa
@@ -150,9 +150,9 @@ export class AuthService {
           idProvider,
           name,
           roleID,
-          companyID,
           avatar,
           roleCodeName,
+          employerInfo,
         };
 
         const resfreshToken = this.createRefreshToken(payload);
@@ -207,8 +207,8 @@ export class AuthService {
             avatar,
             email,
             name,
-            companyID,
             roleID,
+            employerInfo,
           },
         };
       } else {
@@ -218,9 +218,9 @@ export class AuthService {
           idProvider,
           name,
           roleID,
-          companyID,
           avatar,
           roleCodeName,
+          employerInfo,
         };
 
         const resfreshToken = this.createRefreshToken(payload);
@@ -268,9 +268,9 @@ export class AuthService {
             avatar,
             email,
             name,
-            companyID,
             roleID,
             roleCodeName,
+            employerInfo,
           },
         };
       }
@@ -375,7 +375,7 @@ export class AuthService {
       const roleCodeName = roleSchema.name.vi;
 
       //-update refresh_token
-      const { email, name, avatar, companyID, roleID, id } = user;
+      const { email, name, avatar, roleID, id, employerInfo } = user;
 
       const payload = {
         id,
@@ -383,8 +383,8 @@ export class AuthService {
         name,
         email,
         roleID,
-        companyID,
         roleCodeName,
+        employerInfo
       };
 
       const result = await this.login(payload, response);

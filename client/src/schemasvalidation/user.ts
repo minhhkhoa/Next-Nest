@@ -9,7 +9,13 @@ export const apiProfileUserRes = z.object({
     name: z.string(),
     email: z.string().nullable(),
     avatar: z.string().nullable().optional(),
-    companyID: z.string().array().optional().nullable(),
+    employerInfo: z
+      .object({
+        companyID: z.string(),
+        userStatus: z.string(),
+        isOwner: z.boolean(),
+      })
+      .optional(),
     roleID: z.object({
       name: MultiLang,
       _id: z.string(),
@@ -32,7 +38,13 @@ export type UserResponseType = z.infer<typeof userResponseSchema>;
 export const updateUserSchema = z.object({
   name: z.string().optional(),
   avatar: z.string().url().nullable().optional(),
-  companyID: z.string().optional(),
+  employerInfo: z
+    .object({
+      companyID: z.string(),
+      userStatus: z.string(),
+      isOwner: z.boolean(),
+    })
+    .optional(),
 });
 
 export type UpdateUserType = z.infer<typeof updateUserSchema>;
@@ -55,7 +67,7 @@ export const apiUserRes = z.object({
       degree: z.string(),
       startDate: z.date(),
       endDate: z.date(),
-    })
+    }),
   ),
   level: z.string(),
   address: z.string(),
