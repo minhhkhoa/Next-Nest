@@ -37,6 +37,7 @@ const NewsApiRequest = {
 
   getListNewsDashboard: () =>
     http.get<ApiResponse<NewsDashboardType>>(`${prefixNews}/news-dashboard`),
+  
   getListNewsFilter: (params: {
     currentPage: number;
     pageSize: number;

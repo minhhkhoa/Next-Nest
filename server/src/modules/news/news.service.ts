@@ -165,6 +165,7 @@ export class NewsService {
             .find({
               cateNewsID: idCate,
               isDeleted: false,
+              status: 'active',
             })
             .sort({ createdAt: -1 })
             .limit(5)

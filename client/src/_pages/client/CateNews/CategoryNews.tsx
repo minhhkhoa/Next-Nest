@@ -31,6 +31,7 @@ export default function CategoryNewsPage({ slug }: { slug?: string }) {
       currentPage: currentPage,
       pageSize: 6,
       cateNewsID: idCateNews,
+      status: "active",
     }
   );
 
@@ -39,6 +40,7 @@ export default function CategoryNewsPage({ slug }: { slug?: string }) {
     currentPage: 1, //- ko phu thuoc vao state
     pageSize: 5,
     cateNewsID: idCateNews,
+    status: "active",
   });
   const totalPages = listNews?.data?.meta?.totalPages || 1;
   const current = listNews?.data?.meta?.current || 1;

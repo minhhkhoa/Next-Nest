@@ -64,7 +64,6 @@ export const useDeleteCategoryNewsMutation = () => {
     },
   });
 };
-
 //- end category news
 
 //- News
