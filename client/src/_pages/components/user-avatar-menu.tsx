@@ -67,7 +67,10 @@ export function UserAvatarMenu() {
         {/* Thông tin người dùng */}
         <div className="flex items-center gap-2 px-2 py-1.5">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={user.avatar || "avatar-default.webp"} alt={name} />
+            <AvatarImage
+              src={user.avatar || "avatar-default.webp"}
+              alt={name}
+            />
             <AvatarFallback>{name}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col space-y-0.5">

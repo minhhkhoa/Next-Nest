@@ -25,10 +25,22 @@ import {
 import PopoverAdmin from "@/_pages/components/popoverAdmin";
 
 const items = [
-  { title: "Thống kê", url: "/recruiter/dashboard", icon: ChartNoAxesCombined },
-  { title: "Chiến dịch tuyển dụng", url: "/recruiter/jobs", icon: Calendar },
-  { title: "Thông tin công ty", url: "/recruiter/company", icon: Factory },
-  { title: "Resumes & CV", url: "/recruiter/resumes", icon: FileUser },
+  {
+    title: "Thống kê",
+    url: "/recruiter/manager/dashboard",
+    icon: ChartNoAxesCombined,
+  },
+  {
+    title: "Chiến dịch tuyển dụng",
+    url: "/recruiter/manager/jobs",
+    icon: Calendar,
+  },
+  {
+    title: "Thông tin công ty",
+    url: "/recruiter/manager/info-company",
+    icon: Factory,
+  },
+  { title: "Resumes & CV", url: "/recruiter/manager/resumes", icon: FileUser },
 ];
 
 export function AppSidebarRecruiter() {
