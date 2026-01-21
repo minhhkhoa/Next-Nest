@@ -18,6 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQueryClient } from "@tanstack/react-query";
 import { useIsMobile } from "@/hooks/use-mobile";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
+import Link from "next/link";
 
 export default function PopoverAdmin() {
   const router = useRouter();
@@ -47,10 +48,6 @@ export default function PopoverAdmin() {
 
   const onProfileClick = () => {
     router.push("/profile");
-  };
-
-  const onSettingsClick = () => {
-    router.push("/settings");
   };
 
   if (!isLogin) {
@@ -83,9 +80,9 @@ export default function PopoverAdmin() {
         </Button>
       </PopoverTrigger>
       <PopoverContent side={isMobile ? "top" : "right"} className="w-60">
-        <div
+        <Link
+          href="/profile"
           className="flex gap-2 items-center rounded-xl pl-3 cursor-pointer hover:bg-accent/50"
-          onClick={onProfileClick}
         >
           <Avatar className="relative flex size-8 shrink-0 overflow-hidden h-10 w-10 rounded-lg">
             <AvatarImage src={user.avatar || ""} alt={sortName} />
@@ -98,28 +95,28 @@ export default function PopoverAdmin() {
               {user.email}
             </p>
           </div>
-        </div>
+        </Link>
 
         <Separator className="mt-2" />
 
         <div>
           {/* trang ca nhan */}
-          <div
+          <Link
+            href="/profile"
             className="flex items-center gap-2 mt-2 rounded-xl pl-3 h-8 cursor-pointer hover:bg-accent/50"
-            onClick={onProfileClick}
           >
             <User className="mr-2 h-4 w-4" />
             <span>Hồ sơ cá nhân</span>
-          </div>
+          </Link>
 
           {/* cai dat tai khoan */}
-          <div
+          <Link
+            href="/settings"
             className="flex items-center gap-2 mt-2 pl-3 rounded-xl cursor-pointer h-8 hover:bg-accent/50"
-            onClick={onSettingsClick}
           >
             <Settings className="mr-2 h-4 w-4" />
             <span>Cài đặt tài khoản</span>
-          </div>
+          </Link>
 
           {/* logout */}
           {isLogin && (

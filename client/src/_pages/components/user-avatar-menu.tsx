@@ -16,7 +16,9 @@ import { useLogoutMutation } from "@/queries/useAuth";
 import { handleInitName, removeTokensFromLocalStorage } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
-import { allowedRoles } from "@/middleware";
+import { envConfig } from "../../../config";
+import { allowedRoles } from "@/lib/constant";
+import Link from "next/link";
 
 export function UserAvatarMenu() {
   const { isLogin, setLogin, user } = useAppStore();
@@ -25,6 +27,9 @@ export function UserAvatarMenu() {
 
   const name = handleInitName(user.name);
   const roleName = user?.roleID?.name?.vi;
+
+  //- check role
+  const isRoleAdmin = roleName === envConfig.NEXT_PUBLIC_ROLE_SUPER_ADMIN;
 
   const handleLogout = async () => {
     const res = await mutationLogout();
@@ -38,16 +43,8 @@ export function UserAvatarMenu() {
     router.refresh();
   };
 
-  const onProfileClick = () => {
-    router.push("/profile");
-  };
-
   const onManageClick = () => {
-    router.push("/admin/dashboard");
-  };
-
-  const onSettingsClick = () => {
-    router.push("/settings");
+    router.push(`/${isRoleAdmin ? "admin" : "recruiter/manager"}/dashboard`);
   };
 
   return (
@@ -90,9 +87,9 @@ export function UserAvatarMenu() {
             <span>Trang quản lý</span>
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem onClick={onProfileClick} className="cursor-pointer">
+        <DropdownMenuItem className="cursor-pointer">
           <User className="mr-2 h-4 w-4" />
-          <span>Hồ sơ cá nhân</span>
+          <Link href="/profile">Hồ sơ cá nhân</Link>
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
@@ -101,9 +98,9 @@ export function UserAvatarMenu() {
         <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground">
           Cài đặt
         </DropdownMenuLabel>
-        <DropdownMenuItem onClick={onSettingsClick} className="cursor-pointer">
+        <DropdownMenuItem className="cursor-pointer">
           <Settings className="mr-2 h-4 w-4" />
-          <span>Cài đặt tài khoản</span>
+          <Link href={"/settings"}>Cài đặt tài khoản</Link>
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />

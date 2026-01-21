@@ -1,10 +1,10 @@
-import PageDashboard from "@/_pages/admin/dashboard";
+import PageAdminDashboard from "@/_pages/admin/dashboard";
 import React from "react";
 
-export default function DashboardPage() {
+export default function AdminDashboardPage() {
   return (
     <div>
-      <PageDashboard />
+      <PageAdminDashboard />
     </div>
   );
 }

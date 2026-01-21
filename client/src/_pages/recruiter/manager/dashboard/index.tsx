@@ -1,5 +1,5 @@
 import React from "react";
 
-export default function PageAdminDashboard() {
+export default function PageRecruiterDashboard() {
   return <div>PageDashboard</div>;
 }

@@ -52,28 +52,28 @@ const items = [
   },
 ];
 
-export function AppSidebar() {
+export function AppSidebarAdmin() {
   const pathname = usePathname();
   const { user } = useAppStore();
 
   // Sử dụng roleCodeName để đồng bộ với logic Middleware và JWT
   const roleCode = user?.roleID?.name?.vi;
-  const isRecruiter = roleCode === envConfig.NEXT_PUBLIC_ROLE_RECRUITER;
+  // const isRecruiter = roleCode === envConfig.NEXT_PUBLIC_ROLE_RECRUITER;
   const isContentManager =
     roleCode === envConfig.NEXT_PUBLIC_ROLE_CONTENT_MANAGER;
   const isSuperAdmin = roleCode === envConfig.NEXT_PUBLIC_ROLE_SUPER_ADMIN;
 
   // 1. Lọc danh sách items chính
   const filteredItems = items.filter((item) => {
-    if (isRecruiter) {
-      //- các route mà recruiter được phép truy cập và hiển thị
-      const recruiterAllowed = [
-        "/admin/dashboard",
-        "/admin/jobs",
-        "/admin/resumes",
-      ];
-      return recruiterAllowed.includes(item.url);
-    }
+    // if (isRecruiter) {
+    //   //- các route mà recruiter được phép truy cập và hiển thị
+    //   const recruiterAllowed = [
+    //     "/admin/dashboard",
+    //     "/admin/jobs",
+    //     "/admin/resumes",
+    //   ];
+    //   return recruiterAllowed.includes(item.url);
+    // }
     if (isContentManager) {
       //- các route mà content manager được phép truy cập và hiển thị
       const contentManagerAllowed = ["/admin/news"];

@@ -3,81 +3,83 @@ import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 import { envConfig } from "../config";
 
-//- Vì Middleware chạy trên Edge Runtime, dùng jose thay vì jwt-decode (do jwt-decode không hỗ trợ xác thực chữ ký ở Edge
 const SECRET_KEY = new TextEncoder().encode(envConfig.NEXT_PUBLIC_JWT_SECRET);
 
-//- các route bắt buộc phải login mới được vào (CANDIDATE, RECRUITER, ADMIN...)
-export const protectedPaths = [
-  "/profile",
-  "/setting",
-];
+// 1. Cấu hình nhóm Route protected
+export const protectedPaths = ["/profile", "/setting"];
 
-//- các role được phép vào trang quản trị
-export const allowedRoles = [
+// 2. Cấu hình nhóm Role
+const SYSTEM_ADMIN_ROLES = [
   envConfig.NEXT_PUBLIC_ROLE_SUPER_ADMIN,
-  envConfig.NEXT_PUBLIC_ROLE_RECRUITER,
-  envConfig.NEXT_PUBLIC_ROLE_RECRUITER_ADMIN,
   envConfig.NEXT_PUBLIC_ROLE_CONTENT_MANAGER,
 ];
 
-//- các route bị cấm vào với RECRUITER
-export const forbiddenPathsForRecruiter = [
-  "/admin/user",
-  "/admin/recruiter",
-  "/admin/industry-skill",
-  "/admin/news",
-  "/admin/role",
-  "/admin/permission",
+const RECRUITER_ROLES = [
+  envConfig.NEXT_PUBLIC_ROLE_RECRUITER,
+  envConfig.NEXT_PUBLIC_ROLE_RECRUITER_ADMIN,
 ];
 
 export async function middleware(request: NextRequest) {
   const token = request.cookies.get("access_token")?.value;
   const path = request.nextUrl.pathname;
 
-  // 1. Nếu đã có token, không cho vào lại trang login
+  //- chặn về trang login khi đã login thành công
   if (token && path === "/login") {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // 2. KIỂM TRA ROUTE BẢO VỆ CHUNG (Profile, Setting, Admin...)
   const isAdminRoute = path.startsWith("/admin");
+  const isRecruiterRoute = path.startsWith("/recruiter");
   const isProtectedRoute = protectedPaths.some((p) => path.startsWith(p));
 
-  // Nếu truy cập vào trang Admin HOẶC các trang cần bảo vệ mà chưa login
-  if (isAdminRoute || isProtectedRoute) {
+  //- xử lý các route cần bảo vệ
+  if (isAdminRoute || isRecruiterRoute || isProtectedRoute) {
+
+    //- không có token (chưa đăng nhập) đá về login
     if (!token) {
-      // Lưu lại URL hiện tại để sau khi login có thể redirect quay lại
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("callbackUrl", path);
       return NextResponse.redirect(loginUrl);
     }
 
     try {
-      // Xác thực token
+      //- tới đây thì đã login rồi
       const { payload } = await jwtVerify(token, SECRET_KEY);
       const role = payload.roleCodeName as string;
 
-      // Logic dành riêng cho ADMIN ROUTE
+      //- bảo vệ route /admin
       if (isAdminRoute) {
-        //- Nếu là CANDIDATE mà cố vào /admin thì đá về trang chủ
-        if (!allowedRoles.includes(role)) {
+        //- chỉ cho phép nhóm System Admin vào
+        if (!SYSTEM_ADMIN_ROLES.includes(role)) {
+          //- Nếu là Nhà tuyển dụng đi lạc vào Admin -> Đá về Dashboard của Recruiter
+          if (RECRUITER_ROLES.includes(role)) {
+            return NextResponse.redirect(
+              new URL("/recruiter/manager/dashboard", request.url),
+            );
+          }
+          //- các role khác (Candidate) -> Đá về Home
           return NextResponse.redirect(new URL("/", request.url));
         }
+      }
 
-        // PHÂN QUYỀN CHO RECRUITER TRONG ADMIN
-        if (role === envConfig.NEXT_PUBLIC_ROLE_RECRUITER) {
-          const isForbidden = forbiddenPathsForRecruiter.some((p) =>
-            path.startsWith(p),
-          );
-          if (isForbidden) {
+      //- bảo vệ route /recruiter
+      if (isRecruiterRoute) {
+        //- chỉ cho phép nhóm Recruiter vào
+        if (!RECRUITER_ROLES.includes(role)) {
+          //- nếu Super Admin đi lạc vào trang Recruiter -> Đá về Admin Dashboard
+          if (SYSTEM_ADMIN_ROLES.includes(role)) {
             return NextResponse.redirect(
               new URL("/admin/dashboard", request.url),
             );
           }
+
+          //- các role khác (Candidate) -> Đá về Home
+          return NextResponse.redirect(new URL("/", request.url));
         }
       }
 
-      // Đối với isProtectedRoute (profile/setting), nếu đã có token và verify xong thì cho qua
+      //- bảo vệ các route protected
+      // Nếu đã login và verify thành công thì luôn cho phép vào profile/setting
       return NextResponse.next();
     } catch (error) {
       console.error("Middleware JWT Error:", error);
@@ -91,6 +93,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Loại bỏ các file tĩnh và các folder đặc biệt của Next.js
   matcher: ["/((?!api|trpc|_next|_vercel|.*\\..*).*)"],
 };

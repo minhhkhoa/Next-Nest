@@ -1,3 +1,5 @@
+import { envConfig } from "../../config";
+
 export const LEVEL_OPTIONS = [
   { value: "fresher", label: "Fresher" },
   { value: "junior", label: "Junior" },
@@ -87,3 +89,10 @@ export enum NotificationType {
   SYSTEM_ANNOUNCEMENT = "SYSTEM_ANNOUNCEMENT",
 }
 
+//- các roles được phép vào trang quản trị của chúng
+export const allowedRoles = [
+  envConfig.NEXT_PUBLIC_ROLE_SUPER_ADMIN,
+  envConfig.NEXT_PUBLIC_ROLE_RECRUITER,
+  envConfig.NEXT_PUBLIC_ROLE_RECRUITER_ADMIN,
+  envConfig.NEXT_PUBLIC_ROLE_CONTENT_MANAGER,
+];
