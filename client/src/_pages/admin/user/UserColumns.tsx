@@ -37,7 +37,7 @@ export const getUserColumns = (
       </div>
     ),
     cell: ({ row }) => {
-      const avatar = row.original.user?.avatar ?? "/avatar-default.png";
+      const avatar = row.original.user?.avatar ?? "/avatar-default.webp";
       const name = row.original.user?.name;
       return (
         <div className="flex items-center gap-3">

@@ -1,16 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsArray,
-  IsBoolean,
   IsMongoId,
   IsNotEmpty,
-  IsOptional,
 } from 'class-validator';
 
 export class CreateCompanyDto {
   @ApiProperty()
   @IsNotEmpty({ message: 'Tên công ty không được để trống' })
   name: string;
+
+  @ApiProperty()
+  @IsNotEmpty({ message: 'Mã số thuế công ty không được để trống' })
+  taxCode: string;
 
   @ApiProperty()
   @IsNotEmpty({ message: 'Địa chỉ công ty không được để trống' })
@@ -43,9 +45,4 @@ export class CreateCompanyDto {
   @ApiProperty()
   @IsNotEmpty({ message: 'Logo công ty không được để trống' })
   logo: string;
-
-  @ApiProperty({ required: false, default: false })
-  @IsBoolean({ message: 'isDeleted phải là boolean' })
-  @IsOptional()
-  isDeleted?: boolean;
 }

@@ -54,8 +54,11 @@ export function UserAvatarMenu() {
           variant="ghost"
           className="relative h-10 w-10 rounded-full p-0 border hover:border-primary"
         >
-          <Avatar className="h-9 w-9 select-none">
-            <AvatarImage src={user?.avatar || ""} alt={name} />
+          <Avatar className="h-8 w-8 select-none ">
+            <AvatarImage
+              src={user?.avatar || "avatar-default.webp"}
+              alt={name}
+            />
             <AvatarFallback>{name}</AvatarFallback>
           </Avatar>
         </Button>
@@ -64,7 +67,7 @@ export function UserAvatarMenu() {
         {/* Thông tin người dùng */}
         <div className="flex items-center gap-2 px-2 py-1.5">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={user.avatar || ""} alt={name} />
+            <AvatarImage src={user.avatar || "avatar-default.webp"} alt={name} />
             <AvatarFallback>{name}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col space-y-0.5">
