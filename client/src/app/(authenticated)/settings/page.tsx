@@ -2,7 +2,7 @@ import React from "react";
 import { cookies } from "next/headers";
 import { envConfig } from "../../../../config";
 import { UserResponseType } from "@/schemasvalidation/user";
-import BlockSettings from "@/_pages/client/settings/BlockSettings";
+import BlockSettings from "@/_pages/pages_authenticated/settings/BlockSettings";
 
 export default async function SettingsPage() {
   const cookieStore = await cookies();
@@ -17,7 +17,7 @@ export default async function SettingsPage() {
     }
   );
 
-  const user: UserResponseType = await res.json().then((res) => res.data.user);
+  const user: UserResponseType = await res.json().then((res) => res?.data?.user);
 
   return <BlockSettings user={user} />;
 }

@@ -309,7 +309,9 @@ export class UserService {
       if (!registerDto) return;
 
       //- khi đăng ký người dùng bình thường
-      const nameRole = this.configService.get<string>('role_gest') as string;
+      const nameRole = this.configService.get<string>(
+        'role_candidate',
+      ) as string;
       const idRole = await this.roleService.getRoleByName(nameRole);
 
       if (!idRole) throw new BadRequestException('Role không tồn tại');

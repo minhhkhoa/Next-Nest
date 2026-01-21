@@ -1,7 +1,7 @@
 import React from "react";
 import ChangePasswordForm from "../../auth/change-password/ChangePasswordForm";
 import ColorThemeSelector from "@/components/ColorThemeSelector";
-import DemoChartAreaGradient from "@/app/(guest)/settings/DemoChartChangeColor";
+import DemoChartAreaGradient from "@/app/(authenticated)/settings/DemoChartChangeColor";
 import { UserResponseType } from "@/schemasvalidation/user";
 
 export default function BlockSettings({
@@ -10,7 +10,7 @@ export default function BlockSettings({
 
   return (
     <div className="flex flex-col md:!flex-row py-5 justify-around gap-5">
-      {!user.provider?.id && (
+      {!user?.provider?.id && (
         <div className="w-full max-w-md">
           <h2 className="scroll-m-20 text-2xl font-semibold tracking-tight">
             Đổi mật khẩu

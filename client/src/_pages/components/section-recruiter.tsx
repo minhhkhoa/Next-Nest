@@ -16,15 +16,15 @@ export default function SectionRecruiter() {
     return null;
   }
 
-  const isRecruiter =
-    user?.roleCodeName === envConfig.NEXT_PUBLIC_ROLE_RECRUITER;
-  const isRecruiterAdmin =
-    user?.roleCodeName === envConfig.NEXT_PUBLIC_ROLE_RECRUITER_ADMIN;
+  const isCandidate =
+    user?.roleCodeName === envConfig.NEXT_PUBLIC_ROLE_CANDIDATE;
 
-  if (isRecruiter || isRecruiterAdmin) {
+  //- các role khác thì không hiện | guest thì bị chắn trước đó rồi
+  if (!isCandidate) {
     return null;
   }
 
+  //- chỉ hiện nếu là candidate
   return (
     <div className="flex">
       {/* vách ngăn thêm màu xám cho nó */}

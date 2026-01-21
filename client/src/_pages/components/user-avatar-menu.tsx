@@ -13,10 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/components/TanstackProvider";
 import { useLogoutMutation } from "@/queries/useAuth";
-import {
-  handleInitName,
-  removeTokensFromLocalStorage,
-} from "@/lib/utils";
+import { handleInitName, removeTokensFromLocalStorage } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import { allowedRoles } from "@/middleware";

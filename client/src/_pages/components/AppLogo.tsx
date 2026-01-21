@@ -1,15 +1,19 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import React from "react";
 
 export default function AppLogo() {
-  const router = useRouter();
   return (
     <>
-      <h1 className="font-bold cursor-pointer" onClick={() => router.push("/")}>
-        JobHub
-      </h1>
+      <div className="flex items-center gap-2">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <span className="text-lg font-bold">K</span>
+        </div>
+        <Link href={"/"} className="hidden text-lg font-semibold md:inline">
+          JobHub
+        </Link>
+      </div>
     </>
   );
 }

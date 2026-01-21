@@ -1,4 +1,4 @@
-import PageNewsDetail from "@/_pages/client/CateNews/PageNewsDetail";
+import PageNewsDetail from "@/_pages/guest/CateNews/PageNewsDetail";
 import React from "react";
 
 export default async function NewsDetailPage({

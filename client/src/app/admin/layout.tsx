@@ -1,6 +1,5 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import BlockWrap from "../BlockWrap";
 
 export default async function AdminLayout({
   children,
