@@ -5,10 +5,6 @@ import { NotificationsGateway } from './notifications.gateway';
 import { NotificationType } from 'src/common/constants/notification-type.enum';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 
-//- Là nơi nhận các sự kiện mà các moduleService khác đăng ký và đẩy thông báo đi.
-//- vd: moduleNews khi created đăng ký 1 sự kiện thì ở đây sẽ nhận và lưu notify xuống db.
-//- Đây như là 1 cầu nối giữa các module. Giúp tách biệt logic, các module khác như NewsModule không cần biết gì tới socket.
-
 @Injectable()
 export class NotificationsListener {
   constructor(
@@ -16,41 +12,15 @@ export class NotificationsListener {
     private readonly notificationsGateway: NotificationsGateway,
   ) {}
 
-  @OnEvent(NotificationType.NEWS_CREATED) //- lắng nghe
-  async handleNewsCreatedEvent(payload: any) {
+  //- sử dụng mảng để lắng nghe nhiều sự kiện cùng lúc
+  @OnEvent([
+    NotificationType.NEWS_CREATED,
+    NotificationType.COMPANY_RECRUITER_JOINED,
+    NotificationType.JOIN_REQUEST_PROCESSED,
+  ])
+  async handleNotificationEvents(payload: any) {
     try {
-      if (!payload.receiverId || !payload.senderId) {
-        console.error(
-          '[Event Error] Missing receiverId or senderId in payload',
-        );
-        return;
-      }
-      // 1. Lưu notify xuống DB
-      const newNotif = await this.notificationsService.create({
-        receiverId: payload.receiverId,
-        senderId: payload.senderId,
-        title: payload.title,
-        content: payload.content,
-        type: NotificationType.NEWS_CREATED,
-        metadata: payload.metadata,
-      });
-
-      if (!newNotif)
-        throw new BadRequestCustom('Lỗi tạo thông báo', !!newNotif);
-
-      // 2. Đẩy real-time ngay sau khi lưu DB thành công, chuyển sang thằng gateway xử lý
-      this.notificationsGateway.sendToUser(
-        payload.receiverId.toString(),
-        newNotif,
-      );
-    } catch (error) {
-      throw new BadRequestCustom(error.message, !!error.message);
-    }
-  }
-
-  @OnEvent(NotificationType.COMPANY_RECRUITER_JOINED) //- lắng nghe
-  async handleRecruiterJoinedCompanyEvent(payload: any) {
-    try {
+      //- Validation chung
       if (!payload.receiverId || !payload.senderId) {
         console.error(
           '[Event Error] Missing receiverId or senderId in payload',
@@ -58,26 +28,24 @@ export class NotificationsListener {
         return;
       }
 
-      // 1. Lưu notify xuống DB
       const newNotif = await this.notificationsService.create({
         receiverId: payload.receiverId,
         senderId: payload.senderId,
         title: payload.title,
         content: payload.content,
-        type: NotificationType.COMPANY_RECRUITER_JOINED,
+        type: payload.type,
         metadata: payload.metadata,
       });
 
-      if (!newNotif)
-        throw new BadRequestCustom('Lỗi tạo thông báo', !!newNotif);
+      if (!newNotif) throw new BadRequestCustom('Lỗi tạo thông báo');
 
-      // 2. Đẩy real-time ngay sau khi lưu DB thành công, chuyển sang thằng gateway xử lý
+      //- Đẩy real-time qua gateway
       this.notificationsGateway.sendToUser(
         payload.receiverId.toString(),
         newNotif,
       );
     } catch (error) {
-      throw new BadRequestCustom(error.message, !!error.message);
+      console.error(`[NotificationListener Error]: ${error.message}`);
     }
   }
 }

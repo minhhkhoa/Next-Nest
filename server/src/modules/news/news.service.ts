@@ -58,6 +58,7 @@ export class NewsService {
         senderId: user.id,
         title: 'Yêu cầu duyệt bài viết mới',
         content: `Người dùng ${user.name} vừa tạo bài viết "${news.title.vi}", vui lòng phê duyệt.`,
+        type: NotificationType.NEWS_CREATED,
         metadata: {
           module: 'NEWS',
           action: 'CREATE',

@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { CreateUserDto, RegisterDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
@@ -16,7 +20,10 @@ import { Company } from '../company/schemas/company.schema';
 import { CompanyService } from '../company/company.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NotificationType } from 'src/common/constants/notification-type.enum';
-import { JoinCompanyDto } from '../company/dto/companyDto.dto';
+import {
+  ApproveCompanyDto,
+  JoinCompanyDto,
+} from '../company/dto/companyDto.dto';
 
 @Injectable()
 export class UserService {
@@ -212,6 +219,7 @@ export class UserService {
             senderId: user.id,
             title: 'Yêu cầu gia nhập công ty',
             content: `Người dùng ${user.name} vừa gửi yêu cầu gia nhập công ty, vui lòng phê duyệt.`,
+            type: NotificationType.COMPANY_RECRUITER_JOINED,
             metadata: {
               module: 'COMPANY',
               resourceId: user.id,
@@ -235,6 +243,64 @@ export class UserService {
         throw error;
       throw new BadRequestCustom(error.message, !!error.message);
     }
+  }
+
+  async handleApproveJoinRequest(
+    approveDto: ApproveCompanyDto,
+    admin: UserDecoratorType,
+  ) {
+    const { targetUserId, action } = approveDto;
+
+    //- Tìm người xin gia nhập
+    const targetUser = await this.userModel.findById(targetUserId);
+    if (!targetUser) throw new BadRequestException('Người dùng không tồn tại');
+
+    //- Kiểm tra tính bảo mật: Admin phải cùng companyID với người xin gia nhập
+    if (
+      targetUser.employerInfo?.companyID?.toString() !==
+      admin.employerInfo?.companyID?.toString()
+    ) {
+      throw new ForbiddenException('Bạn không có quyền duyệt yêu cầu này');
+    }
+
+    //- Xử lý theo hành động
+    if (action === 'REJECT') {
+      //- Từ chối: Xóa trắng employerInfo để họ có thể xin vào chỗ khác
+      return await this.userModel.updateOne(
+        { _id: targetUserId },
+        { $set: { employerInfo: undefined } },
+      );
+    }
+
+    //- Chấp nhận: Chuyển status sang ACTIVE
+    const result = await this.userModel.updateOne(
+      { _id: targetUserId },
+      {
+        $set: { 'employerInfo.userStatus': 'ACTIVE' },
+      },
+    );
+
+    //- Bắn Event thông báo ngược lại cho người xin gia nhập (Recruiter mới)
+    this.eventEmitter.emit(NotificationType.JOIN_REQUEST_PROCESSED, {
+      receiverId: targetUserId,
+      senderId: admin.id,
+      title:
+        action === 'ACCEPT'
+          ? 'Yêu cầu gia nhập đã được duyệt'
+          : 'Yêu cầu gia nhập bị từ chối',
+      content:
+        action === 'ACCEPT'
+          ? `Chúc mừng! Bạn đã trở thành thành viên của công ty.`
+          : `Rất tiếc, yêu cầu gia nhập của bạn không được chấp nhận.`,
+      type: NotificationType.JOIN_REQUEST_PROCESSED,
+      metadata: {
+        module: 'COMPANY',
+        action: action === 'ACCEPT' ? 'JOIN_SUCCESS' : 'JOIN_REJECTED',
+        resourceId: admin.employerInfo?.companyID,
+      },
+    });
+
+    return result;
   }
 
   async findOneWithRole(id: string) {

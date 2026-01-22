@@ -6,6 +6,7 @@ export enum NotificationType {
   COMPANY_APPROVED = 'COMPANY_APPROVED', // User nhận: Cty được duyệt
   COMPANY_REJECTED = 'COMPANY_REJECTED', // User nhận: Cty bị từ chối
   COMPANY_RECRUITER_JOINED = 'COMPANY_RECRUITER_JOINED', // RECUITER_ADMIN nhận: Yêu cầu gia nhập của RECRUITER'
+  JOIN_REQUEST_PROCESSED = 'JOIN_REQUEST_PROCESSED', // RECRUITER_ADMIN duyệt/từ chối yêu cầu
 
   //- Module Resume
   RESUME_SUBMITTED = 'RESUME_SUBMITTED', // Recruiter nhận: Có CV mới

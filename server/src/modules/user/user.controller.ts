@@ -15,7 +15,10 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ResponseMessage, userDecorator } from 'src/common/decorator/customize';
 import { FindUserQueryDto } from './dto/userDto.dto';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
-import { JoinCompanyDto } from '../company/dto/companyDto.dto';
+import {
+  ApproveCompanyDto,
+  JoinCompanyDto,
+} from '../company/dto/companyDto.dto';
 
 @ApiTags('user')
 @Controller('user')
@@ -65,6 +68,17 @@ export class UserController {
     @userDecorator() user: UserDecoratorType, // Decorator lấy thông tin user từ JWT
   ) {
     return this.userService.handleJoinCompany(joinDto, user);
+  }
+
+  // Chỉ Admin công ty mới được gọi
+  @Patch('approve-join-request')
+  @ResponseMessage('Xử lý yêu cầu gia nhập thành công')
+  @ApiOperation({ summary: 'Xử lý yêu cầu gia nhập công ty' })
+  async approveJoinRequest(
+    @Body() approveDto: ApproveCompanyDto,
+    @userDecorator() admin: UserDecoratorType,
+  ) {
+    return await this.userService.handleApproveJoinRequest(approveDto, admin);
   }
 
   // API Cập nhật vai trò
