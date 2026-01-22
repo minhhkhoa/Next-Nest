@@ -6,11 +6,16 @@ import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument, UserResponse } from './schemas/user.schema';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 import { hashPassword } from 'src/utils/hashPassword';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { DetailProfileService } from 'src/modules/detail-profile/detail-profile.service';
 import { FindUserQueryDto } from './dto/userDto.dto';
 import { ConfigService } from '@nestjs/config';
 import { RolesService } from '../roles/roles.service';
+import { UserDecoratorType } from 'src/utils/typeSchemas';
+import { Company } from '../company/schemas/company.schema';
+import { CompanyService } from '../company/company.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { NotificationType } from 'src/common/constants/notification-type.enum';
 
 @Injectable()
 export class UserService {
@@ -20,6 +25,8 @@ export class UserService {
     private detailProfileService: DetailProfileService,
     private readonly configService: ConfigService,
     private readonly roleService: RolesService,
+    private readonly companyService: CompanyService,
+    private eventEmitter: EventEmitter2,
     @InjectConnection() private readonly connection: mongoose.Connection,
   ) {}
   async create(createUserDto: CreateUserDto) {
@@ -162,6 +169,71 @@ export class UserService {
     }
   }
 
+  async handleJoinCompany(companyID: string, user: UserDecoratorType) {
+    try {
+      //- Kiểm tra công ty
+      const company = await this.companyService.findOne(companyID);
+      if (!company) throw new BadRequestException('Công ty không tồn tại');
+
+      //- Kiểm tra User hiện tại
+      const currentUser = await this.userModel.findById(user?.id);
+      if (!currentUser)
+        throw new BadRequestException('Người dùng không tồn tại');
+
+      //- Kiểm tra xem đã liên kết với công ty nào khác chưa
+      if (currentUser.employerInfo?.companyID) {
+        throw new BadRequestException(
+          'Bạn đã liên kết hoặc đang chờ duyệt tại một công ty khác',
+        );
+      }
+
+      //- Cập nhật employerInfo
+      const result = await this.userModel.updateOne(
+        { _id: new Types.ObjectId(user.id) },
+        {
+          $set: {
+            'employerInfo.companyID': new Types.ObjectId(companyID),
+            'employerInfo.userStatus': 'PENDING', //- chờ RECRUITER_ADMIN duyệt
+            'employerInfo.isOwner': false, //- không phải người tạo công ty
+          },
+        },
+      );
+
+      //- start ping event
+      try {
+        const recruiterAdmin =
+          await this.getRecruiterAdminByCompanyID(companyID);
+
+        if (recruiterAdmin) {
+          this.eventEmitter.emit(NotificationType.COMPANY_RECRUITER_JOINED, {
+            receiverId: recruiterAdmin._id,
+            senderId: user.id,
+            title: 'Yêu cầu gia nhập công ty',
+            content: `Người dùng ${user.name} vừa gửi yêu cầu gia nhập công ty, vui lòng phê duyệt.`,
+            metadata: {
+              module: 'COMPANY',
+              action: 'RECRUITER_JOINED',
+              resourceId: user.id,
+            },
+          });
+
+          //- được gửi qua NotificationListener
+        }
+      } catch (notifyError) {
+        console.error('Notification Error:', notifyError.message);
+      }
+
+      return result;
+    } catch (error) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof BadRequestCustom
+      )
+        throw error;
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
   async findOneWithRole(id: string) {
     try {
       const user = await this.userModel
@@ -194,6 +266,43 @@ export class UserService {
       const user = await this.userModel.findOne({ email });
       return user;
     } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
+  async getRecruiterAdminByCompanyID(companyID: string) {
+    try {
+      const getNameRoleRecruiterAdmin = this.configService.get<string>(
+        'role_recruiter_admin',
+      );
+
+      const roleRecruiterAdmin = await this.roleService.getRoleByName(
+        getNameRoleRecruiterAdmin!,
+      );
+
+      if (!roleRecruiterAdmin) {
+        throw new BadRequestCustom(
+          'Hệ thống chưa cấu hình Role Admin cho Nhà tuyển dụng',
+        );
+      }
+
+      const filter = {
+        roleID: roleRecruiterAdmin._id, // Mongoose tự hiểu ObjectId nếu truyền trực tiếp từ model khác
+        'employerInfo.companyID': new Types.ObjectId(companyID), // Ép kiểu để query chính xác
+        'employerInfo.isOwner': true, // Lấy người sở hữu để gửi thông báo phê duyệt
+      };
+
+      const recruiterAdmin = await this.userModel.findOne(filter);
+
+      if (!recruiterAdmin)
+        throw new BadRequestCustom(
+          'Không tìm thấy quản trị viên của công ty này',
+        );
+
+      return recruiterAdmin;
+    } catch (error) {
+      // Tránh việc throw lại BadRequestCustom lồng nhau nếu error đã là BadRequestCustom
+      if (error instanceof BadRequestCustom) throw error;
       throw new BadRequestCustom(error.message, !!error.message);
     }
   }

@@ -12,8 +12,9 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ResponseMessage } from 'src/common/decorator/customize';
+import { ResponseMessage, userDecorator } from 'src/common/decorator/customize';
 import { FindUserQueryDto } from './dto/userDto.dto';
+import { UserDecoratorType } from 'src/utils/typeSchemas';
 
 @ApiTags('user')
 @Controller('user')
@@ -53,6 +54,15 @@ export class UserController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.userService.findOne(id);
+  }
+
+  @Patch('join-company')
+  @ResponseMessage('Gửi yêu cầu gia nhập thành công')
+  joinCompany(
+    @Body() joinDto: { companyID: string },
+    @userDecorator() user: UserDecoratorType, // Decorator lấy thông tin user từ JWT
+  ) {
+    return this.userService.handleJoinCompany(joinDto.companyID, user);
   }
 
   // API Cập nhật vai trò

@@ -19,6 +19,12 @@ export class NotificationsListener {
   @OnEvent(NotificationType.NEWS_CREATED) //- lắng nghe
   async handleNewsCreatedEvent(payload: any) {
     try {
+      if (!payload.receiverId || !payload.senderId) {
+        console.error(
+          '[Event Error] Missing receiverId or senderId in payload',
+        );
+        return;
+      }
       // 1. Lưu notify xuống DB
       const newNotif = await this.notificationsService.create({
         receiverId: payload.receiverId,
@@ -26,6 +32,39 @@ export class NotificationsListener {
         title: payload.title,
         content: payload.content,
         type: NotificationType.NEWS_CREATED,
+        metadata: payload.metadata,
+      });
+
+      if (!newNotif)
+        throw new BadRequestCustom('Lỗi tạo thông báo', !!newNotif);
+
+      // 2. Đẩy real-time ngay sau khi lưu DB thành công, chuyển sang thằng gateway xử lý
+      this.notificationsGateway.sendToUser(
+        payload.receiverId.toString(),
+        newNotif,
+      );
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
+  @OnEvent(NotificationType.COMPANY_RECRUITER_JOINED) //- lắng nghe
+  async handleRecruiterJoinedCompanyEvent(payload: any) {
+    try {
+      if (!payload.receiverId || !payload.senderId) {
+        console.error(
+          '[Event Error] Missing receiverId or senderId in payload',
+        );
+        return;
+      }
+
+      // 1. Lưu notify xuống DB
+      const newNotif = await this.notificationsService.create({
+        receiverId: payload.receiverId,
+        senderId: payload.senderId,
+        title: payload.title,
+        content: payload.content,
+        type: NotificationType.COMPANY_RECRUITER_JOINED,
         metadata: payload.metadata,
       });
 

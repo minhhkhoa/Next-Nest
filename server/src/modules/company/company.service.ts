@@ -43,6 +43,25 @@ export class CompanyService {
     }
   }
 
+  async checkTaxCodeExist(taxCode: string) {
+    try {
+      if (!taxCode)
+        throw new BadRequestCustom('taxCode không được để trống', !!taxCode);
+
+      const company = await this.companyModel.findOne({ taxCode });
+
+      if (company)
+        throw new BadRequestCustom(
+          `Công ty ${company.name.vi} đã được đăng ký trên hệ thống!`,
+          !!taxCode,
+        );
+
+      return true;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
   //- còn thiếu 1 vài api nữa, nào code tới FE mình làm thêm
 
   async findOne(id: string) {
@@ -51,18 +70,21 @@ export class CompanyService {
         throw new BadRequestCustom('ID company không đúng định dạng', !!id);
       }
 
-      const company = await this.companyModel.findById(id).populate([
-        {
-          path: 'industryID',
-          match: { isDeleted: false },
-          select: 'name _id',
-        },
-        // {
-        //   path: 'userFollow',
-        //   match: { isDeleted: false },
-        //   select: 'name _id',
-        // },
-      ]);
+      const company = await this.companyModel
+        .findById(id)
+        .populate([
+          {
+            path: 'industryID',
+            match: { isDeleted: false },
+            select: 'name _id',
+          },
+          // {
+          //   path: 'userFollow',
+          //   match: { isDeleted: false },
+          //   select: 'name _id',
+          // },
+        ])
+        .lean();
 
       if (!company)
         throw new BadRequestCustom('ID company không tìm thấy', !!id);
@@ -115,7 +137,8 @@ export class CompanyService {
       }
 
       const company = await this.companyModel.findById(id);
-      if (!company) throw new BadRequestCustom('ID company không tìm thấy', !!id);
+      if (!company)
+        throw new BadRequestCustom('ID company không tìm thấy', !!id);
 
       const isDeleted = company.isDeleted;
 
