@@ -14,7 +14,7 @@ export class Company {
 
   @Prop({
     type: String,
-    enum: ['PENDING', 'APPROVED', 'REJECTED'],
+    enum: ['PENDING', 'ACCEPT', 'REJECTED'],
     default: 'PENDING',
   })
   status: string; // Phục vụ Giai đoạn 3: Super Admin duyệt công ty

@@ -43,7 +43,7 @@ const items = [
   { title: "Thống kê", url: "/admin/dashboard", icon: ChartNoAxesCombined },
   { title: "Người dùng", url: "/admin/user", icon: User2 },
   { title: "Jobs", url: "/admin/jobs", icon: Calendar },
-  { title: "Nhà tuyển dụng", url: "/admin/recruiter", icon: Search },
+  { title: "Công ty", url: "/admin/company", icon: Search },
   { title: "Resumes & CV", url: "/admin/resumes", icon: FileUser },
   {
     title: "Ngành nghề & kỹ năng",

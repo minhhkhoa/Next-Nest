@@ -60,14 +60,14 @@ export const handleInitName = (name: string) => {
  * @returns Promise<string> secure_url sau khi upload thành công
  */
 export async function uploadToCloudinary(
-  file: File
+  file: File,
 ): Promise<string | undefined> {
   try {
     if (!file) throw new Error("No file provided");
 
     // --- Gọi BE để lấy chữ ký Cloudinary ---
     const sigRes = await http.get<ApiResponse<CloudinarySignatureResponse>>(
-      `${envConfig.NEXT_PUBLIC_API_URL_SERVER}/cloudinary/signature`
+      `${envConfig.NEXT_PUBLIC_API_URL_SERVER}/cloudinary/signature`,
     );
     if (!sigRes.isOk) {
       throw new Error("Failed to get Cloudinary signature");
@@ -92,7 +92,7 @@ export async function uploadToCloudinary(
       formData,
       {
         headers: { "Content-Type": "multipart/form-data" },
-      }
+      },
     );
 
     return res.data.secure_url;
@@ -100,7 +100,7 @@ export async function uploadToCloudinary(
     if (isAxiosError(error)) {
       console.error(
         "Lỗi upload từ Cloudinary:",
-        error.response?.data?.error?.message || error.message
+        error.response?.data?.error?.message || error.message,
       );
     } else {
       console.error("Lỗi không xác định khi upload:", error);
@@ -129,7 +129,7 @@ export const getSlugFromSlugUrl = (slug: string) => {
 
 export const handleNotificationNavigation = (
   item: NotificationResType,
-  router: AppRouterInstance
+  router: AppRouterInstance,
 ) => {
   const type = item.type as NotificationType;
 
@@ -140,12 +140,7 @@ export const handleNotificationNavigation = (
       break;
 
     case NotificationType.COMPANY_CREATED:
-      router.push(`/admin/companies/approve`);
-      break;
-
-    case NotificationType.COMPANY_APPROVED:
-    case NotificationType.COMPANY_REJECTED:
-      router.push(`/profile/company`);
+      router.push(`/admin/company?statusFilterCompany=PENDING`);
       break;
 
     case NotificationType.RESUME_SUBMITTED:

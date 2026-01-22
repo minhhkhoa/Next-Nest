@@ -24,6 +24,9 @@ export const apiCompanyRes = z.object({
   }),
 });
 
+export type CompanyResType = z.infer<typeof apiCompanyRes>;
+
+//- create
 export const companyCreate = z.object({
   name: z.string(),
   taxCode: z.string(),

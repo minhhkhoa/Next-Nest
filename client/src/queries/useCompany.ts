@@ -33,7 +33,7 @@ export const useGetCompaniesFilter = (params: {
   pageSize: number;
   name?: string;
   address?: string;
-  status?: "PENDING" | "ACTIVE" | "REJECTED" | "INACTIVE" | "";
+  status?: string;
 }) => {
   return useQuery({
     queryKey: ["companies-filter", params],

@@ -18,10 +18,10 @@ export class NotificationsListener {
     NotificationType.NEWS_CREATED,
 
     //- company
-    NotificationType.COMPANY_RECRUITER_JOINED,
-    NotificationType.COMPANY_JOIN_REQUEST_PROCESSED,
     NotificationType.COMPANY_CREATED,
     NotificationType.COMPANY_ADMIN_REQUEST_PROCESSED,
+    NotificationType.COMPANY_RECRUITER_JOINED,
+    NotificationType.COMPANY_JOIN_REQUEST_PROCESSED,
   ])
   async handleNotificationEvents(payload: any) {
     try {

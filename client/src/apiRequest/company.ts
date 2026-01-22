@@ -19,7 +19,7 @@ const companyApiRequest = {
     pageSize: number;
     name?: string;
     address?: string;
-    status?: "PENDING" | "ACTIVE" | "REJECTED" | "INACTIVE" | "";
+    status?: string;
   }) => http.get<ApiResponse<any>>(`${prefix}/filter`, { params }),
 
   //- Kiểm tra mã số thuế đã tồn tại chưa
