@@ -73,3 +73,18 @@ export class AdminApproveCompanyDto {
   })
   action: string;
 }
+
+export class FindJoinRequestDto {
+  @ApiPropertyOptional({ example: 1 })
+  @IsNumber()
+  currentPage: number;
+
+  @ApiPropertyOptional({ example: 1 })
+  @IsNumber()
+  pageSize: number;
+
+  @ApiPropertyOptional({ example: '' })
+  @IsOptional()
+  @IsString()
+  name?: string; // Tên người xin gia nhập cần tìm
+}

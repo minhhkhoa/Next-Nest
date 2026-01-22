@@ -75,8 +75,6 @@ export const segmentNameMap: Record<string, string> = {
 export enum NotificationType {
   //- Module Company
   COMPANY_CREATED = "COMPANY_CREATED", // Admin nhận: Yêu cầu duyệt cty
-  COMPANY_APPROVED = "COMPANY_APPROVED", // User nhận: Cty được duyệt
-  COMPANY_REJECTED = "COMPANY_REJECTED", // User nhận: Cty bị từ chối
   COMPANY_RECRUITER_JOINED = "COMPANY_RECRUITER_JOINED", // RECUITER_ADMIN nhận: Yêu cầu gia nhập của RECRUITER'
   COMPANY_JOIN_REQUEST_PROCESSED = "COMPANY_JOIN_REQUEST_PROCESSED", // RECRUITER_ADMIN duyệt/từ chối yêu cầu
   COMPANY_ADMIN_REQUEST_PROCESSED = "COMPANY_ADMIN_REQUEST_PROCESSED", // SUPER_ADMIN duyệt/từ chối yêu cầu

@@ -73,7 +73,7 @@ export class UserController {
   // Chỉ Admin công ty mới được gọi
   @Patch('approve-join-request')
   @ResponseMessage('Xử lý yêu cầu gia nhập thành công')
-  @ApiOperation({ summary: 'Xử lý yêu cầu gia nhập công ty' })
+  @ApiOperation({ summary: 'recruiter_admin xử lý yêu cầu gia nhập công ty' })
   async approveJoinRequest(
     @Body() approveDto: ApproveCompanyDto,
     @userDecorator() admin: UserDecoratorType,

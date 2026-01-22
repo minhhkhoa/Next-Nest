@@ -9,7 +9,9 @@ import {
   NotificationDocument,
 } from './schemas/notification.schema';
 import { FindNotifycationQueryDto } from './dto/notifycationDto-dto';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
+import { NotificationType } from 'src/common/constants/notification-type.enum';
+import { FindJoinRequestDto } from '../company/dto/companyDto.dto';
 
 @Injectable()
 export class NotificationsService {
@@ -131,6 +133,84 @@ export class NotificationsService {
       { receiverId: userId, isRead: false },
       { isRead: true, readAt: new Date() },
     );
+  }
+
+  //- lấy ra danh sách đứa xin gia nhập công ty
+  async getJoinRequestsForAdmin(adminId: string, query: FindJoinRequestDto) {
+    const { currentPage, pageSize, name } = query;
+    const defaultPage = +currentPage > 0 ? +currentPage : 1;
+    const defaultLimit = +pageSize > 0 ? +pageSize : 10;
+    const skip = (defaultPage - 1) * defaultLimit;
+
+    const pipeline: any[] = [
+      {
+        //- tìm đúng bản ghi nào mà người nhận là recruiter_admin
+        //- và type phải là xin gia nhập
+        $match: {
+          receiverId: new Types.ObjectId(adminId),
+          type: NotificationType.COMPANY_RECRUITER_JOINED,
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'senderId',
+          foreignField: '_id',
+          as: 'senderInfo',
+        },
+      },
+      { $unwind: '$senderInfo' },
+    ];
+
+    //- lọc theo tên
+    if (name) {
+      pipeline.push({
+        $match: {
+          'senderInfo.name': { $regex: name, $options: 'i' },
+        },
+      });
+    }
+
+    //- điều kiện gì đó 
+    pipeline.push({
+      $facet: {
+        meta: [{ $count: 'totalItems' }],
+        data: [
+          { $sort: { createdAt: -1 } },
+          { $skip: skip },
+          { $limit: defaultLimit },
+          {
+            $project: {
+              _id: 1,
+              title: 1,
+              content: 1,
+              createdAt: 1,
+              note: '$metadata.note',
+              sender: {
+                _id: '$senderInfo._id',
+                name: '$senderInfo.name',
+                email: '$senderInfo.email',
+                avatar: '$senderInfo.avatar',
+              },
+            },
+          },
+        ],
+      },
+    });
+
+    const results = await this.notificationModel.aggregate(pipeline);
+    const data = results[0].data;
+    const totalItems = results[0].meta[0]?.totalItems || 0;
+
+    return {
+      meta: {
+        current: defaultPage,
+        pageSize: defaultLimit,
+        totalItems,
+        totalPages: Math.ceil(totalItems / defaultLimit),
+      },
+      result: data,
+    };
   }
 
   // Xóa 1 thông báo

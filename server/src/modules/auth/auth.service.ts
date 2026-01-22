@@ -1,6 +1,8 @@
 import {
   BadRequestException,
   ForbiddenException,
+  forwardRef,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -27,7 +29,7 @@ import { RolesService } from '../roles/roles.service';
 export class AuthService {
   constructor(
     private configService: ConfigService,
-    private usersService: UserService,
+    @Inject(forwardRef(() => UserService)) private usersService: UserService,
     private mailService: MailService,
     private jwtService: JwtService,
     private roleService: RolesService,
@@ -55,7 +57,8 @@ export class AuthService {
 
   async login(user: UserResponse, response: Response) {
     try {
-      const { avatar, email, name, roleID, id, roleCodeName, employerInfo } = user;
+      const { avatar, email, name, roleID, id, roleCodeName, employerInfo } =
+        user;
 
       const payload = {
         email,
@@ -126,7 +129,7 @@ export class AuthService {
         name,
         roleID,
         roleCodeName,
-        employerInfo
+        employerInfo,
       } = user;
 
       //- B1: check xem có tài khoản chưa
@@ -356,7 +359,6 @@ export class AuthService {
       throw new BadRequestCustom(error.message, !!error.message);
     }
   }
-  
 
   //- func logout
   async logout(response: Response, user: UserResponse) {
@@ -414,7 +416,7 @@ export class AuthService {
         email,
         roleID,
         roleCodeName,
-        employerInfo
+        employerInfo,
       };
 
       const result = await this.login(payload, response);

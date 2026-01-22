@@ -206,76 +206,80 @@ export class NewsService {
   }
 
   async findAllByFilter(query: FindNewsQueryDto) {
-    const { currentPage, pageSize, title, cateNewsID, status } = query;
+    try {
+      const { currentPage, pageSize, title, cateNewsID, status } = query;
 
-    const queryForAqp = { title, cateNewsID, status };
-    const { filter, sort, population } = aqp(queryForAqp);
+      const queryForAqp = { title, cateNewsID, status };
+      const { filter, sort, population } = aqp(queryForAqp);
 
-    //- Xây dựng điều kiện lọc
-    let filterConditions: any = { ...filter };
+      //- Xây dựng điều kiện lọc
+      let filterConditions: any = { ...filter };
 
-    //- Xử lý filter cho title nếu truyền lên
-    if (title) {
-      delete filterConditions.title;
-      const searchRegex = new RegExp(title, 'i');
-      filterConditions.$or = [
-        { 'title.vi': { $regex: searchRegex } },
-        { 'title.en': { $regex: searchRegex } },
-      ];
-    }
+      //- Xử lý filter cho title nếu truyền lên
+      if (title) {
+        delete filterConditions.title;
+        const searchRegex = new RegExp(title, 'i');
+        filterConditions.$or = [
+          { 'title.vi': { $regex: searchRegex } },
+          { 'title.en': { $regex: searchRegex } },
+        ];
+      }
 
-    //- Xử lý filter cho cateNewsID nếu truyền lên
-    if (cateNewsID) {
-      filterConditions.cateNewsID = { $in: cateNewsID }; //- Lọc theo mảng MongoID
-    }
+      //- Xử lý filter cho cateNewsID nếu truyền lên
+      if (cateNewsID) {
+        filterConditions.cateNewsID = { $in: cateNewsID }; //- Lọc theo mảng MongoID
+      }
 
-    //- Xử lý filter cho status nếu truyền lên
-    if (status) {
-      filterConditions.status = status;
-    }
+      //- Xử lý filter cho status nếu truyền lên
+      if (status) {
+        filterConditions.status = status;
+      }
 
-    const defaultPage = currentPage > 0 ? +currentPage : 1;
-    let offset = (+defaultPage - 1) * +pageSize;
-    let defaultLimit = +pageSize ? +pageSize : 10;
+      const defaultPage = currentPage > 0 ? +currentPage : 1;
+      let offset = (+defaultPage - 1) * +pageSize;
+      let defaultLimit = +pageSize ? +pageSize : 10;
 
-    const totalItems = (await this.newsModel.find(filterConditions)).length;
-    const totalPages = Math.ceil(totalItems / defaultLimit);
+      const totalItems = (await this.newsModel.find(filterConditions)).length;
+      const totalPages = Math.ceil(totalItems / defaultLimit);
 
-    //- sort
-    const defaultSort = Object.keys(sort || {}).length
-      ? sort
-      : { createdAt: -1 };
+      //- sort
+      const defaultSort = Object.keys(sort || {}).length
+        ? sort
+        : { createdAt: -1 };
 
-    let result = await this.newsModel
-      .find(filterConditions)
-      .skip(offset)
-      .limit(defaultLimit)
-      .sort(defaultSort as any)
-      .populate(population)
-      .exec();
+      let result = await this.newsModel
+        .find(filterConditions)
+        .skip(offset)
+        .limit(defaultLimit)
+        .sort(defaultSort as any)
+        .populate(population)
+        .exec();
 
-    //- thêm slug cho từng news
-    result = result.map((news) => {
-      const slugNews = {
-        vi: slugify(news.title.vi, {
-          lower: true,
-          strict: true,
-          locale: 'vi',
-        }),
-        en: slugify(news.title.en, { lower: true, strict: true }),
+      //- thêm slug cho từng news
+      result = result.map((news) => {
+        const slugNews = {
+          vi: slugify(news.title.vi, {
+            lower: true,
+            strict: true,
+            locale: 'vi',
+          }),
+          en: slugify(news.title.en, { lower: true, strict: true }),
+        };
+        return { ...news.toObject(), slugNews };
+      });
+
+      return {
+        meta: {
+          current: defaultPage,
+          pageSize: pageSize,
+          totalPages: totalPages,
+          totalItems: totalItems,
+        },
+        result,
       };
-      return { ...news.toObject(), slugNews };
-    });
-
-    return {
-      meta: {
-        current: defaultPage,
-        pageSize: pageSize,
-        totalPages: totalPages,
-        totalItems: totalItems,
-      },
-      result,
-    };
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
   }
 
   async findOne(id: string) {

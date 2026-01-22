@@ -7,12 +7,14 @@ import { Company, CompanySchema } from './schemas/company.schema';
 import { BusinessModule } from 'src/common/decorator/customize';
 import { RolesModule } from '../roles/roles.module';
 import { UserModule } from '../user/user.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @BusinessModule()
 @Module({
   imports: [
     TranslationModule,
     RolesModule,
+    NotificationsModule,
     forwardRef(() => UserModule),
     MongooseModule.forFeature([{ name: Company.name, schema: CompanySchema }]),
   ],

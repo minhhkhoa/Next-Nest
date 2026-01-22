@@ -15,7 +15,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ResponseMessage, userDecorator } from 'src/common/decorator/customize';
 import {
   AdminApproveCompanyDto,
+  FindCompanyQueryDto,
   FindCompanyWithTaxCode,
+  FindJoinRequestDto,
 } from './dto/companyDto.dto';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 
@@ -34,6 +36,23 @@ export class CompanyController {
     return this.companyService.create(createCompanyDto, user);
   }
 
+  //- dành cho recruiter_admin
+  @Get('join-requests')
+  @ResponseMessage('Lấy thông tin yêu cầu gia nhập công ty thành công')
+  @ApiOperation({ summary: 'Lấy thông tin yêu cầu gia nhập công ty' })
+  async getJoinRequests(
+    @userDecorator() user: UserDecoratorType,
+    @Query() query: FindJoinRequestDto,
+  ) {
+    return await this.companyService.getRecruiterJoinRequests(user.id, query);
+  }
+
+  @ResponseMessage('Lấy tất cả công ty có lọc nâng cao thành công')
+  @ApiOperation({ summary: 'GettAll company with filter' })
+  @Get("filter")
+  findAllByFilter(@Query() query: FindCompanyQueryDto) {
+    return this.companyService.findAllByFilter(query);
+  }
   @ResponseMessage('Lấy tất cả công ty thành công')
   @ApiOperation({ summary: 'GettAll company' })
   @Get()

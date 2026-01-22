@@ -20,10 +20,10 @@ class EmployerInfo {
 @Schema({ timestamps: true })
 //- Định nghĩa các field có trong collection User
 export class User {
-  @Prop()
+  @Prop({ index: true })
   name: string;
 
-  @Prop()
+  @Prop({ unique: true, index: true })
   email: string;
 
   @Prop()

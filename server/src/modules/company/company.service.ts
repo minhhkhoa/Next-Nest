@@ -11,14 +11,19 @@ import { Company, CompanyDocument } from './schemas/company.schema';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
-import mongoose, { Connection } from 'mongoose';
+import mongoose, { Connection, Types } from 'mongoose';
 import { RolesService } from '../roles/roles.service';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { ConfigService } from '@nestjs/config';
 import { UserService } from '../user/user.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NotificationType } from 'src/common/constants/notification-type.enum';
-import { AdminApproveCompanyDto } from './dto/companyDto.dto';
+import {
+  AdminApproveCompanyDto,
+  FindCompanyQueryDto,
+  FindJoinRequestDto,
+} from './dto/companyDto.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class CompanyService {
@@ -26,6 +31,7 @@ export class CompanyService {
     private readonly translationService: TranslationService,
     private readonly roleService: RolesService,
     private readonly configService: ConfigService,
+    private readonly notificationsService: NotificationsService,
     private eventEmitter: EventEmitter2,
 
     @Inject(forwardRef(() => UserService))
@@ -121,6 +127,81 @@ export class CompanyService {
       throw new BadRequestCustom(error.message, !!error.message);
     } finally {
       session.endSession();
+    }
+  }
+
+  //- hàm lấy thông tin người gửi yêu cầu gia nhập công ty cho recruiter_admin
+  async getRecruiterJoinRequests(adminId: string, query: FindJoinRequestDto) {
+    // Gọi thông qua Service
+    return await this.notificationsService.getJoinRequestsForAdmin(
+      adminId,
+      query,
+    );
+  }
+
+  async findAllByFilter(query: FindCompanyQueryDto) {
+    try {
+      const { currentPage, pageSize, name, address, status } = query;
+
+      // 1. Xây dựng mảng AND để chứa các điều kiện lọc độc lập
+      const andConditions: any[] = [];
+
+      // Filter theo Name (Đa ngôn ngữ)
+      if (name) {
+        andConditions.push({
+          $or: [
+            { 'name.vi': { $regex: name, $options: 'i' } },
+            { 'name.en': { $regex: name, $options: 'i' } },
+          ],
+        });
+      }
+
+      // Filter theo Address
+      if (address) {
+        andConditions.push({
+          address: { $regex: address, $options: 'i' },
+        });
+      }
+
+      // Filter theo Status
+      if (status) {
+        andConditions.push({ status });
+      }
+
+      // Tổng hợp điều kiện lọc
+      const filterConditions =
+        andConditions.length > 0 ? { $and: andConditions } : {};
+
+      // 2. Tính toán Phân trang
+      const defaultPage = +currentPage > 0 ? +currentPage : 1;
+      const defaultLimit = +pageSize > 0 ? +pageSize : 10;
+      const offset = (defaultPage - 1) * defaultLimit;
+
+      // 3. Thực thi query song song để tối ưu tốc độ
+      const [totalItems, result] = await Promise.all([
+        this.companyModel.countDocuments(filterConditions), // Đếm nhanh hơn .length
+        this.companyModel
+          .find(filterConditions)
+          .skip(offset)
+          .limit(defaultLimit)
+          .sort('-createdAt')
+          .lean()
+          .exec(),
+      ]);
+
+      const totalPages = Math.ceil(totalItems / defaultLimit);
+
+      return {
+        meta: {
+          current: defaultPage,
+          pageSize: defaultLimit,
+          totalPages: totalPages,
+          totalItems: totalItems,
+        },
+        result,
+      };
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
     }
   }
 
