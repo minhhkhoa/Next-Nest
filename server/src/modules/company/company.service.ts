@@ -57,6 +57,11 @@ export class CompanyService {
       const newCompany = new this.companyModel({
         ...dataLang,
         status: 'PENDING',
+        createdBy: {
+          _id: new Types.ObjectId(user.id),
+          name: user.name,
+          email: user.email,
+        },
       });
       const company = await newCompany.save({ session });
 

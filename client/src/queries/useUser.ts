@@ -1,5 +1,9 @@
 import userApiRequest from "@/apiRequest/user";
-import { UpdateUserType } from "@/schemasvalidation/user";
+import {
+  TypeApproveCompany,
+  TypeJoinCompany,
+  UpdateUserType,
+} from "@/schemasvalidation/user";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useUpdateUserMutate() {
@@ -80,3 +84,35 @@ export const useDeleteUser = () => {
     },
   });
 };
+
+//- Hook cho Recruiter gửi yêu cầu gia nhập công ty
+export function useJoinCompanyMutate() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: TypeJoinCompany) =>
+      userApiRequest.joinCompany(payload),
+    onSuccess: () => {
+      // Làm tươi lại profile để cập nhật trạng thái employerInfo thành PENDING trên UI
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      // Nếu Khoa có trang danh sách công ty, có thể invalidate thêm ở đây
+    },
+  });
+}
+
+//- Hook cho Recruiter_Admin phê duyệt hoặc từ chối thành viên
+export function useApproveJoinRequestMutate() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: TypeApproveCompany) =>
+      userApiRequest.approveJoinRequest(payload),
+    onSuccess: () => {
+      //- Làm tươi lại danh sách yêu cầu gia nhập (danh sách notification/request)
+      queryClient.invalidateQueries({ queryKey: ["join-requests"] });
+
+      //- Nếu Admin đang xem danh sách nhân viên công ty, cũng cần làm tươi lại
+      queryClient.invalidateQueries({ queryKey: ["getAllUserByFilter"] });
+    },
+  });
+}

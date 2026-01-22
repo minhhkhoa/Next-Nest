@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useDeleteRole, useGetRoleFilter } from "@/queries/role";
 import { RoleResType } from "@/schemasvalidation/role";
 import { Plus, Trash2 } from "lucide-react";
 import React, { useState } from "react";
@@ -12,9 +11,10 @@ import { getRoleColumns } from "./roleColumn";
 import TableRole from "./tableRole";
 import { DeleteConfirmModal } from "../NewsCategory/components/modals/delete-confirm-modal";
 import { RoleDialogForm } from "./components/role-modal-form";
-import { useGetGroupModule } from "@/queries/permission";
+import { useGetGroupModule } from "@/queries/usePermission";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
+import { useDeleteRole, useGetRoleFilter } from "@/queries/useRole";
 
 export default function PageRole() {
   const [filtersName, setFiltersName] = useState("");

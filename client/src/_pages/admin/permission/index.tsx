@@ -10,7 +10,7 @@ import {
   useDeletePermission,
   useGetAllModuleBussiness,
   useGetPermissionFilter,
-} from "@/queries/permission";
+} from "@/queries/usePermission";
 import { getPermissionColumns } from "./permissionColumn";
 import { Spinner } from "@/components/ui/spinner";
 import { PermissionDialogForm } from "./component/permission-modal-form";

@@ -104,3 +104,20 @@ export const getAllUserByFilterRes = z.object({
 
 export type GetAllUserByFilterResType = z.infer<typeof getAllUserByFilterRes>;
 //- end getAllUserByFilter
+
+//- payload Gửi yêu cầu gia nhập một công ty
+export const JoinCompany = z.object({
+  companyID: z.string(),
+  note: z.string(),
+});
+
+export type TypeJoinCompany = z.infer<typeof JoinCompany>;
+
+//- payload Phê duyệt hoặc Từ chối yêu cầu gia nhập
+export const ApproveCompany = z.object({
+  targetUserId: z.string(),
+  action: z.enum(["ACCEPT", "REJECT"]),
+});
+
+export type TypeApproveCompany = z.infer<typeof ApproveCompany>;
+//- end payload

@@ -49,7 +49,7 @@ export class CompanyController {
 
   @ResponseMessage('Lấy tất cả công ty có lọc nâng cao thành công')
   @ApiOperation({ summary: 'GettAll company with filter' })
-  @Get("filter")
+  @Get('filter')
   findAllByFilter(@Query() query: FindCompanyQueryDto) {
     return this.companyService.findAllByFilter(query);
   }
@@ -60,9 +60,9 @@ export class CompanyController {
     return this.companyService.findAll();
   }
 
-  @ResponseMessage('Lấy tất cả công ty thành công')
-  @ApiOperation({ summary: 'GettAll company' })
-  @Get()
+  @ResponseMessage('Kiển tra mã số thuế đã tồn tại chưa thành công')
+  @ApiOperation({ summary: 'check tax code đã tồn tại chưa' })
+  @Get('check-tax-code')
   checkTaxCode(@Query() query: FindCompanyWithTaxCode) {
     return this.companyService.checkTaxCodeExist(query.taxCode);
   }

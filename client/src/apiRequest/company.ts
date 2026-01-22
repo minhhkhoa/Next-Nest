@@ -1,0 +1,45 @@
+import http from "@/lib/http";
+import { CompanyCreateType } from "@/schemasvalidation/company";
+import { ApiResponse } from "@/types/apiResponse";
+
+const prefix = "/company";
+const companyApiRequest = {
+  create: (payload: CompanyCreateType) =>
+    http.post<ApiResponse<any>>(prefix, payload),
+
+  //- Lấy danh sách yêu cầu gia nhập (Dành cho Recruiter Admin)
+  getJoinRequests: (params: {
+    currentPage: number;
+    pageSize: number;
+    name?: string;
+  }) => http.get<ApiResponse<any>>(`${prefix}/join-requests`, { params }),
+
+  findAllByFilter: (params: {
+    currentPage: number;
+    pageSize: number;
+    name?: string;
+    address?: string;
+    status?: "PENDING" | "ACTIVE" | "REJECTED" | "INACTIVE" | "";
+  }) => http.get<ApiResponse<any>>(`${prefix}/filter`, { params }),
+
+  //- Kiểm tra mã số thuế đã tồn tại chưa
+  checkTaxCode: (taxCode: string) =>
+    http.get<ApiResponse<any>>(`${prefix}/check-tax-code`, {
+      params: { taxCode },
+    }),
+
+  findOne: (id: string) => http.get<ApiResponse<any>>(`${prefix}/${id}`),
+
+  //- Super_Admin phê duyệt hoặc từ chối công ty mới
+  adminVerifyCompany: (payload: {
+    companyID: string;
+    action: "ACCEPT" | "REJECT";
+  }) => http.patch<ApiResponse<any>>(`${prefix}/admin-verify`, payload),
+
+  update: (id: string, payload: CompanyCreateType) =>
+    http.patch<ApiResponse<any>>(`${prefix}/${id}`, payload),
+
+  remove: (id: string) => http.delete<ApiResponse<any>>(`${prefix}/${id}`),
+};
+
+export default companyApiRequest;

@@ -37,7 +37,7 @@ import { HTTP_METHODS } from "@/lib/constant";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { useCreatePermission, useUpdatePermission } from "@/queries/permission";
+import { useCreatePermission, useUpdatePermission } from "@/queries/usePermission";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 

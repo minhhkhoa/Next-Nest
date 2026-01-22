@@ -33,10 +33,10 @@ import {
   RoleResType,
 } from "@/schemasvalidation/role";
 import { GroupedPermissionRes } from "@/schemasvalidation/permission";
-import { useCreateRole, useUpdateRole } from "@/queries/role";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { PermissionSelector } from "./permissionSelector";
+import { useCreateRole, useUpdateRole } from "@/queries/useRole";
 
 interface PermissionDialogProps {
   onClose: () => void;
@@ -58,8 +58,6 @@ export function RoleDialogForm({
       permissions: [],
     },
   });
-
-  console.log("groupModules: ", groupModules);
 
   const {} = form;
 

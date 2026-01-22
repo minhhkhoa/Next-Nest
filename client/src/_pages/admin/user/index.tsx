@@ -12,7 +12,7 @@ import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonn
 import { apiUserResType } from "@/schemasvalidation/user";
 import { getUserColumns } from "./UserColumns";
 import { DeleteConfirmModal } from "../NewsCategory/components/modals/delete-confirm-modal";
-import { useGetAllRole } from "@/queries/role";
+import { useGetAllRole } from "@/queries/useRole";
 import { UserDialogForm } from "./components/user-modal-form";
 
 export default function UserPageManagement() {

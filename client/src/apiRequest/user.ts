@@ -1,6 +1,8 @@
 import http from "@/lib/http";
 import {
   GetAllUserByFilterResType,
+  TypeApproveCompany,
+  TypeJoinCompany,
   UpdateUserType,
 } from "@/schemasvalidation/user";
 import { ApiResponse } from "@/types/apiResponse";
@@ -28,6 +30,14 @@ const userApiRequest = {
     }),
 
   deleteUser: (id: string) => http.delete<ApiResponse<any>>(`${prefix}/${id}`),
+
+  //- Gửi yêu cầu gia nhập một công ty (dành cho Recruiter)
+  joinCompany: (payload: TypeJoinCompany) =>
+    http.patch<ApiResponse<any>>(`${prefix}/join-company`, payload),
+
+  //- Phê duyệt hoặc Từ chối yêu cầu gia nhập (dành cho Recruiter Admin)
+  approveJoinRequest: (payload: TypeApproveCompany) =>
+    http.patch<ApiResponse<any>>(`${prefix}/approve-join-request`, payload),
 };
 
 export default userApiRequest;
