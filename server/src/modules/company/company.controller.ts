@@ -12,8 +12,9 @@ import { CompanyService } from './company.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ResponseMessage } from 'src/common/decorator/customize';
+import { ResponseMessage, userDecorator } from 'src/common/decorator/customize';
 import { FindCompanyWithTaxCode } from './dto/companyDto.dto';
+import { UserDecoratorType } from 'src/utils/typeSchemas';
 
 @ApiTags('company')
 @Controller('company')
@@ -23,8 +24,11 @@ export class CompanyController {
   @ResponseMessage('Thêm công ty thành công')
   @ApiOperation({ summary: 'Thêm mới công ty' })
   @Post()
-  create(@Body() createCompanyDto: CreateCompanyDto) {
-    return this.companyService.create(createCompanyDto);
+  create(
+    @Body() createCompanyDto: CreateCompanyDto,
+    @userDecorator() user: UserDecoratorType,
+  ) {
+    return this.companyService.create(createCompanyDto, user);
   }
 
   @ResponseMessage('Lấy tất cả công ty thành công')

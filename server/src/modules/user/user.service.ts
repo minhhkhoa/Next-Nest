@@ -1,6 +1,8 @@
 import {
   BadRequestException,
   ForbiddenException,
+  forwardRef,
+  Inject,
   Injectable,
 } from '@nestjs/common';
 import { CreateUserDto, RegisterDto } from './dto/create-user.dto';
@@ -16,7 +18,6 @@ import { FindUserQueryDto } from './dto/userDto.dto';
 import { ConfigService } from '@nestjs/config';
 import { RolesService } from '../roles/roles.service';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
-import { Company } from '../company/schemas/company.schema';
 import { CompanyService } from '../company/company.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NotificationType } from 'src/common/constants/notification-type.enum';
@@ -33,6 +34,7 @@ export class UserService {
     private detailProfileService: DetailProfileService,
     private readonly configService: ConfigService,
     private readonly roleService: RolesService,
+    @Inject(forwardRef(() => CompanyService))
     private readonly companyService: CompanyService,
     private eventEmitter: EventEmitter2,
     @InjectConnection() private readonly connection: mongoose.Connection,
@@ -72,6 +74,27 @@ export class UserService {
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }
+  }
+
+  async updateUserToOwner(
+    userId: string,
+    data: { roleID: string; companyID: string },
+    session: any,
+  ) {
+    return await this.userModel.updateOne(
+      { _id: userId },
+      {
+        $set: {
+          roleID: data.roleID,
+          employerInfo: {
+            companyID: data.companyID,
+            isOwner: true,
+            userStatus: 'ACTIVE',
+          },
+        },
+      },
+      { session }, //- để dính vào Transaction của CompanyService
+    );
   }
 
   async createUserWithProviderSocial(userData: UserResponse, provider: string) {
