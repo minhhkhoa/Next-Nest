@@ -16,6 +16,7 @@ import { Company } from '../company/schemas/company.schema';
 import { CompanyService } from '../company/company.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NotificationType } from 'src/common/constants/notification-type.enum';
+import { JoinCompanyDto } from '../company/dto/companyDto.dto';
 
 @Injectable()
 export class UserService {
@@ -169,8 +170,9 @@ export class UserService {
     }
   }
 
-  async handleJoinCompany(companyID: string, user: UserDecoratorType) {
+  async handleJoinCompany(joinDto: JoinCompanyDto, user: UserDecoratorType) {
     try {
+      const { companyID, note } = joinDto;
       //- Kiểm tra công ty
       const company = await this.companyService.findOne(companyID);
       if (!company) throw new BadRequestException('Công ty không tồn tại');
@@ -212,8 +214,9 @@ export class UserService {
             content: `Người dùng ${user.name} vừa gửi yêu cầu gia nhập công ty, vui lòng phê duyệt.`,
             metadata: {
               module: 'COMPANY',
-              action: 'RECRUITER_JOINED',
               resourceId: user.id,
+              action: 'RECRUITER_JOINED',
+              note: note, //- lưu thêm note
             },
           });
 

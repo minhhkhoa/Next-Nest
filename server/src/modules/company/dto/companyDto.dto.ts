@@ -31,3 +31,13 @@ export class FindCompanyWithTaxCode {
   @IsString()
   taxCode: string;
 }
+
+export class JoinCompanyDto {
+  @ApiPropertyOptional({ example: '' })
+  @IsString()
+  companyID: string;
+
+  @ApiPropertyOptional({ example: '' })
+  @IsString()
+  note: string;
+}

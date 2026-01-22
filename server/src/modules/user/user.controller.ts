@@ -15,6 +15,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ResponseMessage, userDecorator } from 'src/common/decorator/customize';
 import { FindUserQueryDto } from './dto/userDto.dto';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
+import { JoinCompanyDto } from '../company/dto/companyDto.dto';
 
 @ApiTags('user')
 @Controller('user')
@@ -58,11 +59,12 @@ export class UserController {
 
   @Patch('join-company')
   @ResponseMessage('Gửi yêu cầu gia nhập thành công')
+  @ApiOperation({ summary: 'Gửi yêu cầu gia nhập công ty' })
   joinCompany(
-    @Body() joinDto: { companyID: string },
+    @Body() joinDto: JoinCompanyDto,
     @userDecorator() user: UserDecoratorType, // Decorator lấy thông tin user từ JWT
   ) {
-    return this.userService.handleJoinCompany(joinDto.companyID, user);
+    return this.userService.handleJoinCompany(joinDto, user);
   }
 
   // API Cập nhật vai trò

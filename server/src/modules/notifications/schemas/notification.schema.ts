@@ -26,7 +26,7 @@ export class Notification {
   metadata: {
     module: string;
     resourceId: string; //- // ID của bản ghi cụ thể
-    [key: string]: any;
+    [key: string]: any; //- viết như này thì bắt buộc có 2 field trên và vô số field nữa
   };
 
   @Prop({ default: false })
