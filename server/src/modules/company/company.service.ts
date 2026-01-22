@@ -226,13 +226,15 @@ export class CompanyService {
 
       const company = await this.companyModel.findOne({ taxCode });
 
+      //- có công ty rồi
       if (company)
-        throw new BadRequestCustom(
-          `Công ty ${company.name.vi} đã được đăng ký trên hệ thống!`,
-          !!taxCode,
-        );
+        return {
+          exists: true,
+        };
 
-      return true;
+      return {
+        exists: false,
+      };
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }

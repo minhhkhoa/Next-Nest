@@ -24,7 +24,7 @@ const companyApiRequest = {
 
   //- Kiểm tra mã số thuế đã tồn tại chưa
   checkTaxCode: (taxCode: string) =>
-    http.get<ApiResponse<any>>(`${prefix}/check-tax-code`, {
+    http.get<ApiResponse<{ exists: boolean }>>(`${prefix}/check-tax-code`, {
       params: { taxCode },
     }),
 

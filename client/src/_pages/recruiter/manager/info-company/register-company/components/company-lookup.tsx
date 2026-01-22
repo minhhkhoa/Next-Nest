@@ -14,18 +14,22 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useCheckTaxIdExists } from "@/queries/useCompany";
+import { useDebounce } from "use-debounce";
 
 interface CompanyLookupProps {
   onLookup: (taxId: string, isNewCompany: boolean) => void;
 }
 
-// Mock data - mã số thuế tồn tại
-const EXISTING_TAX_IDS = ["0123456789", "9876543210"];
-
 export default function CompanyLookup({ onLookup }: CompanyLookupProps) {
   const [taxId, setTaxId] = useState("");
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+
+  const [debouncedTaxCode] = useDebounce(taxId, 500);
+
+  const { data: checkTaxIdExists, isLoading: checkTaxIdExistsLoading} = useCheckTaxIdExists(debouncedTaxCode);
+
+  const passCheck = !checkTaxIdExistsLoading && checkTaxIdExists?.data?.exists;
 
   const handleCheck = async () => {
     setError("");
@@ -39,14 +43,9 @@ export default function CompanyLookup({ onLookup }: CompanyLookupProps) {
       setError("Mã số thuế phải có 10 chữ số");
       return;
     }
-
-    setIsLoading(true);
-    // Simulate API call
+    //- cho nó delay chút
     await new Promise((resolve) => setTimeout(resolve, 600));
-
-    const isExisting = EXISTING_TAX_IDS.includes(taxId);
-    onLookup(taxId, !isExisting);
-    setIsLoading(false);
+    onLookup(taxId, !passCheck);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -83,7 +82,6 @@ export default function CompanyLookup({ onLookup }: CompanyLookupProps) {
             }}
             onKeyPress={handleKeyPress}
             maxLength={10}
-            disabled={isLoading}
             className="text-center text-lg tracking-widest"
           />
         </div>
@@ -100,10 +98,10 @@ export default function CompanyLookup({ onLookup }: CompanyLookupProps) {
 
         <Button
           onClick={handleCheck}
-          disabled={isLoading || !taxId}
+          disabled={checkTaxIdExistsLoading || !taxId}
           className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-6 text-base"
         >
-          {isLoading ? (
+          {checkTaxIdExistsLoading ? (
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 border-2 border-current border-r-transparent rounded-full animate-spin" />
               Đang kiểm tra...

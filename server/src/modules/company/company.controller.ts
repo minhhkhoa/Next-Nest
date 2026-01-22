@@ -39,7 +39,9 @@ export class CompanyController {
   //- dành cho recruiter_admin
   @Get('join-requests')
   @ResponseMessage('Lấy thông tin yêu cầu gia nhập công ty thành công')
-  @ApiOperation({ summary: 'Lấy thông tin yêu cầu gia nhập công ty' })
+  @ApiOperation({
+    summary: 'Lấy thông tin yêu cầu gia nhập công ty cho recruiter_admin',
+  })
   async getJoinRequests(
     @userDecorator() user: UserDecoratorType,
     @Query() query: FindJoinRequestDto,

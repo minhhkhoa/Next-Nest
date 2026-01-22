@@ -45,6 +45,7 @@ export default function CompanySetupPage() {
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3 }}
           >
+            {/* check mst */}
             <CompanyLookup onLookup={handleLookup} />
           </motion.div>
         )}
@@ -58,6 +59,7 @@ export default function CompanySetupPage() {
             transition={{ duration: 0.3 }}
             className="w-full max-w-3xl"
           >
+            {/* nếu mst chưa tồn tại thì vào màn này */}
             <CreateCompanyForm
               initialTaxId={companyData.taxId}
               onSuccess={handleCreateSuccess}
@@ -74,6 +76,7 @@ export default function CompanySetupPage() {
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
           >
+            {/* nếu mst đã tồn tại thì vào màn này */}
             <JoinCompanyCard company={companyData} onBack={handleBack} />
           </motion.div>
         )}
