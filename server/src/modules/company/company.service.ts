@@ -1,4 +1,9 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { TranslationService } from 'src/common/translation/translation.service';
@@ -6,13 +11,14 @@ import { Company, CompanyDocument } from './schemas/company.schema';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
-import mongoose, { Connection, Model } from 'mongoose';
+import mongoose, { Connection } from 'mongoose';
 import { RolesService } from '../roles/roles.service';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { ConfigService } from '@nestjs/config';
 import { UserService } from '../user/user.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NotificationType } from 'src/common/constants/notification-type.enum';
+import { AdminApproveCompanyDto } from './dto/companyDto.dto';
 
 @Injectable()
 export class CompanyService {
@@ -183,6 +189,91 @@ export class CompanyService {
       return company;
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
+  async handleVerifyCompany(
+    verifyDto: AdminApproveCompanyDto,
+    admin: UserDecoratorType,
+  ) {
+    const { companyID, action } = verifyDto;
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
+    try {
+      //- tìm công ty
+      const company = await this.companyModel.findById(companyID);
+      if (!company) throw new BadRequestException('Công ty không tồn tại');
+
+      //- Tìm người sở hữu công ty (Owner) để thông báo
+      const owner = await this.userService.findOneByFilter({
+        'employerInfo.companyID': companyID,
+        'employerInfo.isOwner': true,
+      });
+
+      //- xét hành động
+      if (action === 'REJECT') {
+        // 1. Xóa công ty
+        await this.companyModel.findByIdAndDelete(companyID, { session });
+
+        // 2. Reset User về trạng thái ban đầu (Xóa role admin, xóa info công ty)
+        if (owner) {
+          await this.userService.resetUserEmployerInfo(
+            owner._id.toString(),
+            session,
+          );
+        }
+      } else {
+        // 3. Chấp nhận: Đổi trạng thái Company sang ACTIVE
+        await this.companyModel.updateOne(
+          { _id: companyID },
+          { $set: { status: 'ACTIVE' } },
+          { session },
+        );
+      }
+
+      await session.commitTransaction();
+
+      //- start ping
+      try {
+        // 4. Bắn thông báo cho Owner Company sau khi DB đã xong
+        if (owner) {
+          this.eventEmitter.emit(
+            NotificationType.COMPANY_ADMIN_REQUEST_PROCESSED,
+            {
+              receiverId: owner._id.toString(),
+              senderId: admin.id,
+              title:
+                action === 'ACCEPT'
+                  ? 'Công ty của bạn đã được phê duyệt'
+                  : 'Yêu cầu tạo công ty bị từ chối',
+              content:
+                action === 'ACCEPT'
+                  ? `Chúc mừng! Công ty ${company.name.en} đã có thể bắt đầu đăng tin tuyển dụng.`
+                  : `Rất tiếc, yêu cầu tạo công ty ${company.name.en} không được chấp nhận.`,
+              type: NotificationType.COMPANY_ADMIN_REQUEST_PROCESSED,
+              metadata: {
+                module: 'COMPANY',
+                action:
+                  action === 'ACCEPT'
+                    ? 'COMPANY_ADMIN_REQUEST_PROCESSED_ACTIVE'
+                    : 'COMPANY_ADMIN_REQUEST_PROCESSED_REJECTED',
+                resourceId: companyID,
+              },
+            },
+          );
+        }
+      } catch (error) {
+        console.error('Notification Error:', error.message);
+      }
+      //- end ping
+
+      return { status: action };
+    } catch (error) {
+      await session.abortTransaction();
+      throw new BadRequestCustom(error.message, !!error.message);
+    } finally {
+      session.endSession();
     }
   }
 

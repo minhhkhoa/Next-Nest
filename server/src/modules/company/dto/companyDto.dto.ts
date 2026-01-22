@@ -60,3 +60,16 @@ export class ApproveCompanyDto {
   })
   action: string;
 }
+
+export class AdminApproveCompanyDto {
+  @ApiPropertyOptional({ example: '65f0c9b2a3b4c5d6e7f8a901' })
+  @IsMongoId()
+  companyID: string;
+
+  @ApiPropertyOptional({ example: 'ACCEPT/REJECT' })
+  @IsString()
+  @IsIn(['ACCEPT', 'REJECT'], {
+    message: 'action chỉ được là ACCEPT hoặc REJECT',
+  })
+  action: string;
+}

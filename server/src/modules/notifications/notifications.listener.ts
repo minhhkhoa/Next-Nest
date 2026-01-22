@@ -14,10 +14,14 @@ export class NotificationsListener {
 
   //- sử dụng mảng để lắng nghe nhiều sự kiện cùng lúc
   @OnEvent([
+    //- news
     NotificationType.NEWS_CREATED,
+
+    //- company
     NotificationType.COMPANY_RECRUITER_JOINED,
-    NotificationType.JOIN_REQUEST_PROCESSED,
+    NotificationType.COMPANY_JOIN_REQUEST_PROCESSED,
     NotificationType.COMPANY_CREATED,
+    NotificationType.COMPANY_ADMIN_REQUEST_PROCESSED,
   ])
   async handleNotificationEvents(payload: any) {
     try {

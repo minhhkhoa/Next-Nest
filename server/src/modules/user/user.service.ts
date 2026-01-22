@@ -304,7 +304,7 @@ export class UserService {
     );
 
     //- Bắn Event thông báo ngược lại cho người xin gia nhập (Recruiter mới)
-    this.eventEmitter.emit(NotificationType.JOIN_REQUEST_PROCESSED, {
+    this.eventEmitter.emit(NotificationType.COMPANY_JOIN_REQUEST_PROCESSED, {
       receiverId: targetUserId,
       senderId: admin.id,
       title:
@@ -315,7 +315,7 @@ export class UserService {
         action === 'ACCEPT'
           ? `Chúc mừng! Bạn đã trở thành thành viên của công ty.`
           : `Rất tiếc, yêu cầu gia nhập của bạn không được chấp nhận.`,
-      type: NotificationType.JOIN_REQUEST_PROCESSED,
+      type: NotificationType.COMPANY_JOIN_REQUEST_PROCESSED,
       metadata: {
         module: 'COMPANY',
         action: action === 'ACCEPT' ? 'JOIN_SUCCESS' : 'JOIN_REJECTED',
@@ -324,6 +324,45 @@ export class UserService {
     });
 
     return result;
+  }
+
+  async resetUserEmployerInfo(userId: string, session: any) {
+    try {
+      // Lấy lại role recruiter
+      const getNameRoleRecruiter =
+        this.configService.get<string>('role_recruiter');
+
+      const defaultRole = await this.roleService.getRoleByName(
+        getNameRoleRecruiter!,
+      );
+
+      if (!defaultRole) throw new BadRequestException('Role không tồn tại');
+
+      return await this.userModel.updateOne(
+        { _id: userId },
+        {
+          $set: {
+            roleID: defaultRole?._id.toString(),
+            employerInfo: undefined,
+          },
+        },
+        { session },
+      );
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
+  async findOneByFilter(filter: Record<string, any>) {
+    try {
+      const user = await this.userModel.findOne(filter).lean();
+      return user;
+    } catch (error) {
+      throw new BadRequestCustom(
+        `Lỗi khi tìm kiếm người dùng: ${error.message}`,
+        true,
+      );
+    }
   }
 
   async findOneWithRole(id: string) {

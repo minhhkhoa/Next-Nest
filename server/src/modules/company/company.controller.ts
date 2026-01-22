@@ -13,7 +13,10 @@ import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ResponseMessage, userDecorator } from 'src/common/decorator/customize';
-import { FindCompanyWithTaxCode } from './dto/companyDto.dto';
+import {
+  AdminApproveCompanyDto,
+  FindCompanyWithTaxCode,
+} from './dto/companyDto.dto';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 
 @ApiTags('company')
@@ -50,6 +53,17 @@ export class CompanyController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.companyService.findOne(id);
+  }
+
+  //- chỉ super_admin mới có quyền này
+  @Patch('admin-verify')
+  @ApiOperation({ summary: 'Super_Admin xử lý phê duyệt công ty' })
+  @ResponseMessage('Xử lý phê duyệt công ty thành công')
+  async adminVerifyCompany(
+    @Body() verifyDto: AdminApproveCompanyDto,
+    @userDecorator() admin: UserDecoratorType,
+  ) {
+    return await this.companyService.handleVerifyCompany(verifyDto, admin);
   }
 
   @ResponseMessage('Cập nhật công ty thành công')
