@@ -12,10 +12,9 @@ import { Button } from "@/components/ui/button";
 import { PermissionResType } from "@/schemasvalidation/permission";
 import { Checkbox } from "@/components/ui/checkbox";
 
-
 export const getPermissionColumns = (
   onEdit: (permission: PermissionResType) => void,
-  onDelete: (permission: PermissionResType) => void
+  onDelete: (permission: PermissionResType) => void,
 ): ColumnDef<PermissionResType>[] => [
   {
     id: "select",
@@ -46,7 +45,7 @@ export const getPermissionColumns = (
     cell: ({ row }) => {
       const name = row.original.name;
       return (
-        <span className="text-sm text-foreground truncate max-w-[180px] !ml-5">
+        <span className="text-sm text-foreground max-w-[200px] whitespace-normal break-words !ml-5 block">
           {name.vi}
         </span>
       );
@@ -60,7 +59,7 @@ export const getPermissionColumns = (
     cell: ({ row }) => {
       const code = row.original.code;
       return (
-        <code className="text-sm text-foreground truncate max-w-[180px] !ml-5">
+        <code className="text-sm text-foreground max-w-[150px] whitespace-normal break-words !ml-5 block">
           {code}
         </code>
       );
@@ -91,7 +90,7 @@ export const getPermissionColumns = (
       return (
         <span
           className={`inline-block rounded px-2 py-1 text-xs font-semibold ${getMethodBadgeColor(
-            method
+            method,
           )}`}
         >
           {method}
