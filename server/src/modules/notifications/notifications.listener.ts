@@ -4,6 +4,7 @@ import { NotificationsService } from './notifications.service';
 import { NotificationsGateway } from './notifications.gateway';
 import { NotificationType } from 'src/common/constants/notification-type.enum';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
+import { CreateNotificationDto } from './dto/create-notification.dto';
 
 @Injectable()
 export class NotificationsListener {
@@ -12,83 +13,69 @@ export class NotificationsListener {
     private readonly notificationsGateway: NotificationsGateway,
   ) {}
 
-  //- sử dụng mảng để lắng nghe nhiều sự kiện cùng lúc
-  // @OnEvent([
-  //   //- news
-  //   NotificationType.NEWS_CREATED,
+  private async processNotification(
+    payload: CreateNotificationDto,
+    eventType: NotificationType,
+  ) {
+    try {
+      if (!payload.receiverId && payload.senderId) {
+        throw new BadRequestCustom(
+          'id người nhận và id người gửi là bắt buộc truyền lên',
+          !!payload.receiverId,
+        );
+      }
 
-  //   //- company
-  //   NotificationType.COMPANY_CREATED,
-  //   NotificationType.COMPANY_ADMIN_REQUEST_PROCESSED,
-  //   NotificationType.COMPANY_RECRUITER_JOINED,
-  //   NotificationType.COMPANY_JOIN_REQUEST_PROCESSED,
-  // ])
-  // async handleNotificationEvents(payload: any) {
-  //   try {
-  //     //- Validation chung
-  //     if (!payload.receiverId || !payload.senderId) {
-  //       console.error(
-  //         '[Event Error] Missing receiverId or senderId in payload',
-  //       );
-  //       return;
-  //     }
+      const newNotif = await this.notificationsService.create({
+        ...payload,
+        type: eventType, //- ưu tiên dùng type từ Decorator để an toàn
+      });
 
-  //     const newNotif = await this.notificationsService.create({
-  //       receiverId: payload.receiverId,
-  //       senderId: payload.senderId,
-  //       title: payload.title,
-  //       content: payload.content,
-  //       type: payload.type,
-  //       metadata: payload.metadata,
-  //     });
+      if (newNotif) {
+        this.notificationsGateway.sendToUser(
+          payload.receiverId.toString(),
+          newNotif,
+        );
+      }
+    } catch (error) {
+      console.error(`[Notification Error - ${eventType}]: ${error.message}`);
+    }
+  }
 
-  //     if (!newNotif) throw new BadRequestCustom('Lỗi tạo thông báo');
+  //- tạo mới tin tức
+  @OnEvent(NotificationType.NEWS_CREATED)
+  handleNews(payload: CreateNotificationDto) {
+    return this.processNotification(payload, NotificationType.NEWS_CREATED);
+  }
 
-  //     //- Đẩy real-time qua gateway
-  //     this.notificationsGateway.sendToUser(
-  //       payload.receiverId.toString(),
-  //       newNotif,
-  //     );
-  //   } catch (error) {
-  //     console.error(`[NotificationListener Error]: ${error.message}`);
-  //   }
-  // }
+  //- tạo mới công ty
+  @OnEvent(NotificationType.COMPANY_CREATED)
+  handleCreatedCompany(payload: CreateNotificationDto) {
+    return this.processNotification(payload, NotificationType.COMPANY_CREATED);
+  }
 
-  @OnEvent(NotificationType.NEWS_CREATED) //- lắng nghe
-  async handleNewsCreatedEvent(payload: any) {
-    // 1. Logic dịch thuật và lưu DB
-    const newNotif = await this.notificationsService.create({
-      receiverId: payload.receiverId,
-      senderId: payload.senderId,
-      title: payload.title,
-      content: payload.content,
-      type: NotificationType.NEWS_CREATED,
-      metadata: payload.metadata,
-    });
-
-    // 2. Đẩy real-time ngay sau khi lưu DB thành công
-    this.notificationsGateway.sendToUser(
-      payload.receiverId.toString(),
-      newNotif,
+  //- SUPER_ADMIN duyệt/từ chối yêu cầu
+  @OnEvent(NotificationType.COMPANY_ADMIN_REQUEST_PROCESSED)
+  handleAdminRequestCompanyProcess(payload: CreateNotificationDto) {
+    return this.processNotification(
+      payload,
+      NotificationType.COMPANY_ADMIN_REQUEST_PROCESSED,
     );
   }
 
-  @OnEvent(NotificationType.COMPANY_CREATED) //- lắng nghe
-  async handleCompanyCreatedEvent(payload: any) {
-    // 1. Logic dịch thuật và lưu DB
-    const newNotif = await this.notificationsService.create({
-      receiverId: payload.receiverId,
-      senderId: payload.senderId,
-      title: payload.title,
-      content: payload.content,
-      type: NotificationType.COMPANY_CREATED,
-      metadata: payload.metadata,
-    });
-
-    // 2. Đẩy real-time ngay sau khi lưu DB thành công
-    this.notificationsGateway.sendToUser(
-      payload.receiverId.toString(),
-      newNotif,
+  //- RECUITER_ADMIN nhận: Yêu cầu gia nhập của RECRUITER'
+  @OnEvent(NotificationType.COMPANY_RECRUITER_JOINED)
+  handleJoinRequestCompany(payload: CreateNotificationDto) {
+    return this.processNotification(
+      payload,
+      NotificationType.COMPANY_RECRUITER_JOINED,
+    );
+  }
+  //- xử lý yêu cầu quản trị công ty(RECRUITER_ADMIN duyệt/từ chối yêu cầu)
+  @OnEvent(NotificationType.COMPANY_JOIN_REQUEST_PROCESSED)
+  handleJoinRequestCompanyProcess(payload: CreateNotificationDto) {
+    return this.processNotification(
+      payload,
+      NotificationType.COMPANY_JOIN_REQUEST_PROCESSED,
     );
   }
 }

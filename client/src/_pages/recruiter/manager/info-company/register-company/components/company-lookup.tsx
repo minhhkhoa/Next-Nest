@@ -19,7 +19,11 @@ import { useDebounce } from "use-debounce";
 import { CompanyResType } from "@/schemasvalidation/company";
 
 interface CompanyLookupProps {
-  onLookup: (company: CompanyResType, isNewCompany: boolean) => void;
+  onLookup: (
+    taxCode: string,
+    company: CompanyResType | null,
+    isNewCompany: boolean,
+  ) => void;
 }
 
 export default function CompanyLookup({ onLookup }: CompanyLookupProps) {
@@ -52,7 +56,7 @@ export default function CompanyLookup({ onLookup }: CompanyLookupProps) {
 
       const existsCompany = res?.data?.company;
 
-      onLookup(existsCompany!, !existsCompany);
+      onLookup(taxCode, existsCompany!, !existsCompany);
     } catch (error) {
       console.log("error check taxCode Exist: ", error);
     }

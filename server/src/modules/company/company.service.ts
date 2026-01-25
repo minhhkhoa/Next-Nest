@@ -124,7 +124,7 @@ export class CompanyService {
 
       return {
         _id: company._id,
-        name: company.name.en,
+        name: company.name,
       };
     } catch (error) {
       // Nếu có lỗi, rollback lại toàn bộ dữ liệu đã tạo
@@ -338,8 +338,8 @@ export class CompanyService {
                   : 'Yêu cầu tạo công ty bị từ chối',
               content:
                 action === 'ACCEPT'
-                  ? `Chúc mừng! Công ty ${company.name.en} đã có thể bắt đầu đăng tin tuyển dụng.`
-                  : `Rất tiếc, yêu cầu tạo công ty ${company.name.en} không được chấp nhận.`,
+                  ? `Chúc mừng! Công ty ${company.name} đã có thể bắt đầu đăng tin tuyển dụng.`
+                  : `Rất tiếc, yêu cầu tạo công ty ${company.name} không được chấp nhận.`,
               type: NotificationType.COMPANY_ADMIN_REQUEST_PROCESSED,
               metadata: {
                 module: 'COMPANY',
