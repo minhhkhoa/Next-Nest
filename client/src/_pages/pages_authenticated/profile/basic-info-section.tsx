@@ -10,7 +10,6 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Edit2, Check, X, Upload } from "lucide-react";
 import { useAppStore } from "@/components/TanstackProvider";
 import { handleInitName, uploadToCloudinary } from "@/lib/utils";
-// import { useCloudQuery } from "@/queries/useCloud";
 import { Spinner } from "@/components/ui/spinner";
 import { useUpdateUserMutate } from "@/queries/useUser";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";

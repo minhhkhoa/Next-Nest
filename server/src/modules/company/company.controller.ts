@@ -36,6 +36,13 @@ export class CompanyController {
     return this.companyService.create(createCompanyDto, user);
   }
 
+  @ResponseMessage('Lấy tất cả công ty thành công')
+  @ApiOperation({ summary: 'GettAll company' })
+  @Get()
+  findAll() {
+    return this.companyService.findAll();
+  }
+
   //- dành cho recruiter_admin
   @Get('join-requests')
   @ResponseMessage('Lấy thông tin yêu cầu gia nhập công ty thành công')
@@ -54,12 +61,6 @@ export class CompanyController {
   @Get('filter')
   findAllByFilter(@Query() query: FindCompanyQueryDto) {
     return this.companyService.findAllByFilter(query);
-  }
-  @ResponseMessage('Lấy tất cả công ty thành công')
-  @ApiOperation({ summary: 'GettAll company' })
-  @Get()
-  findAll() {
-    return this.companyService.findAll();
   }
 
   @ResponseMessage('Kiển tra mã số thuế đã tồn tại chưa thành công')

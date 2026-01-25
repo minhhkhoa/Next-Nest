@@ -14,59 +14,74 @@ import { ChevronLeft, Building, Check } from "lucide-react";
 import BasicInfoStep from "./steps/basic-info-step";
 import BrandingStep from "./steps/branding-step";
 import StepIndicator from "./step-indicator";
+import { CompanyCreateType } from "@/schemasvalidation/company";
+import { useCreateCompany } from "@/queries/useCompany";
+import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 
 interface CreateCompanyFormProps {
-  initialTaxId: string;
+  initialTaxCode: string;
   onSuccess: () => void;
   onBack: () => void;
 }
 
-interface FormData {
-  companyName: string;
-  taxId: string;
-  address: string;
-  industries: string[];
-  website: string;
-  scale: string;
-  logo: string;
-  banner: string;
-  description: string;
-}
-
 export default function CreateCompanyForm({
-  initialTaxId,
+  initialTaxCode,
   onSuccess,
   onBack,
 }: CreateCompanyFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState<FormData>({
-    companyName: "",
-    taxId: initialTaxId,
+  const [formData, setFormData] = useState<CompanyCreateType>({
+    name: "",
+    taxCode: initialTaxCode,
     address: "",
-    industries: [],
-    website: "",
-    scale: "",
-    logo: "",
-    banner: "",
     description: "",
+    industryID: [],
+    totalMember: "",
+    website: "",
+    banner: "",
+    logo: "",
   });
-  const [errors, setErrors] = useState<Partial<FormData>>({});
+  const [errors, setErrors] = useState<Partial<CompanyCreateType>>({});
+
+  const { mutateAsync: createCompanyMutation, isPending: isSubmitting } =
+    useCreateCompany();
+
+  const handleNext = () => {
+    if (currentStep === 1 && validateStep1()) {
+      setCurrentStep(2);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!validateStep2()) return;
+
+    // Simulate API call
+    try {
+      const res = await createCompanyMutation(formData);
+      if (res.isError) return;
+
+      SoftSuccessSonner(res.message);
+    } catch (error) {
+      console.log("error submit form create company: ", error);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    onSuccess();
+  };
 
   const validateStep1 = (): boolean => {
-    const newErrors: Partial<FormData> = {};
+    const newErrors: Partial<CompanyCreateType> = {};
 
-    if (!formData.companyName.trim()) {
-      newErrors.companyName = "Tên công ty không được để trống";
+    if (!formData.name.trim()) {
+      newErrors.name = "Tên công ty không được để trống";
     }
     if (!formData.address.trim()) {
       newErrors.address = "Địa chỉ không được để trống";
     }
-    if (formData.industries.length === 0) {
-      newErrors.industries = ["Vui lòng chọn ít nhất một ngành nghề"];
+    if (formData.industryID.length === 0) {
+      newErrors.industryID = ["Vui lòng chọn ít nhất một ngành nghề"];
     }
-    if (!formData.scale) {
-      newErrors.scale = "Vui lòng chọn quy mô công ty";
+    if (!formData.totalMember) {
+      newErrors.totalMember = "Vui lòng chọn quy mô công ty";
     }
 
     setErrors(newErrors);
@@ -74,7 +89,7 @@ export default function CreateCompanyForm({
   };
 
   const validateStep2 = (): boolean => {
-    const newErrors: Partial<FormData> = {};
+    const newErrors: Partial<CompanyCreateType> = {};
 
     if (!formData.logo) {
       newErrors.logo = "Vui lòng tải lên logo";
@@ -88,22 +103,6 @@ export default function CreateCompanyForm({
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  const handleNext = () => {
-    if (currentStep === 1 && validateStep1()) {
-      setCurrentStep(2);
-    }
-  };
-
-  const handleSubmit = async () => {
-    if (!validateStep2()) return;
-
-    setIsSubmitting(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSubmitting(false);
-    onSuccess();
   };
 
   const containerVariants = {

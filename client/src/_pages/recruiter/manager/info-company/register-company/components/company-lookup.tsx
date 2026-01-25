@@ -18,34 +18,34 @@ import { useCheckTaxIdExists } from "@/queries/useCompany";
 import { useDebounce } from "use-debounce";
 
 interface CompanyLookupProps {
-  onLookup: (taxId: string, isNewCompany: boolean) => void;
+  onLookup: (taxCode: string, isNewCompany: boolean) => void;
 }
 
 export default function CompanyLookup({ onLookup }: CompanyLookupProps) {
-  const [taxId, setTaxId] = useState("");
+  const [taxCode, setTaxCode] = useState("");
   const [error, setError] = useState("");
 
-  const [debouncedTaxCode] = useDebounce(taxId, 500);
+  const [debouncedTaxCode] = useDebounce(taxCode, 500);
 
-  const { data: checkTaxIdExists, isLoading: checkTaxIdExistsLoading} = useCheckTaxIdExists(debouncedTaxCode);
+  const { data: checkTaxCodeExists, isLoading: checkTaxCodeExistsLoading} = useCheckTaxIdExists(debouncedTaxCode);
 
-  const passCheck = !checkTaxIdExistsLoading && checkTaxIdExists?.data?.exists;
+  const passCheck = !checkTaxCodeExistsLoading && checkTaxCodeExists?.data?.exists;
 
   const handleCheck = async () => {
     setError("");
 
-    if (!taxId.trim()) {
+    if (!taxCode.trim()) {
       setError("Vui lòng nhập mã số thuế");
       return;
     }
 
-    if (taxId.length !== 10) {
+    if (taxCode.length !== 10) {
       setError("Mã số thuế phải có 10 chữ số");
       return;
     }
     //- cho nó delay chút
     await new Promise((resolve) => setTimeout(resolve, 600));
-    onLookup(taxId, !passCheck);
+    onLookup(taxCode, !passCheck);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -75,9 +75,9 @@ export default function CompanyLookup({ onLookup }: CompanyLookupProps) {
           <label className="text-sm font-medium">Mã số thuế</label>
           <Input
             placeholder="0123456789"
-            value={taxId}
+            value={taxCode}
             onChange={(e) => {
-              setTaxId(e.target.value.replace(/\D/g, "").slice(0, 10));
+              setTaxCode(e.target.value.replace(/\D/g, "").slice(0, 10));
               setError("");
             }}
             onKeyPress={handleKeyPress}
@@ -98,10 +98,10 @@ export default function CompanyLookup({ onLookup }: CompanyLookupProps) {
 
         <Button
           onClick={handleCheck}
-          disabled={checkTaxIdExistsLoading || !taxId}
+          disabled={checkTaxCodeExistsLoading || !taxCode}
           className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-6 text-base"
         >
-          {checkTaxIdExistsLoading ? (
+          {checkTaxCodeExistsLoading ? (
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 border-2 border-current border-r-transparent rounded-full animate-spin" />
               Đang kiểm tra...

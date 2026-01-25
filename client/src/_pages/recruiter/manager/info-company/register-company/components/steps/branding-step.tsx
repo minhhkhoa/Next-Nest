@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { AlertCircle, Upload, X } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Image from "next/image";
+import { CompanyCreateType } from "@/schemasvalidation/company";
+import { uploadToCloudinary } from "@/lib/utils";
 
 interface BrandingStepProps {
-  formData: any;
-  setFormData: (data: any) => void;
-  errors: any;
+  formData: CompanyCreateType;
+  setFormData: (data: CompanyCreateType) => void;
+  errors: Partial<CompanyCreateType>;
 }
 
 export default function BrandingStep({
@@ -21,7 +23,10 @@ export default function BrandingStep({
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
 
-  const handleFileChange = (file: File | null, type: "logo" | "banner") => {
+  const handleFileChange = async (
+    file: File | null,
+    type: "logo" | "banner",
+  ) => {
     if (!file) return;
 
     // Validate file type
@@ -36,18 +41,21 @@ export default function BrandingStep({
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const preview = e.target?.result as string;
+    try {
+      const url = await uploadToCloudinary(file);
+
+      if (!url) return;
+
       if (type === "logo") {
-        setFormData({ ...formData, logo: file });
-        setLogoPreview(preview);
+        setFormData({ ...formData, logo: url });
+        setLogoPreview(url);
       } else {
-        setFormData({ ...formData, banner: file });
-        setBannerPreview(preview);
+        setFormData({ ...formData, banner: url });
+        setBannerPreview(url);
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (error) {
+      console.log("Lỗi upload media: ", error);
+    }
   };
 
   return (
@@ -88,7 +96,7 @@ export default function BrandingStep({
                 variant="destructive"
                 className="absolute -top-2 -right-2 w-6 h-6"
                 onClick={() => {
-                  setFormData({ ...formData, logo: null });
+                  setFormData({ ...formData, logo: "" });
                   setLogoPreview(null);
                 }}
               >
@@ -144,7 +152,7 @@ export default function BrandingStep({
                 variant="destructive"
                 className="absolute -top-2 -right-2 w-6 h-6"
                 onClick={() => {
-                  setFormData({ ...formData, banner: null });
+                  setFormData({ ...formData, banner: "" });
                   setBannerPreview(null);
                 }}
               >

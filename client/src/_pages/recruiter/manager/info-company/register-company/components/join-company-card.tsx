@@ -13,44 +13,26 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ChevronLeft, CheckCircle, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-
-export interface CompanyData {
-  taxId: string;
-  companyName?: string;
-  address?: string;
-  logo?: string;
-}
+import { useGetCompanyDetail } from "@/queries/useCompany";
 
 interface JoinCompanyCardProps {
-  company: CompanyData;
+  companyId: string;
   onBack: () => void;
 }
 
-// Mock existing company data
-const COMPANY_DATABASE: Record<string, CompanyData> = {
-  "0123456789": {
-    taxId: "0123456789",
-    companyName: "Công ty Công nghệ ABC",
-    address: "Tầng 5, 123 Nguyễn Huệ, Quận 1, TP.HCM",
-    logo: "🏢",
-  },
-  "9876543210": {
-    taxId: "9876543210",
-    companyName: "Tập đoàn XYZ",
-    address: "Tòa nhà International, 456 Lê Lợi, Quận 1, TP.HCM",
-    logo: "🏛️",
-  },
-};
-
 export default function JoinCompanyCard({
-  company,
+  companyId,
   onBack,
 }: JoinCompanyCardProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [reason, setReason] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const existingCompany = COMPANY_DATABASE[company.taxId];
+  const { data: detailCompany } = useGetCompanyDetail(companyId);
+
+  console.log("check company detail: ", detailCompany);
+
+  const existingCompany = detailCompany?.data;
 
   const handleSubmit = async () => {
     if (!reason.trim()) {
@@ -177,7 +159,7 @@ export default function JoinCompanyCard({
                   {existingCompany?.companyName || "Tên công ty"}
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  MST: {existingCompany?.taxId || company.taxId}
+                  MST: {existingCompany?.taxCode}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
                   {existingCompany?.address || "Địa chỉ"}

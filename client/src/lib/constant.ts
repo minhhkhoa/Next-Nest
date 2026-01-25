@@ -97,3 +97,11 @@ export const allowedRoles = [
   envConfig.NEXT_PUBLIC_ROLE_RECRUITER_ADMIN,
   envConfig.NEXT_PUBLIC_ROLE_CONTENT_MANAGER,
 ];
+
+export const COMPANY_SCALES = [
+  { value: "1-10", label: "1 - 10 nhân viên" },
+  { value: "11-50", label: "11 - 50 nhân viên" },
+  { value: "51-200", label: "51 - 200 nhân viên" },
+  { value: "201-500", label: "201 - 500 nhân viên" },
+  { value: "500+", label: "Trên 500 nhân viên" },
+];

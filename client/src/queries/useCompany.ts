@@ -14,6 +14,14 @@ export function useCreateCompany() {
   });
 }
 
+export const useGetCompanyDetail = (id: string) => {
+  return useQuery({
+    queryKey: ["company-detail", id],
+    queryFn: () => companyApiRequest.findOne(id),
+    enabled: !!id,
+  });
+};
+
 //- Hook lấy danh sách yêu cầu gia nhập cho Recruiter Admin
 export const useGetJoinRequests = (params: {
   currentPage: number;

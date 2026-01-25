@@ -1,7 +1,6 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import MultiSelect from "../multi-select";
@@ -12,6 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CompanyCreateType } from "@/schemasvalidation/company";
+import { COMPANY_SCALES } from "@/lib/constant";
 
 const INDUSTRIES = [
   { value: "tech", label: "Công nghệ thông tin" },
@@ -24,18 +25,10 @@ const INDUSTRIES = [
   { value: "real-estate", label: "Bất động sản" },
 ];
 
-const COMPANY_SCALES = [
-  { value: "1-10", label: "1 - 10 nhân viên" },
-  { value: "11-50", label: "11 - 50 nhân viên" },
-  { value: "51-200", label: "51 - 200 nhân viên" },
-  { value: "201-500", label: "201 - 500 nhân viên" },
-  { value: "500+", label: "Trên 500 nhân viên" },
-];
-
 interface BasicInfoStepProps {
-  formData: any;
-  setFormData: (data: any) => void;
-  errors: any;
+  formData: CompanyCreateType;
+  setFormData: (data: CompanyCreateType) => void;
+  errors: Partial<CompanyCreateType>; //- Partial<T> có nghĩa là mọi field đều có thể là undefined.Vì có thể chỉ có một số field bị lỗi trong quá trình validate
 }
 
 export default function BasicInfoStep({
@@ -52,19 +45,17 @@ export default function BasicInfoStep({
         </label>
         <Input
           placeholder="Nhập tên công ty"
-          value={formData.companyName}
-          onChange={(e) =>
-            setFormData({ ...formData, companyName: e.target.value })
-          }
-          className={errors.companyName ? "border-destructive" : ""}
+          value={formData?.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          className={errors?.name ? "border-destructive" : ""}
         />
-        {errors.companyName && (
+        {errors?.name && (
           <Alert
             variant="destructive"
             className="bg-destructive/10 border-destructive/30"
           >
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{errors.companyName}</AlertDescription>
+            <AlertDescription>{errors?.name}</AlertDescription>
           </Alert>
         )}
       </div>
@@ -75,7 +66,7 @@ export default function BasicInfoStep({
           Mã số thuế <span className="text-destructive">*</span>
         </label>
         <Input
-          value={formData.taxId}
+          value={formData.taxCode}
           disabled
           className="bg-muted cursor-not-allowed"
         />
@@ -115,16 +106,16 @@ export default function BasicInfoStep({
         </label>
         <MultiSelect
           options={INDUSTRIES}
-          selected={formData.industries}
-          onChange={(industries) => setFormData({ ...formData, industries })}
+          selected={formData.industryID}
+          onChange={(industryID) => setFormData({ ...formData, industryID })}
         />
-        {errors.industries && (
+        {errors.industryID && (
           <Alert
             variant="destructive"
             className="bg-destructive/10 border-destructive/30"
           >
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{errors.industries}</AlertDescription>
+            <AlertDescription>{errors.industryID}</AlertDescription>
           </Alert>
         )}
       </div>
@@ -148,10 +139,14 @@ export default function BasicInfoStep({
           Quy mô công ty <span className="text-destructive">*</span>
         </label>
         <Select
-          value={formData.scale}
-          onValueChange={(value) => setFormData({ ...formData, scale: value })}
+          value={formData.totalMember}
+          onValueChange={(value) =>
+            setFormData({ ...formData, totalMember: value })
+          }
         >
-          <SelectTrigger className={errors.scale ? "border-destructive" : ""}>
+          <SelectTrigger
+            className={errors.totalMember ? "border-destructive" : ""}
+          >
             <SelectValue placeholder="Chọn quy mô công ty" />
           </SelectTrigger>
           <SelectContent>
@@ -162,13 +157,13 @@ export default function BasicInfoStep({
             ))}
           </SelectContent>
         </Select>
-        {errors.scale && (
+        {errors.totalMember && (
           <Alert
             variant="destructive"
             className="bg-destructive/10 border-destructive/30"
           >
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{errors.scale}</AlertDescription>
+            <AlertDescription>{errors.totalMember}</AlertDescription>
           </Alert>
         )}
       </div>

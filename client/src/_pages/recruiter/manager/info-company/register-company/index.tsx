@@ -5,22 +5,20 @@ import { motion, AnimatePresence } from "framer-motion";
 import CompanyLookup from "./components/company-lookup";
 import CreateCompanyForm from "./components/create-company-form";
 import JoinCompanyCard from "./components/join-company-card";
+import { CompanyResType } from "@/schemasvalidation/company";
 
 export type SetupState = "initial" | "create" | "join";
 
-export interface CompanyData {
-  taxId: string;
-  companyName?: string;
-  address?: string;
-  logo?: string;
-}
-
 export default function CompanySetupPage() {
   const [state, setState] = useState<SetupState>("initial");
-  const [companyData, setCompanyData] = useState<CompanyData | null>(null);
+  const [companyData, setCompanyData] =
+    useState<Partial<CompanyResType> | null>(null);
 
-  const handleLookup = (taxId: string, isNewCompany: boolean) => {
-    setCompanyData({ taxId });
+  const handleLookup = (taxCode: string, isNewCompany: boolean) => {
+    setCompanyData((prev) => ({
+      ...prev,
+      taxCode,
+    }));
     setState(isNewCompany ? "create" : "join");
   };
 
@@ -50,7 +48,7 @@ export default function CompanySetupPage() {
           </motion.div>
         )}
 
-        {state === "create" && companyData && (
+        {state === "create" && companyData?.taxCode && (
           <motion.div
             key="create"
             initial={{ opacity: 0, y: 20 }}
@@ -61,14 +59,14 @@ export default function CompanySetupPage() {
           >
             {/* nếu mst chưa tồn tại thì vào màn này */}
             <CreateCompanyForm
-              initialTaxId={companyData.taxId}
+              initialTaxCode={companyData?.taxCode}
               onSuccess={handleCreateSuccess}
               onBack={handleBack}
             />
           </motion.div>
         )}
 
-        {state === "join" && companyData && (
+        {state === "join" && companyData?._id && (
           <motion.div
             key="join"
             initial={{ opacity: 0, x: 20 }}
@@ -77,7 +75,7 @@ export default function CompanySetupPage() {
             transition={{ duration: 0.3 }}
           >
             {/* nếu mst đã tồn tại thì vào màn này */}
-            <JoinCompanyCard company={companyData} onBack={handleBack} />
+            <JoinCompanyCard companyId={companyData?._id} onBack={handleBack} />
           </motion.div>
         )}
       </AnimatePresence>
