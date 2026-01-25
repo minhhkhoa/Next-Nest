@@ -1,9 +1,9 @@
 "use client";
 
+import { useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import MultiSelect from "../multi-select";
 import {
   Select,
   SelectContent,
@@ -13,22 +13,40 @@ import {
 } from "@/components/ui/select";
 import { CompanyCreateType } from "@/schemasvalidation/company";
 import { COMPANY_SCALES } from "@/lib/constant";
+import { MultiSelectTree } from "@/_pages/components/multi-select-industry";
+import { useGetTreeIndustry } from "@/queries/useIndustry";
 
-const INDUSTRIES = [
-  { value: "tech", label: "Công nghệ thông tin" },
-  { value: "finance", label: "Tài chính - Ngân hàng" },
-  { value: "healthcare", label: "Y tế - Dược phẩm" },
-  { value: "retail", label: "Bán lẻ - Thương mại" },
-  { value: "education", label: "Giáo dục" },
-  { value: "manufacturing", label: "Sản xuất" },
-  { value: "logistics", label: "Logistics - Vận chuyển" },
-  { value: "real-estate", label: "Bất động sản" },
-];
+interface MultiLang {
+  vi: string;
+  en: string;
+}
+
+interface IndustryNode {
+  _id: string;
+  name: MultiLang;
+  children: IndustryNode[];
+}
+
+interface Option {
+  value: string;
+  label: MultiLang;
+}
+
+const flattenTree = (nodes: IndustryNode[]): Option[] => {
+  let flat: Option[] = [];
+  for (const node of nodes) {
+    flat.push({ value: node._id, label: node.name });
+    if (node.children && node.children.length > 0) {
+      flat = flat.concat(flattenTree(node.children));
+    }
+  }
+  return flat;
+};
 
 interface BasicInfoStepProps {
   formData: CompanyCreateType;
   setFormData: (data: CompanyCreateType) => void;
-  errors: Partial<CompanyCreateType>; //- Partial<T> có nghĩa là mọi field đều có thể là undefined.Vì có thể chỉ có một số field bị lỗi trong quá trình validate
+  errors: Partial<CompanyCreateType>;
 }
 
 export default function BasicInfoStep({
@@ -36,6 +54,20 @@ export default function BasicInfoStep({
   setFormData,
   errors,
 }: BasicInfoStepProps) {
+  const { data: industryTree } = useGetTreeIndustry({});
+
+  const flatIndustries = useMemo(() => {
+    if (!industryTree?.data) return [];
+    return flattenTree(industryTree.data);
+  }, [industryTree]);
+
+  const selectedOptions = useMemo(() => {
+    if (!formData.industryID || !flatIndustries.length) return [];
+    return formData.industryID
+      .map((id) => flatIndustries.find((opt) => opt.value === id))
+      .filter((opt): opt is Option => !!opt);
+  }, [formData.industryID, flatIndustries]);
+
   return (
     <div className="space-y-6">
       {/* Company Name */}
@@ -104,10 +136,12 @@ export default function BasicInfoStep({
         <label className="text-sm font-medium">
           Ngành nghề <span className="text-destructive">*</span>
         </label>
-        <MultiSelect
-          options={INDUSTRIES}
-          selected={formData.industryID}
-          onChange={(industryID) => setFormData({ ...formData, industryID })}
+        <MultiSelectTree
+          selected={selectedOptions}
+          onChange={(options) => {
+            const industryIDs = options.map((option) => option.value);
+            setFormData({ ...formData, industryID: industryIDs });
+          }}
         />
         {errors.industryID && (
           <Alert

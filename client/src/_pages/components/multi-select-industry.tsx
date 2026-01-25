@@ -86,25 +86,27 @@ export function MultiSelectTree({
     return nodes.map((node) => (
       <div key={node._id}>
         {/* Node hiện tại */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            if (node.isParent) toggleNode(node._id);
-            handleSelect(node);
-          }}
+        <div
+          onClick={() => handleSelect(node)}
           className={cn(
-            "w-full text-left px-3 py-2 hover:bg-muted text-sm flex items-center gap-2 transition-colors",
-            isSelected(node._id) && "bg-accent text-accent-foreground"
+            "w-full text-left px-3 py-2 hover:bg-muted text-sm flex items-center gap-2 transition-colors cursor-pointer",
+            isSelected(node._id) && "bg-accent text-accent-foreground",
           )}
           style={{ paddingLeft: `${level * 20 + 12}px` }}
         >
           <div className="flex items-center gap-1 flex-1">
             {node.isParent && (
-              <span className="w-4 h-4">
+              <span
+                className="group w-4 h-4 select-none"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleNode(node._id);
+                }}
+              >
                 {expandedNodes.has(node._id) ? (
-                  <ChevronDown className="w-4 h-4" />
+                  <ChevronDown className="w-4 h-4 group-hover:text-primary" />
                 ) : (
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-4 h-4 group-hover:text-primary" />
                 )}
               </span>
             )}
@@ -112,7 +114,7 @@ export function MultiSelectTree({
             <span className="flex-1">{node.name.vi}</span>
             {isSelected(node._id) && <Check className="w-4 h-4 ml-auto" />}
           </div>
-        </button>
+        </div>
 
         {/* Render con nếu mở rộng */}
         {node.isParent &&
