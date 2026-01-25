@@ -43,10 +43,10 @@ export const getCompanyColumns = (
   //- logo & name
   {
     id: "logo",
-    header: () => <span className="!ml-5">Mã số thuế</span>,
+    header: () => <span className="!ml-5">Tên công ty</span>,
     cell: ({ row }) => {
       const avatar = row?.original?.logo ?? "/avatar-default.webp";
-      const name = row?.original?.name?.vi;
+      const name = row?.original?.name;
       return (
         <div className="flex items-center gap-3">
           <Avatar className="w-10 h-10 border border-border">
@@ -56,7 +56,7 @@ export const getCompanyColumns = (
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">
+            <p className="text-sm font-medium text-foreground max-w-[200px] whitespace-normal">
               {name}
             </p>
           </div>

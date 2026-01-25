@@ -155,8 +155,8 @@ export class CompanyService {
       if (name) {
         andConditions.push({
           $or: [
-            { 'name.vi': { $regex: name, $options: 'i' } },
-            { 'name.en': { $regex: name, $options: 'i' } },
+            { 'name': { $regex: name, $options: 'i' } },
+            { 'name': { $regex: name, $options: 'i' } },
           ],
         });
       }

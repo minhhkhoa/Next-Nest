@@ -46,10 +46,6 @@ export default function PopoverAdmin() {
     router.refresh();
   };
 
-  const onProfileClick = () => {
-    router.push("/profile");
-  };
-
   if (!isLogin) {
     return (
       <div className="px-4">

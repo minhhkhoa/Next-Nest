@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   ChartNoAxesCombined,
   Calendar,
-  Search,
   FileUser,
   Factory,
 } from "lucide-react";
