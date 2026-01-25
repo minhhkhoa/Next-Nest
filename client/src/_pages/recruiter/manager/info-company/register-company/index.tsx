@@ -14,11 +14,8 @@ export default function CompanySetupPage() {
   const [companyData, setCompanyData] =
     useState<Partial<CompanyResType> | null>(null);
 
-  const handleLookup = (taxCode: string, isNewCompany: boolean) => {
-    setCompanyData((prev) => ({
-      ...prev,
-      taxCode,
-    }));
+  const handleLookup = (company: CompanyResType, isNewCompany: boolean) => {
+    setCompanyData(company);
     setState(isNewCompany ? "create" : "join");
   };
 
@@ -75,7 +72,10 @@ export default function CompanySetupPage() {
             transition={{ duration: 0.3 }}
           >
             {/* nếu mst đã tồn tại thì vào màn này */}
-            <JoinCompanyCard companyId={companyData?._id} onBack={handleBack} />
+            <JoinCompanyCard
+              companyID={companyData?._id}
+              onBack={handleBack}
+            />
           </motion.div>
         )}
       </AnimatePresence>

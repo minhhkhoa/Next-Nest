@@ -14,25 +14,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { ChevronLeft, CheckCircle, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useGetCompanyDetail } from "@/queries/useCompany";
+import Image from "next/image";
 
 interface JoinCompanyCardProps {
-  companyId: string;
+  companyID: string;
   onBack: () => void;
 }
 
 export default function JoinCompanyCard({
-  companyId,
+  companyID,
   onBack,
 }: JoinCompanyCardProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [reason, setReason] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const { data: detailCompany } = useGetCompanyDetail(companyId);
+  const { data: detailCompany } = useGetCompanyDetail(companyID);
 
-  console.log("check company detail: ", detailCompany);
-
-  const existingCompany = detailCompany?.data;
+  const company = detailCompany?.data;
 
   const handleSubmit = async () => {
     if (!reason.trim()) {
@@ -148,21 +147,23 @@ export default function JoinCompanyCard({
 
           <CardContent className="space-y-4">
             <div className="flex gap-4">
-              <div className="flex-shrink-0">
-                <div className="w-16 h-16 bg-secondary rounded-lg flex items-center justify-center text-3xl">
-                  {existingCompany?.logo || "🏢"}
-                </div>
+              <div className="flex-shrink-0 rounded-full overflow-hidden w-24 h-24 bg-muted flex items-center justify-center">
+                <Image
+                  src={company?.logo || "/placeholder.svg"}
+                  alt="Banner preview"
+                  className="w-full h-40 object-cover rounded-lg"
+                  width={96}
+                  height={96}
+                />
               </div>
 
               <div className="flex-1">
-                <h3 className="font-bold text-lg mb-2">
-                  {existingCompany?.companyName || "Tên công ty"}
-                </h3>
+                <h3 className="font-bold text-lg mb-2">{company?.name}</h3>
                 <p className="text-sm text-muted-foreground">
-                  MST: {existingCompany?.taxCode}
+                  MST: {company?.taxCode}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {existingCompany?.address || "Địa chỉ"}
+                  Địa chỉ{company?.address || "Địa chỉ"}
                 </p>
               </div>
             </div>

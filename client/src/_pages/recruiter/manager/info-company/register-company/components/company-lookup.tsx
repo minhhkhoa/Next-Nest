@@ -16,9 +16,10 @@ import { Search, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useCheckTaxIdExists } from "@/queries/useCompany";
 import { useDebounce } from "use-debounce";
+import { CompanyResType } from "@/schemasvalidation/company";
 
 interface CompanyLookupProps {
-  onLookup: (taxCode: string, isNewCompany: boolean) => void;
+  onLookup: (company: CompanyResType, isNewCompany: boolean) => void;
 }
 
 export default function CompanyLookup({ onLookup }: CompanyLookupProps) {
@@ -27,9 +28,10 @@ export default function CompanyLookup({ onLookup }: CompanyLookupProps) {
 
   const [debouncedTaxCode] = useDebounce(taxCode, 500);
 
-  const { data: checkTaxCodeExists, isLoading: checkTaxCodeExistsLoading} = useCheckTaxIdExists(debouncedTaxCode);
-
-  const passCheck = !checkTaxCodeExistsLoading && checkTaxCodeExists?.data?.exists;
+  const {
+    mutateAsync: checkTaxCodeExistsMutation,
+    isPending: checkTaxCodeExistsLoading,
+  } = useCheckTaxIdExists(debouncedTaxCode);
 
   const handleCheck = async () => {
     setError("");
@@ -43,9 +45,17 @@ export default function CompanyLookup({ onLookup }: CompanyLookupProps) {
       setError("Mã số thuế phải có 10 chữ số");
       return;
     }
-    //- cho nó delay chút
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    onLookup(taxCode, !passCheck);
+    try {
+      const res = await checkTaxCodeExistsMutation();
+
+      if (res?.isError) return;
+
+      const existsCompany = res?.data?.company;
+
+      onLookup(existsCompany!, !existsCompany);
+    } catch (error) {
+      console.log("error check taxCode Exist: ", error);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -75,12 +85,8 @@ export default function CompanyLookup({ onLookup }: CompanyLookupProps) {
           <label className="text-sm font-medium">Mã số thuế</label>
           <Input
             placeholder="0123456789"
-            value={taxCode}
-            onChange={(e) => {
-              setTaxCode(e.target.value.replace(/\D/g, "").slice(0, 10));
-              setError("");
-            }}
             onKeyPress={handleKeyPress}
+            onChange={(e) => setTaxCode(e.target.value)}
             maxLength={10}
             className="text-center text-lg tracking-widest"
           />

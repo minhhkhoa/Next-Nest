@@ -19,6 +19,9 @@ const RECRUITER_ROLES = [
   envConfig.NEXT_PUBLIC_ROLE_RECRUITER_ADMIN,
 ];
 
+//- các path mà nhà tuyển dụng được phép truy cập dù chưa có role
+const RECRUITER_BYPASS_PATHS = ["/recruiter/welcome", "/recruiter/register"];
+
 export async function middleware(request: NextRequest) {
   const token = request.cookies.get("access_token")?.value;
   const path = request.nextUrl.pathname;
@@ -34,7 +37,6 @@ export async function middleware(request: NextRequest) {
 
   //- xử lý các route cần bảo vệ
   if (isAdminRoute || isRecruiterRoute || isProtectedRoute) {
-
     //- không có token (chưa đăng nhập) đá về login
     if (!token) {
       const loginUrl = new URL("/login", request.url);
@@ -46,6 +48,11 @@ export async function middleware(request: NextRequest) {
       //- tới đây thì đã login rồi
       const { payload } = await jwtVerify(token, SECRET_KEY);
       const role = payload.roleCodeName as string;
+
+      //- cho phép nhà tuyển dụng vào trang welcome dù chưa có role
+      if (RECRUITER_BYPASS_PATHS.includes(path)) {
+        return NextResponse.next();
+      }
 
       //- bảo vệ route /admin
       if (isAdminRoute) {

@@ -90,6 +90,8 @@ export default function BrandingStep({
                 src={logoPreview || "/placeholder.svg"}
                 alt="Logo preview"
                 className="w-24 h-24 object-cover rounded-lg"
+                width={96}
+                height={96}
               />
               <Button
                 size="icon"
@@ -146,6 +148,8 @@ export default function BrandingStep({
                 src={bannerPreview || "/placeholder.svg"}
                 alt="Banner preview"
                 className="w-full h-40 object-cover rounded-lg"
+                width={384}
+                height={160}
               />
               <Button
                 size="icon"

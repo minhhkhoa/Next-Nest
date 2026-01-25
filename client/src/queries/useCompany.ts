@@ -88,9 +88,8 @@ export function useDeleteCompany() {
 }
 
 export function useCheckTaxIdExists(taxId: string) {
-  return useQuery({
-    queryKey: ["check-tax-id", taxId],
-    queryFn: () => companyApiRequest.checkTaxCode(taxId),
-    enabled: !!taxId,
+  return useMutation({
+    mutationFn: () => companyApiRequest.checkTaxCode(taxId),
+    onSuccess: () => {},
   });
 }

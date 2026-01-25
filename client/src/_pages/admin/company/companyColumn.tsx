@@ -133,7 +133,7 @@ export const getCompanyColumns = (
               : "bg-red-100 text-red-800"
           }`}
         >
-          {isDeleted ? "Hoạt động" : "Đã xóa"}
+          {!isDeleted ? "Hoạt động" : "Đã xóa"}
         </span>
       );
     },

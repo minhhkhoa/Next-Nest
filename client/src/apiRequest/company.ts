@@ -1,5 +1,5 @@
 import http from "@/lib/http";
-import { CompanyCreateType } from "@/schemasvalidation/company";
+import { CompanyCreateType, CompanyResType } from "@/schemasvalidation/company";
 import { ApiResponse } from "@/types/apiResponse";
 
 const prefix = "/company";
@@ -24,11 +24,13 @@ const companyApiRequest = {
 
   //- Kiểm tra mã số thuế đã tồn tại chưa
   checkTaxCode: (taxCode: string) =>
-    http.get<ApiResponse<{ exists: boolean }>>(`${prefix}/check-tax-code`, {
-      params: { taxCode },
-    }),
+    http.post<ApiResponse<{ exists: boolean; company?: CompanyResType }>>(
+      prefix + "/check-tax-code",
+      { taxCode },
+    ),
 
-  findOne: (id: string) => http.get<ApiResponse<any>>(`${prefix}/${id}`),
+  findOne: (id: string) =>
+    http.get<ApiResponse<CompanyResType>>(`${prefix}/${id}`),
 
   //- Super_Admin phê duyệt hoặc từ chối công ty mới
   adminVerifyCompany: (payload: {

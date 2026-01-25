@@ -26,6 +26,13 @@ import { UserDecoratorType } from 'src/utils/typeSchemas';
 export class CompanyController {
   constructor(private readonly companyService: CompanyService) {}
 
+  @ResponseMessage('Kiển tra mã số thuế đã tồn tại chưa thành công')
+  @ApiOperation({ summary: 'check tax code đã tồn tại chưa' })
+  @Post('check-tax-code')
+  checkTaxCode(@Body() body: FindCompanyWithTaxCode) {
+    return this.companyService.checkTaxCodeExist(body.taxCode);
+  }
+
   @ResponseMessage('Thêm công ty thành công')
   @ApiOperation({ summary: 'Thêm mới công ty' })
   @Post()
@@ -61,13 +68,6 @@ export class CompanyController {
   @Get('filter')
   findAllByFilter(@Query() query: FindCompanyQueryDto) {
     return this.companyService.findAllByFilter(query);
-  }
-
-  @ResponseMessage('Kiển tra mã số thuế đã tồn tại chưa thành công')
-  @ApiOperation({ summary: 'check tax code đã tồn tại chưa' })
-  @Get('check-tax-code')
-  checkTaxCode(@Query() query: FindCompanyWithTaxCode) {
-    return this.companyService.checkTaxCodeExist(query.taxCode);
   }
 
   @ResponseMessage('Lấy công ty theo id thành công')

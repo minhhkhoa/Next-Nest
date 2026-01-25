@@ -6,8 +6,8 @@ import { MultiLang } from 'src/utils/typeSchemas';
 @Schema({ timestamps: true })
 //- Định nghĩa các field có trong collection Company
 export class Company {
-  @Prop({ type: MultiLang })
-  name: MultiLang;
+  @Prop()
+  name: string;
 
   @Prop({ required: true, unique: true }) //- Lưu mã số thuế
   taxCode: string;

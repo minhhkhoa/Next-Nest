@@ -3,7 +3,7 @@ import { MultiLang } from "./trans";
 
 export const apiCompanyRes = z.object({
   _id: z.string(),
-  name: MultiLang,
+  name: z.string(),
   taxCode: z.string(),
   status: z.string(),
   address: z.string(),

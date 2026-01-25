@@ -230,6 +230,7 @@ export class CompanyService {
       if (company)
         return {
           exists: true,
+          company
         };
 
       return {
