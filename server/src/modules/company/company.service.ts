@@ -417,14 +417,14 @@ export class CompanyService {
       if (!company)
         throw new BadRequestCustom('ID company không tìm thấy', !!id);
 
-      const isRejected = company.status === 'REJECTED';
+      const isDeleted = company.isDeleted;
 
-      if (isRejected)
-        throw new BadRequestCustom('company này đã bị từ chối', !!isRejected);
+      if (isDeleted)
+        throw new BadRequestCustom('company này đã bị xóa', !!isDeleted);
 
       const filter = { _id: id };
       const update = {
-        $set: { status: 'REJECTED' },
+        $set: { isDeleted: true },
       };
       const result = await this.companyModel.updateOne(filter, update);
 
