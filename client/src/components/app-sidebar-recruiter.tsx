@@ -6,7 +6,8 @@ import {
   ChartNoAxesCombined,
   Calendar,
   FileUser,
-  Factory,
+  FolderKanban,
+  ChevronDown,
 } from "lucide-react";
 
 import {
@@ -19,9 +20,19 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   BackHome,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
 } from "@/components/ui/sidebar";
 
 import PopoverAdmin from "@/_pages/components/popoverAdmin";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "./ui/collapsible";
+import { useAppStore } from "./TanstackProvider";
+import { ro } from "date-fns/locale";
 
 const items = [
   {
@@ -34,16 +45,14 @@ const items = [
     url: "/recruiter/manager/jobs",
     icon: Calendar,
   },
-  {
-    title: "Thông tin công ty",
-    url: "/recruiter/manager/info-company",
-    icon: Factory,
-  },
   { title: "Resumes & CV", url: "/recruiter/manager/resumes", icon: FileUser },
 ];
 
 export function AppSidebarRecruiter() {
+  const { user } = useAppStore();
   const pathname = usePathname();
+
+  const roleCodeName = user?.roleCodeName;
 
   return (
     <Sidebar collapsible="icon">
@@ -70,6 +79,62 @@ export function AppSidebarRecruiter() {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          {/* thong tin cong ty */}
+          <SidebarGroup>
+            <SidebarGroupLabel>Công ty</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <Collapsible defaultOpen>
+                  <SidebarMenuItem className="mr-2.5">
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton tooltip="Thông tin công ty">
+                        <FolderKanban />
+                        <span className="truncate">Thông tin công ty</span>
+                        <ChevronDown className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        <SidebarMenuSubItem>
+                          <SidebarMenuSubButton
+                            asChild
+                            isActive={
+                              pathname === "/recruiter/manager/info-company"
+                            }
+                            className="data-[active=true]:bg-primary data-[active=true]:text-white"
+                          >
+                            <Link href="/recruiter/manager/info-company">
+                              Hồ sơ công ty
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                    {roleCodeName === "RECRUITER_ADMIN" && (
+                      <CollapsibleContent>
+                        <SidebarMenuSub>
+                          <SidebarMenuSubItem>
+                            <SidebarMenuSubButton
+                              asChild
+                              isActive={
+                                pathname === "/recruiter/manager/member-company"
+                              }
+                              className="data-[active=true]:bg-primary data-[active=true]:text-white"
+                            >
+                              <Link href="/recruiter/manager/member-company">
+                                Thành viên
+                              </Link>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    )}
+                  </SidebarMenuItem>
+                </Collapsible>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

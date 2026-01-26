@@ -63,6 +63,18 @@ export class CompanyController {
     return await this.companyService.getRecruiterJoinRequests(user.id, query);
   }
 
+  //- Lấy ra các thành viên trong công ty của recruiter_admin
+  @Get('get-member-company')
+  @ResponseMessage('Lấy thông tin thành viên công ty thành công')
+  @ApiOperation({
+    summary: 'Lấy thông tin yêu thành viên công ty cho recruiter_admin',
+  })
+  async getMemberCompany(
+    @userDecorator() user: UserDecoratorType,
+  ) {
+    return await this.companyService.getMemberCompany(user?.employerInfo?.companyID!);
+  }
+
   @ResponseMessage('Lấy tất cả công ty có lọc nâng cao thành công')
   @ApiOperation({ summary: 'GettAll company with filter' })
   @Get('filter')

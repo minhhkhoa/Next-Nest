@@ -146,6 +146,12 @@ export class CompanyService {
     );
   }
 
+  //- hàm lấy thông tin thành viên công ty cho recruiter_admin
+  async getMemberCompany(companyID: string) {
+    // Gọi thông qua User Service
+    return await this.userService.getMembersByCompanyID(companyID);
+  }
+
   async findAllByFilter(query: FindCompanyQueryDto) {
     try {
       const { currentPage, pageSize, name, address, status } = query;

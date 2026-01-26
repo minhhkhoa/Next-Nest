@@ -1,5 +1,10 @@
 import http from "@/lib/http";
-import { CompanyCreateType, CompanyResType, CompanyUpdateType } from "@/schemasvalidation/company";
+import {
+  CompanyCreateType,
+  CompanyResType,
+  CompanyUpdateType,
+} from "@/schemasvalidation/company";
+import { ProfileResType } from "@/schemasvalidation/user";
 import { ApiResponse } from "@/types/apiResponse";
 
 const prefix = "/company";
@@ -13,6 +18,10 @@ const companyApiRequest = {
     pageSize: number;
     name?: string;
   }) => http.get<ApiResponse<any>>(`${prefix}/join-requests`, { params }),
+
+  //- Lấy danh sách thành viên trong công ty (Dành cho Recruiter Admin)
+  getMemberCompany: () =>
+    http.get<ApiResponse<ProfileResType[]>>(`${prefix}/get-member-company`),
 
   findAllByFilter: (params: {
     currentPage: number;

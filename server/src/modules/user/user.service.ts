@@ -169,6 +169,35 @@ export class UserService {
     }
   }
 
+  //- lấy các thành viên trong công ty theo companyID
+  async getMembersByCompanyID(companyID: string) {
+    try {
+      if (!companyID)
+        throw new BadRequestCustom(
+          'companyID khong duoc de trong',
+          !!companyID,
+        );
+
+      const filter = {
+        'employerInfo.companyID': companyID,
+      };
+
+      const result = await this.userModel
+        .find(filter)
+        .populate({
+          path: 'roleID',
+          match: { isDeleted: false },
+          select: 'name _id',
+        })
+        .select('-password -refresh_token -__v')
+        .lean();
+
+      return result;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
   async findOne(id: string, getPassword = false) {
     try {
       if (!mongoose.Types.ObjectId.isValid(id)) {

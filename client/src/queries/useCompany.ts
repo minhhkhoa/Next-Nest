@@ -1,5 +1,8 @@
 import companyApiRequest from "@/apiRequest/company";
-import { CompanyCreateType, CompanyUpdateType } from "@/schemasvalidation/company";
+import {
+  CompanyCreateType,
+  CompanyUpdateType,
+} from "@/schemasvalidation/company";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useCreateCompany() {
@@ -46,6 +49,14 @@ export const useGetCompaniesFilter = (params: {
   return useQuery({
     queryKey: ["companies-filter", params],
     queryFn: () => companyApiRequest.findAllByFilter(params),
+  });
+};
+
+//- Hook lấy danh sách thành viên trong công ty cho Recruiter Admin
+export const useGetMemberCompany = () => {
+  return useQuery({
+    queryKey: ["member-company"],
+    queryFn: companyApiRequest.getMemberCompany,
   });
 };
 
