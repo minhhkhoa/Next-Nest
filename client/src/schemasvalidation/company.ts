@@ -20,25 +20,30 @@ export const apiCompanyRes = z.object({
   createdBy: ActionBy,
   updatedBy: ActionBy,
   deletedAt: z.date(),
-  deletedBy: ActionBy
+  deletedBy: ActionBy,
 });
 
 export type CompanyResType = z.infer<typeof apiCompanyRes>;
 
 //- create
 export const companyCreate = z.object({
-  name: z.string(),
+  name: z.string().min(1, "Tên công ty không được để trống"),
   taxCode: z.string(),
-  address: z.string(),
-  description: z.string(),
+  address: z.string().min(1, "Địa chỉ không được để trống"),
+  description: z.string().min(1, "Mô tả không được để trống"),
   industryID: z.array(z.string()),
-  totalMember: z.string(),
-  website: z.string(),
-  banner: z.string(),
-  logo: z.string(),
+  totalMember: z.string().min(1, "Vui lòng chọn quy mô"),
+  website: z.string().min(1, "Website không được để trống"),
+  banner: z.string().min(1, "Vui lòng tải lên banner công ty"),
+  logo: z.string().min(1, "Vui lòng tải lên logo công ty"),
 });
 
 export type CompanyCreateType = z.infer<typeof companyCreate>;
+
+//- cập nhật thì không có trường taxCode, omit nó đi
+export const companyUpdate = companyCreate.omit({ taxCode: true });
+
+export type CompanyUpdateType = z.infer<typeof companyUpdate>;
 
 //- get company with filter
 const Meta = z.object({

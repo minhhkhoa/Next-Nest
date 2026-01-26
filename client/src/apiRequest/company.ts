@@ -1,5 +1,5 @@
 import http from "@/lib/http";
-import { CompanyCreateType, CompanyResType } from "@/schemasvalidation/company";
+import { CompanyCreateType, CompanyResType, CompanyUpdateType } from "@/schemasvalidation/company";
 import { ApiResponse } from "@/types/apiResponse";
 
 const prefix = "/company";
@@ -38,7 +38,7 @@ const companyApiRequest = {
     action: "ACCEPT" | "REJECT";
   }) => http.patch<ApiResponse<any>>(`${prefix}/admin-verify`, payload),
 
-  update: (id: string, payload: CompanyCreateType) =>
+  update: (id: string, payload: CompanyUpdateType) =>
     http.patch<ApiResponse<any>>(`${prefix}/${id}`, payload),
 
   remove: (id: string) => http.delete<ApiResponse<any>>(`${prefix}/${id}`),

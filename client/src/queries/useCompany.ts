@@ -1,5 +1,5 @@
 import companyApiRequest from "@/apiRequest/company";
-import { CompanyCreateType } from "@/schemasvalidation/company";
+import { CompanyCreateType, CompanyUpdateType } from "@/schemasvalidation/company";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useCreateCompany() {
@@ -65,7 +65,7 @@ export function useAdminVerifyCompany() {
 export function useUpdateCompany() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: CompanyCreateType }) =>
+    mutationFn: ({ id, payload }: { id: string; payload: CompanyUpdateType }) =>
       companyApiRequest.update(id, payload),
     onSuccess: (_, variables) => {
       // Làm tươi dữ liệu chi tiết công ty cụ thể
