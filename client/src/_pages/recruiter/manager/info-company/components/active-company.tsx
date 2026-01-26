@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Edit3,
   Save,
@@ -36,6 +35,7 @@ import {
 } from "@/components/ui/select";
 import { COMPANY_SCALES } from "@/lib/constant";
 import { MultiSelectTree } from "@/_pages/components/multi-select-industry";
+import { CompanySkeleton } from "@/components/skeletons/company-skeleton";
 
 interface Props {
   companyId: string;
@@ -430,14 +430,3 @@ export default function ActiveCompanyPage({ companyId }: Props) {
     </div>
   );
 }
-
-const CompanySkeleton = () => (
-  <div className="container mx-auto py-8 max-w-4xl space-y-6">
-    <Skeleton className="h-12 w-1/3" />
-    <Skeleton className="h-48 w-full rounded-xl" />
-    <div className="grid grid-cols-2 gap-6">
-      <Skeleton className="h-64 w-full" />
-      <Skeleton className="h-64 w-full" />
-    </div>
-  </div>
-);
