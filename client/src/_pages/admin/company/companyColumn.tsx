@@ -1,7 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Trash2, MoreVertical, Pen } from "lucide-react";
+import { Trash2, MoreVertical, Pen, CheckCheck, CircleX } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 export const getCompanyColumns = (
   onEdit: (company: CompanyResType) => void,
   onDelete: (company: CompanyResType) => void,
+  onVerifyCompany: (companyID: string, action: "ACCEPT" | "REJECT") => void,
 ): ColumnDef<CompanyResType>[] => [
   {
     id: "select",
@@ -143,7 +144,8 @@ export const getCompanyColumns = (
     id: "actions",
     header: "Thao tác",
     cell: ({ row }) => {
-      const permission = row.original;
+      const company = row.original;
+      const status = row?.original?.status;
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -153,7 +155,27 @@ export const getCompanyColumns = (
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onEdit(permission)}>
+            {status === "PENDING" && (
+              <DropdownMenuItem
+                onClick={() => onVerifyCompany(company._id, "ACCEPT")}
+              >
+                <div className="flex gap-3 items-center">
+                  <CheckCheck className="mr-2 h-4 w-4" />
+                  Duyệt công ty
+                </div>
+              </DropdownMenuItem>
+            )}
+            {status === "PENDING" && (
+              <DropdownMenuItem
+                onClick={() => onVerifyCompany(company._id, "REJECT")}
+              >
+                <div className="flex gap-3 items-center">
+                  <CircleX className="mr-2 h-4 w-4" />
+                  Từ chối công ty
+                </div>
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem onClick={() => onEdit(company)}>
               <div className="flex gap-3 items-center">
                 <Pen className="mr-2 h-4 w-4" />
                 Chỉnh sửa
@@ -161,7 +183,7 @@ export const getCompanyColumns = (
             </DropdownMenuItem>
             <DropdownMenuItem
               className="hover:!bg-red-500 text-red-500"
-              onClick={() => onDelete(permission)}
+              onClick={() => onDelete(company)}
             >
               <div className="flex gap-3 items-center ">
                 <Trash2 className="mr-2 h-4 w-4 hover:text-white" />

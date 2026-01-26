@@ -7,17 +7,20 @@ import { useDebounce } from "use-debounce";
 import { SearchBar } from "../NewsCategory/components/search-bar";
 import { Spinner } from "@/components/ui/spinner";
 import { CompanyResType } from "@/schemasvalidation/company";
-import { useGetCompaniesFilter } from "@/queries/useCompany";
+import {
+  useAdminVerifyCompany,
+  useGetCompaniesFilter,
+} from "@/queries/useCompany";
 import { getCompanyColumns } from "./companyColumn";
 import TableCompany from "./tableCompany";
 import { useQueryFilter } from "@/hooks/useQueryFilter";
 import { CompanyDialogForm } from "./components/company-modal-form";
+import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 
 const statusFilters = [
   { label: "Tất cả", value: "" },
   { label: "Đang hoạt động", value: "ACCEPT" },
   { label: "Chờ phê duyệt", value: "PENDING" },
-  { label: "Đã từ chối", value: "REJECTED" },
 ];
 
 export default function PageAdminCompany() {
@@ -86,6 +89,27 @@ export default function PageAdminCompany() {
     setCurrentPage(1);
   };
 
+  const { mutateAsync: verifyCompanyMutation } = useAdminVerifyCompany();
+
+  const handleVerifyCompany = async (
+    companyID: string,
+    action: "ACCEPT" | "REJECT",
+  ) => {
+    try {
+      const res = await verifyCompanyMutation({ companyID, action });
+
+      if (res.isError) {
+        // Hiển thị thông báo lỗi
+        console.log("Có lỗi xảy ra khi phê duyệt công ty");
+        return;
+      }
+
+      SoftSuccessSonner(res.message);
+    } catch (error) {
+      console.log("error verify company: ", error);
+    }
+  };
+
   //- custom Hook
   useQueryFilter("statusFilterCompany", (value) => {
     if (value === "PENDING") {
@@ -93,7 +117,11 @@ export default function PageAdminCompany() {
     }
   });
 
-  const columns = getCompanyColumns(handleOpenEditModal, handleOpenDeleteModal);
+  const columns = getCompanyColumns(
+    handleOpenEditModal,
+    handleOpenDeleteModal,
+    handleVerifyCompany,
+  );
 
   return (
     <div className="min-h-screen bg-background">

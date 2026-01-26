@@ -302,12 +302,16 @@ export class CompanyService {
           );
         }
       } else {
-        // 3. Chấp nhận: Đổi trạng thái Company sang ACTIVE
+        // 3. Chấp nhận: Đổi trạng thái Company sang ACCEPT
         await this.companyModel.updateOne(
           { _id: companyID },
-          { $set: { status: 'ACTIVE' } },
+          { $set: { status: 'ACCEPT' } },
           { session },
         );
+
+        //- khi chấp nhận công ty, tự động kích hoạt tất cả user trong công ty đó
+        //- phòng trường hợp khi tạo cty thì userStatus để active nhưng set lại pending cho công ty thì userStatus bị reset về pending
+        await this.userService.resetUsersStatusByCompanyID(companyID, 'ACTIVE');
       }
 
       await session.commitTransaction();
@@ -374,6 +378,12 @@ export class CompanyService {
         'company',
         updateCompanyDto,
       );
+
+      //- nếu set lại trạng thái công ty về pending thì các user trong công ty đó sẽ bị reset userStatus về PENDING
+      if (updateCompanyDto.status === 'PENDING') {
+        await this.userService.resetUsersStatusByCompanyID(id, 'PENDING');
+      }
+
       const filter = { _id: id };
       const update = {
         $set: {

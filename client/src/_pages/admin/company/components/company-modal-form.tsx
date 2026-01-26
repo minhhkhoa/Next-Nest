@@ -23,13 +23,11 @@ import { Spinner } from "@/components/ui/spinner";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
-import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import { CompanyResType } from "@/schemasvalidation/company";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -38,7 +36,6 @@ import { useUpdateCompany } from "@/queries/useCompany";
 const statusFilters = [
   { label: "Chờ phê duyệt", value: "PENDING" },
   { label: "Đang hoạt động", value: "ACCEPT" },
-  { label: "Đã từ chối", value: "REJECTED" },
 ];
 
 interface CompanyDialogFormProps {
@@ -63,7 +60,7 @@ export function CompanyDialogForm({ onClose, data }: CompanyDialogFormProps) {
     try {
       const res = await updateCompanyMutation({
         id: data?._id || "",
-        payload: values
+        payload: values,
       });
 
       if (res?.isError) return;
@@ -210,7 +207,6 @@ export function CompanyDialogForm({ onClose, data }: CompanyDialogFormProps) {
                     </FormItem>
                   )}
                 />
-
               </div>
             </ScrollArea>
 

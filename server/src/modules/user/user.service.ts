@@ -133,6 +133,27 @@ export class UserService {
     return this.detailProfileService.findAllByFilter(query);
   }
 
+  //- reset userStatus ve pending/active khi công ty dc accept/reject
+  async resetUsersStatusByCompanyID(companyId: string, action: string) {
+    try {
+      //- tìm các user có employerInfo.companyID = companyId
+      const filter = {
+        'employerInfo.companyID': companyId,
+      };
+
+      //- cập nhật userStatus về PENDING
+      const update = {
+        $set: { 'employerInfo.userStatus': action.toUpperCase() },
+      };
+
+      const result = await this.userModel.updateMany(filter, update);
+
+      return result;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
   async findAll() {
     try {
       return this.userModel
