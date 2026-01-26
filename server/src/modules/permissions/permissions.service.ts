@@ -35,6 +35,7 @@ export class PermissionsService {
           _id: user.id,
           name: user.name,
           email: user.email,
+          avatar: user.avatar,
         },
       });
 
@@ -176,6 +177,7 @@ export class PermissionsService {
             _id: user.id,
             name: user.name,
             email: user.email,
+            avatar: user.avatar,
           },
         },
       };
@@ -217,6 +219,7 @@ export class PermissionsService {
               _id: user.id,
               name: user.name,
               email: user.email,
+              avatar: user.avatar,
             },
           },
         },
@@ -257,6 +260,7 @@ export class PermissionsService {
               _id: user.id,
               name: user.name,
               email: user.email,
+              avatar: user.avatar,
             },
           },
         },

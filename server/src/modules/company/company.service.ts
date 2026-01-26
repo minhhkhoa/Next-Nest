@@ -61,6 +61,7 @@ export class CompanyService {
           _id: new Types.ObjectId(user.id),
           name: user.name,
           email: user.email,
+          avatar: user.avatar
         },
       });
       const company = await newCompany.save({ session });

@@ -11,6 +11,7 @@ import { useGetCompaniesFilter } from "@/queries/useCompany";
 import { getCompanyColumns } from "./companyColumn";
 import TableCompany from "./tableCompany";
 import { useQueryFilter } from "@/hooks/useQueryFilter";
+import { CompanyDialogForm } from "./components/company-modal-form";
 
 const statusFilters = [
   { label: "Tất cả", value: "" },
@@ -205,13 +206,12 @@ export default function PageAdminCompany() {
         )}
       </div>
       {/* Dialog */}
-      {/* {companyModalState.isOpen && (
-        <RoleDialogForm
-          onClose={() => setRoleModalState({ isOpen: false })}
-          role={roleModalState.data}
-          groupModules={listModules?.data || {}}
+      {companyModalState?.isOpen && (
+        <CompanyDialogForm
+          onClose={() => setCompanyModalState({ isOpen: false })}
+          data={companyModalState?.data}
         />
-      )} */}
+      )}
 
       {/* modal confirm delete */}
       {/* {deleteModal.isOpen && (

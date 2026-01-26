@@ -31,6 +31,7 @@ export class CateNewsService {
           _id: user.id,
           name: user.name,
           email: user.email,
+          avatar: user.avatar,
         },
       });
 
@@ -115,6 +116,7 @@ export class CateNewsService {
             _id: user.id,
             name: user.name,
             email: user.email,
+            avatar: user.avatar,
           },
         },
       };

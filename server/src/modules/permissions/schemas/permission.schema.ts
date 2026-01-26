@@ -33,6 +33,7 @@ export class Permission {
     _id: mongoose.Schema.Types.ObjectId;
     name: string;
     email: string;
+    avatar: string;
   };
 
   @Prop({ type: Object })
@@ -40,6 +41,7 @@ export class Permission {
     _id: mongoose.Schema.Types.ObjectId;
     name: string;
     email: string;
+    avatar: string;
   };
 
   @Prop({ type: Object })
@@ -47,6 +49,7 @@ export class Permission {
     _id: mongoose.Schema.Types.ObjectId;
     name: string;
     email: string;
+    avatar: string;
   };
 
   @Prop()

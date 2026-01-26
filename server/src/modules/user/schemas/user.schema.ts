@@ -67,6 +67,7 @@ export class User {
     _id: mongoose.Schema.Types.ObjectId;
     name: string;
     email: string;
+    avatar: string;
   };
 
   @Prop({ type: Object })
@@ -74,6 +75,7 @@ export class User {
     _id: mongoose.Schema.Types.ObjectId;
     name: string;
     email: string;
+    avatar: string;
   };
 
   @Prop({ type: Object })
@@ -81,6 +83,7 @@ export class User {
     _id: mongoose.Schema.Types.ObjectId;
     name: string;
     email: string;
+    avatar: string;
   };
 
   //- phục vụ cho forgot/reset password

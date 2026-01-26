@@ -32,6 +32,7 @@ export class RolesService {
           _id: user.id,
           name: user.name,
           email: user.email,
+          avatar: user.avatar,
         },
       });
 
@@ -169,6 +170,7 @@ export class RolesService {
             _id: user.id,
             name: user.name,
             email: user.email,
+            avatar: user.avatar,
           },
         },
       };
@@ -208,6 +210,7 @@ export class RolesService {
               _id: user.id,
               name: user.name,
               email: user.email,
+              avatar: user.avatar,
             },
           },
         },
@@ -246,6 +249,7 @@ export class RolesService {
               _id: user.id,
               name: user.name,
               email: user.email,
+              avatar: user.avatar,
             },
           },
         },

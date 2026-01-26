@@ -128,7 +128,7 @@ export const getCompanyColumns = (
       return (
         <span
           className={`inline-block rounded px-2 py-1 text-xs font-semibold ${
-            isDeleted
+            !isDeleted
               ? "bg-green-100 text-green-800"
               : "bg-red-100 text-red-800"
           }`}
