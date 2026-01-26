@@ -1,8 +1,6 @@
 import React from "react";
 import {
   Clock,
-  Mail,
-  Home,
   RefreshCw,
   ShieldCheck,
   ExternalLink,

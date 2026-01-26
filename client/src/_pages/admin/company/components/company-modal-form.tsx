@@ -27,7 +27,6 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
-import { Switch } from "@/components/ui/switch";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import { CompanyResType } from "@/schemasvalidation/company";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

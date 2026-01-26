@@ -130,7 +130,7 @@ export default function ActiveCompanyPage({ companyId }: Props) {
         SoftSuccessSonner(`Tải lên ${type} thành công`);
       }
     } catch (error) {
-      SoftDestructiveSonner("Lỗi upload media");
+      console.log("Lỗi upload media: ", error);
     } finally {
       setIsUploading((prev) => ({ ...prev, [type]: false }));
     }

@@ -56,7 +56,9 @@ export default function JoinCompanyCard({
 
       setIsSubmitting(false);
       setShowSuccess(true);
-    } catch (error) {}
+    } catch (error) {
+      console.log("Lỗi gửi yêu cầu gia nhập công ty: ", error);
+    }
   };
 
   const containerVariants = {

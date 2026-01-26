@@ -29,7 +29,6 @@ import dayjs from "dayjs";
 import { MemberTableSkeleton } from "@/components/skeletons/company-skeleton";
 import { useApproveJoinRequestMutate } from "@/queries/useUser";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
-import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import { envConfig } from "../../../../../config";
 
 export default function PageMemberCompany() {
@@ -49,7 +48,7 @@ export default function PageMemberCompany() {
         action === "ACCEPT" ? "Đã chấp nhận thành viên" : "Đã từ chối yêu cầu",
       );
     } catch (error) {
-      SoftDestructiveSonner("Đã có lỗi xảy ra, vui lòng thử lại sau.");
+      console.log("error handle approve request: ", error);
     }
   };
 
@@ -61,7 +60,7 @@ export default function PageMemberCompany() {
         // await deleteMember(userId);
         SoftSuccessSonner("Xóa thành viên thành công");
       } catch (error) {
-        SoftDestructiveSonner("Không thể xóa thành viên này");
+        console.log("error delete member: ", error);
       }
     }
   };
