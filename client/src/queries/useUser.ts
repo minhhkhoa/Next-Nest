@@ -113,6 +113,8 @@ export function useApproveJoinRequestMutate() {
 
       //- Nếu Admin đang xem danh sách nhân viên công ty, cũng cần làm tươi lại
       queryClient.invalidateQueries({ queryKey: ["getAllUserByFilter"] });
+
+      queryClient.invalidateQueries({ queryKey: ["member-company"] });
     },
   });
 }

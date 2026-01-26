@@ -233,7 +233,7 @@ export default function ActiveCompanyPage({ companyId }: Props) {
 
             <div className="absolute bottom-8 left-12 bg-background rounded-xl border-2 shadow-lg group w-24 h-24 overflow-hidden">
               <Image
-                src={form.watch("logo") || "https://placehold.co/100x100"}
+                src={form.watch("logo") || "/avatar-default.webp"}
                 alt="Logo"
                 className="w-full h-full object-contain bg-white"
                 width={96}
