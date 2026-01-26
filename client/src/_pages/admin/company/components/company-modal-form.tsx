@@ -33,6 +33,7 @@ import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestruc
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import { CompanyResType } from "@/schemasvalidation/company";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useUpdateCompany } from "@/queries/useCompany";
 
 const statusFilters = [
   { label: "Chờ phê duyệt", value: "PENDING" },
@@ -52,17 +53,25 @@ export function CompanyDialogForm({ onClose, data }: CompanyDialogFormProps) {
       taxCode: data?.taxCode || "",
       address: data?.address || "",
       status: data?.status,
-      isDeleted: data?.isDeleted,
     },
   });
 
+  const { mutateAsync: updateCompanyMutation, isPending: isUpdatingCompany } =
+    useUpdateCompany();
+
   const handleSubmit = async (values: any) => {
     try {
+      const res = await updateCompanyMutation({
+        id: data?._id || "",
+        payload: values
+      });
+
+      if (res?.isError) return;
+
+      SoftSuccessSonner(res?.message);
       onClose();
-    } catch (error: any) {
-      const errorMessage =
-        error?.payload?.message || "Có lỗi xảy ra khi cập nhật";
-      SoftDestructiveSonner(errorMessage);
+    } catch (error) {
+      console.log("error submit form company: ", error);
     }
   };
 
@@ -202,29 +211,6 @@ export function CompanyDialogForm({ onClose, data }: CompanyDialogFormProps) {
                   )}
                 />
 
-                {/* Trạng thái isDeleted */}
-                <FormField
-                  control={form.control}
-                  name="isDeleted"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
-                      <div className="space-y-0.5">
-                        <FormLabel>Tình trạng xóa</FormLabel>
-                        <FormDescription>
-                          {field.value
-                            ? "Tài khoản đang bị khóa quyền truy cập."
-                            : "Tài khoản đang được phép truy cập hệ thống."}
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
               </div>
             </ScrollArea>
 
@@ -233,12 +219,12 @@ export function CompanyDialogForm({ onClose, data }: CompanyDialogFormProps) {
                 type="button"
                 variant="outline"
                 onClick={onClose}
-                disabled={false}
+                disabled={isUpdatingCompany}
               >
                 Hủy
               </Button>
-              <Button type="submit" disabled={false}>
-                {false ? (
+              <Button type="submit" disabled={isUpdatingCompany}>
+                {isUpdatingCompany ? (
                   <>
                     <Spinner className="mr-2 h-4 w-4 animate-spin" />
                     Đang xử lý...

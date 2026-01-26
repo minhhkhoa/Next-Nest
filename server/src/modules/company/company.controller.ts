@@ -91,8 +91,12 @@ export class CompanyController {
   @ResponseMessage('Cập nhật công ty thành công')
   @ApiOperation({ summary: 'Cập nhật công ty' })
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCompanyDto: UpdateCompanyDto) {
-    return this.companyService.update(id, updateCompanyDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateCompanyDto: UpdateCompanyDto,
+    @userDecorator() user: UserDecoratorType,
+  ) {
+    return this.companyService.update(id, updateCompanyDto, user);
   }
 
   @ResponseMessage('Xóa công ty thành công')

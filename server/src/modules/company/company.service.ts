@@ -24,6 +24,7 @@ import {
   FindJoinRequestDto,
 } from './dto/companyDto.dto';
 import { NotificationsService } from '../notifications/notifications.service';
+import aqp from 'api-query-params';
 
 @Injectable()
 export class CompanyService {
@@ -61,7 +62,7 @@ export class CompanyService {
           _id: new Types.ObjectId(user.id),
           name: user.name,
           email: user.email,
-          avatar: user.avatar
+          avatar: user.avatar,
         },
       });
       const company = await newCompany.save({ session });
@@ -149,58 +150,46 @@ export class CompanyService {
     try {
       const { currentPage, pageSize, name, address, status } = query;
 
-      // 1. Xây dựng mảng AND để chứa các điều kiện lọc độc lập
-      const andConditions: any[] = [];
+      const queryForAqp = { name, address, status };
+      const { filter } = aqp(queryForAqp);
 
-      // Filter theo Name (Đa ngôn ngữ)
+      //- Xây dựng điều kiện lọc
+      let filterConditions: any = { ...filter };
+
+      //- Xử lý filter cho name nếu truyền lên
       if (name) {
-        andConditions.push({
-          $or: [
-            { 'name': { $regex: name, $options: 'i' } },
-            { 'name': { $regex: name, $options: 'i' } },
-          ],
-        });
+        delete filterConditions.name;
+        const searchRegex = new RegExp(name, 'i');
+        filterConditions.name = { $regex: searchRegex };
       }
 
-      // Filter theo Address
       if (address) {
-        andConditions.push({
-          address: { $regex: address, $options: 'i' },
-        });
+        const searchRegex = new RegExp(address, 'i');
+        filterConditions.address = { $regex: searchRegex };
       }
-
-      // Filter theo Status
       if (status) {
-        andConditions.push({ status });
+        filterConditions.status = status.toUpperCase();
       }
 
-      // Tổng hợp điều kiện lọc
-      const filterConditions =
-        andConditions.length > 0 ? { $and: andConditions } : {};
+      const defaultPage = currentPage > 0 ? +currentPage : 1;
+      let offset = (+defaultPage - 1) * +pageSize;
+      let defaultLimit = +pageSize ? +pageSize : 10;
 
-      // 2. Tính toán Phân trang
-      const defaultPage = +currentPage > 0 ? +currentPage : 1;
-      const defaultLimit = +pageSize > 0 ? +pageSize : 10;
-      const offset = (defaultPage - 1) * defaultLimit;
-
-      // 3. Thực thi query song song để tối ưu tốc độ
-      const [totalItems, result] = await Promise.all([
-        this.companyModel.countDocuments(filterConditions), // Đếm nhanh hơn .length
-        this.companyModel
-          .find(filterConditions)
-          .skip(offset)
-          .limit(defaultLimit)
-          .sort('-createdAt')
-          .lean()
-          .exec(),
-      ]);
-
+      const totalItems = (await this.companyModel.find(filterConditions))
+        .length;
       const totalPages = Math.ceil(totalItems / defaultLimit);
+
+      const result = await this.companyModel
+        .find(filterConditions)
+        .skip(offset)
+        .limit(defaultLimit)
+        .sort('-createdAt')
+        .exec();
 
       return {
         meta: {
           current: defaultPage,
-          pageSize: defaultLimit,
+          pageSize: pageSize,
           totalPages: totalPages,
           totalItems: totalItems,
         },
@@ -231,7 +220,7 @@ export class CompanyService {
       if (company)
         return {
           exists: true,
-          company
+          company,
         };
 
       return {
@@ -255,7 +244,6 @@ export class CompanyService {
         .populate([
           {
             path: 'industryID',
-            match: { isDeleted: false },
             select: 'name _id',
           },
           // {
@@ -269,10 +257,10 @@ export class CompanyService {
       if (!company)
         throw new BadRequestCustom('ID company không tìm thấy', !!id);
 
-      if (company?.isDeleted) {
+      if (company?.status === 'REJECTED') {
         throw new BadRequestCustom(
-          'company này hiện đã bị xóa',
-          !!company?.isDeleted,
+          'company này hiện đã bị từ chối',
+          !!(company?.status === 'REJECTED'),
         );
       }
 
@@ -367,7 +355,11 @@ export class CompanyService {
     }
   }
 
-  async update(id: string, updateCompanyDto: UpdateCompanyDto) {
+  async update(
+    id: string,
+    updateCompanyDto: UpdateCompanyDto,
+    user: UserDecoratorType,
+  ) {
     try {
       if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new BadRequestCustom('ID company không đúng định dạng', !!id);
@@ -383,7 +375,17 @@ export class CompanyService {
         updateCompanyDto,
       );
       const filter = { _id: id };
-      const update = { $set: dataTranslation };
+      const update = {
+        $set: {
+          ...dataTranslation,
+          updatedBy: {
+            _id: new Types.ObjectId(user.id),
+            name: user.name,
+            email: user.email,
+            avatar: user.avatar,
+          },
+        },
+      };
 
       const result = await this.companyModel.updateOne(filter, update);
 
@@ -405,13 +407,16 @@ export class CompanyService {
       if (!company)
         throw new BadRequestCustom('ID company không tìm thấy', !!id);
 
-      const isDeleted = company.isDeleted;
+      const isRejected = company.status === 'REJECTED';
 
-      if (isDeleted)
-        throw new BadRequestCustom('company này đã được xóa', !!isDeleted);
+      if (isRejected)
+        throw new BadRequestCustom('company này đã bị từ chối', !!isRejected);
 
       const filter = { _id: id };
-      const result = this.companyModel.softDelete(filter);
+      const update = {
+        $set: { status: 'REJECTED' },
+      };
+      const result = await this.companyModel.updateOne(filter, update);
 
       if (!result) throw new BadRequestCustom('Lỗi xóa company', !!id);
 

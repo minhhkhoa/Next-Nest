@@ -119,26 +119,6 @@ export const getCompanyColumns = (
     },
   },
 
-  {
-    id: "isDeleted",
-    header: "Tình trạng",
-    cell: ({ row }) => {
-      const isDeleted = row.original.isDeleted;
-
-      return (
-        <span
-          className={`inline-block rounded px-2 py-1 text-xs font-semibold ${
-            !isDeleted
-              ? "bg-green-100 text-green-800"
-              : "bg-red-100 text-red-800"
-          }`}
-        >
-          {!isDeleted ? "Hoạt động" : "Đã xóa"}
-        </span>
-      );
-    },
-  },
-
   //- Chủ sở hữu
   {
     id: "createdBy",

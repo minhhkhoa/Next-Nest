@@ -15,8 +15,8 @@ import { CompanyDialogForm } from "./components/company-modal-form";
 
 const statusFilters = [
   { label: "Tất cả", value: "" },
-  { label: "Chờ phê duyệt", value: "PENDING" },
   { label: "Đang hoạt động", value: "ACCEPT" },
+  { label: "Chờ phê duyệt", value: "PENDING" },
   { label: "Đã từ chối", value: "REJECTED" },
 ];
 

@@ -12,7 +12,6 @@ export const apiCompanyRes = z.object({
   industryID: z.array(z.string()),
   totalMember: z.string(),
   website: z.string(),
-  isDeleted: z.boolean(),
   logo: z.string(),
   banner: z.string(),
   userFollow: z.array(z.string()),
