@@ -32,6 +32,7 @@ import { Switch } from "@/components/ui/switch";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import { CompanyResType } from "@/schemasvalidation/company";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const statusFilters = [
   { label: "Chờ phê duyệt", value: "PENDING" },
@@ -143,9 +144,17 @@ export function CompanyDialogForm({ onClose, data }: CompanyDialogFormProps) {
                   </p>
 
                   <div className="flex items-start gap-3">
-                    {/* Avatar chữ cái */}
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
-                      {data?.createdBy?.name?.charAt(0) || "?"}
+                    <div className="flex items-center gap-3">
+                      <Avatar className="w-10 h-10 border border-border">
+                        <AvatarImage
+                          src={data?.createdBy?.avatar || undefined}
+                        />
+                        <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
+                          {data?.createdBy?.name
+                            ? data?.createdBy?.name?.charAt(0)
+                            : "N/A"}
+                        </AvatarFallback>
+                      </Avatar>
                     </div>
 
                     {/* Thông tin */}

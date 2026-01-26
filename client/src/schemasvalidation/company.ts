@@ -1,5 +1,6 @@
 import z from "zod";
 import { MultiLang } from "./trans";
+import { ActionBy } from "./NewsCategory";
 
 export const apiCompanyRes = z.object({
   _id: z.string(),
@@ -17,11 +18,10 @@ export const apiCompanyRes = z.object({
   userFollow: z.array(z.string()),
   createdAt: z.date(),
   updatedAt: z.date(),
-  createdBy: z.object({
-    _id: z.string(),
-    name: z.string(),
-    email: z.string(),
-  }),
+  createdBy: ActionBy,
+  updatedBy: ActionBy,
+  deletedAt: z.date(),
+  deletedBy: ActionBy
 });
 
 export type CompanyResType = z.infer<typeof apiCompanyRes>;

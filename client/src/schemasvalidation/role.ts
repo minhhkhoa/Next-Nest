@@ -1,6 +1,6 @@
 import z from "zod";
 import { MultiLang } from "./trans";
-import { MetaFilter } from "./NewsCategory";
+import { ActionBy, MetaFilter } from "./NewsCategory";
 
 export const apiRoleRes = z.object({
   _id: z.string(),
@@ -14,21 +14,9 @@ export const apiRoleRes = z.object({
   createdAt: z.date(),
   updatedAt: z.date(),
 
-  createdBy: z.object({
-    _id: z.string(),
-    name: z.string(),
-    email: z.string(),
-  }),
-  updatedBy: z.object({
-    _id: z.string(),
-    name: z.string(),
-    email: z.string(),
-  }),
-  deletedBy: z.object({
-    _id: z.string(),
-    name: z.string(),
-    email: z.string(),
-  }),
+  createdBy: ActionBy,
+  updatedBy: ActionBy,
+  deletedBy: ActionBy,
 });
 
 export type RoleResType = z.infer<typeof apiRoleRes>;
