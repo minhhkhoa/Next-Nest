@@ -62,7 +62,7 @@ export class UserController {
 
   @Patch('join-company')
   @ResponseMessage('Gửi yêu cầu gia nhập thành công')
-  @ApiOperation({ summary: 'Gửi yêu cầu gia nhập công ty' })
+  @ApiOperation({ summary: 'Gửi yêu cầu gia nhập công ty cho Recruiter_ADMIN' })
   joinCompany(
     @Body() joinDto: JoinCompanyDto,
     @userDecorator() user: UserDecoratorType, // Decorator lấy thông tin user từ JWT

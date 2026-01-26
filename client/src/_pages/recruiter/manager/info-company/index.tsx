@@ -11,7 +11,7 @@ export default function PageInfoCompany() {
   const { user } = useAppStore();
   const employerInfo = user?.employerInfo;
 
-  if (employerInfo === undefined) {
+  if (!user && employerInfo === undefined) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader className="animate-spin mx-auto mt-20" />

@@ -15,6 +15,8 @@ import { ChevronLeft, CheckCircle, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useGetCompanyDetail } from "@/queries/useCompany";
 import Image from "next/image";
+import { useJoinCompanyMutate } from "@/queries/useUser";
+import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 
 interface JoinCompanyCardProps {
   companyID: string;
@@ -30,20 +32,31 @@ export default function JoinCompanyCard({
   const [showSuccess, setShowSuccess] = useState(false);
 
   const { data: detailCompany } = useGetCompanyDetail(companyID);
+  const { mutateAsync: joinCompanyMutate } = useJoinCompanyMutate();
 
   const company = detailCompany?.data;
 
   const handleSubmit = async () => {
-    if (!reason.trim()) {
-      alert("Vui lòng nhập lý do gia nhập");
-      return;
-    }
+    try {
+      if (!reason.trim()) {
+        alert("Vui lòng nhập lý do gia nhập");
+        return;
+      }
 
-    setIsSubmitting(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSubmitting(false);
-    setShowSuccess(true);
+      setIsSubmitting(true);
+
+      const res = await joinCompanyMutate({
+        companyID: companyID,
+        note: reason.trim(),
+      });
+
+      if (res?.isError) return;
+
+      SoftSuccessSonner(res?.message);
+
+      setIsSubmitting(false);
+      setShowSuccess(true);
+    } catch (error) {}
   };
 
   const containerVariants = {

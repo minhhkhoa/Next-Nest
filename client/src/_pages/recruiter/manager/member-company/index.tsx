@@ -18,14 +18,12 @@ import {
   Mail,
   ShieldCheck,
   Calendar,
-  MoreHorizontal,
-  UserPlus,
   Crown,
   MoreVertical,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import dayjs from "dayjs";
+import { MemberTableSkeleton } from "@/components/skeletons/company-skeleton";
 
 export default function PageMemberCompany() {
   const { data: listMemberCompany, isLoading: isLoadingMemberCompany } =
@@ -148,31 +146,6 @@ export default function PageMemberCompany() {
               ))}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-// Skeleton cho trạng thái loading
-function MemberTableSkeleton() {
-  return (
-    <div className="container mx-auto py-8 max-w-6xl space-y-6">
-      <div className="space-y-2">
-        <Skeleton className="h-10 w-64" />
-        <Skeleton className="h-4 w-96" />
-      </div>
-      <Card>
-        <CardContent className="p-0">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="flex items-center p-4 border-b gap-4">
-              <Skeleton className="h-10 w-10 rounded-full" />
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-40" />
-                <Skeleton className="h-3 w-32" />
-              </div>
-            </div>
-          ))}
         </CardContent>
       </Card>
     </div>

@@ -274,7 +274,7 @@ export class UserService {
         { _id: new Types.ObjectId(user.id) },
         {
           $set: {
-            'employerInfo.companyID': new Types.ObjectId(companyID),
+            'employerInfo.companyID': companyID,
             'employerInfo.userStatus': 'PENDING', //- chờ RECRUITER_ADMIN duyệt
             'employerInfo.isOwner': false, //- không phải người tạo công ty
           },
@@ -468,8 +468,8 @@ export class UserService {
       }
 
       const filter = {
-        roleID: roleRecruiterAdmin._id, // Mongoose tự hiểu ObjectId nếu truyền trực tiếp từ model khác
-        'employerInfo.companyID': new Types.ObjectId(companyID), // Ép kiểu để query chính xác
+        roleID: roleRecruiterAdmin._id.toString(), // Mongoose tự hiểu ObjectId nếu truyền trực tiếp từ model khác
+        'employerInfo.companyID': companyID, // Ép kiểu để query chính xác
         'employerInfo.isOwner': true, // Lấy người sở hữu để gửi thông báo phê duyệt
       };
 

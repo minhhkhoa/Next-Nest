@@ -143,6 +143,11 @@ export const handleNotificationNavigation = (
       router.push(`/admin/company?statusFilterCompany=PENDING`);
       break;
 
+    //- recruiter_admin nhận yêu cầu tham gia từ recruiter
+    case NotificationType.COMPANY_RECRUITER_JOINED:
+      router.push(`/recruiter/manager/member-company`);
+      break;
+
     case NotificationType.RESUME_SUBMITTED:
       router.push(`/recruiter/resumes`);
       break;
