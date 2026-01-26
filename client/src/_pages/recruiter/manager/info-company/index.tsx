@@ -4,6 +4,7 @@ import { useAppStore } from "@/components/TanstackProvider";
 import React from "react";
 import CompanySetupPage from "./register-company";
 import PendingCompanyPage from "./components/pending-company";
+import ActiveCompanyPage from "./components/active-company";
 
 export default function PageInfoCompany() {
   const { user } = useAppStore();
@@ -27,5 +28,9 @@ export default function PageInfoCompany() {
 
   //- Trường hợp 3: Có employerInfo và userStatus === 'ACTIVE'
   if (employerInfo && employerInfo.userStatus === "ACTIVE")
-    return <div>ActiveCompanyPage</div>;
+    return (
+      <div>
+        <ActiveCompanyPage companyId={employerInfo.companyID} />
+      </div>
+    );
 }

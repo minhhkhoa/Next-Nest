@@ -160,3 +160,15 @@ export const handleNotificationNavigation = (
       break;
   }
 };
+
+export const flattenTree = (nodes: any[]): any[] => {
+  let flat: any[] = [];
+  if (!nodes) return [];
+  for (const node of nodes) {
+    flat.push({ value: node._id, label: node.name });
+    if (node.children && node.children.length > 0) {
+      flat = flat.concat(flattenTree(node.children));
+    }
+  }
+  return flat;
+};
