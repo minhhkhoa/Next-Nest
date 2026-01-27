@@ -1,6 +1,6 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import mongoose, { HydratedDocument } from "mongoose";
-import { MultiLang } from "src/utils/typeSchemas";
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose, { HydratedDocument } from 'mongoose';
+import { MultiLang, UserAudit } from 'src/utils/typeSchemas';
 
 @Schema({ timestamps: true })
 export class Permission {
@@ -29,28 +29,13 @@ export class Permission {
   deletedAt?: Date;
 
   @Prop({ type: Object })
-  createdBy: {
-    _id: mongoose.Schema.Types.ObjectId;
-    name: string;
-    email: string;
-    avatar: string;
-  };
+  createdBy: UserAudit;
 
   @Prop({ type: Object })
-  updatedBy: {
-    _id: mongoose.Schema.Types.ObjectId;
-    name: string;
-    email: string;
-    avatar: string;
-  };
+  updatedBy: UserAudit;
 
   @Prop({ type: Object })
-  deletedBy: {
-    _id: mongoose.Schema.Types.ObjectId;
-    name: string;
-    email: string;
-    avatar: string;
-  };
+  deletedBy: UserAudit;
 
   @Prop()
   isDeleted?: boolean;
@@ -58,4 +43,3 @@ export class Permission {
 
 export const PermissionSchema = SchemaFactory.createForClass(Permission);
 export type PermissionDocument = HydratedDocument<Permission>;
-

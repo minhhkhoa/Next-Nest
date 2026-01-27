@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument, Types } from 'mongoose';
 import { Role } from 'src/modules/roles/schemas/role.schema';
+import { UserAudit } from 'src/utils/typeSchemas';
 
 class EmployerInfo {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Company' })
@@ -63,28 +64,13 @@ export class User {
 
   //- update schema
   @Prop({ type: Object })
-  createdBy: {
-    _id: mongoose.Schema.Types.ObjectId;
-    name: string;
-    email: string;
-    avatar: string;
-  };
+  createdBy: UserAudit;
 
   @Prop({ type: Object })
-  updatedBy: {
-    _id: mongoose.Schema.Types.ObjectId;
-    name: string;
-    email: string;
-    avatar: string;
-  };
+  updatedBy: UserAudit;
 
   @Prop({ type: Object })
-  deletedBy: {
-    _id: mongoose.Schema.Types.ObjectId;
-    name: string;
-    email: string;
-    avatar: string;
-  };
+  deletedBy: UserAudit;
 
   //- phục vụ cho forgot/reset password
   @Prop()

@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument, Types } from 'mongoose';
-import { MultiLang } from 'src/utils/typeSchemas';
+import { MultiLang, UserAudit } from 'src/utils/typeSchemas';
 
 @Schema({ timestamps: true })
 //- Định nghĩa các field có trong collection CateNews
@@ -25,28 +25,13 @@ export class CateNews {
 
   //- update schema
   @Prop({ type: Object })
-  createdBy: {
-    _id: mongoose.Schema.Types.ObjectId;
-    name: string;
-    email: string;
-    avatar: string;
-  };
+  createdBy: UserAudit;
 
   @Prop({ type: Object })
-  updatedBy: {
-    _id: mongoose.Schema.Types.ObjectId;
-    name: string;
-    email: string;
-    avatar: string;
-  };
+  updatedBy: UserAudit;
 
   @Prop({ type: Object })
-  deletedBy: {
-    _id: mongoose.Schema.Types.ObjectId;
-    name: string;
-    email: string;
-    avatar: string;
-  };
+  deletedBy: UserAudit;
 }
 
 export const CateNewsSchema = SchemaFactory.createForClass(CateNews);

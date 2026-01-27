@@ -1,4 +1,5 @@
 import { Prop } from '@nestjs/mongoose';
+import mongoose, { Types } from 'mongoose';
 
 export interface UserDecoratorType {
   email: string;
@@ -36,4 +37,15 @@ export enum typeMethods {
 export class MultiLang {
   @Prop() vi: string;
   @Prop() en: string;
+}
+
+export class UserAudit {
+  @Prop({ type: mongoose.Schema.Types.ObjectId })
+  _id: Types.ObjectId;
+  @Prop()
+  name: string;
+  @Prop()
+  email: string;
+  @Prop()
+  avatar: string;
 }

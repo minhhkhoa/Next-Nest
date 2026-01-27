@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument, Types } from 'mongoose';
 import { Permission } from 'src/modules/permissions/schemas/permission.schema';
-import { MultiLang } from 'src/utils/typeSchemas';
+import { MultiLang, UserAudit } from 'src/utils/typeSchemas';
 
 @Schema({ timestamps: true })
 export class Role {
@@ -27,28 +27,13 @@ export class Role {
   deletedAt?: Date;
 
   @Prop({ type: Object })
-  createdBy: {
-    _id: mongoose.Schema.Types.ObjectId;
-    name: string;
-    email: string;
-    avatar: string;
-  };
+  createdBy: UserAudit;
 
   @Prop({ type: Object })
-  updatedBy: {
-    _id: mongoose.Schema.Types.ObjectId;
-    name: string;
-    email: string;
-    avatar: string;
-  };
+  updatedBy: UserAudit;
 
   @Prop({ type: Object })
-  deletedBy: {
-    _id: mongoose.Schema.Types.ObjectId;
-    name: string;
-    email: string;
-    avatar: string;
-  };
+  deletedBy: UserAudit;
 }
 
 export const RoleSchema = SchemaFactory.createForClass(Role);

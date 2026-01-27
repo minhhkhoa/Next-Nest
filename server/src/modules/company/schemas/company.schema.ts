@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument, Types } from 'mongoose';
 import { Industry } from 'src/modules/industry/schemas/industry.schema';
-import { MultiLang } from 'src/utils/typeSchemas';
+import { MultiLang, UserAudit } from 'src/utils/typeSchemas';
 
 @Schema({ timestamps: true })
 //- Định nghĩa các field có trong collection Company
@@ -56,28 +56,13 @@ export class Company {
   deletedAt?: Date;
 
   @Prop({ type: Object })
-  createdBy: {
-    _id: mongoose.Schema.Types.ObjectId;
-    name: string;
-    email: string;
-    avatar: string;
-  };
+  createdBy: UserAudit;
 
   @Prop({ type: Object })
-  updatedBy: {
-    _id: mongoose.Schema.Types.ObjectId;
-    name: string;
-    email: string;
-    avatar: string;
-  };
+  updatedBy: UserAudit;
 
   @Prop({ type: Object })
-  deletedBy: {
-    _id: mongoose.Schema.Types.ObjectId;
-    name: string;
-    email: string;
-    avatar: string;
-  };
+  deletedBy: UserAudit;
 }
 
 export const CompanySchema = SchemaFactory.createForClass(Company);

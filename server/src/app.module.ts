@@ -20,6 +20,7 @@ import { PermissionsModule } from './modules/permissions/permissions.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { JobsModule } from './modules/jobs/jobs.module';
 
 @Module({
   imports: [
@@ -65,6 +66,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     PermissionsModule,
     RolesModule,
     NotificationsModule,
+    JobsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
