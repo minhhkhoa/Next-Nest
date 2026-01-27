@@ -78,4 +78,22 @@ export class NotificationsListener {
       NotificationType.COMPANY_JOIN_REQUEST_PROCESSED,
     );
   }
+
+  //- tạo mới công việc
+  @OnEvent(NotificationType.JOB_CREATED)
+  handleJobCreated(payload: CreateNotificationDto) {
+    return this.processNotification(payload, NotificationType.JOB_CREATED);
+  }
+
+  //- cập nhật công việc
+  @OnEvent(NotificationType.JOB_UPDATED)
+  handleJobUpdated(payload: CreateNotificationDto) {
+    return this.processNotification(payload, NotificationType.JOB_UPDATED);
+  }
+
+  //- xác thực công việc
+  @OnEvent(NotificationType.JOB_VERIFIED)
+  handleJobVerified(payload: CreateNotificationDto) {
+    return this.processNotification(payload, NotificationType.JOB_VERIFIED);
+  }
 }

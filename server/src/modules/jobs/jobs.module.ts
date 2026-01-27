@@ -5,11 +5,13 @@ import { TranslationModule } from 'src/common/translation/translation.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Job, JobSchema } from './schemas/job.schema';
 import { BusinessModule } from 'src/common/decorator/customize';
+import { UserModule } from '../user/user.module';
 
 @BusinessModule()
 @Module({
   imports: [
     TranslationModule,
+    UserModule,
     MongooseModule.forFeature([{ name: Job.name, schema: JobSchema }]),
   ],
   controllers: [JobsController],

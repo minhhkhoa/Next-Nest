@@ -98,6 +98,12 @@ export enum NotificationType {
   COMPANY_RECRUITER_JOINED = "COMPANY_RECRUITER_JOINED", // RECUITER_ADMIN nhận: Yêu cầu gia nhập của RECRUITER'
   COMPANY_JOIN_REQUEST_PROCESSED = "COMPANY_JOIN_REQUEST_PROCESSED", // RECRUITER_ADMIN duyệt/từ chối yêu cầu
 
+  //- module Job
+  //- module Job
+  JOB_CREATED = "JOB_CREATED", // RECRUITER_ADMIN nhận: Yêu cầu duyệt tin tuyển dụng mới
+  JOB_VERIFIED = "JOB_VERIFIED", // RECRUITER nhận: Tin tuyển dụng được duyệt/từ chối
+  JOB_UPDATED = "JOB_UPDATED", // RECRUITER_ADMIN nhận: Tin tuyển dụng được cập nhật bởi RECRUITER thường
+
   //- Module Resume
   RESUME_SUBMITTED = "RESUME_SUBMITTED", // Recruiter nhận: Có CV mới
   RESUME_STATUS_CHANGED = "RESUME_STATUS_CHANGED", // Candidate nhận: Trạng thái CV thay đổi

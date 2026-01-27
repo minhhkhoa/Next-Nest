@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsIn, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 //- tạm thời để thế này, sau này sẽ thêm các trường filter khác
 export class FindJobQueryDto {
@@ -32,4 +32,17 @@ export class DeleteManyJobDto {
     message: 'Mỗi phần tử trong mảng ids phải là một Mongo ID hợp lệ',
   })
   ids: string[];
+}
+
+export class RecruiteAdminApproveJobDto {
+  @ApiPropertyOptional({ example: '65f0c9b2a3b4c5d6e7f8a901' })
+  @IsMongoId()
+  jobId: string;
+
+  @ApiPropertyOptional({ example: 'ACCEPT/REJECT' })
+  @IsString()
+  @IsIn(['ACCEPT', 'REJECT'], {
+    message: 'action chỉ được là ACCEPT hoặc REJECT',
+  })
+  action: string;
 }

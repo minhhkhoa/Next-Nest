@@ -21,6 +21,22 @@ class SalaryRange {
   currency: string;
 }
 
+class OptionHotJob {
+  @Prop({
+    type: Boolean,
+    default: false,
+    index: true,
+  })
+  isHotJob: boolean;
+
+  @Prop({
+    type: Date,
+    default: null,
+    index: true,
+  })
+  hotUntil: Date;
+}
+
 @Schema({ timestamps: true })
 export class Job {
   @Prop({ type: MultiLang })
@@ -51,7 +67,7 @@ export class Job {
   @Prop()
   location: string;
 
-  @Prop()
+  @Prop({ type: SalaryRange })
   salary: SalaryRange;
 
   @Prop({
@@ -90,8 +106,8 @@ export class Job {
   isActive: boolean;
 
   //- dành cho super_admin đánh dấu tin hot sẽ được đẩy lên đầu trang tuyển dụng
-  @Prop({ default: false })
-  isHot: boolean;
+  @Prop({ type: OptionHotJob })
+  isHot: OptionHotJob;
 
   @Prop()
   startDate: Date;

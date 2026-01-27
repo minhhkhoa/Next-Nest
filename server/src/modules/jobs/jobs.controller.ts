@@ -13,7 +13,11 @@ import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ResponseMessage, userDecorator } from 'src/common/decorator/customize';
-import { DeleteManyJobDto, FindJobQueryDto } from './dto/jobDto.dto';
+import {
+  DeleteManyJobDto,
+  FindJobQueryDto,
+  RecruiteAdminApproveJobDto,
+} from './dto/jobDto.dto';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 
 @ApiTags('jobs')
@@ -43,6 +47,17 @@ export class JobsController {
   @Get()
   findAll() {
     return this.jobsService.findAll();
+  }
+
+  //- chỉ recruiter_admin mới có quyền này
+  @Patch('verify-job')
+  @ApiOperation({ summary: 'Recruiter_Admin xử lý phê duyệt công việc' })
+  @ResponseMessage('Xử lý phê duyệt công việc thành công')
+  async recruiterAdminVerifyJob(
+    @Body() verifyDto: RecruiteAdminApproveJobDto,
+    @userDecorator() recruiter_admin: UserDecoratorType,
+  ) {
+    return await this.jobsService.handleVerifyJob(verifyDto, recruiter_admin);
   }
 
   @ResponseMessage('Tìm công việc theo ID thành công')

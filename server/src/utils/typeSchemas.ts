@@ -6,6 +6,7 @@ export interface UserDecoratorType {
   id: string;
   idProvider?: string;
   name: string;
+  roleCodeName: string;
   roleID: Array<string>;
   employerInfo?: {
     companyID: string;
