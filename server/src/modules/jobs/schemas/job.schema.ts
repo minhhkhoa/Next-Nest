@@ -23,13 +23,14 @@ class SalaryRange {
 
 @Schema({ timestamps: true })
 export class Job {
-  @Prop()
+  @Prop({ type: MultiLang })
   title: MultiLang;
 
   @Prop({
+    type: MultiLang,
     index: true,
   })
-  slug: string;
+  slug: MultiLang;
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
@@ -41,7 +42,7 @@ export class Job {
   @Prop({ type: [{ type: Types.ObjectId, ref: Industry.name }], index: true })
   industryID: Types.ObjectId[];
 
-  @Prop()
+  @Prop({ type: MultiLang })
   description: MultiLang;
 
   @Prop({ type: [{ type: Types.ObjectId, ref: Skill.name }], index: true })
@@ -85,11 +86,11 @@ export class Job {
   status: string;
 
   //- recruiter_admin duyệt bài mới hiển thị ra trang chủ
-  @Prop({ index: true })
+  @Prop({ index: true, default: false })
   isActive: boolean;
 
   //- dành cho super_admin đánh dấu tin hot sẽ được đẩy lên đầu trang tuyển dụng
-  @Prop()
+  @Prop({ default: false })
   isHot: boolean;
 
   @Prop()
