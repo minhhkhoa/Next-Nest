@@ -25,19 +25,25 @@ export class Job {
   @Prop()
   title: MultiLang;
 
-  @Prop()
+  @Prop({
+    index: true,
+  })
   slug: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Company.name })
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: Company.name,
+    index: true,
+  })
   companyID: Types.ObjectId;
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: Industry.name }] })
+  @Prop({ type: [{ type: Types.ObjectId, ref: Industry.name }], index: true })
   industryID: Types.ObjectId[];
 
   @Prop()
   description: MultiLang;
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: Skill.name }] })
+  @Prop({ type: [{ type: Types.ObjectId, ref: Skill.name }], index: true })
   skills: Types.ObjectId[];
 
   @Prop()
@@ -66,11 +72,12 @@ export class Job {
     type: String,
     enum: ['active', 'inactive'],
     default: 'active',
+    index: true,
   })
   status: string;
 
   //- recruiter_admin duyệt bài mới hiển thị ra trang chủ
-  @Prop()
+  @Prop({ index: true })
   isActive: boolean;
 
   //- dành cho super_admin đánh dấu tin hot sẽ được đẩy lên đầu trang tuyển dụng
@@ -80,7 +87,7 @@ export class Job {
   @Prop()
   startDate: Date;
 
-  @Prop()
+  @Prop({ index: true })
   endDate: Date;
 
   //- số lượt xem tin tuyển dụng
