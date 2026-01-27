@@ -8,6 +8,7 @@ export const translationConfig = {
   permission: ['name'],
   role: ['name', 'description'],
   Notification: ['title', 'content'],
+  job: ['title', 'description'],
 };
 
 export type allModules = keyof typeof translationConfig;

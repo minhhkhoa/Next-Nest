@@ -1,14 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsArray,
-  IsMongoId,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsArray, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
-export class FindRoleQueryDto {
+//- tạm thời để thế này, sau này sẽ thêm các trường filter khác
+export class FindJobQueryDto {
   @ApiPropertyOptional({ example: 1 })
   @IsNumber()
   currentPage: number;
@@ -23,9 +17,9 @@ export class FindRoleQueryDto {
   name: string;
 }
 
-export class DeleteManyRoleDto {
+export class DeleteManyJobDto {
   @ApiProperty({
-    description: 'Array of role IDs to delete',
+    description: 'Array of job IDs to delete',
     type: [String],
   })
   @IsArray({ message: 'ids phải là một mảng' })

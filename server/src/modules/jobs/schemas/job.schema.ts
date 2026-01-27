@@ -2,8 +2,9 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument, Types } from 'mongoose';
 import {
   EMPLOYEE_TYPE_OPTIONS,
+  EXPERIENCE_OPTIONS,
   LEVEL_OPTIONS,
-} from 'src/common/constants/notification-type.enum';
+} from 'src/common/constants/company-const';
 import { Company } from 'src/modules/company/schemas/company.schema';
 import { Industry } from 'src/modules/industry/schemas/industry.schema';
 import { Skill } from 'src/modules/skill/schemas/skill.schema';
@@ -63,6 +64,13 @@ export class Job {
     enum: EMPLOYEE_TYPE_OPTIONS.map((option) => option.value),
   })
   employeeType: string;
+
+  //- kinh nghiệm làm việc
+  @Prop({
+    type: String,
+    enum: EXPERIENCE_OPTIONS.map((option) => option.value),
+  })
+  experience: string;
 
   @Prop()
   quantity: number;
