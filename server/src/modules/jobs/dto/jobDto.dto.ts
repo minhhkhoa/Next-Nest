@@ -1,5 +1,14 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsIn, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { ApiOAuth2, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsArray,
+  IsBoolean,
+  IsIn,
+  IsMongoId,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 //- tạm thời để thế này, sau này sẽ thêm các trường filter khác
 export class FindJobQueryDto {
@@ -14,7 +23,29 @@ export class FindJobQueryDto {
   @ApiPropertyOptional({ example: '' })
   @IsOptional()
   @IsString()
-  name: string;
+  title: string;
+
+  @ApiPropertyOptional({ example: '' })
+  @IsOptional()
+  @IsString()
+  status: string;
+
+  @ApiPropertyOptional({ example: '' })
+  @IsOptional()
+  @IsBoolean()
+  isActive: boolean;
+
+  //- người tạo
+  @ApiPropertyOptional({ example: '' })
+  @IsOptional()
+  @IsString()
+  nameCreatedBy: string;
+
+  //- dành cho super_admin lọc các job Hot
+  @ApiPropertyOptional({ example: '' })
+  @IsOptional()
+  @IsBoolean()
+  isHot: boolean;
 }
 
 export class DeleteManyJobDto {

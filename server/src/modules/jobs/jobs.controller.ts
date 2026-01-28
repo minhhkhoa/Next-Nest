@@ -43,9 +43,12 @@ export class JobsController {
 
   @ResponseMessage('Tìm tất cả công việc có lọc nâng cao')
   @ApiOperation({ summary: 'get all by filter' })
-  @Get()
-  findAllByFilter(@Query() query: FindJobQueryDto) {
-    return this.jobsService.findAllByFilter(query);
+  @Get('filter')
+  findJobFilter(
+    @Query() query: FindJobQueryDto,
+    @userDecorator() user: UserDecoratorType,
+  ) {
+    return this.jobsService.findJobFilter(query, user);
   }
 
   @ResponseMessage('Tìm tất cả công việc thành công')

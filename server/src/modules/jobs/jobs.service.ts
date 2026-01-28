@@ -97,9 +97,91 @@ export class JobsService {
     }
   }
 
-  async findAllByFilter(query: FindJobQueryDto) {
+  async findJobFilter(query: FindJobQueryDto, user: UserDecoratorType) {
     try {
+      const {
+        currentPage,
+        pageSize,
+        title,
+        isActive,
+        nameCreatedBy,
+        status,
+        isHot,
+      } = query;
+
+      const roleSuperAdmin = this.configService.get<string>('role_super_admin');
+
+      const isSuperAdmin = user.roleCodeName === roleSuperAdmin;
+
+      //- filter mặc định
+      let filterConditions: any = { isDeleted: false };
+
+      //- check quyền
+      if (!isSuperAdmin) {
+        //- với RECRUITER & RECRUITER_ADMIN
+        const userCompanyId = user.employerInfo?.companyID;
+        if (!userCompanyId) {
+          throw new ForbiddenException(
+            'Tài khoản của bạn chưa được liên kết với công ty!',
+          );
+        }
+
+        //- chỉ lấy những Job thuộc công ty của User này
+        filterConditions.companyID = new mongoose.Types.ObjectId(userCompanyId);
+      } else {
+        //- với SUPER_ADMIN
+        //- Cho phép lọc Job Hot trên toàn hệ thống
+        if (isHot !== undefined) {
+          //- truy cập vào sub-document OptionHotJob
+          filterConditions['isHot.isHotJob'] = isHot;
+        }
+      }
+
+      //- xử lý các filter tìm kiếm từ Client
+      if (title) {
+        const searchRegex = new RegExp(title, 'i');
+        filterConditions.$or = [
+          { 'title.vi': { $regex: searchRegex } },
+          { 'title.en': { $regex: searchRegex } },
+        ];
+      }
+
+      if (nameCreatedBy) {
+        filterConditions['createdBy.name'] = {
+          $regex: new RegExp(nameCreatedBy, 'i'),
+        };
+      }
+
+      if (status) filterConditions.status = status;
+      if (isActive !== undefined) filterConditions.isActive = isActive;
+
+      //- phân trang & truy vấn (tối ưu hiệu năng)
+      const defaultPage = currentPage > 0 ? +currentPage : 1;
+      const defaultLimit = +pageSize > 0 ? +pageSize : 10;
+      const offset = (defaultPage - 1) * defaultLimit;
+
+      //- sử dụng countDocuments trực tiếp để tối ưu tốc độ đếm
+      const [totalItems, result] = await Promise.all([
+        this.jobModel.countDocuments(filterConditions),
+        this.jobModel
+          .find(filterConditions)
+          .skip(offset)
+          .limit(defaultLimit)
+          .sort('-createdAt')
+          .exec(),
+      ]);
+
+      return {
+        meta: {
+          current: defaultPage,
+          pageSize: defaultLimit,
+          totalPages: Math.ceil(totalItems / defaultLimit),
+          totalItems: totalItems,
+        },
+        result,
+      };
     } catch (error) {
+      if (error instanceof ForbiddenException) throw error;
       throw new BadRequestCustom(error.message, !!error.message);
     }
   }
