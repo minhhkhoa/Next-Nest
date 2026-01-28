@@ -38,7 +38,7 @@ export class CompanyService {
 
     @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
-    
+
     @Inject(forwardRef(() => JobsService))
     private readonly jobService: JobsService,
     @InjectConnection() private readonly connection: Connection, //- để dùng Mongoose Transaction
@@ -47,6 +47,22 @@ export class CompanyService {
   ) {}
 
   async create(createCompanyDto: CreateCompanyDto, user: UserDecoratorType) {
+
+    const checkTax = await this.checkTaxCodeExist(createCompanyDto.taxCode);
+
+    if (checkTax.exists) {
+      if (checkTax.company?.isDeleted) {
+        throw new BadRequestCustom(
+          'Mã số thuế này thuộc về một doanh nghiệp đã ngừng hoạt động. Vui lòng liên hệ Admin để khôi phục thay vì tạo mới.',
+          true,
+        );
+      }
+      throw new BadRequestCustom(
+        'Mã số thuế này đã tồn tại trên hệ thống. Vui lòng kiểm tra lại.',
+        true,
+      );
+    }
+
     //- Nếu tạo Company thành công nhưng Update User thất bại, hệ thống sẽ rơi vào tình trạng "Company mồ côi" ==> dùng transaction.
     const session = await this.connection.startSession();
     session.startTransaction();
@@ -277,6 +293,55 @@ export class CompanyService {
       return company;
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
+  async restore(id: string, user: UserDecoratorType) {
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
+    try {
+      //- Khôi phục Company
+      const company = await this.companyModel.findOneAndUpdate(
+        { _id: id, isDeleted: true },
+        {
+          isDeleted: false,
+          updatedBy: {
+            _id: user.id,
+            email: user.email,
+            name: user.name,
+            avatar: user.avatar,
+          },
+          $unset: { deletedAt: 1, deletedBy: 1 }, // Xóa vết tích xóa
+        },
+        { session, new: true },
+      );
+
+      if (!company) {
+        throw new BadRequestCustom(
+          'Không tìm thấy công ty bị xóa hoặc công ty đang hoạt động',
+          true,
+        );
+      }
+
+      //- Bật lại nhân viên
+      await this.userService.reactivateByCompany(id, session);
+
+      //- Bật lại các Job
+      await this.jobService.restoreManyByCompany(id, session);
+
+      await session.commitTransaction();
+      return {
+        message: 'Đã khôi phục công ty và toàn bộ nhân sự, bài đăng liên quan',
+      };
+    } catch (error) {
+      await session.abortTransaction();
+      throw new BadRequestCustom(
+        'Lỗi khi khôi phục công ty: ' + error.message,
+        true,
+      );
+    } finally {
+      session.endSession();
     }
   }
 

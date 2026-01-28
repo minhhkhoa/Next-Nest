@@ -6,6 +6,7 @@ import CompanyLookup from "./components/company-lookup";
 import CreateCompanyForm from "./components/create-company-form";
 import JoinCompanyCard from "./components/join-company-card";
 import { CompanyResType } from "@/schemasvalidation/company";
+import SoftInfoSonner from "@/components/shadcn-studio/sonner/SoftInfoSonner";
 
 export type SetupState = "initial" | "create" | "join";
 
@@ -19,6 +20,13 @@ export default function CompanySetupPage() {
     company: CompanyResType | null,
     isNewCompany: boolean,
   ) => {
+    if (!isNewCompany && company?.isDeleted) {
+      SoftInfoSonner(
+        "Mã số thuế này đã bị xóa. Vui lòng liên hệ quản trị viên để khôi phục.",
+      );
+      return;
+    }
+    //- công ty mới
     if (isNewCompany) {
       setCompanyData({ taxCode });
     } else {

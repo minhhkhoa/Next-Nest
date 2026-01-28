@@ -14,6 +14,7 @@ export const apiCompanyRes = z.object({
   website: z.string(),
   logo: z.string(),
   banner: z.string(),
+  isDeleted: z.boolean(),
   userFollow: z.array(z.string()),
   createdAt: z.date(),
   updatedAt: z.date(),

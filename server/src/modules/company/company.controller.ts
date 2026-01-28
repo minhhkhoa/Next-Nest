@@ -89,15 +89,23 @@ export class CompanyController {
     return this.companyService.findOne(id);
   }
 
+  //- dành cho super_admin khôi phục công ty đã xóa mềm
+  @ResponseMessage('Khôi phục công ty thành công')
+  @ApiOperation({ summary: 'Super_Admin khôi phục công ty đã xóa mềm' })
+  @Patch('restore/:id')
+  restore(@Param('id') id: string, @userDecorator() user: UserDecoratorType) {
+    return this.companyService.restore(id, user);
+  }
+
   //- chỉ super_admin mới có quyền này
   @Patch('admin-verify')
   @ApiOperation({ summary: 'Super_Admin xử lý phê duyệt công ty' })
   @ResponseMessage('Xử lý phê duyệt công ty thành công')
-  async adminVerifyCompany(
+  adminVerifyCompany(
     @Body() verifyDto: AdminApproveCompanyDto,
     @userDecorator() admin: UserDecoratorType,
   ) {
-    return await this.companyService.handleVerifyCompany(verifyDto, admin);
+    return this.companyService.handleVerifyCompany(verifyDto, admin);
   }
 
   @ResponseMessage('Cập nhật công ty thành công')

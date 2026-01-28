@@ -540,6 +540,22 @@ export class JobsService {
     );
   }
 
+  //- hàm này là đối ngược với hàm softDeleteManyByCompany, ta sẽ khôi phục công ty
+  async restoreManyByCompany(
+    companyId: string,
+    session: mongoose.ClientSession,
+  ) {
+    return await this.jobModel.updateMany(
+      {
+        companyID: new mongoose.Types.ObjectId(companyId),
+        isDeleted: true,
+        status: 'inactive',
+      },
+      { $set: { isDeleted: false, status: 'active' } },
+      { session },
+    );
+  }
+
   async remove(id: string, user: UserDecoratorType) {
     try {
       if (!mongoose.Types.ObjectId.isValid(id)) {

@@ -54,6 +54,14 @@ export default function CompanyLookup({ onLookup }: CompanyLookupProps) {
 
       if (res?.isError) return;
 
+      // Nếu công ty đã bị xóa mềm, chặn lại và hiện lỗi
+      if (res?.data?.exists && res?.data?.company?.isDeleted) {
+        setError(
+          "Mã số thuế này thuộc về doanh nghiệp đã ngừng hoạt động. Vui lòng liên hệ Admin.",
+        );
+        return;
+      }
+
       const existsCompany = res?.data?.company;
 
       onLookup(taxCode, existsCompany!, !existsCompany);

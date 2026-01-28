@@ -709,7 +709,7 @@ export class UserService {
     }
   }
 
-  //- 1. Chức năng vô hiệu hóa tất cả nhân viên của công ty khi công ty bị xóa
+  //- Chức năng vô hiệu hóa tất cả nhân viên của công ty khi công ty bị xóa
   async deactivateByCompany(
     companyId: string,
     session: mongoose.ClientSession,
@@ -734,7 +734,22 @@ export class UserService {
     }
   }
 
-  // 2. Chức năng xóa mềm đồng bộ cả 2 collection user & detailProfile (Transaction)
+  //- hàm này là đối ngược với hàm deactivateByCompany, ta sẽ kích hoạt lại tất cả nhân viên của công ty khi công ty được khôi phục
+  async reactivateByCompany(
+    companyId: string,
+    session: mongoose.ClientSession,
+  ) {
+    return await this.userModel.updateMany(
+      {
+        'employerInfo.companyID': companyId,
+        'employerInfo.userStatus': 'INACTIVE',
+      },
+      { $set: { 'employerInfo.userStatus': 'ACTIVE' } },
+      { session },
+    );
+  }
+
+  //- Chức năng xóa mềm đồng bộ cả 2 collection user & detailProfile (Transaction)
   async softDeleteUserAndProfile(id: string) {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new BadRequestCustom('ID không đúng định dạng');

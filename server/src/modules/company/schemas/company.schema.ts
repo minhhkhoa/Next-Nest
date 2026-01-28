@@ -44,7 +44,7 @@ export class Company {
   userFollow: Types.ObjectId[];
 
   @Prop({ default: false })
-  isDeleted: boolean; //- ko dùng nữa
+  isDeleted: boolean;
 
   @Prop()
   createdAt?: Date;
