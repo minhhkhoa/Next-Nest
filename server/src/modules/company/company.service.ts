@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   forwardRef,
   Inject,
   Injectable,
@@ -47,7 +48,6 @@ export class CompanyService {
   ) {}
 
   async create(createCompanyDto: CreateCompanyDto, user: UserDecoratorType) {
-
     const checkTax = await this.checkTaxCodeExist(createCompanyDto.taxCode);
 
     if (checkTax.exists) {
@@ -477,6 +477,54 @@ export class CompanyService {
       if (result.modifiedCount === 0)
         throw new BadRequestCustom('Lỗi sửa company', !!id);
       return result;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
+  //- dành cho recruiter_admin đuổi thành viên trong công ty
+  async kickMember(memberId: string, admin: UserDecoratorType) {
+    try {
+      const companyId = admin.employerInfo?.companyID;
+
+      if (!companyId) {
+        throw new BadRequestCustom(
+          'Bạn không thuộc công ty nào để thực hiện hành động này',
+          true,
+        );
+      }
+
+      if (!admin.employerInfo?.isOwner) {
+        throw new ForbiddenException(
+          'Chỉ quản trị viên mới có quyền thực hiện hành động này',
+        );
+      }
+
+      // 1. Chặn trường hợp recruiter_admin tự đuổi chính mình (tránh mất quyền sở hữu công ty)
+      if (memberId === admin.id) {
+        throw new BadRequestCustom(
+          'Bạn không thể tự rời khỏi công ty do mình quản lý',
+          true,
+        );
+      }
+
+      //- Gọi service xử lý reset employerInfo
+      const result = await this.userService.removeRecruiterFromCompany(
+        memberId,
+        companyId.toString(),
+      );
+
+      if (!result) {
+        throw new BadRequestCustom(
+          'Không tìm thấy thành viên này trong công ty của bạn',
+          true,
+        );
+      }
+
+      return {
+        message:
+          'Đã xóa quyền tuyển dụng của thành viên này thành công. Họ hiện có thể tham gia công ty khác.',
+      };
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }

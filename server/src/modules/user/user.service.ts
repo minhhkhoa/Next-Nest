@@ -97,6 +97,20 @@ export class UserService {
     );
   }
 
+  //- dành cho recruiter_admin remove recruiter khỏi công ty
+  async removeRecruiterFromCompany(userId: string, companyId: string) {
+    return await this.userModel.findOneAndUpdate(
+      {
+        _id: userId,
+        'employerInfo.companyID': companyId,
+      },
+      {
+        $set: { employerInfo: undefined },
+      },
+      { new: true },
+    );
+  }
+
   async createUserWithProviderSocial(userData: UserResponse, provider: string) {
     try {
       //- bỏ id đi
