@@ -69,10 +69,10 @@ export class CompanyController {
   @ApiOperation({
     summary: 'Lấy thông tin yêu thành viên công ty cho recruiter_admin',
   })
-  async getMemberCompany(
-    @userDecorator() user: UserDecoratorType,
-  ) {
-    return await this.companyService.getMemberCompany(user?.employerInfo?.companyID!);
+  async getMemberCompany(@userDecorator() user: UserDecoratorType) {
+    return await this.companyService.getMemberCompany(
+      user?.employerInfo?.companyID!,
+    );
   }
 
   @ResponseMessage('Lấy tất cả công ty có lọc nâng cao thành công')
@@ -114,7 +114,7 @@ export class CompanyController {
   @ResponseMessage('Xóa công ty thành công')
   @ApiOperation({ summary: 'Xóa công ty' })
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.companyService.remove(id);
+  remove(@Param('id') id: string, @userDecorator() user: UserDecoratorType) {
+    return this.companyService.remove(id, user);
   }
 }

@@ -25,6 +25,7 @@ import {
 } from './dto/companyDto.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 import aqp from 'api-query-params';
+import { JobsService } from '../jobs/jobs.service';
 
 @Injectable()
 export class CompanyService {
@@ -37,6 +38,9 @@ export class CompanyService {
 
     @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
+    
+    @Inject(forwardRef(() => JobsService))
+    private readonly jobService: JobsService,
     @InjectConnection() private readonly connection: Connection, //- để dùng Mongoose Transaction
     @InjectModel(Company.name)
     private companyModel: SoftDeleteModel<CompanyDocument>,
@@ -413,32 +417,34 @@ export class CompanyService {
     }
   }
 
-  async remove(id: string) {
+  async remove(companyId: string, user: UserDecoratorType) {
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
     try {
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new BadRequestCustom('ID company không đúng định dạng', !!id);
-      }
+      // 1. Soft Delete Company
+      await this.companyModel.updateOne(
+        { _id: companyId },
+        { isDeleted: true, deletedBy: { _id: user.id, email: user.email } },
+        { session },
+      );
 
-      const company = await this.companyModel.findById(id);
-      if (!company)
-        throw new BadRequestCustom('ID company không tìm thấy', !!id);
+      // 2. Vô hiệu hóa toàn bộ nhân viên thuộc công ty
+      await this.userService.deactivateByCompany(companyId, session);
 
-      const isDeleted = company.isDeleted;
+      // 3. Soft Delete toàn bộ Job của công ty
+      await this.jobService.softDeleteManyByCompany(companyId, session);
 
-      if (isDeleted)
-        throw new BadRequestCustom('company này đã bị xóa', !!isDeleted);
-
-      const filter = { _id: id };
-      const update = {
-        $set: { isDeleted: true },
+      await session.commitTransaction();
+      return {
+        message:
+          'Đã xóa công ty và vô hiệu hóa các dữ liệu liên quan thành công',
       };
-      const result = await this.companyModel.updateOne(filter, update);
-
-      if (!result) throw new BadRequestCustom('Lỗi xóa company', !!id);
-
-      return result;
     } catch (error) {
-      throw new BadRequestCustom(error.message, !!error.message);
+      await session.abortTransaction();
+      throw new BadRequestCustom('Lỗi khi xóa công ty: ' + error.message, true);
+    } finally {
+      session.endSession();
     }
   }
 }

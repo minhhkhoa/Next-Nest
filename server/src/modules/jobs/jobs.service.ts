@@ -1,4 +1,4 @@
-import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { ForbiddenException, forwardRef, Inject, Injectable } from '@nestjs/common';
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
@@ -23,7 +23,7 @@ export class JobsService {
     private readonly translationService: TranslationService,
     private eventEmitter: EventEmitter2,
     private configService: ConfigService,
-    private userService: UserService,
+    @Inject(forwardRef(() => UserService)) private userService: UserService,
     @InjectModel(Job.name)
     private jobModel: SoftDeleteModel<JobDocument>,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
@@ -526,6 +526,18 @@ export class JobsService {
       if (error instanceof ForbiddenException) throw error;
       throw new BadRequestCustom(error.message, !!error.message);
     }
+  }
+
+  //- phục vụ xóa công ty: soft delete nhiều job theo companyID
+  async softDeleteManyByCompany(
+    companyID: string,
+    session: mongoose.ClientSession,
+  ) {
+    return await this.jobModel.updateMany(
+      { companyID: new mongoose.Types.ObjectId(companyID), isDeleted: false },
+      { $set: { isDeleted: true, status: 'inactive' } },
+      { session },
+    );
   }
 
   async remove(id: string, user: UserDecoratorType) {

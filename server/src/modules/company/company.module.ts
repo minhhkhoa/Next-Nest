@@ -8,6 +8,8 @@ import { BusinessModule } from 'src/common/decorator/customize';
 import { RolesModule } from '../roles/roles.module';
 import { UserModule } from '../user/user.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { Job } from '../jobs/schemas/job.schema';
+import { JobsModule } from '../jobs/jobs.module';
 
 @BusinessModule()
 @Module({
@@ -15,6 +17,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
     TranslationModule,
     RolesModule,
     NotificationsModule,
+    forwardRef(() => JobsModule),
     forwardRef(() => UserModule),
     MongooseModule.forFeature([{ name: Company.name, schema: CompanySchema }]),
   ],
