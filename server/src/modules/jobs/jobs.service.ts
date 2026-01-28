@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
@@ -14,7 +14,8 @@ import { Job, JobDocument } from './schemas/job.schema';
 import { generateMultiLangSlug } from 'src/utils/generate-slug';
 import { UserService } from '../user/user.service';
 import { NotificationType } from 'src/common/constants/notification-type.enum';
-import { RolesService } from '../roles/roles.service';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class JobsService {
@@ -25,6 +26,7 @@ export class JobsService {
     private userService: UserService,
     @InjectModel(Job.name)
     private jobModel: SoftDeleteModel<JobDocument>,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async create(createJobDto: CreateJobDto, user: UserDecoratorType) {
@@ -189,28 +191,63 @@ export class JobsService {
     };
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, ip: string) {
+    //- Ép kiểu để dùng được get/set của cache-manager v5
+    const cache: any = this.cacheManager;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new BadRequestCustom('ID không hợp lệ', true);
+    }
+
+    //- check job
+    const job = await this.jobModel
+      .findOne({
+        _id: id,
+        isDeleted: false,
+      })
+      .exec();
+
+    if (!job) {
+      throw new BadRequestCustom('Không tìm thấy công việc', true);
+    }
+
+    if (!job.isActive) {
+      throw new BadRequestCustom(
+        'Công việc này hiện chưa được phê duyệt',
+        true,
+      );
+    }
+
     try {
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new BadRequestCustom('ID không hợp lệ', true);
+      const viewKey = `job_views:${id}`;
+      const lockKey = `view_lock:${id}:${ip}`; //- Khóa dựa trên JobID và IP người dùng
+
+      //- Check xem IP này có đang trong thời gian "bị khóa" không
+      const isLocked = await cache.get(lockKey);
+
+      if (!isLocked) {
+        //- Tăng view tạm thời trong Redis
+        let additionalViews: number = (await cache.get(viewKey)) || 0;
+        additionalViews++;
+        await cache.set(viewKey, additionalViews);
+
+        //- Ghi nhận "khóa" IP này lại trong 30 phút (1.800.000 ms)
+        //- hết 30p tự mất lockKey để có thể tăng view lại
+        await cache.set(lockKey, true, 1800000);
       }
 
-      const job = await this.jobModel.findById(id).exec();
+      //- Trả về kết quả: View gốc + View tạm từ Redis
+      const currentAdditional = (await cache.get(viewKey)) || 0;
+      const jobObject = job.toObject();
 
-      if (!job) {
-        throw new BadRequestCustom('Không tìm thấy công việc', true);
-      }
-
-      if (!job.isActive) {
-        throw new BadRequestCustom(
-          'Công việc này hiện chưa được phê duyệt',
-          true,
-        );
-      }
-
-      return job;
-    } catch (error) {
-      throw new BadRequestCustom(error.message, !!error.message);
+      return {
+        ...jobObject,
+        totalViews: (jobObject.totalViews || 0) + currentAdditional,
+      };
+    } catch (redisError) {
+      //- Fail-safe: Redis lỗi thì vẫn cho xem Job, chỉ là không tăng view
+      console.error('Redis View Count Error:', redisError.message);
+      return job.toObject();
     }
   }
 

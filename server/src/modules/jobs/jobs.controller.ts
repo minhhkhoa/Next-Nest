@@ -7,12 +7,18 @@ import {
   Param,
   Delete,
   Query,
+  Req,
+  Ip,
 } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ResponseMessage, userDecorator } from 'src/common/decorator/customize';
+import {
+  PublicPermission,
+  ResponseMessage,
+  userDecorator,
+} from 'src/common/decorator/customize';
 import {
   DeleteManyJobDto,
   FindJobQueryDto,
@@ -60,11 +66,13 @@ export class JobsController {
     return await this.jobsService.handleVerifyJob(verifyDto, recruiter_admin);
   }
 
+  @PublicPermission()
   @ResponseMessage('Tìm công việc theo ID thành công')
   @ApiOperation({ summary: 'Tìm công việc theo ID' })
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.jobsService.findOne(id);
+  findOne(@Param('id') id: string, @Ip() ip: string) {
+    //- lấy ip của người xem để xử lý tính view
+    return this.jobsService.findOne(id, ip);
   }
 
   @ResponseMessage('Cập nhật công việc thành công')
