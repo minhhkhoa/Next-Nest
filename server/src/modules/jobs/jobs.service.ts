@@ -383,7 +383,65 @@ export class JobsService {
 
   async removeMany(ids: string[], user: UserDecoratorType) {
     try {
+      const textRoleSuperAdmin =
+        this.configService.get<string>('role_super_admin');
+      const textRoleRecruiterAdmin = this.configService.get<string>(
+        'role_recruiter_admin',
+      );
+
+      const isSuperAdmin = user.roleCodeName === textRoleSuperAdmin;
+      const isRecruiterAdmin = user.roleCodeName === textRoleRecruiterAdmin;
+
+      // Nếu không phải 1 trong 2 role này thì chặn ngay
+      if (!isSuperAdmin && !isRecruiterAdmin) {
+        throw new ForbiddenException(
+          'Bạn không có quyền thực hiện hành động này!',
+        );
+      }
+
+      //- Xây dựng Filter truy vấn
+      const filter: any = {
+        _id: { $in: ids },
+        isDeleted: false,
+      };
+
+      //- Nếu là Recruiter_Admin: Chỉ cho phép tác động vào các Job thuộc công ty mình
+      if (!isSuperAdmin) {
+        const userCompanyID = user.employerInfo?.companyID;
+        if (!userCompanyID) {
+          throw new ForbiddenException(
+            'Tài khoản của bạn không gắn liền với công ty nào!',
+          );
+        }
+        filter.companyID = new mongoose.Types.ObjectId(userCompanyID);
+      }
+
+      const result = await this.jobModel.updateMany(filter, {
+        $set: {
+          isDeleted: true,
+          deletedAt: new Date(),
+          deletedBy: {
+            _id: user.id,
+            email: user.email,
+            name: user.name,
+            avatar: user.avatar,
+          },
+        },
+      });
+
+      if (result.matchedCount === 0) {
+        throw new BadRequestCustom(
+          'Không tìm thấy công việc hợp lệ để xóa!',
+          true,
+        );
+      }
+
+      return {
+        matched: result.matchedCount,
+        deleted: result.modifiedCount,
+      };
     } catch (error) {
+      if (error instanceof ForbiddenException) throw error;
       throw new BadRequestCustom(error.message, !!error.message);
     }
   }
@@ -393,7 +451,54 @@ export class JobsService {
       if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new BadRequestCustom('ID không hợp lệ', true);
       }
+
+      const job = await this.jobModel.findOne({ _id: id, isDeleted: false });
+      if (!job) {
+        throw new BadRequestCustom(
+          'Không tìm thấy công việc hoặc đã bị xóa',
+          true,
+        );
+      }
+
+      const textRoleSuperAdmin =
+        this.configService.get<string>('role_super_admin');
+      const textRoleRecruiterAdmin = this.configService.get<string>(
+        'role_recruiter_admin',
+      );
+
+      const isSuperAdmin = user.roleCodeName === textRoleSuperAdmin;
+      const isRecruiterAdmin = user.roleCodeName === textRoleRecruiterAdmin;
+
+      //- KIỂM TRA QUYỀN THEO CÔNG TY (recruiter_admin chỉ được xóa công việc của công ty mình)
+      //- So sánh companyID của Job với companyID trong employerInfo của User
+      const userCompanyID = user.employerInfo?.companyID;
+      const isSameCompany =
+        job.companyID?.toString() === userCompanyID?.toString();
+
+      // Điều kiện: SuperAdmin (Xóa tất cả) HOẶC (RecruiterAdmin VÀ cùng công ty)
+      const canDelete = isSuperAdmin || (isRecruiterAdmin && isSameCompany);
+
+      if (!canDelete) {
+        throw new ForbiddenException(
+          'Bạn không có quyền xóa công việc của công ty khác hoặc không đủ thẩm quyền!',
+        );
+      }
+
+      return await this.jobModel.updateOne(
+        { _id: id },
+        {
+          isDeleted: true,
+          deletedAt: new Date(),
+          deletedBy: {
+            _id: user.id,
+            email: user.email,
+            name: user.name,
+            avatar: user.avatar,
+          },
+        },
+      );
     } catch (error) {
+      if (error instanceof ForbiddenException) throw error;
       throw new BadRequestCustom(error.message, !!error.message);
     }
   }
