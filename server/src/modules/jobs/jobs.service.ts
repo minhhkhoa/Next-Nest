@@ -112,6 +112,7 @@ export class JobsService {
         nameCreatedBy,
         status,
         isHot,
+        isDeleted,
       } = query;
 
       const roleSuperAdmin = this.configService.get<string>('role_super_admin');
@@ -119,7 +120,7 @@ export class JobsService {
       const isSuperAdmin = user.roleCodeName === roleSuperAdmin;
 
       //- filter mặc định
-      let filterConditions: any = { isDeleted: false };
+      let filterConditions: any = { isDeleted: isDeleted === 'true' };
 
       //- check quyền
       if (!isSuperAdmin) {
@@ -138,7 +139,7 @@ export class JobsService {
         //- Cho phép lọc Job Hot trên toàn hệ thống
         if (isHot !== undefined) {
           //- truy cập vào sub-document OptionHotJob
-          filterConditions['isHot.isHotJob'] = isHot;
+          filterConditions['isHot.isHotJob'] = isHot === 'true';
         }
       }
 
@@ -158,7 +159,8 @@ export class JobsService {
       }
 
       if (status) filterConditions.status = status;
-      if (isActive !== undefined) filterConditions.isActive = isActive;
+      if (isActive !== undefined)
+        filterConditions.isActive = isActive === 'true';
 
       //- phân trang & truy vấn (tối ưu hiệu năng)
       const defaultPage = currentPage > 0 ? +currentPage : 1;

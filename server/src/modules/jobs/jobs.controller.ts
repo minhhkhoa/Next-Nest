@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   Query,
-  Req,
   Ip,
 } from '@nestjs/common';
 import { JobsService } from './jobs.service';

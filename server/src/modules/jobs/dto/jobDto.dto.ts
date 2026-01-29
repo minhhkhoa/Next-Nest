@@ -1,7 +1,6 @@
-import { ApiOAuth2, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
-  IsBoolean,
   IsIn,
   IsMongoId,
   IsNotEmpty,
@@ -10,7 +9,6 @@ import {
   IsString,
 } from 'class-validator';
 
-//- tạm thời để thế này, sau này sẽ thêm các trường filter khác
 export class FindJobQueryDto {
   @ApiPropertyOptional({ example: 1 })
   @IsNumber()
@@ -28,12 +26,19 @@ export class FindJobQueryDto {
   @ApiPropertyOptional({ example: '' })
   @IsOptional()
   @IsString()
+  //- chỉ nhận 2 giá trị truyền lên 'active' hoặc 'inactive'/ không truyền
+  @IsIn(['active', 'inactive'], {
+    message: 'status chỉ được là active hoặc inactive',
+  })
   status: string;
 
   @ApiPropertyOptional({ example: '' })
   @IsOptional()
-  @IsBoolean()
-  isActive: boolean;
+  //- chỉ nhận 2 giá trị truyền lên 'active' hoặc 'inactive'/ không truyền
+  @IsIn(['true', 'false'], {
+    message: 'isActive chỉ được là true hoặc false',
+  })
+  isActive: string;
 
   //- người tạo
   @ApiPropertyOptional({ example: '' })
@@ -41,11 +46,21 @@ export class FindJobQueryDto {
   @IsString()
   nameCreatedBy: string;
 
-  //- dành cho super_admin lọc các job Hot
+  //- dành riêng cho super_admin lọc các job Hot
   @ApiPropertyOptional({ example: '' })
   @IsOptional()
-  @IsBoolean()
-  isHot: boolean;
+  @IsIn(['true', 'false'], {
+    message: 'isHot chỉ được là true hoặc false',
+  })
+  isHot: string;
+
+  //- dành riêng cho super_admin lọc các job đã xóa mềm
+  @ApiPropertyOptional({ example: '' })
+  @IsOptional()
+  @IsIn(['true', 'false'], {
+    message: 'isDeleted chỉ được là true hoặc false',
+  })
+  isDeleted?: string;
 }
 
 export class DeleteManyJobDto {

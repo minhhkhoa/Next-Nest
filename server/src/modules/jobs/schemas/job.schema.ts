@@ -106,7 +106,7 @@ export class Job {
   isActive: boolean;
 
   //- dành cho super_admin đánh dấu tin hot sẽ được đẩy lên đầu trang tuyển dụng
-  @Prop({ type: OptionHotJob })
+  @Prop({ type: OptionHotJob, default: { isHotJob: false, hotUntil: null } })
   isHot: OptionHotJob;
 
   @Prop()

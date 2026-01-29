@@ -7,7 +7,6 @@ import {
   IsNumber,
   IsOptional,
   IsEnum,
-  IsDateString,
   IsDate,
 } from 'class-validator';
 import { Type } from 'class-transformer';
