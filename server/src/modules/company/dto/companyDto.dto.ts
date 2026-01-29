@@ -1,7 +1,9 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsArray,
   IsIn,
   IsMongoId,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
@@ -95,4 +97,21 @@ export class FindJoinRequestDto {
   @IsOptional()
   @IsString()
   name?: string; // Tên người xin gia nhập cần tìm
+}
+
+export class DeleteManyCompanyDto {
+  @ApiProperty({
+    description: 'Array of company IDs to delete',
+    type: [String],
+  })
+  @IsArray({ message: 'ids phải là một mảng' })
+  @IsNotEmpty({
+    each: true,
+    message: 'Mỗi phần tử trong mảng ids không được rỗng',
+  })
+  @IsMongoId({
+    each: true,
+    message: 'Mỗi phần tử trong mảng ids phải là một Mongo ID hợp lệ',
+  })
+  ids: string[];
 }

@@ -588,11 +588,16 @@ export class JobsService {
 
   //- phục vụ xóa công ty: soft delete nhiều job theo companyID
   async softDeleteManyByCompany(
-    companyID: string,
+    companyIds: string[],
     session: mongoose.ClientSession,
   ) {
     return await this.jobModel.updateMany(
-      { companyID: new mongoose.Types.ObjectId(companyID), isDeleted: false },
+      {
+        companyID: {
+          $in: companyIds.map((id) => new mongoose.Types.ObjectId(id)),
+        },
+        isDeleted: false,
+      },
       { $set: { isDeleted: true, status: 'inactive' } },
       { session },
     );

@@ -725,14 +725,14 @@ export class UserService {
 
   //- Chức năng vô hiệu hóa tất cả nhân viên của công ty khi công ty bị xóa
   async deactivateByCompany(
-    companyId: string,
+    companyIds: string[],
     session: mongoose.ClientSession,
   ) {
     try {
       // Tìm và cập nhật tất cả User có companyID trùng với ID công ty bị xóa
       const result = await this.userModel.updateMany(
         {
-          'employerInfo.companyID': companyId,
+          'employerInfo.companyID': { $in: companyIds },
           isDeleted: false,
         },
         {

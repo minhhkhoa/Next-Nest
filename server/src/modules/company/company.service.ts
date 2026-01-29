@@ -530,6 +530,54 @@ export class CompanyService {
     }
   }
 
+  //- xóa nhiều công ty
+  async removeMany(ids: string[], user: UserDecoratorType) {
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
+    try {
+      if (!ids || ids.length === 0)
+        return { message: 'Không có công ty nào được chọn' };
+
+      // 1. Soft Delete các công ty trong danh sách
+      await this.companyModel.updateMany(
+        { _id: { $in: ids } },
+        {
+          $set: {
+            isDeleted: true,
+            deletedAt: new Date(),
+            deletedBy: {
+              _id: user.id,
+              email: user.email,
+              name: user.name,
+              avatar: user.avatar,
+            },
+          },
+        },
+        { session },
+      );
+
+      // 2. Vô hiệu hóa toàn bộ nhân viên thuộc các công ty này
+      await this.userService.deactivateByCompany(ids, session);
+
+      // 3. Soft Delete toàn bộ Job của các công ty này
+      await this.jobService.softDeleteManyByCompany(ids, session);
+
+      await session.commitTransaction();
+      return {
+        message: `Đã xóa thành công ${ids.length} công ty và các dữ liệu liên quan`,
+      };
+    } catch (error) {
+      await session.abortTransaction();
+      throw new BadRequestCustom(
+        'Lỗi khi xóa nhiều công ty: ' + error.message,
+        true,
+      );
+    } finally {
+      session.endSession();
+    }
+  }
+
   async remove(companyId: string, user: UserDecoratorType) {
     const session = await this.connection.startSession();
     session.startTransaction();
@@ -538,15 +586,23 @@ export class CompanyService {
       // 1. Soft Delete Company
       await this.companyModel.updateOne(
         { _id: companyId },
-        { isDeleted: true, deletedBy: { _id: user.id, email: user.email } },
+        {
+          isDeleted: true,
+          deletedBy: {
+            _id: user.id,
+            email: user.email,
+            name: user.name,
+            avatar: user.avatar,
+          },
+        },
         { session },
       );
 
       // 2. Vô hiệu hóa toàn bộ nhân viên thuộc công ty
-      await this.userService.deactivateByCompany(companyId, session);
+      await this.userService.deactivateByCompany([companyId], session);
 
       // 3. Soft Delete toàn bộ Job của công ty
-      await this.jobService.softDeleteManyByCompany(companyId, session);
+      await this.jobService.softDeleteManyByCompany([companyId], session);
 
       await session.commitTransaction();
       return {

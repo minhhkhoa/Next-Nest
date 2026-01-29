@@ -149,14 +149,6 @@ export default function PageAdminCompany() {
                   Delete ({idDeleteMany.length})
                 </Button>
               )}
-              <Button
-                onClick={() => setCompanyModalState({ isOpen: true })}
-                size="sm"
-                className="gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Thêm mới
-              </Button>
             </div>
           </div>
         </div>

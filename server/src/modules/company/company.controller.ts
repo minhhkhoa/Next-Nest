@@ -15,6 +15,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ResponseMessage, userDecorator } from 'src/common/decorator/customize';
 import {
   AdminApproveCompanyDto,
+  DeleteManyCompanyDto,
   FindCompanyQueryDto,
   FindCompanyWithTaxCode,
   FindJoinRequestDto,
@@ -128,6 +129,16 @@ export class CompanyController {
     @userDecorator() admin: UserDecoratorType,
   ) {
     return await this.companyService.kickMember(memberId, admin);
+  }
+
+  @ResponseMessage('Xóa nhiều công ty thành công')
+  @ApiOperation({ summary: 'Xóa nhiều công ty' })
+  @Delete('deleteMany')
+  removeMany(
+    @Body() deleteDto: DeleteManyCompanyDto,
+    @userDecorator() user: UserDecoratorType,
+  ) {
+    return this.companyService.removeMany(deleteDto.ids, user);
   }
 
   @ResponseMessage('Xóa công ty thành công')
