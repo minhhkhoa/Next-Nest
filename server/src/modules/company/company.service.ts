@@ -25,7 +25,6 @@ import {
   FindJoinRequestDto,
 } from './dto/companyDto.dto';
 import { NotificationsService } from '../notifications/notifications.service';
-import aqp from 'api-query-params';
 import { JobsService } from '../jobs/jobs.service';
 
 @Injectable()
@@ -257,7 +256,8 @@ export class CompanyService {
     }
   }
 
-  //- còn thiếu 1 vài api nữa, nào code tới FE mình làm thêm
+  //- còn thiếu 1 vài api nữa, nào code tới FE mình làm thêm. 
+  //- Làm thêm tới nơi rồi nè muahaha sau 3 tháng:>>.
 
   async findOne(id: string) {
     try {

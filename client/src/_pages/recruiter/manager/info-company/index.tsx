@@ -42,4 +42,12 @@ export default function PageInfoCompany() {
         <ActiveCompanyPage companyId={employerInfo.companyID} />
       </div>
     );
+
+  //- Trường hợp 4: Có employerInfo và userStatus === 'INACTIVE'
+  if (employerInfo && employerInfo.userStatus === "INACTIVE")
+    return (
+      <div>
+        <PendingCompanyPage user={user} />
+      </div>
+    )
 }

@@ -29,6 +29,7 @@ const companyApiRequest = {
     name?: string;
     address?: string;
     status?: string;
+    isDeleted?: string;
   }) => http.get<ApiResponse<any>>(`${prefix}/filter`, { params }),
 
   //- Kiểm tra mã số thuế đã tồn tại chưa
@@ -51,6 +52,21 @@ const companyApiRequest = {
     http.patch<ApiResponse<any>>(`${prefix}/${id}`, payload),
 
   remove: (id: string) => http.delete<ApiResponse<any>>(`${prefix}/${id}`),
+
+  removeMany: (ids: string[]) =>
+    http.delete<ApiResponse<any>>(`${prefix}/deleteMany`, {
+      data: {
+        ids,
+      },
+    }),
+
+  //- Khôi phục công ty đã xóa mềm
+  restoreCompany: (id: string) =>
+    http.patch<ApiResponse<any>>(`${prefix}/restore/${id}`),
+
+  //- kick thành viên ra khỏi công ty (Dành cho Recruiter Admin)
+  kickMemberCompany: (id: string) =>
+    http.delete<ApiResponse<any>>(`${prefix}/members/${id}`),
 };
 
 export default companyApiRequest;

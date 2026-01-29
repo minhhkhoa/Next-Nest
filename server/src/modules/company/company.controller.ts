@@ -121,11 +121,11 @@ export class CompanyController {
     return this.companyService.update(id, updateCompanyDto, user);
   }
 
-  @Delete('members/:memberId')
+  @Delete('members/:id')
   @ResponseMessage('Đã mời thành viên rời khỏi công ty thành công')
   @ApiOperation({ summary: 'Recruiter_Admin đuổi thành viên khỏi công ty' })
   async kickMember(
-    @Param('memberId') memberId: string,
+    @Param('id') memberId: string,
     @userDecorator() admin: UserDecoratorType,
   ) {
     return await this.companyService.kickMember(memberId, admin);

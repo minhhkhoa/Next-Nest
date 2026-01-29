@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
+import { InfoIcon, MoreVerticalIcon, Plus, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import { useDebounce } from "use-debounce";
 import { SearchBar } from "../NewsCategory/components/search-bar";
@@ -9,6 +9,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { CompanyResType } from "@/schemasvalidation/company";
 import {
   useAdminVerifyCompany,
+  useDeleteCompany,
+  useDeleteManyCompany,
   useGetCompaniesFilter,
 } from "@/queries/useCompany";
 import { getCompanyColumns } from "./companyColumn";
@@ -16,6 +18,11 @@ import TableCompany from "./tableCompany";
 import { useQueryFilter } from "@/hooks/useQueryFilter";
 import { CompanyDialogForm } from "./components/company-modal-form";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
+import Link from "next/link";
+import { Popover } from "@radix-ui/react-popover";
+import { PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { DeleteConfirmModal } from "../NewsCategory/components/modals/delete-confirm-modal";
+import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 
 const statusFilters = [
   { label: "Tất cả", value: "" },
@@ -59,22 +66,40 @@ export default function PageAdminCompany() {
       status: debouncedSearchStatus,
     });
 
-  // const { mutateAsync: deleteRoleMutation, isPending: isDeleteRole } =
-  //   useDeleteRole();
+  const { mutateAsync: deleteCompanyMutation, isPending: isDeleteCompany } =
+    useDeleteCompany();
 
-  // const handleConfirmDelete = async () => {
-  //   try {
-  //     const res = await deleteRoleMutation(deleteModal.id);
+  const { mutateAsync: deleteManyCompanyMutation } = useDeleteManyCompany();
 
-  //     if (res.isError) SoftDestructiveSonner("Có lỗi xảy ra khi xóa quyền hạn");
+  const handleConfirmDelete = async () => {
+    try {
+      const res = await deleteCompanyMutation(deleteModal.id);
 
-  //     SoftSuccessSonner(res.message);
-  //     setDeleteModal({ isOpen: false, id: "" });
-  //   } catch (error) {
-  //     SoftDestructiveSonner("Có lỗi xảy ra khi xóa quyền hạn");
-  //     console.log("error delete permission: ", error);
-  //   }
-  // };
+      if (res.isError) SoftDestructiveSonner("Có lỗi xảy ra khi xóa quyền hạn");
+
+      SoftSuccessSonner(res.message);
+      setDeleteModal({ isOpen: false, id: "" });
+    } catch (error) {
+      SoftDestructiveSonner("Có lỗi xảy ra khi xóa quyền hạn");
+      console.log("error delete company: ", error);
+    }
+  };
+
+  const handleDeleteManyCompany = async () => {
+    try {
+      if (idDeleteMany.length === 0) return;
+
+      const res = await deleteManyCompanyMutation(idDeleteMany);
+
+      if (res.isError) SoftDestructiveSonner("Có lỗi xảy ra khi xóa công ty");
+
+      setIdDeleteMany([]);
+
+      SoftSuccessSonner(res.message);
+    } catch (error) {
+      console.log("error delete many company", error);
+    }
+  };
 
   const handleOpenEditModal = (company: CompanyResType) => {
     setCompanyModalState({ isOpen: true, data: company });
@@ -130,19 +155,14 @@ export default function PageAdminCompany() {
         <div className="mx-auto max-w-7xl px-6 py-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                Danh sách công ty
-              </h1>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Quản lý công ty
-              </p>
+              <HeaderPage />
             </div>
             <div className="flex gap-3">
               {idDeleteMany.length > 0 && (
                 <Button
                   variant="destructive"
                   size="sm"
-                  onClick={() => {}}
+                  onClick={handleDeleteManyCompany}
                   className="gap-2"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -234,14 +254,61 @@ export default function PageAdminCompany() {
       )}
 
       {/* modal confirm delete */}
-      {/* {deleteModal.isOpen && (
+      {deleteModal.isOpen && (
         <DeleteConfirmModal
           title="Xóa vai trò"
-          isDeleting={isDeleteRole}
+          isDeleting={isDeleteCompany}
           onConfirm={handleConfirmDelete}
           onCancel={() => setDeleteModal({ isOpen: false, id: "" })}
         />
-      )} */}
+      )}
+    </div>
+  );
+}
+
+function HeaderPage() {
+  return (
+    <div>
+      <div className="flex items-center">
+        <p className="text-3xl font-bold text-foreground">Danh sách công ty</p>
+
+        <Popover modal={false}>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              className="ml-2 text-muted-foreground hover:text-foreground transition"
+            >
+              <InfoIcon className="h-4 w-4" color="yellow" />
+            </button>
+          </PopoverTrigger>
+
+          <PopoverContent className="w-80">
+            <div className="space-y-3">
+              <p className="font-semibold">Thông tin quản lý công ty</p>
+
+              <p className="text-sm text-muted-foreground">
+                Khu vực này hiển thị các công ty đang hoạt động. Bạn có thể xem,
+                chỉnh sửa thông tin và quản lý trạng thái công ty.
+              </p>
+
+              <p className="text-sm text-muted-foreground">
+                Nếu bạn không tìm thấy công ty mong muốn, có thể công ty đó đã
+                bị xoá tạm thời.
+              </p>
+
+              <div className="pt-2">
+                <Link href="/admin/company/company-deleted">
+                  <Button variant="link" className="px-0">
+                    Xem danh sách công ty đã xoá →
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      <p className="mt-2 text-sm text-muted-foreground">Quản lý công ty</p>
     </div>
   );
 }

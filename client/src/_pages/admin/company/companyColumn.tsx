@@ -1,7 +1,14 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Trash2, MoreVertical, Pen, CheckCheck, CircleX } from "lucide-react";
+import {
+  Trash2,
+  MoreVertical,
+  Pen,
+  CheckCheck,
+  CircleX,
+  RefreshCw,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,9 +21,10 @@ import { CompanyResType } from "@/schemasvalidation/company";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const getCompanyColumns = (
-  onEdit: (company: CompanyResType) => void,
-  onDelete: (company: CompanyResType) => void,
-  onVerifyCompany: (companyID: string, action: "ACCEPT" | "REJECT") => void,
+  onEdit?: (company: CompanyResType) => void,
+  onDelete?: (company: CompanyResType) => void,
+  onVerifyCompany?: (companyID: string, action: "ACCEPT" | "REJECT") => void,
+  onRestoreCompany?: (companyID: string) => void,
 ): ColumnDef<CompanyResType>[] => [
   {
     id: "select",
@@ -155,7 +163,7 @@ export const getCompanyColumns = (
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {status === "PENDING" && (
+            {status === "PENDING" && onVerifyCompany && (
               <DropdownMenuItem
                 onClick={() => onVerifyCompany(company._id, "ACCEPT")}
               >
@@ -165,7 +173,7 @@ export const getCompanyColumns = (
                 </div>
               </DropdownMenuItem>
             )}
-            {status === "PENDING" && (
+            {status === "PENDING" && onVerifyCompany && (
               <DropdownMenuItem
                 onClick={() => onVerifyCompany(company._id, "REJECT")}
               >
@@ -175,21 +183,40 @@ export const getCompanyColumns = (
                 </div>
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem onClick={() => onEdit(company)}>
-              <div className="flex gap-3 items-center">
-                <Pen className="mr-2 h-4 w-4" />
-                Chỉnh sửa
-              </div>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="hover:!bg-red-500 text-red-500"
-              onClick={() => onDelete(company)}
-            >
-              <div className="flex gap-3 items-center ">
-                <Trash2 className="mr-2 h-4 w-4 hover:text-white" />
-                Xóa
-              </div>
-            </DropdownMenuItem>
+            {onEdit && (
+              <DropdownMenuItem onClick={() => onEdit && onEdit(company)}>
+                <div className="flex gap-3 items-center">
+                  <Pen className="mr-2 h-4 w-4" />
+                  Chỉnh sửa
+                </div>
+              </DropdownMenuItem>
+            )}
+
+            {onDelete && (
+              <DropdownMenuItem
+                className="hover:!bg-red-500 text-red-500"
+                onClick={() => onDelete && onDelete(company)}
+              >
+                <div className="flex gap-3 items-center ">
+                  <Trash2 className="mr-2 h-4 w-4 hover:text-white" />
+                  Xóa
+                </div>
+              </DropdownMenuItem>
+            )}
+
+            {onRestoreCompany && (
+              <DropdownMenuItem
+                className="hover:!bg-yellow-500 text-yellow-500"
+                onClick={() =>
+                  onRestoreCompany && onRestoreCompany(company._id)
+                }
+              >
+                <div className="flex gap-3 items-center ">
+                  <RefreshCw className="mr-2 h-4 w-4 hover:text-white" />
+                  Khôi phục
+                </div>
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       );

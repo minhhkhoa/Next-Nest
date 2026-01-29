@@ -105,7 +105,7 @@ export class UserService {
         'employerInfo.companyID': companyId,
       },
       {
-        $set: { employerInfo: undefined },
+        $unset: { employerInfo: '' },
       },
       { new: true },
     );
@@ -355,7 +355,7 @@ export class UserService {
       //- Từ chối: Xóa trắng employerInfo để họ có thể xin vào chỗ khác
       return await this.userModel.updateOne(
         { _id: targetUserId },
-        { $set: { employerInfo: undefined } },
+        { $unset: { employerInfo: '' } },
       );
     }
 

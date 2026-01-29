@@ -45,6 +45,7 @@ export const useGetCompaniesFilter = (params: {
   name?: string;
   address?: string;
   status?: string;
+  isDeleted?: string;
 }) => {
   return useQuery({
     queryKey: ["companies-filter", params],
@@ -53,10 +54,11 @@ export const useGetCompaniesFilter = (params: {
 };
 
 //- Hook lấy danh sách thành viên trong công ty cho Recruiter Admin
-export const useGetMemberCompany = () => {
+export const useGetMemberCompany = (active?: boolean) => {
   return useQuery({
     queryKey: ["member-company"],
     queryFn: companyApiRequest.getMemberCompany,
+    enabled: active
   });
 };
 
@@ -92,6 +94,40 @@ export function useDeleteCompany() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => companyApiRequest.remove(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["companies-filter"] });
+    },
+  });
+}
+
+//- xóa nhiều công ty
+export function useDeleteManyCompany() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (ids: string[]) => companyApiRequest.removeMany(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["companies-filter"] });
+    },
+  });
+}
+
+//- kich thành viên khỏi công ty
+export function useKickMemberCompany() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (memberId: string) =>
+      companyApiRequest.kickMemberCompany(memberId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["member-company"] });
+    },
+  });
+}
+
+//- khôi phục công ty đã xóa mềm
+export function useRestoreCompany() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => companyApiRequest.restoreCompany(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["companies-filter"] });
     },

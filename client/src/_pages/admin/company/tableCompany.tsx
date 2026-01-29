@@ -24,7 +24,7 @@ interface DataTableProps {
   columns: ColumnDef<CompanyResType>[];
   meta: MetaFilterType;
   setCurrentPage: (page: number) => void;
-  setIdDeleteMany: (id: string[]) => void;
+  setIdDeleteMany?: (id: string[]) => void;
 }
 
 export default function TableCompany({
@@ -55,7 +55,9 @@ export default function TableCompany({
     const selectedIds = Object.keys(rowSelection);
 
     // Đẩy danh sách ID này lên component cha
-    setIdDeleteMany(selectedIds);
+    if(setIdDeleteMany){
+      setIdDeleteMany(selectedIds);
+    }
   }, [rowSelection, setIdDeleteMany]);
 
   return (
