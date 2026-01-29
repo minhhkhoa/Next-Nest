@@ -1,4 +1,9 @@
-import { ForbiddenException, forwardRef, Inject, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  forwardRef,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
@@ -461,6 +466,59 @@ export class JobsService {
     }
 
     return updatedJob;
+  }
+
+  //- khôi phục công việc đã xóa dành cho super_admin
+  async restore(id: string, user: UserDecoratorType) {
+    try {
+      //- Kiểm tra ID hợp lệ
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new BadRequestCustom('ID không hợp lệ', true);
+      }
+
+      //- Kiểm tra quyền hạn (Chỉ Super Admin mới được khôi phục)
+      const textRoleSuperAdmin =
+        this.configService.get<string>('role_super_admin');
+      if (user.roleCodeName !== textRoleSuperAdmin) {
+        throw new ForbiddenException(
+          'Chỉ quản trị viên hệ thống mới có quyền khôi phục công việc!',
+        );
+      }
+
+      //- Tìm Job đang ở trạng thái bị xóa
+      const job = await this.jobModel.findOne({ _id: id, isDeleted: true });
+
+      if (!job) {
+        throw new BadRequestCustom(
+          'Không tìm thấy công việc bị xóa để khôi phục',
+          true,
+        );
+      }
+
+      //- Thực hiện khôi phục
+      return await this.jobModel.updateOne(
+        { _id: id },
+        {
+          $set: {
+            isDeleted: false,
+            updatedBy: {
+              _id: user.id,
+              email: user.email,
+              name: user.name,
+              avatar: user.avatar,
+            },
+          },
+          // Sử dụng $unset để xóa sạch các trường thông tin khi xóa
+          $unset: {
+            deletedAt: 1,
+            deletedBy: 1,
+          },
+        },
+      );
+    } catch (error) {
+      if (error instanceof ForbiddenException) throw error;
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
   }
 
   async removeMany(ids: string[], user: UserDecoratorType) {

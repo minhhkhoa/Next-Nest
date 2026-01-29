@@ -58,6 +58,17 @@ export class JobsController {
     return this.jobsService.findAll();
   }
 
+  //- chỉ super_admin mới có quyền này
+  @ResponseMessage('Khôi phục công việc thành công')
+  @ApiOperation({ summary: 'Super_Admin khôi phục công việc đã xóa mềm' })
+  @Patch('restore/:id')
+  async restore(
+    @Param('id') id: string,
+    @userDecorator() user: UserDecoratorType,
+  ) {
+    return await this.jobsService.restore(id, user);
+  }
+
   //- chỉ recruiter_admin mới có quyền này
   @Patch('verify-job')
   @ApiOperation({ summary: 'Recruiter_Admin xử lý phê duyệt công việc' })
