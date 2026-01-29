@@ -1,28 +1,33 @@
 import http from "@/lib/http";
+import {
+  JobCreateType,
+  JobResType,
+  JobUpdateType,
+  TypeGetAllJobFilter,
+} from "@/schemasvalidation/job";
 import { ApiResponse } from "@/types/apiResponse";
 
 const prefix = "/jobs";
 
 const jobApiRequest = {
   //- Tạo mới công việc
-  create: (
-    payload: any, //- EDIT_HERE: CreateJobDto
-  ) => http.post<ApiResponse<any>>(prefix, payload),
+  create: (payload: JobCreateType) =>
+    http.post<ApiResponse<any>>(prefix, payload),
 
-  //- Tìm tất cả công việc có lọc nâng cao (Phân trang, search, isDeleted...)
   findJobFilter: (params: {
     currentPage: number;
     pageSize: number;
-    name?: string;
+    title?: string;
     status?: string;
-    level?: string;
-    location?: string;
+    isActive?: string;
+    nameCreatedBy?: string;
+    isHot?: string;
     isDeleted?: string;
-    [key: string]: any; //- Cho phép các field filter linh hoạt khác
-  }) => http.get<ApiResponse<any>>(`${prefix}/filter`, { params }),
+  }) =>
+    http.get<ApiResponse<TypeGetAllJobFilter>>(`${prefix}/filter`, { params }),
 
   //- Tìm tất cả công việc (Không lọc)
-  findAll: () => http.get<ApiResponse<any[]>>(prefix),
+  findAll: () => http.get<ApiResponse<JobResType[]>>(prefix),
 
   //- Khôi phục công việc đã xóa mềm (Chỉ dành cho Super_Admin)
   restore: (id: string) =>
@@ -31,17 +36,15 @@ const jobApiRequest = {
   //- Recruiter_Admin xử lý phê duyệt hoặc từ chối công việc
   recruiterAdminVerifyJob: (payload: {
     jobID: string;
-    action: "ACCEPT" | "REJECT" | "PENDING"; //- EDIT_HERE: Theo RecruiteAdminApproveJobDto
+    action: "ACCEPT" | "REJECT";
   }) => http.patch<ApiResponse<any>>(`${prefix}/verify-job`, payload),
 
   //- Tìm công việc theo ID (Có xử lý tính view qua IP)
-  findOne: (id: string) => http.get<ApiResponse<any>>(`${prefix}/${id}`), //- EDIT_HERE: JobResType
+  findOne: (id: string) => http.get<ApiResponse<JobResType>>(`${prefix}/${id}`),
 
   //- Cập nhật thông tin công việc
-  update: (
-    id: string,
-    payload: any, //- EDIT_HERE: UpdateJobDto
-  ) => http.patch<ApiResponse<any>>(`${prefix}/${id}`, payload),
+  update: (id: string, payload: JobUpdateType) =>
+    http.patch<ApiResponse<any>>(`${prefix}/${id}`, payload),
 
   //- Xóa nhiều công việc cùng lúc
   removeMany: (ids: string[]) =>

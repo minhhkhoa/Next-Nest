@@ -3,6 +3,7 @@ import {
   CompanyCreateType,
   CompanyResType,
   CompanyUpdateType,
+  TypeGetAllCompanyFilter,
 } from "@/schemasvalidation/company";
 import { ProfileResType } from "@/schemasvalidation/user";
 import { ApiResponse } from "@/types/apiResponse";
@@ -30,7 +31,10 @@ const companyApiRequest = {
     address?: string;
     status?: string;
     isDeleted?: string;
-  }) => http.get<ApiResponse<any>>(`${prefix}/filter`, { params }),
+  }) =>
+    http.get<ApiResponse<TypeGetAllCompanyFilter>>(`${prefix}/filter`, {
+      params,
+    }),
 
   //- Kiểm tra mã số thuế đã tồn tại chưa
   checkTaxCode: (taxCode: string) =>
