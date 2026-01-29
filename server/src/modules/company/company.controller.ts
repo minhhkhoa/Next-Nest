@@ -26,7 +26,7 @@ import { UserDecoratorType } from 'src/utils/typeSchemas';
 export class CompanyController {
   constructor(private readonly companyService: CompanyService) {}
 
-  @ResponseMessage('Kiển tra mã số thuế đã tồn tại chưa thành công')
+  @ResponseMessage('Kiển tra mã số thuế đã tồn tại hay không thành công')
   @ApiOperation({ summary: 'check tax code đã tồn tại chưa' })
   @Post('check-tax-code')
   checkTaxCode(@Body() body: FindCompanyWithTaxCode) {
@@ -75,6 +75,7 @@ export class CompanyController {
     );
   }
 
+  //- endpoint này lấy cả đã xóa và chưa xóa mềm
   @ResponseMessage('Lấy tất cả công ty có lọc nâng cao thành công')
   @ApiOperation({ summary: 'GettAll company with filter' })
   @Get('filter')

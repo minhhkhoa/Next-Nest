@@ -30,6 +30,14 @@ export class FindCompanyQueryDto {
   @IsOptional()
   @IsString()
   address?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filter for deleted companies. Can be true or false.',
+    example: false,
+  })
+  @IsOptional()
+  @IsString()
+  isDeleted?: string;
 }
 
 export class FindCompanyWithTaxCode {

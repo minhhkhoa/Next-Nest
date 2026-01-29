@@ -174,35 +174,35 @@ export class CompanyService {
 
   async findAllByFilter(query: FindCompanyQueryDto) {
     try {
-      const { currentPage, pageSize, name, address, status } = query;
-
-      const queryForAqp = { name, address, status };
-      const { filter } = aqp(queryForAqp);
+      const { currentPage, pageSize, name, address, status, isDeleted } = query;
 
       //- Xây dựng điều kiện lọc
-      let filterConditions: any = { ...filter };
+      let filterConditions: any = {};
 
-      //- Xử lý filter cho name nếu truyền lên
-      if (name) {
-        delete filterConditions.name;
-        const searchRegex = new RegExp(name, 'i');
-        filterConditions.name = { $regex: searchRegex };
+      //- có gửi isDeleted lên
+      if (isDeleted) {
+        filterConditions.isDeleted = isDeleted === 'true';
+      } else {
+        filterConditions.isDeleted = false;
       }
 
+      if (name) {
+        filterConditions.name = { $regex: new RegExp(name, 'i') };
+      }
       if (address) {
-        const searchRegex = new RegExp(address, 'i');
-        filterConditions.address = { $regex: searchRegex };
+        filterConditions.address = { $regex: new RegExp(address, 'i') };
       }
       if (status) {
         filterConditions.status = status.toUpperCase();
       }
 
       const defaultPage = currentPage > 0 ? +currentPage : 1;
-      let offset = (+defaultPage - 1) * +pageSize;
-      let defaultLimit = +pageSize ? +pageSize : 10;
+      const defaultLimit = +pageSize > 0 ? +pageSize : 10;
+      let offset = (defaultPage - 1) * defaultLimit;
 
-      const totalItems = (await this.companyModel.find(filterConditions))
-        .length;
+      // Chuẩn IT: Dùng countDocuments thay vì .find().length
+      const totalItems =
+        await this.companyModel.countDocuments(filterConditions);
       const totalPages = Math.ceil(totalItems / defaultLimit);
 
       const result = await this.companyModel
@@ -215,7 +215,7 @@ export class CompanyService {
       return {
         meta: {
           current: defaultPage,
-          pageSize: pageSize,
+          pageSize: defaultLimit,
           totalPages: totalPages,
           totalItems: totalItems,
         },
