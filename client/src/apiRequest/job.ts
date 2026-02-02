@@ -23,6 +23,7 @@ const jobApiRequest = {
     nameCreatedBy?: string;
     isHot?: string;
     isDeleted?: string;
+    fieldCompany?: string;
   }) =>
     http.get<ApiResponse<TypeGetAllJobFilter>>(`${prefix}/filter`, { params }),
 

@@ -33,6 +33,7 @@ export const useGetJobsFilter = (params: {
   nameCreatedBy?: string;
   isHot?: string;
   isDeleted?: string;
+  fieldCompany?: string;
 }) => {
   return useQuery({
     queryKey: ["jobs-filter", params],

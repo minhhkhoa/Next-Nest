@@ -11,7 +11,6 @@ import {
   FolderKanban,
   ChevronDown,
   DoorClosedLocked,
-  FileUser,
 } from "lucide-react";
 
 import {
@@ -42,9 +41,8 @@ import SidebarSkeleton from "./skeletons/SidebarSkeleton";
 const items = [
   { title: "Thống kê", url: "/admin/dashboard", icon: ChartNoAxesCombined },
   { title: "Người dùng", url: "/admin/user", icon: User2 },
-  { title: "Jobs", url: "/admin/jobs", icon: Calendar },
+  { title: "Công việc", url: "/admin/jobs", icon: Calendar },
   { title: "Công ty", url: "/admin/company", icon: Search },
-  { title: "Resumes & CV", url: "/admin/resumes", icon: FileUser },
   {
     title: "Ngành nghề & kỹ năng",
     url: "/admin/industry-skill",

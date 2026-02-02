@@ -113,38 +113,35 @@ export class JobsService {
         status,
         isHot,
         isDeleted,
+        fieldCompany,
       } = query;
 
       const roleSuperAdmin = this.configService.get<string>('role_super_admin');
-
       const isSuperAdmin = user.roleCodeName === roleSuperAdmin;
 
-      //- filter mặc định
+      //- Khởi tạo điều kiện lọc cơ bản cho Job
       let filterConditions: any = { isDeleted: isDeleted === 'true' };
 
-      //- check quyền
+      //- Check quyền
       if (!isSuperAdmin) {
-        //- với RECRUITER & RECRUITER_ADMIN
         const userCompanyId = user.employerInfo?.companyID;
         if (!userCompanyId) {
           throw new ForbiddenException(
             'Tài khoản của bạn chưa được liên kết với công ty!',
           );
         }
-
         //- chỉ lấy những Job thuộc công ty của User này
         filterConditions.companyID = new mongoose.Types.ObjectId(userCompanyId);
       } else {
         //- với SUPER_ADMIN
         //- Cho phép lọc Job Hot trên toàn hệ thống
-        if (isHot !== undefined) {
-          //- truy cập vào sub-document OptionHotJob
+        if (isHot.length > 0) {
           filterConditions['isHot.isHotJob'] = isHot === 'true';
         }
       }
 
-      //- xử lý các filter tìm kiếm từ Client
-      if (title) {
+      //- Lọc theo Title (MultiLang)
+      if (title.length > 0) {
         const searchRegex = new RegExp(title, 'i');
         filterConditions.$or = [
           { 'title.vi': { $regex: searchRegex } },
@@ -152,31 +149,65 @@ export class JobsService {
         ];
       }
 
-      if (nameCreatedBy) {
+      if (nameCreatedBy.length > 0) {
         filterConditions['createdBy.name'] = {
           $regex: new RegExp(nameCreatedBy, 'i'),
         };
       }
 
-      if (status) filterConditions.status = status;
-      if (isActive !== undefined)
+      if (status.length > 0) filterConditions.status = status;
+      if (isActive.length > 0)
         filterConditions.isActive = isActive === 'true';
 
-      //- phân trang & truy vấn (tối ưu hiệu năng)
+      //- Xây dựng Aggregation Pipeline
+      const pipeline: any[] = [
+        { $match: filterConditions }, //- Lọc Job trước để tối ưu hiệu năng
+        {
+          $lookup: {
+            from: 'companies', //- Tên collection của Company trong DB
+            localField: 'companyID', //- Trường khóa ngoại
+            foreignField: '_id', //- Trường khóa chính trong collection Company
+            as: 'company', //- Tên trường kết quả sau khi join
+          },
+        },
+        { $unwind: '$company' }, // Chuyển mảng company thành object
+      ];
+
+      //- Lọc theo tên công ty, mst (Sau khi đã Lookup)
+      if (fieldCompany) {
+        const searchRegex = new RegExp(fieldCompany, 'i');
+        pipeline.push({
+          $match: {
+            $or: [
+              { 'company.name': searchRegex },
+              { 'company.taxCode': searchRegex },
+            ],
+          },
+        });
+      }
+
+      //- Tính toán phân trang
       const defaultPage = currentPage > 0 ? +currentPage : 1;
       const defaultLimit = +pageSize > 0 ? +pageSize : 10;
-      const offset = (defaultPage - 1) * defaultLimit;
+      const skip = (defaultPage - 1) * defaultLimit;
 
-      //- sử dụng countDocuments trực tiếp để tối ưu tốc độ đếm
-      const [totalItems, result] = await Promise.all([
-        this.jobModel.countDocuments(filterConditions),
-        this.jobModel
-          .find(filterConditions)
-          .skip(offset)
-          .limit(defaultLimit)
-          .sort('-createdAt')
-          .exec(),
+      //- Thực thi lấy tổng số lượng và kết quả phân trang
+      // Tạo pipeline để đếm tổng số bản ghi sau khi lọc
+      const countPipeline = [...pipeline, { $count: 'total' }];
+
+      // Thêm sort, skip, limit vào pipeline chính
+      pipeline.push(
+        { $sort: { createdAt: -1 } },
+        { $skip: skip },
+        { $limit: defaultLimit },
+      );
+
+      const [countResult, result] = await Promise.all([
+        this.jobModel.aggregate(countPipeline).exec(),
+        this.jobModel.aggregate(pipeline).exec(),
       ]);
+
+      const totalItems = countResult.length > 0 ? countResult[0].total : 0;
 
       return {
         meta: {
@@ -189,7 +220,7 @@ export class JobsService {
       };
     } catch (error) {
       if (error instanceof ForbiddenException) throw error;
-      throw new BadRequestCustom(error.message, !!error.message);
+      throw new Error('Lỗi truy vấn Job: ' + error.message);
     }
   }
 

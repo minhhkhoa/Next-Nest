@@ -27,7 +27,7 @@ export class FindJobQueryDto {
   @IsOptional()
   @IsString()
   //- chỉ nhận 2 giá trị truyền lên 'active' hoặc 'inactive'/ không truyền
-  @IsIn(['active', 'inactive'], {
+  @IsIn(['', 'active', 'inactive'], {
     message: 'status chỉ được là active hoặc inactive',
   })
   status: string;
@@ -35,7 +35,7 @@ export class FindJobQueryDto {
   @ApiPropertyOptional({ example: '' })
   @IsOptional()
   //- chỉ nhận 2 giá trị truyền lên 'active' hoặc 'inactive'/ không truyền
-  @IsIn(['true', 'false'], {
+  @IsIn(['', 'true', 'false'], {
     message: 'isActive chỉ được là true hoặc false',
   })
   isActive: string;
@@ -49,7 +49,7 @@ export class FindJobQueryDto {
   //- dành riêng cho super_admin lọc các job Hot
   @ApiPropertyOptional({ example: '' })
   @IsOptional()
-  @IsIn(['true', 'false'], {
+  @IsIn(['', 'true', 'false'], {
     message: 'isHot chỉ được là true hoặc false',
   })
   isHot: string;
@@ -57,10 +57,16 @@ export class FindJobQueryDto {
   //- dành riêng cho super_admin lọc các job đã xóa mềm
   @ApiPropertyOptional({ example: '' })
   @IsOptional()
-  @IsIn(['true', 'false'], {
+  @IsIn(['', 'true', 'false'], {
     message: 'isDeleted chỉ được là true hoặc false',
   })
   isDeleted?: string;
+
+  //- Hiện đang để tìm theo tên công ty hoặc mã số thuế
+  @ApiPropertyOptional({ example: '' })
+  @IsOptional()
+  @IsString()
+  fieldCompany?: string;
 }
 
 export class DeleteManyJobDto {

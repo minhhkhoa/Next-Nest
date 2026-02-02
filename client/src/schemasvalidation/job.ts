@@ -6,12 +6,14 @@ import {
   EXPERIENCE_OPTIONS,
   LEVEL_OPTIONS,
 } from "@/lib/constant";
+import { apiCompanyRes } from "./company";
 
 export const apiJobRes = z.object({
   _id: z.string(),
   title: MultiLang,
   slug: MultiLang,
-  companyID: z.string(),
+  companyID: z.string(), //- nên populate thêm thông tin công ty khi lấy chi tiết
+  company: apiCompanyRes.optional(), //- thông tin công ty khi đã populate
   industryID: z.array(z.string()),
   description: MultiLang,
   skills: z.array(z.string()),
