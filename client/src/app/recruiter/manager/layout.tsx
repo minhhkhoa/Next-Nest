@@ -1,11 +1,25 @@
+"use client";
+
+import PendingCompanyPage from "@/_pages/recruiter/manager/info-company/components/pending-company";
 import { AppSidebarRecruiter } from "@/components/app-sidebar-recruiter";
+import { useAppStore } from "@/components/TanstackProvider";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
-export default async function RecruiterLayout({
+//- SEO đếch gì mấy page con này.
+
+export default function RecruiterLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { user } = useAppStore();
+
+  //- trước khi chạy vào các route con thì check xem employerInfo.status có bị khóa ko
+  //- Nếu bị khóa thì thông báo
+  if (user?.employerInfo?.userStatus === "INACTIVE") {
+    return <PendingCompanyPage user={user} />;
+  }
+
   return (
     <SidebarProvider>
       <AppSidebarRecruiter />
@@ -18,3 +32,8 @@ export default async function RecruiterLayout({
     </SidebarProvider>
   );
 }
+
+/**
+ * Ghi chú này đang dành cho case xóa công ty thì bị cập nhật lại field employerInfo.status trong JWT:
+ * Mình không thể check employerInfo.status ở middleware được vì khi mình xóa công ty thì employerInfo vân còn tồn tại trong JWT nó không hề bị ghi đè mới nên mình chỉ có thể check ở layout này thôi.
+ */

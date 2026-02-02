@@ -17,6 +17,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { UserResponseType } from "@/schemasvalidation/user";
+import Link from "next/link";
 
 const PendingCompanyPage = ({ user }: { user: UserResponseType }) => {
   return (
@@ -75,6 +76,9 @@ const PendingCompanyPage = ({ user }: { user: UserResponseType }) => {
         <CardFooter className="flex flex-col gap-3">
           <Button className="w-full gap-2" size="lg">
             <RefreshCw className="w-4 h-4" /> Làm mới trạng thái
+          </Button>
+          <Button variant="link" className="w-full gap-2" size="lg">
+            <Link href="/">Trở về trang chủ</Link>
           </Button>
 
           <Button variant="link" className="text-xs text-muted-foreground mt-2">

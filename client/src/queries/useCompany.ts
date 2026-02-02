@@ -58,7 +58,7 @@ export const useGetMemberCompany = (active?: boolean) => {
   return useQuery({
     queryKey: ["member-company"],
     queryFn: companyApiRequest.getMemberCompany,
-    enabled: active
+    enabled: active,
   });
 };
 
@@ -96,6 +96,9 @@ export function useDeleteCompany() {
     mutationFn: (id: string) => companyApiRequest.remove(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["companies-filter"] });
+
+      //- Làm tươi lại profile vì sau khi xóa company, employerInfo của user sẽ thay đổi
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
 }
@@ -107,6 +110,9 @@ export function useDeleteManyCompany() {
     mutationFn: (ids: string[]) => companyApiRequest.removeMany(ids),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["companies-filter"] });
+
+      //- Làm tươi lại profile vì sau khi xóa company, employerInfo của user sẽ thay đổi
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
 }
@@ -130,6 +136,9 @@ export function useRestoreCompany() {
     mutationFn: (id: string) => companyApiRequest.restoreCompany(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["companies-filter"] });
+
+      //- Làm tươi lại profile vì sau khi khôi phục company, employerInfo của user sẽ thay đổi
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
 }
