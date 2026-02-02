@@ -177,3 +177,18 @@ export const flattenTree = (nodes: any[]): any[] => {
   }
   return flat;
 };
+
+//- hàm tính số ngày từ hiện tại đến ngày hotUntil
+export const calculateRemainingDays = (
+  hotUntil: Date | null | undefined,
+): number => {
+  if (!hotUntil) return 0;
+
+  const currentDate = new Date();
+  const hotUntilDate = new Date(hotUntil);
+
+  const timeDifference = hotUntilDate.getTime() - currentDate.getTime();
+  const remainingDays = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+
+  return remainingDays;
+};

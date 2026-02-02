@@ -23,43 +23,57 @@ import { Spinner } from "@/components/ui/spinner";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
-import { CompanyResType } from "@/schemasvalidation/company";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useUpdateCompany } from "@/queries/useCompany";
+import { JobResType } from "@/schemasvalidation/job";
+import { useUpdateJob } from "@/queries/useJob";
+import { Switch } from "@/components/ui/switch";
+import { calculateRemainingDays } from "@/lib/utils";
 
 const statusFilters = [
-  { label: "Chờ phê duyệt", value: "PENDING" },
-  { label: "Đang hoạt động", value: "ACCEPT" },
+  { label: "Đang hoạt động", value: "active" },
+  { label: "Dừng hoạt động", value: "inactive" },
 ];
 
-interface CompanyDialogFormProps {
+interface JobDialogFormProps {
   onClose: () => void;
-  data: CompanyResType | undefined;
+  data: JobResType | undefined;
 }
 
-export function CompanyDialogForm({ onClose, data }: CompanyDialogFormProps) {
+export function JobDialogForm({ onClose, data }: JobDialogFormProps) {
   const form = useForm({
     defaultValues: {
-      name: data?.name || "",
-      taxCode: data?.taxCode || "",
-      address: data?.address || "",
+      name: data?.company?.name,
+      title: data?.title.vi,
       status: data?.status,
+      isActive: data?.isActive,
+
+      // Lấy từ data.isHot (object ở DB) để map vào 2 field của DTO
+      isHot: data?.isHot?.isHotJob || false,
+      hotDays: calculateRemainingDays(data?.isHot?.hotUntil) || 0,
     },
   });
 
-  const { mutateAsync: updateCompanyMutation, isPending: isUpdatingCompany } =
-    useUpdateCompany();
+  const { mutateAsync: updateJobMutation, isPending: isUpdatingJob } =
+    useUpdateJob();
 
   const handleSubmit = async (values: any) => {
+    const payload = {
+      status: values.status,
+      isActive: values.isActive,
+      isHot: values.isHot,
+      // Nếu bật hot thì gửi số ngày, không thì thôi
+      hotDays: values.isHot ? Number(values.hotDays) : undefined,
+    };
     try {
-      const res = await updateCompanyMutation({
+      const res = await updateJobMutation({
         id: data?._id || "",
-        payload: values,
+        payload,
       });
 
       if (res?.isError) return;
@@ -67,7 +81,7 @@ export function CompanyDialogForm({ onClose, data }: CompanyDialogFormProps) {
       SoftSuccessSonner(res?.message);
       onClose();
     } catch (error) {
-      console.log("error submit form company: ", error);
+      console.log("error submit form job: ", error);
     }
   };
 
@@ -75,9 +89,9 @@ export function CompanyDialogForm({ onClose, data }: CompanyDialogFormProps) {
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Quản lý công ty</DialogTitle>
+          <DialogTitle>Quản lý công việc</DialogTitle>
           <DialogDescription>
-            Cập nhật thông tin công ty và trạng thái hoạt động
+            Cập nhật thông tin công việc và trạng thái hoạt động
           </DialogDescription>
         </DialogHeader>
 
@@ -106,31 +120,13 @@ export function CompanyDialogForm({ onClose, data }: CompanyDialogFormProps) {
                   )}
                 />
 
-                {/* Mã số thuế - Read Only */}
+                {/* Tên công việc - Read Only */}
                 <FormField
                   control={form.control}
-                  name="taxCode"
+                  name="title"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Mã số thuế</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          readOnly
-                          className="bg-muted focus-visible:ring-0"
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                {/* address */}
-                <FormField
-                  control={form.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Địa chỉ</FormLabel>
+                      <FormLabel>Tên công việc</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -206,6 +202,90 @@ export function CompanyDialogForm({ onClose, data }: CompanyDialogFormProps) {
                     </FormItem>
                   )}
                 />
+
+                {/* Trạng thái isActive */}
+                <FormField
+                  control={form.control}
+                  name="isActive" // Dùng biến isActive đã khai báo ở defaultValues
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
+                      <div className="space-y-0.5">
+                        <FormLabel>Trạng thái hoạt động</FormLabel>
+                        <FormDescription>
+                          {field.value
+                            ? "Công việc đã được kích hoạt."
+                            : "Công việc đang chờ duyệt."}
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                {/* Trạng thái Tin Hot */}
+                {/* Phần quản lý Hot Job cho Super Admin */}
+                <div className="rounded-lg border border-orange-200 bg-orange-50/10 p-4 shadow-sm space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="isHot"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-orange-600 font-bold flex items-center gap-1">
+                            Tin tuyển dụng HOT
+                          </FormLabel>
+                          <FormDescription>
+                            Đánh dấu tin nổi bật trên trang chủ.
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Chỉ hiện khi Switch isHot bật */}
+                  {form.watch("isHot") && (
+                    <FormField
+                      control={form.control}
+                      name="hotDays"
+                      render={({ field }) => (
+                        <FormItem className="animate-in zoom-in-95 duration-200">
+                          <FormLabel>Số ngày duy trì trạng thái HOT</FormLabel>
+                          <FormControl>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                type="number"
+                                {...field}
+                                min={1}
+                                className="w-24 focus:border-orange-500"
+                                onChange={(e) =>
+                                  field.onChange(parseInt(e.target.value))
+                                }
+                              />
+                              <span className="text-sm text-muted-foreground">
+                                ngày
+                              </span>
+                            </div>
+                          </FormControl>
+                          <FormDescription>
+                            Hệ thống sẽ tự động tính toán ngày hết hạn dựa trên
+                            số ngày này.
+                          </FormDescription>
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </div>
               </div>
             </ScrollArea>
 
@@ -214,12 +294,12 @@ export function CompanyDialogForm({ onClose, data }: CompanyDialogFormProps) {
                 type="button"
                 variant="outline"
                 onClick={onClose}
-                disabled={isUpdatingCompany}
+                disabled={isUpdatingJob}
               >
                 Hủy
               </Button>
-              <Button type="submit" disabled={isUpdatingCompany}>
-                {isUpdatingCompany ? (
+              <Button type="submit" disabled={isUpdatingJob}>
+                {isUpdatingJob ? (
                   <>
                     <Spinner className="mr-2 h-4 w-4 animate-spin" />
                     Đang xử lý...

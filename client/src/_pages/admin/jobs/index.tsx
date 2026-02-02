@@ -21,6 +21,7 @@ import { JobResType } from "@/schemasvalidation/job";
 import { getJobColumns } from "./jobColumn";
 import TableJob from "./tableJob";
 import BlockFiltersJob from "./components/blockFiltersJob";
+import { JobDialogForm } from "./components/job-modal-form";
 
 export default function PageAdminJob() {
   const [filtersJob, setFiltersJob] = useState<{
@@ -221,12 +222,12 @@ export default function PageAdminJob() {
       </div>
 
       {/* Dialog */}
-      {/* {jobModalState?.isOpen && (
-        <CompanyDialogForm
+      {jobModalState?.isOpen && (
+        <JobDialogForm
           onClose={() => setJobModalState({ isOpen: false })}
           data={jobModalState?.data}
         />
-      )} */}
+      )}
 
       {/* modal confirm delete */}
       {deleteModal.isOpen && (
