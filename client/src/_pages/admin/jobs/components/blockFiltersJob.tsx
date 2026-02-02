@@ -9,14 +9,14 @@ import {
 } from "@/components/ui/select";
 
 //- trạng thái
-const statusFilters = [
+export const statusFilters = [
   { label: "Tất cả", value: "all" },
   { label: "Đang hoạt động", value: "active" },
   { label: "Dừng hoạt động", value: "inactive" },
 ];
 
 //- kích hoạt
-const isActiveFilters = [
+export const isActiveFilters = [
   { label: "Tất cả", value: "all" },
   { label: "Được phép", value: "true" },
   { label: "Chờ duyệt", value: "false" },

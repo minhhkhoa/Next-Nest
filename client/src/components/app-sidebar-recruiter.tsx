@@ -32,19 +32,27 @@ import {
   CollapsibleTrigger,
 } from "./ui/collapsible";
 import { useAppStore } from "./TanstackProvider";
+import { getRoleRecruiterAdmin } from "@/lib/utils";
 
 const items = [
   {
     title: "Thống kê",
     url: "/recruiter/manager/dashboard",
     icon: ChartNoAxesCombined,
+    isAdmin: true, //- chi recruiter_admin moi dc xem
   },
+  // {
+  //   title: "Bài tuyển dụng",
+  //   url: "/recruiter/jobs",
+  //   icon: Calendar,
+  //   isAdmin: false,
+  // },
   {
-    title: "Chiến dịch tuyển dụng",
-    url: "/recruiter/manager/jobs",
-    icon: Calendar,
+    title: "Hồ sơ ứng viên",
+    url: "/recruiter/manager/resumes",
+    icon: FileUser,
+    isAdmin: false,
   },
-  { title: "Resumes & CV", url: "/recruiter/manager/resumes", icon: FileUser },
 ];
 
 export function AppSidebarRecruiter() {
@@ -52,6 +60,7 @@ export function AppSidebarRecruiter() {
   const pathname = usePathname();
 
   const roleCodeName = user?.roleCodeName;
+  const roleRecruiterAdmin = getRoleRecruiterAdmin();
 
   return (
     <Sidebar collapsible="icon">
@@ -63,24 +72,83 @@ export function AppSidebarRecruiter() {
             <SidebarGroupLabel>Application</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {items.map((item) => (
-                  <SidebarMenuItem className="mr-2.5" key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname.startsWith(item.url)}
-                      tooltip={item.title}
-                      className="data-[active=true]:bg-primary data-[active=true]:text-white"
-                    >
-                      <Link href={item.url}>
-                        <item.icon />
-                        <span className="truncate">{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                {items.map(
+                  (item) =>
+                    (!item.isAdmin || roleCodeName === roleRecruiterAdmin) && (
+                      <SidebarMenuItem className="mr-2.5" key={item.title}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={pathname.startsWith(item.url)}
+                          tooltip={item.title}
+                          className="data-[active=true]:bg-primary data-[active=true]:text-white"
+                        >
+                          <Link href={item.url}>
+                            <item.icon />
+                            <span className="truncate">{item.title}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ),
+                )}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+
+          {/* thong tin cong viec cho recruiter_admin*/}
+          {/* {roleCodeName === roleRecruiterAdmin && ( */}
+          <SidebarGroup>
+            <SidebarGroupLabel>Công việc</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <Collapsible defaultOpen>
+                  <SidebarMenuItem className="mr-2.5">
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton tooltip="Chiến dịch tuyển dụng">
+                        <Calendar />
+                        <span className="truncate">Chiến dịch tuyển dụng</span>
+                        <ChevronDown className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        <SidebarMenuSubItem>
+                          <SidebarMenuSubButton
+                            asChild
+                            isActive={pathname === "/recruiter/manager/jobs"}
+                            className="data-[active=true]:bg-primary data-[active=true]:text-white"
+                          >
+                            <Link href="/recruiter/manager/jobs">
+                              Bài tuyển dụng
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                    {roleCodeName === roleRecruiterAdmin && (
+                      <CollapsibleContent>
+                        <SidebarMenuSub>
+                          <SidebarMenuSubItem>
+                            <SidebarMenuSubButton
+                              asChild
+                              isActive={
+                                pathname === "/recruiter/manager/jobs/get-hot"
+                              }
+                              className="data-[active=true]:bg-primary data-[active=true]:text-white"
+                            >
+                              <Link href="/recruiter/manager/jobs/get-hot">
+                                Xin Hot
+                              </Link>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    )}
+                  </SidebarMenuItem>
+                </Collapsible>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+          {/* )} */}
 
           {/* thong tin cong ty */}
           <SidebarGroup>
@@ -113,7 +181,7 @@ export function AppSidebarRecruiter() {
                         </SidebarMenuSubItem>
                       </SidebarMenuSub>
                     </CollapsibleContent>
-                    {roleCodeName === "RECRUITER_ADMIN" && (
+                    {roleCodeName === roleRecruiterAdmin && (
                       <CollapsibleContent>
                         <SidebarMenuSub>
                           <SidebarMenuSubItem>

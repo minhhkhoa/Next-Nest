@@ -9,7 +9,6 @@ import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonn
 import Link from "next/link";
 import { Popover } from "@radix-ui/react-popover";
 import { PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { DeleteConfirmModal } from "../NewsCategory/components/modals/delete-confirm-modal";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import {
   useDeleteJob,
@@ -18,31 +17,38 @@ import {
   useVerifyJob,
 } from "@/queries/useJob";
 import { JobResType } from "@/schemasvalidation/job";
-import { getJobColumns } from "./jobColumn";
-import TableJob from "./tableJob";
-import BlockFiltersJob from "./components/blockFiltersJob";
-import { JobDialogForm } from "./components/job-modal-form";
+import { getRecruiterJobColumns } from "./recruiter-jobColumn";
+import { useAppStore } from "@/components/TanstackProvider";
+import { getRoleRecruiterAdmin } from "@/lib/utils";
+import TableRecruiterJob from "./recruiter-tableJob";
+import { DeleteConfirmModal } from "@/_pages/admin/NewsCategory/components/modals/delete-confirm-modal";
+import BlockFiltersJob, {
+  FilterSelect,
+  isActiveFilters,
+  statusFilters,
+} from "@/_pages/admin/jobs/components/blockFiltersJob";
+import { SearchBar } from "@/_pages/admin/NewsCategory/components/search-bar";
 
-export default function PageAdminJob() {
+export default function RecruiterAdminJobsPage() {
+  const { user } = useAppStore();
+  const roleCodeName = user?.roleCodeName;
+  const roleRecruiterAdmin = getRoleRecruiterAdmin();
+
   const [filtersJob, setFiltersJob] = useState<{
     title: string;
     status: string;
     isActive: string;
     nameCreatedBy: string;
-    isHot: string;
-    fieldCompany: string;
   }>({
     title: "",
     status: "",
     isActive: "",
     nameCreatedBy: "",
-    isHot: "",
-    fieldCompany: "",
   });
   const [currentPage, setCurrentPage] = React.useState(1);
   const [idDeleteMany, setIdDeleteMany] = useState<string[]>([]);
 
-  const [jobModalState, setJobModalState] = useState<{
+  const [jobState, setJobState] = useState<{
     isOpen: boolean;
     data?: JobResType;
   }>({ isOpen: false });
@@ -59,11 +65,6 @@ export default function PageAdminJob() {
     filtersJob?.nameCreatedBy,
     500,
   );
-  const [debouncedSearchIsHot] = useDebounce(filtersJob?.isHot, 500);
-  const [debouncedSearchFieldCompany] = useDebounce(
-    filtersJob?.fieldCompany,
-    500,
-  );
 
   const { data: listJob, isLoading: isLoadingJob } = useGetJobsFilter({
     currentPage,
@@ -72,8 +73,6 @@ export default function PageAdminJob() {
     status: debouncedSearchStatus,
     isActive: debouncedSearchIsActive,
     nameCreatedBy: debouncedSearchNameCreatedBy,
-    isHot: debouncedSearchIsHot,
-    fieldCompany: debouncedSearchFieldCompany,
   });
 
   const { mutateAsync: deleteJobMutation, isPending: isDeleteJob } =
@@ -81,6 +80,7 @@ export default function PageAdminJob() {
 
   const { mutateAsync: deleteManyJobMutation } = useDeleteManyJobs();
 
+  //- chi cho recruiter_admin
   const handleConfirmDelete = async () => {
     try {
       const res = await deleteJobMutation(deleteModal.id);
@@ -94,6 +94,7 @@ export default function PageAdminJob() {
     }
   };
 
+  //- chi cho recruiter_admin
   const handleDeleteManyJob = async () => {
     try {
       if (idDeleteMany.length === 0) return;
@@ -110,7 +111,8 @@ export default function PageAdminJob() {
   };
 
   const handleOpenEditModal = (job: JobResType) => {
-    setJobModalState({ isOpen: true, data: job });
+    //- cần navigate đến trang chi tiết công việc để chỉnh sửa kèm theo data
+    setJobState({ isOpen: true, data: job });
   };
 
   const handleOpenDeleteModal = (job: JobResType) => {
@@ -130,16 +132,37 @@ export default function PageAdminJob() {
         setFiltersJob((prev) => ({ ...prev, isActive: value }));
         setCurrentPage(1);
         break;
-      case "isHot":
-        setFiltersJob((prev) => ({ ...prev, isHot: value }));
-        setCurrentPage(1);
-        break;
       default:
         break;
     }
   };
 
-  const columns = getJobColumns(handleOpenEditModal, handleOpenDeleteModal);
+  const { mutateAsync: verifyJobMutation } = useVerifyJob();
+
+  const handleVerifyJob = async (
+    jobID: string,
+    action: "ACCEPT" | "REJECT",
+  ) => {
+    try {
+      const res = await verifyJobMutation({ jobID, action });
+
+      if (res.isError) {
+        // Hiển thị thông báo lỗi
+        console.log("Có lỗi xảy ra khi phê duyệt công việc");
+        return;
+      }
+
+      SoftSuccessSonner(res.message);
+    } catch (error) {
+      console.log("error verify company: ", error);
+    }
+  };
+
+  const columns = getRecruiterJobColumns(
+    handleOpenEditModal,
+    handleOpenDeleteModal,
+    roleCodeName === roleRecruiterAdmin ? handleVerifyJob : undefined,
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -148,20 +171,21 @@ export default function PageAdminJob() {
         <div className="mx-auto max-w-7xl px-5 py-8">
           <div className="flex items-center justify-between">
             <div>
-              <HeaderPage />
+              <p className="text-3xl font-bold">Quản lý công việc</p>
             </div>
             <div className="flex gap-3">
-              {idDeleteMany.length > 0 && (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleDeleteManyJob}
-                  className="gap-2"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Xóa ({idDeleteMany.length})
-                </Button>
-              )}
+              {idDeleteMany.length > 0 &&
+                roleCodeName === roleRecruiterAdmin && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleDeleteManyJob}
+                    className="gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Xóa ({idDeleteMany.length})
+                  </Button>
+                )}
             </div>
           </div>
         </div>
@@ -170,16 +194,50 @@ export default function PageAdminJob() {
       <div className="mx-auto max-w-7xl px-6">
         {/* khối lọc */}
         <div>
-          <BlockFiltersJob
-            filtersJob={filtersJob}
-            setFiltersJob={setFiltersJob}
-            handleChooseFilter={handleChooseFilter}
-          />
+          <div className="flex flex-col md:flex-row gap-3">
+            <div className="flex-1">
+              <SearchBar
+                value={filtersJob.title}
+                onChange={(value) =>
+                  setFiltersJob((prev) => ({ ...prev, title: value }))
+                }
+                placeholder="Tìm theo tên công việc"
+              />
+            </div>
+
+            <div className="flex-1">
+              <SearchBar
+                value={filtersJob.nameCreatedBy}
+                onChange={(value) =>
+                  setFiltersJob((prev) => ({ ...prev, nameCreatedBy: value }))
+                }
+                placeholder="Tìm theo tên người tạo công việc"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col md:flex-row md:gap-10 gap-3 py-3">
+            {/* Filter section active */}
+            <FilterSelect
+              label="Lọc theo trạng thái:"
+              value={filtersJob.status}
+              options={statusFilters}
+              onChange={(value) => handleChooseFilter("status", value)}
+            />
+
+            {/* Filter section isActive */}
+            <FilterSelect
+              label="Lọc theo kích hoạt:"
+              value={filtersJob.isActive}
+              options={isActiveFilters}
+              onChange={(value) => handleChooseFilter("isActive", value)}
+            />
+          </div>
         </div>
 
         {/* Table */}
         {!isLoadingJob ? (
-          <TableJob
+          <TableRecruiterJob
             data={listJob?.data?.result ?? []}
             columns={columns}
             meta={
@@ -200,14 +258,6 @@ export default function PageAdminJob() {
         )}
       </div>
 
-      {/* Dialog */}
-      {jobModalState?.isOpen && (
-        <JobDialogForm
-          onClose={() => setJobModalState({ isOpen: false })}
-          data={jobModalState?.data}
-        />
-      )}
-
       {/* modal confirm delete */}
       {deleteModal.isOpen && (
         <DeleteConfirmModal
@@ -217,55 +267,6 @@ export default function PageAdminJob() {
           onCancel={() => setDeleteModal({ isOpen: false, id: "" })}
         />
       )}
-    </div>
-  );
-}
-
-function HeaderPage() {
-  return (
-    <div>
-      <div className="flex items-center">
-        <p className="text-3xl font-bold text-foreground">
-          Danh sách công việc
-        </p>
-
-        <Popover modal={false}>
-          <PopoverTrigger asChild>
-            <button
-              type="button"
-              className="ml-2 text-muted-foreground hover:text-foreground transition"
-            >
-              <InfoIcon className="h-4 w-4" color="yellow" />
-            </button>
-          </PopoverTrigger>
-
-          <PopoverContent className="w-80">
-            <div className="space-y-3">
-              <p className="font-semibold">Thông tin quản lý công việc</p>
-
-              <p className="text-sm text-muted-foreground">
-                Khu vực này hiển thị các công việc đang hoạt động. Bạn có thể
-                xem, chỉnh sửa thông tin và quản lý trạng thái công việc.
-              </p>
-
-              <p className="text-sm text-muted-foreground">
-                Nếu bạn không tìm thấy công việc mong muốn, có thể công việc đó
-                đã bị xoá tạm thời.
-              </p>
-
-              <div className="pt-2">
-                <Link href="/admin/jobs/job-deleted">
-                  <Button variant="link" className="px-0">
-                    Xem danh sách công việc đã xoá →
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </PopoverContent>
-        </Popover>
-      </div>
-
-      <p className="mt-2 text-sm text-muted-foreground">Quản lý công việc</p>
     </div>
   );
 }

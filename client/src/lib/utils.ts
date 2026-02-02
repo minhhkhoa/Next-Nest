@@ -192,3 +192,19 @@ export const calculateRemainingDays = (
 
   return remainingDays;
 };
+
+export const getRoleSuperAdmin = () => {
+  return envConfig.NEXT_PUBLIC_ROLE_SUPER_ADMIN;
+};
+
+export const getRoleRecruiterAdmin = () => {
+  return envConfig.NEXT_PUBLIC_ROLE_RECRUITER_ADMIN;
+};
+
+export const getRoleRecruiter = () => {
+  return envConfig.NEXT_PUBLIC_ROLE_RECRUITER;
+};
+
+export const getRoleCandidate = () => {
+  return envConfig.NEXT_PUBLIC_ROLE_CANDIDATE;
+};
