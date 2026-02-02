@@ -47,7 +47,9 @@ export default function PageAdminJobDeleted() {
       if (res?.isError) return;
 
       SoftSuccessSonner(res?.message);
-    } catch (error) {}
+    } catch (error) {
+      console.log("error handle restorJob: ", error);
+    }
   };
 
   const columns = getJobColumns(undefined, undefined, handleRestoreJob);

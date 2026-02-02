@@ -46,7 +46,6 @@ export class NotificationsGateway implements OnGatewayConnection {
 
   //- bắn thông tin đi tới đúng người
   sendToUser(userId: string, payload: any) {
-    console.log('payload: ', payload);
     this.server.to(userId).emit('new-notification', payload);
   }
 }

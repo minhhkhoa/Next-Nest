@@ -1,14 +1,11 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { InfoIcon, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import { useDebounce } from "use-debounce";
 import { Spinner } from "@/components/ui/spinner";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
-import Link from "next/link";
-import { Popover } from "@radix-ui/react-popover";
-import { PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import {
   useDeleteJob,
@@ -22,7 +19,7 @@ import { useAppStore } from "@/components/TanstackProvider";
 import { getRoleRecruiterAdmin } from "@/lib/utils";
 import TableRecruiterJob from "./recruiter-tableJob";
 import { DeleteConfirmModal } from "@/_pages/admin/NewsCategory/components/modals/delete-confirm-modal";
-import BlockFiltersJob, {
+import {
   FilterSelect,
   isActiveFilters,
   statusFilters,
@@ -160,7 +157,7 @@ export default function RecruiterAdminJobsPage() {
 
   const columns = getRecruiterJobColumns(
     handleOpenEditModal,
-    handleOpenDeleteModal,
+    roleCodeName === roleRecruiterAdmin ? handleOpenDeleteModal : undefined,
     roleCodeName === roleRecruiterAdmin ? handleVerifyJob : undefined,
   );
 
@@ -190,6 +187,7 @@ export default function RecruiterAdminJobsPage() {
           </div>
         </div>
       </div>
+
       {/* Main Content */}
       <div className="mx-auto max-w-7xl px-6">
         {/* khối lọc */}

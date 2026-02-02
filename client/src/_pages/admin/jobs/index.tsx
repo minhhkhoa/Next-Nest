@@ -15,7 +15,6 @@ import {
   useDeleteJob,
   useDeleteManyJobs,
   useGetJobsFilter,
-  useVerifyJob,
 } from "@/queries/useJob";
 import { JobResType } from "@/schemasvalidation/job";
 import { getJobColumns } from "./jobColumn";

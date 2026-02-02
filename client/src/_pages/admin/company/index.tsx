@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { InfoIcon, MoreVerticalIcon, Plus, Trash2 } from "lucide-react";
+import { InfoIcon, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import { useDebounce } from "use-debounce";
 import { SearchBar } from "../NewsCategory/components/search-bar";
