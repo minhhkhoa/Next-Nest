@@ -1,7 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Trash2, MoreVertical, Pen, RefreshCw, CheckCheck } from "lucide-react";
+import { Trash2, MoreVertical, Pen, CheckCheck, CircleX } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -179,6 +179,15 @@ export const getRecruiterJobColumns = (
                 <div className="flex gap-3 items-center ">
                   <CheckCheck className="mr-2 h-4 w-4 hover:text-white" />
                   Duyệt bài
+                </div>
+              </DropdownMenuItem>
+            )}
+
+            {onVerifyJob && !job.isActive && (
+              <DropdownMenuItem onClick={() => onVerifyJob(job._id, "REJECT")}>
+                <div className="flex gap-3 items-center">
+                  <CircleX className="mr-2 h-4 w-4" />
+                  Từ chối bài
                 </div>
               </DropdownMenuItem>
             )}

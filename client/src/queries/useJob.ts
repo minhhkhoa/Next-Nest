@@ -67,7 +67,7 @@ export function useUpdateJob() {
 export function useVerifyJob() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: { jobID: string; action: "ACCEPT" | "REJECT" }) =>
+    mutationFn: (payload: { jobId: string; action: "ACCEPT" | "REJECT" }) =>
       jobApiRequest.recruiterAdminVerifyJob(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["jobs-filter"] });

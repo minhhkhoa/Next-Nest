@@ -99,7 +99,6 @@ export enum NotificationType {
   COMPANY_JOIN_REQUEST_PROCESSED = "COMPANY_JOIN_REQUEST_PROCESSED", // RECRUITER_ADMIN duyệt/từ chối yêu cầu
 
   //- module Job
-  //- module Job
   JOB_CREATED = "JOB_CREATED", // RECRUITER_ADMIN nhận: Yêu cầu duyệt tin tuyển dụng mới
   JOB_VERIFIED = "JOB_VERIFIED", // RECRUITER nhận: Tin tuyển dụng được duyệt/từ chối
   JOB_UPDATED = "JOB_UPDATED", // RECRUITER_ADMIN nhận: Tin tuyển dụng được cập nhật bởi RECRUITER thường

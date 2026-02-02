@@ -140,11 +140,11 @@ export default function RecruiterAdminJobsPage() {
   const { mutateAsync: verifyJobMutation } = useVerifyJob();
 
   const handleVerifyJob = async (
-    jobID: string,
+    jobId: string,
     action: "ACCEPT" | "REJECT",
   ) => {
     try {
-      const res = await verifyJobMutation({ jobID, action });
+      const res = await verifyJobMutation({ jobId, action });
 
       if (res.isError) {
         // Hiển thị thông báo lỗi

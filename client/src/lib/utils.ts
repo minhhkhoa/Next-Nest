@@ -139,6 +139,7 @@ export const handleNotificationNavigation = (
       router.push(`/admin/news?statusFilterNews=inactive`);
       break;
 
+    //- start for company
     case NotificationType.COMPANY_CREATED:
       router.push(`/admin/company?statusFilterCompany=PENDING`);
       break;
@@ -147,6 +148,26 @@ export const handleNotificationNavigation = (
     case NotificationType.COMPANY_RECRUITER_JOINED:
       router.push(`/recruiter/manager/member-company`);
       break;
+
+    //- end for company
+
+    //- start for job
+    //- recruiter_admin nhận yêu cầu duyệt job mới
+    case NotificationType.JOB_CREATED:
+      router.push(`/recruiter/manager/jobs`);
+      break;
+
+    //- recruiter nhận thông báo job đã được duyệt/từ chối
+    case NotificationType.JOB_VERIFIED:
+      router.push(`/recruiter/manager/jobs`);
+      break;
+
+    //- recruiter_admin nhận thông báo job được cập nhật bởi recruiter thường
+    case NotificationType.JOB_UPDATED:
+      router.push(`/recruiter/manager/jobs`);
+      break;
+
+    //- end for job
 
     case NotificationType.RESUME_SUBMITTED:
       router.push(`/recruiter/resumes`);

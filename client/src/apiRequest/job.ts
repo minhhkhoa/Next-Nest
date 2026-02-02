@@ -36,7 +36,7 @@ const jobApiRequest = {
 
   //- Recruiter_Admin xử lý phê duyệt hoặc từ chối công việc
   recruiterAdminVerifyJob: (payload: {
-    jobID: string;
+    jobId: string;
     action: "ACCEPT" | "REJECT";
   }) => http.patch<ApiResponse<any>>(`${prefix}/verify-job`, payload),
 

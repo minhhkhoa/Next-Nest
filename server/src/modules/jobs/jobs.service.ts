@@ -238,79 +238,84 @@ export class JobsService {
     verifyDto: RecruiteAdminApproveJobDto,
     recruiter_admin: UserDecoratorType,
   ) {
-    const { jobId, action } = verifyDto;
-
-    //- Kiểm tra Job tồn tại
-    const job = await this.jobModel.findOne({ _id: jobId, isDeleted: false });
-    if (!job) {
-      throw new BadRequestCustom(
-        'Công việc không tồn tại hoặc đã bị xóa',
-        true,
-      );
-    }
-
-    //- Kiểm tra quyền sở hữu công ty
-    const adminCompanyId = recruiter_admin.employerInfo?.companyID?.toString();
-    const jobCompanyId = job.companyID.toString();
-
-    // Chỉ cho phép duyệt Job của chính công ty mình
-    if (adminCompanyId !== jobCompanyId) {
-      throw new ForbiddenException(
-        'Bạn không có quyền phê duyệt công việc của công ty khác',
-      );
-    }
-
-    //- Quyết định trạng thái mới
-    const isAccept = action === 'ACCEPT';
-    const updateData = {
-      isActive: isAccept,
-      status: isAccept ? 'active' : 'inactive',
-      updatedBy: {
-        _id: recruiter_admin.id,
-        name: recruiter_admin.name,
-        email: recruiter_admin.email,
-        avatar: recruiter_admin.avatar,
-      },
-    };
-
-    //- Cập nhật vào db
-    const updatedJob = await this.jobModel.findByIdAndUpdate(
-      jobId,
-      updateData,
-      { new: true },
-    );
-
-    //- Bắn thông báo cho người tạo Job (Recruiter)
     try {
-      this.eventEmitter.emit(NotificationType.JOB_VERIFIED, {
-        receiverId: job.createdBy._id, // Gửi cho người tạo
-        senderId: recruiter_admin.id,
-        title: isAccept
-          ? 'Công việc đã được phê duyệt'
-          : 'Công việc bị từ chối',
-        content: isAccept
-          ? `Chúc mừng! Công việc "${job.title.vi}" của bạn đã được phê duyệt và hiển thị công khai.`
-          : `Rất tiếc! Công việc "${job.title.vi}" của bạn đã bị từ chối bởi quản trị viên.`,
-        type: NotificationType.JOB_VERIFIED,
-        metadata: {
-          module: 'JOB',
-          resourceId: job._id.toString(),
-          result: action, // ACCEPT hoặc REJECT
+      const { jobId, action } = verifyDto;
+
+      //- Kiểm tra Job tồn tại
+      const job = await this.jobModel.findOne({ _id: jobId, isDeleted: false });
+      if (!job) {
+        throw new BadRequestCustom(
+          'Công việc không tồn tại hoặc đã bị xóa',
+          true,
+        );
+      }
+
+      //- Kiểm tra quyền sở hữu công ty
+      const adminCompanyId =
+        recruiter_admin.employerInfo?.companyID?.toString();
+      const jobCompanyId = job.companyID.toString();
+
+      // Chỉ cho phép duyệt Job của chính công ty mình
+      if (adminCompanyId !== jobCompanyId) {
+        throw new ForbiddenException(
+          'Bạn không có quyền phê duyệt công việc của công ty khác',
+        );
+      }
+
+      //- Quyết định trạng thái mới
+      const isAccept = action === 'ACCEPT';
+      const updateData = {
+        isActive: isAccept,
+        status: isAccept ? 'active' : 'inactive',
+        updatedBy: {
+          _id: recruiter_admin.id,
+          name: recruiter_admin.name,
+          email: recruiter_admin.email,
+          avatar: recruiter_admin.avatar,
         },
-      });
+      };
+
+      //- Cập nhật vào db
+      const updatedJob = await this.jobModel.findByIdAndUpdate(
+        jobId,
+        updateData,
+        { new: true },
+      );
+
+      //- Bắn thông báo cho người tạo Job (Recruiter)
+      try {
+        this.eventEmitter.emit(NotificationType.JOB_VERIFIED, {
+          receiverId: job.createdBy._id, // Gửi cho người tạo
+          senderId: recruiter_admin.id,
+          title: isAccept
+            ? 'Công việc đã được phê duyệt'
+            : 'Công việc bị từ chối',
+          content: isAccept
+            ? `Chúc mừng! Công việc "${job.title.vi}" của bạn đã được phê duyệt và hiển thị công khai.`
+            : `Rất tiếc! Công việc "${job.title.vi}" của bạn đã bị từ chối bởi quản trị viên.`,
+          type: NotificationType.JOB_VERIFIED,
+          metadata: {
+            module: 'JOB',
+            resourceId: job._id.toString(),
+            result: action, // ACCEPT hoặc REJECT
+          },
+        });
+      } catch (error) {
+        console.error('Lỗi khi gửi thông báo verify job:', error.message);
+      }
+
+      if (!updatedJob) {
+        throw new BadRequestCustom('Cập nhật không thành công', true);
+      }
+
+      return {
+        _id: updatedJob._id,
+        status: updatedJob.status,
+        isActive: updatedJob.isActive,
+      };
     } catch (error) {
-      console.error('Lỗi khi gửi thông báo verify job:', error.message);
+      throw new BadRequestCustom(error.message, !!error.message);
     }
-
-    if (!updatedJob) {
-      throw new BadRequestCustom('Cập nhật không thành công', true);
-    }
-
-    return {
-      _id: updatedJob._id,
-      status: updatedJob.status,
-      isActive: updatedJob.isActive,
-    };
   }
 
   async findOne(id: string, ip: string) {
