@@ -135,13 +135,13 @@ export class JobsService {
       } else {
         //- với SUPER_ADMIN
         //- Cho phép lọc Job Hot trên toàn hệ thống
-        if (isHot !== undefined) {
+        if (isHot !== undefined && isHot !== null && isHot !== '') {
           filterConditions['isHot.isHotJob'] = isHot === 'true';
         }
       }
 
       //- Lọc theo Title (MultiLang)
-      if (title) {
+      if (title && title !== null && title !== '') {
         const searchRegex = new RegExp(title, 'i');
         filterConditions.$or = [
           { 'title.vi': { $regex: searchRegex } },
@@ -149,15 +149,16 @@ export class JobsService {
         ];
       }
 
-      if (nameCreatedBy) {
+      if (nameCreatedBy && nameCreatedBy !== null && nameCreatedBy !== '') {
         filterConditions['createdBy.name'] = {
           $regex: new RegExp(nameCreatedBy, 'i'),
         };
       }
 
-      if (status) filterConditions.status = status;
+      if (status && status !== null && status !== '')
+        filterConditions.status = status;
 
-      if (isActive !== undefined)
+      if (isActive !== undefined && isActive !== null && isActive !== '')
         filterConditions.isActive = isActive === 'true';
 
       //- Xây dựng Aggregation Pipeline
@@ -175,7 +176,7 @@ export class JobsService {
       ];
 
       //- Lọc theo tên công ty, mst (Sau khi đã Lookup)
-      if (fieldCompany) {
+      if (fieldCompany && fieldCompany !== null && fieldCompany !== '') {
         const searchRegex = new RegExp(fieldCompany, 'i');
         pipeline.push({
           $match: {

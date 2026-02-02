@@ -55,7 +55,7 @@ export function JobDialogForm({ onClose, data }: JobDialogFormProps) {
 
       // Lấy từ data.isHot (object ở DB) để map vào 2 field của DTO
       isHot: data?.isHot?.isHotJob || false,
-      hotDays: calculateRemainingDays(data?.isHot?.hotUntil) || 0,
+      hotDays: calculateRemainingDays(data?.isHot?.hotUntil) || 3,
     },
   });
 
