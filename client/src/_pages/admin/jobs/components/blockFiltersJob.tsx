@@ -1,24 +1,31 @@
-import { Button } from '@/components/ui/button';
-import React from 'react'
-import { SearchBar } from '../../NewsCategory/components/search-bar';
+import { Button } from "@/components/ui/button";
+import React from "react";
+import { SearchBar } from "../../NewsCategory/components/search-bar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 //- trạng thái
 const statusFilters = [
-  { label: "Tất cả", value: "" },
+  { label: "Tất cả", value: "all" },
   { label: "Đang hoạt động", value: "active" },
   { label: "Dừng hoạt động", value: "inactive" },
 ];
 
 //- kích hoạt
 const isActiveFilters = [
-  { label: "Tất cả", value: "" },
+  { label: "Tất cả", value: "all" },
   { label: "Được phép", value: "true" },
   { label: "Chờ duyệt", value: "false" },
 ];
 
 //- lọc hot
 const isHotFilters = [
-  { label: "Tất cả", value: "" },
+  { label: "Tất cả", value: "all" },
   { label: "Hot", value: "true" },
   { label: "Không hot", value: "false" },
 ];
@@ -78,70 +85,67 @@ export default function BlockFiltersJob({
         </div>
       </div>
 
-      {/* Filter section active */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
-          Lọc theo trạng thái:
-        </span>
+      <div className="flex flex-col md:flex-row md:gap-10 gap-3">
+        {/* Filter section active */}
+        <FilterSelect
+          label="Lọc theo trạng thái:"
+          value={filtersJob.status}
+          options={statusFilters}
+          onChange={(value) => handleChooseFilter("status", value)}
+        />
 
-        <div className="flex gap-2 flex-wrap">
-          {statusFilters.map((item) => (
-            <Button
-              key={item.value}
-              variant={filtersJob.status === item.value ? "default" : "outline"}
-              size="sm"
-              onClick={() => handleChooseFilter("status", item.value)}
-              className="rounded-full px-4"
-            >
-              {item.label}
-            </Button>
-          ))}
-        </div>
+        {/* Filter section isActive */}
+        <FilterSelect
+          label="Lọc theo kích hoạt:"
+          value={filtersJob.isActive}
+          options={isActiveFilters}
+          onChange={(value) => handleChooseFilter("isActive", value)}
+        />
+
+        {/* Filter section isHot */}
+        <FilterSelect
+          label="Lọc theo hot:"
+          value={filtersJob.isHot}
+          options={isHotFilters}
+          onChange={(value) => handleChooseFilter("isHot", value)}
+        />
       </div>
+    </div>
+  );
+}
 
-      {/* Filter section isActive */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
-          Lọc theo kích hoạt:
-        </span>
+interface FilterSelectProps {
+  label: string;
+  value: string | null;
+  options: { label: string; value: string }[];
+  onChange: (value: string) => void;
+}
 
-        <div className="flex gap-2 flex-wrap">
-          {isActiveFilters.map((item) => (
-            <Button
-              key={item.value}
-              variant={
-                filtersJob.isActive === item.value ? "default" : "outline"
-              }
-              size="sm"
-              onClick={() => handleChooseFilter("isActive", item.value)}
-              className="rounded-full px-4"
-            >
+export function FilterSelect({
+  label,
+  value,
+  options,
+  onChange,
+}: FilterSelectProps) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+        {label}
+      </span>
+
+      <Select value={value ?? ""} onValueChange={onChange}>
+        <SelectTrigger className="w-[150px]">
+          <SelectValue placeholder="Tất cả" />
+        </SelectTrigger>
+
+        <SelectContent>
+          {options.map((item) => (
+            <SelectItem key={item.value} value={item.value}>
               {item.label}
-            </Button>
+            </SelectItem>
           ))}
-        </div>
-      </div>
-
-      {/* Filter section isHot */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
-          Lọc theo hot:
-        </span>
-
-        <div className="flex gap-2 flex-wrap">
-          {isHotFilters.map((item) => (
-            <Button
-              key={item.value}
-              variant={filtersJob.isHot === item.value ? "default" : "outline"}
-              size="sm"
-              onClick={() => handleChooseFilter("isHot", item.value)}
-              className="rounded-full px-4"
-            >
-              {item.label}
-            </Button>
-          ))}
-        </div>
-      </div>
+        </SelectContent>
+      </Select>
     </div>
   );
 }

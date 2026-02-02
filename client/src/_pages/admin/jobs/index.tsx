@@ -117,6 +117,9 @@ export default function PageAdminJob() {
   };
 
   const handleChooseFilter = (type: string, value: string) => {
+    //- chuyển "all" về giá trị rỗng để lọc tất cả
+    if (value === "all") value = "";
+
     switch (type) {
       case "status":
         setFiltersJob((prev) => ({ ...prev, status: value }));
@@ -162,7 +165,7 @@ export default function PageAdminJob() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="">
-        <div className="mx-auto max-w-7xl px-6 py-8">
+        <div className="mx-auto max-w-7xl px-5 py-8">
           <div className="flex items-center justify-between">
             <div>
               <HeaderPage />
