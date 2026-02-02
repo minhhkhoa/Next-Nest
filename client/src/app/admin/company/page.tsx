@@ -1,10 +1,10 @@
 import PageAdminCompany from "@/_pages/admin/company";
-import React, { Suspense } from "react";
+import React from "react";
 
 export default function AdminCompanyPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <div>
       <PageAdminCompany />
-    </Suspense>
+    </div>
   );
 }

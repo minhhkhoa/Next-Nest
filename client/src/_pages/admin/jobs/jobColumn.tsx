@@ -15,6 +15,7 @@ import { JobResType } from "@/schemasvalidation/job";
 export const getJobColumns = (
   onEdit?: (job: JobResType) => void,
   onDelete?: (job: JobResType) => void,
+  onRestoreJob?: (jobID: string) => void,
 ): ColumnDef<JobResType>[] => [
   {
     id: "select",
@@ -169,6 +170,18 @@ export const getJobColumns = (
                 <div className="flex gap-3 items-center ">
                   <Trash2 className="mr-2 h-4 w-4 hover:text-white" />
                   Xóa
+                </div>
+              </DropdownMenuItem>
+            )}
+
+            {onRestoreJob && (
+              <DropdownMenuItem
+                className="hover:!bg-yellow-500 text-yellow-500"
+                onClick={() => onRestoreJob && onRestoreJob(job._id)}
+              >
+                <div className="flex gap-3 items-center ">
+                  <RefreshCw className="mr-2 h-4 w-4 hover:text-white" />
+                  Khôi phục
                 </div>
               </DropdownMenuItem>
             )}

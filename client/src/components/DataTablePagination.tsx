@@ -1,4 +1,4 @@
-import React from 'react'
+import React from "react";
 
 import {
   Pagination,
@@ -20,14 +20,19 @@ interface PaginationProps {
   onPageChange: (page: number) => void;
 }
 
-export default function DataTablePagination({ meta, onPageChange }: PaginationProps) {
+export default function DataTablePagination({
+  meta,
+  onPageChange,
+}: PaginationProps) {
+  const hasItems = meta.totalItems > 0;
+
   return (
-    <Pagination className="flex justify-center md:justify-end">
+    <Pagination className="flex justify-center md:justify-end select-none">
       <PaginationContent>
         {/* Nút Trước */}
         <PaginationItem>
           <PaginationPrevious
-            onClick={() => onPageChange(meta.current - 1)}
+            onClick={() => hasItems && onPageChange(meta.current - 1)}
             aria-disabled={meta.current === 1}
             className={
               meta.current === 1 ? "pointer-events-none opacity-50" : ""
@@ -84,13 +89,13 @@ export default function DataTablePagination({ meta, onPageChange }: PaginationPr
                 </PaginationLink>
               </PaginationItem>
             );
-          }
+          },
         )}
 
         {/* Nút Sau */}
         <PaginationItem>
           <PaginationNext
-            onClick={() => onPageChange(meta.current + 1)}
+            onClick={() => hasItems && onPageChange(meta.current + 1)}
             aria-disabled={meta.current === meta.totalPages}
             className={
               meta.current === meta.totalPages

@@ -275,7 +275,7 @@ function HeaderPage() {
               </p>
 
               <div className="pt-2">
-                <Link href="/admin/job/job-deleted">
+                <Link href="/admin/jobs/job-deleted">
                   <Button variant="link" className="px-0">
                     Xem danh sách công việc đã xoá →
                   </Button>

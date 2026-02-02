@@ -135,13 +135,13 @@ export class JobsService {
       } else {
         //- với SUPER_ADMIN
         //- Cho phép lọc Job Hot trên toàn hệ thống
-        if (isHot.length > 0) {
+        if (isHot !== undefined) {
           filterConditions['isHot.isHotJob'] = isHot === 'true';
         }
       }
 
       //- Lọc theo Title (MultiLang)
-      if (title.length > 0) {
+      if (title) {
         const searchRegex = new RegExp(title, 'i');
         filterConditions.$or = [
           { 'title.vi': { $regex: searchRegex } },
@@ -149,14 +149,15 @@ export class JobsService {
         ];
       }
 
-      if (nameCreatedBy.length > 0) {
+      if (nameCreatedBy) {
         filterConditions['createdBy.name'] = {
           $regex: new RegExp(nameCreatedBy, 'i'),
         };
       }
 
-      if (status.length > 0) filterConditions.status = status;
-      if (isActive.length > 0)
+      if (status) filterConditions.status = status;
+
+      if (isActive !== undefined)
         filterConditions.isActive = isActive === 'true';
 
       //- Xây dựng Aggregation Pipeline

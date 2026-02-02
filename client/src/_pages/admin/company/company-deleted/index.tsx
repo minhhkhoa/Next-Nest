@@ -83,9 +83,9 @@ export default function PageAdminCompanyDeleted() {
                   Trở về
                 </Button>
               </Link>
-              <h1 className="text-3xl font-semibold text-foreground">
+              <p className="text-3xl font-semibold text-foreground">
                 Danh sách công ty đã xóa
-              </h1>
+              </p>
             </div>
           </div>
         </div>
