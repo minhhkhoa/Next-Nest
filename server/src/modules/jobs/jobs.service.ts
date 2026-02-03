@@ -338,12 +338,13 @@ export class JobsService {
       throw new BadRequestCustom('Không tìm thấy công việc', true);
     }
 
-    if (!job.isActive) {
-      throw new BadRequestCustom(
-        'Công việc này hiện chưa được phê duyệt',
-        true,
-      );
-    }
+    //- tắt đi, nếu bật lên thì làm sao vào được trang này để bật isActive
+    // if (!job.isActive) {
+    //   throw new BadRequestCustom(
+    //     'Công việc này hiện chưa được phê duyệt',
+    //     true,
+    //   );
+    // }
 
     try {
       const viewKey = `job_views:${id}`;
@@ -383,129 +384,139 @@ export class JobsService {
     updateJobDto: UpdateJobDto,
     user: UserDecoratorType,
   ) {
-    const { status, isActive, isHot, hotDays, ...restData } = updateJobDto;
-
-    //- check id đã
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw new BadRequestCustom('ID công việc không hợp lệ', true);
-    }
-
-    //- Tìm Job hiện tại
-    const currentJob = await this.jobModel.findOne({
-      _id: id,
-      isDeleted: false,
-    });
-    if (!currentJob) {
-      throw new BadRequestCustom('Công việc không tồn tại', true);
-    }
-
-    const userRole = user.roleCodeName;
-    const userCompanyId = user.employerInfo?.companyID?.toString();
-    const jobCompanyId = currentJob.companyID.toString();
-
-    //- lấy ra roletừ config
-    const textRoleSuperAdmin =
-      this.configService.get<string>('role_super_admin');
-    const textRoleRecruiterAdmin = this.configService.get<string>(
-      'role_recruiter_admin',
-    );
-
-    //- nếu không phải super_admin và công ty của user khác công ty của job thì không cho sửa
-    if (userRole !== textRoleSuperAdmin && userCompanyId !== jobCompanyId) {
-      throw new ForbiddenException(
-        'Bạn không có quyền chỉnh sửa công việc này',
+    try {
+      //- dịch đã
+      const dataLang = await this.translationService.translateModuleData(
+        'job',
+        updateJobDto,
       );
-    }
 
-    const updatePayload: any = { ...restData };
+      const { status, isActive, isHot, hotDays, ...restData } = dataLang;
 
-    const isSuperAdmin = userRole === textRoleSuperAdmin;
-    const isRecruiterAdmin = userRole === textRoleRecruiterAdmin;
-    const isNormalRecruiter = !isSuperAdmin && !isRecruiterAdmin;
-
-    //- logic isActive: Recruiter sửa thì bắt duyệt lại
-    if (isNormalRecruiter) {
-      updatePayload.isActive = false;
-    } else if (isActive !== undefined) {
-      //- chỉ super_admin và recruiter_admin mới set được nếu có truyền lên
-      updatePayload.isActive = isActive;
-    }
-
-    if (status) updatePayload.status = status;
-
-    // LOGIC isHot chỉ dành cho super_admin
-    if (isHot !== undefined && isSuperAdmin) {
-      if (isHot) {
-        //- Nếu set Hot: tính toán ngày hết hạn
-        const days = hotDays || 3; // Mặc định 3 ngày nếu không truyền
-        const expireDate = new Date();
-        expireDate.setDate(expireDate.getDate() + days);
-
-        updatePayload.isHot = {
-          isHotJob: true,
-          hotUntil: expireDate,
-        };
-      } else {
-        //- Nếu tắt Hot
-        updatePayload.isHot = {
-          isHotJob: false,
-          hotUntil: null,
-        };
+      //- check id đã
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new BadRequestCustom('ID công việc không hợp lệ', true);
       }
-    }
 
-    //- Tự động cập nhật slug nếu title thay đổi
-    if (restData.title) {
-      updatePayload.slug = generateMultiLangSlug(restData.title as any);
-    }
+      //- Tìm Job hiện tại
+      const currentJob = await this.jobModel.findOne({
+        _id: id,
+        isDeleted: false,
+      });
+      if (!currentJob) {
+        throw new BadRequestCustom('Công việc không tồn tại', true);
+      }
 
-    //- Thực hiện cập nhật vào DB
-    const updatedJob = await this.jobModel.findByIdAndUpdate(
-      id,
-      {
-        ...updatePayload,
-        updatedBy: {
-          _id: user.id,
-          name: user.name,
-          email: user.email,
-          avatar: user.avatar,
-        },
-      },
-      { new: true, runValidators: true },
-    );
+      const userRole = user.roleCodeName;
+      const userCompanyId = user.employerInfo?.companyID?.toString();
+      const jobCompanyId = currentJob.companyID.toString();
 
-    if (!updatedJob) {
-      throw new BadRequestCustom('Cập nhật công việc thất bại', true);
-    }
+      //- lấy ra roletừ config
+      const textRoleSuperAdmin =
+        this.configService.get<string>('role_super_admin');
+      const textRoleRecruiterAdmin = this.configService.get<string>(
+        'role_recruiter_admin',
+      );
 
-    //- Thông báo cho Recruiter_Admin nếu Recruiter thường cập nhật
-    if (isNormalRecruiter) {
-      try {
-        const recruiterAdmin =
-          await this.userService.getRecruiterAdminByCompanyID(userCompanyId!);
-        if (recruiterAdmin) {
-          this.eventEmitter.emit(NotificationType.JOB_UPDATED, {
-            receiverId: recruiterAdmin._id,
-            senderId: user.id,
-            title: 'Công việc chờ duyệt lại',
-            content: `Công việc "${updatedJob.title.vi}" đã được chỉnh sửa bởi nhân viên ${user.name} và đang chờ bạn phê duyệt lại.`,
-            type: NotificationType.JOB_UPDATED,
-            metadata: {
-              module: 'JOB',
-              resourceId: updatedJob._id.toString(),
-              action: 'APPROVE_NEEDED',
-            },
-          });
-        }
-      } catch (notifError) {
-        console.error(
-          'Notification Error after job update:',
-          notifError.message,
+      //- nếu không phải super_admin và công ty của user khác công ty của job thì không cho sửa
+      if (userRole !== textRoleSuperAdmin && userCompanyId !== jobCompanyId) {
+        throw new ForbiddenException(
+          'Bạn không có quyền chỉnh sửa công việc này',
         );
       }
-    }
 
-    return updatedJob;
+      const updatePayload: any = { ...restData };
+
+      const isSuperAdmin = userRole === textRoleSuperAdmin;
+      const isRecruiterAdmin = userRole === textRoleRecruiterAdmin;
+      const isNormalRecruiter = !isSuperAdmin && !isRecruiterAdmin;
+
+      //- logic isActive: Recruiter sửa thì bắt duyệt lại
+      if (isNormalRecruiter) {
+        updatePayload.isActive = false;
+      } else if (isActive !== undefined) {
+        //- chỉ super_admin và recruiter_admin mới set được nếu có truyền lên
+        updatePayload.isActive = isActive;
+      }
+
+      if (status) updatePayload.status = status;
+
+      // LOGIC isHot chỉ dành cho super_admin
+      if (isHot !== undefined && isSuperAdmin) {
+        if (isHot) {
+          //- Nếu set Hot: tính toán ngày hết hạn
+          const days = hotDays || 3; // Mặc định 3 ngày nếu không truyền
+          const expireDate = new Date();
+          expireDate.setDate(expireDate.getDate() + days);
+
+          updatePayload.isHot = {
+            isHotJob: true,
+            hotUntil: expireDate,
+          };
+        } else {
+          //- Nếu tắt Hot
+          updatePayload.isHot = {
+            isHotJob: false,
+            hotUntil: null,
+          };
+        }
+      }
+
+      //- Tự động cập nhật slug nếu title thay đổi
+      if (restData.title) {
+        updatePayload.slug = generateMultiLangSlug(restData.title as any);
+      }
+
+      //- Thực hiện cập nhật vào DB
+      const updatedJob = await this.jobModel.findByIdAndUpdate(
+        id,
+        {
+          ...updatePayload,
+          updatedBy: {
+            _id: user.id,
+            name: user.name,
+            email: user.email,
+            avatar: user.avatar,
+          },
+        },
+        { new: true, runValidators: true },
+      );
+
+      if (!updatedJob) {
+        throw new BadRequestCustom('Cập nhật công việc thất bại', true);
+      }
+
+      //- Thông báo cho Recruiter_Admin nếu Recruiter thường cập nhật
+      if (isNormalRecruiter) {
+        try {
+          const recruiterAdmin =
+            await this.userService.getRecruiterAdminByCompanyID(userCompanyId!);
+          if (recruiterAdmin) {
+            this.eventEmitter.emit(NotificationType.JOB_UPDATED, {
+              receiverId: recruiterAdmin._id,
+              senderId: user.id,
+              title: 'Công việc chờ duyệt lại',
+              content: `Công việc "${updatedJob.title.vi}" đã được chỉnh sửa bởi nhân viên ${user.name} và đang chờ bạn phê duyệt lại.`,
+              type: NotificationType.JOB_UPDATED,
+              metadata: {
+                module: 'JOB',
+                resourceId: updatedJob._id.toString(),
+                action: 'APPROVE_NEEDED',
+              },
+            });
+          }
+        } catch (notifError) {
+          console.error(
+            'Notification Error after job update:',
+            notifError.message,
+          );
+        }
+      }
+
+      return updatedJob;
+    } catch (error) {
+      console.log('error update job: ', error);
+    }
   }
 
   //- khôi phục công việc đã xóa dành cho super_admin

@@ -4,15 +4,16 @@ import { useParams } from "next/navigation";
 import { useGetJobDetail, useUpdateJob } from "@/queries/useJob";
 import { Spinner } from "@/components/ui/spinner";
 import JobForm from "@/_pages/recruiter/manager/job/components/job-form";
+import { JobUpdateForRecruiterType } from "@/schemasvalidation/job";
+import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 
 export default function EditJobPage() {
   const params = useParams();
   const jobId = params.id as string;
 
-  // 1. Fetch dữ liệu chi tiết Job từ Backend
+  //- Fetch dữ liệu chi tiết Job từ Backend
   const { data: jobDetail, isLoading } = useGetJobDetail(jobId);
 
-  // 2. Hook update API
   const { mutateAsync: updateJob, isPending } = useUpdateJob();
 
   if (isLoading) {
@@ -23,13 +24,15 @@ export default function EditJobPage() {
     );
   }
 
-  const handleUpdate = async (values: any) => {
+  const handleUpdate = async (values: JobUpdateForRecruiterType) => {
     try {
-      console.log("values update job: ", values);
-      // await updateJob({ id: jobId, payload: values });
-      // Thêm thông báo thành công hoặc redirect ở đây
+      const res = await updateJob({ id: jobId, payload: values });
+
+      if (res?.isError) return;
+
+      SoftSuccessSonner(res?.message);
     } catch (error) {
-      console.error("Update failed", error);
+      console.error("error handle update job: ", error);
     }
   };
 

@@ -112,7 +112,7 @@ export default function RecruiterAdminJobsPage() {
 
   const handleOpenEdit = (job: JobResType) => {
     //- cần navigate đến trang chi tiết công việc để chỉnh sửa kèm theo data
-    router.push(`/recruiter/jobs/${job._id}`);
+    router.push(`/recruiter/manager/jobs/${job._id}`);
   };
 
   const handleOpenDeleteModal = (job: JobResType) => {

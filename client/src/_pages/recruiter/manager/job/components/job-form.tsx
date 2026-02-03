@@ -11,7 +11,12 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
-import { JobResType, jobCreate, jobUpdate } from "@/schemasvalidation/job";
+import {
+  JobResType,
+  jobCreate,
+  jobUpdate,
+  jobUpdateRecuiter,
+} from "@/schemasvalidation/job";
 import { useAppStore } from "@/components/TanstackProvider";
 import { flattenTree, getRoleRecruiterAdmin } from "@/lib/utils";
 import { useGetTreeIndustry } from "@/queries/useIndustry";
@@ -42,10 +47,12 @@ export default function JobForm({
   const roleRecruiterAdmin = getRoleRecruiterAdmin();
   const isRecruiterAdmin = user?.roleCodeName === roleRecruiterAdmin;
 
-  // 1. Fetch dữ liệu cây ngành nghề
+  console.log("initData: ", initialData);
+
+  //- Fetch dữ liệu cây ngành nghề
   const { data: industryTree } = useGetTreeIndustry({});
 
-  // 2. Phẳng hóa dữ liệu để tìm kiếm cho nhanh
+  //- Phẳng hóa dữ liệu để tìm kiếm cho nhanh
   const flatIndustries = useMemo(
     () => flattenTree(industryTree?.data || []),
     [industryTree],
@@ -53,16 +60,34 @@ export default function JobForm({
 
   //- Khởi tạo Form với Resolver dựa trên chế độ Create/Update
   const form = useForm<any>({
-    resolver: zodResolver(isUpdate ? jobUpdate : jobCreate),
+    resolver: zodResolver(isUpdate ? jobUpdateRecuiter : jobCreate),
     defaultValues: isUpdate
       ? {
-          ...initialData,
-          title: initialData.title.vi,
-          description: initialData.description.vi,
+          //- update mode
+          title: initialData.title?.vi || "",
+          description: initialData.description?.vi || "",
+          companyID: initialData.companyID,
+          industryID:
+            initialData.industryID?.map((item: any) =>
+              typeof item === "string" ? item : item._id,
+            ) || [],
+          skills:
+            initialData.skills?.map((item: any) =>
+              typeof item === "string" ? item : item._id,
+            ) || [],
+          location: initialData.location,
+          salary: initialData.salary || { min: 0, max: 0, currency: "VND" },
+          level: initialData.level,
+          employeeType: initialData.employeeType,
+          experience: initialData.experience,
+          quantity: initialData.quantity,
           startDate: new Date(initialData.startDate),
           endDate: new Date(initialData.endDate),
+          status: initialData.status,
+          isActive: initialData.isActive,
         }
       : {
+          //- create mode
           title: "",
           description: "",
           companyID: user?.employerInfo?.companyID || "",
@@ -79,12 +104,12 @@ export default function JobForm({
         },
   });
 
-  // 1. Trích xuất việc theo dõi industryID ra một biến riêng
+  //- Trích xuất việc theo dõi industryID ra một biến riêng
   const watchedIndustryIDs = form.watch("industryID");
 
-  // 2. Sử dụng biến đó trong useMemo
+  //- Sử dụng biến đó trong useMemo
   const selectedIndustryOptions = useMemo(() => {
-    // Dùng luôn watchedIndustryIDs thay vì form.getValues để đồng bộ
+    //- Dùng luôn watchedIndustryIDs thay vì form.getValues để đồng bộ
     const ids = watchedIndustryIDs || [];
 
     if (!ids.length || !flatIndustries.length) return [];
@@ -92,35 +117,63 @@ export default function JobForm({
     return ids
       .map((id: string) => flatIndustries.find((opt: any) => opt.value === id))
       .filter(Boolean);
-
-    // ESLint sẽ hết báo lỗi vì watchedIndustryIDs là một giá trị cụ thể, không phải là lời gọi hàm
   }, [watchedIndustryIDs, flatIndustries]);
 
-  //-. Hàm xử lý submit
+  //- Hàm xử lý submit
   const onHandleSubmit = async (values: any) => {
     try {
-      console.log("values: ", values);
-      // await onSubmit(values);
-    } catch (error) {}
+      const { isHot, createdBy, updatedBy, slug, ...payload } = values;
+
+      await onSubmit(payload);
+    } catch (error) {
+      console.error("Lỗi khi submit form:", error);
+    }
   };
 
   useEffect(() => {
     if (initialData) {
-      // Nếu backend trả về object (populate), ta chỉ lấy _id
-      const industryIdsOnly = initialData.industryID?.map((item: any) =>
-        typeof item === "string" ? item : item._id,
-      );
+      const industryIdsOnly =
+        initialData.industryID?.map((item: any) =>
+          typeof item === "string" ? item : item._id,
+        ) || [];
+
+      const skillIdsOnly =
+        initialData.skills?.map((item: any) =>
+          typeof item === "string" ? item : item._id,
+        ) || [];
 
       form.reset({
         ...initialData,
-        title: initialData.title.vi || initialData.title,
-        description: initialData.description.vi || initialData.description,
-        industryID: industryIdsOnly || [],
-        // Đảm bảo skills luôn là mảng để tránh lỗi .map
-        skills: initialData.skills || [],
+        title: initialData.title?.vi || "",
+        description: initialData.description?.vi || "",
+
+        industryID: industryIdsOnly,
+        skills: skillIdsOnly,
+
+        startDate: initialData.startDate
+          ? new Date(initialData.startDate)
+          : new Date(),
+        endDate: initialData.endDate
+          ? new Date(initialData.endDate)
+          : new Date(),
+
+        // Đảm bảo salary luôn có cấu trúc đúng
+        salary: {
+          min: initialData.salary?.min || 0,
+          max: initialData.salary?.max || 0,
+          currency: initialData.salary?.currency || "VND",
+        },
       });
     }
   }, [initialData, form]);
+
+  //- check lỗi form cho dễ debug
+  const errors = form.formState.errors;
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      console.log("Form Errors:", errors);
+    }
+  }, [errors]);
 
   return (
     <Form {...form}>
@@ -185,7 +238,10 @@ export default function JobForm({
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 px-4 lg:px-8">
           <div className="lg:col-span-8 space-y-8">
+            {/* nội dung chính */}
             <MainContent form={form} />
+
+            {/* Địa điểm & Kỹ năng */}
             <LocationSkills
               form={form}
               selectedIndustryOptions={selectedIndustryOptions}
@@ -195,13 +251,14 @@ export default function JobForm({
           <div className="lg:col-span-4 space-y-6">
             {/* Quản lý trạng thái bài đăng (Chỉ hiện khi Update) */}
             {isUpdate && (
-              <Card className="border-orange-200 bg-orange-50/30">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider text-orange-700">
+              <Card className="border-orange-200 bg-orange-30/10 gap-2">
+                <CardHeader>
+                  <CardTitle className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider text-orange-700 !mt-2">
                     Trạng thái tin bài
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 mb-2">
+                  {/* status cho recruiter/recruiter_admin */}
                   <FormField
                     control={form.control}
                     name="status"
@@ -227,17 +284,18 @@ export default function JobForm({
                     )}
                   />
 
+                  {/* isActive cho recruiter_admin */}
                   {isRecruiterAdmin && (
                     <FormField
                       control={form.control}
                       name="isActive"
                       render={({ field }) => (
-                        <FormItem className="flex items-center justify-between rounded-lg border border-blue-200 bg-blue-50/50 p-3 shadow-sm">
+                        <FormItem className="flex items-center justify-between rounded-lg border border-blue-200 bg-blue-30/10 p-3 shadow-sm">
                           <div className="space-y-0.5">
-                            <FormLabel className="text-sm font-bold text-blue-700">
+                            <FormLabel className="text-sm font-bold text-blue-500">
                               Phê duyệt
                             </FormLabel>
-                            <p className="text-[10px] text-blue-600/70">
+                            <p className="text-[10px] text-blue-400/70">
                               Quyền Admin hệ thống
                             </p>
                           </div>
@@ -255,8 +313,10 @@ export default function JobForm({
               </Card>
             )}
 
+            {/* Thông tin công việc */}
             <JobSpecs form={form} />
 
+            {/* Lương & Hạn nộp */}
             <SalaryDeadline form={form} />
           </div>
         </div>

@@ -132,8 +132,17 @@ export const jobUpdate = jobCreate.partial().extend({
     .min(1, "Số ngày Hot tối thiểu là 1")
     .optional(),
 });
-
 export type JobUpdateType = z.infer<typeof jobUpdate>;
+
+export const jobUpdateRecuiter = jobCreate.partial().extend({
+  //- recruiter chủ động đóng/mở tin
+  status: z.enum(["active", "inactive"]).optional(),
+
+  //- dành cho recruiter_admin phê duyệt
+  isActive: z.boolean().optional(),
+});
+
+export type JobUpdateForRecruiterType = z.infer<typeof jobUpdateRecuiter>;
 
 //- get company with filter
 const Meta = z.object({

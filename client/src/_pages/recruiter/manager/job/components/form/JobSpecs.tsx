@@ -71,7 +71,7 @@ export function JobSpecs({ form }: { form: any }) {
                   defaultValue={field.value}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder={getPlaceholder(spec.name)} />
                     </SelectTrigger>
                   </FormControl>
