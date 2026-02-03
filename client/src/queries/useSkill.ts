@@ -5,7 +5,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 export const useGetDetaiSkill = () => {
   return useQuery({
     queryKey: ["getSkills"],
-    queryFn: skillApiRequest.getAllKills,
+    queryFn: skillApiRequest.getAllSKills,
+  });
+};
+
+//- getAllSKills
+export const useGetAllSkills = () => {
+  return useQuery({
+    queryKey: ["getAllSkills"],
+    queryFn: skillApiRequest.getAllSKills,
   });
 };
 

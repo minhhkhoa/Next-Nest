@@ -8,7 +8,7 @@ import { ApiResponse } from "@/types/apiResponse";
 
 const prefix = "/skill";
 const skillApiRequest = {
-  getAllKills: () => http.get<ApiResponse<SkillResType>>(`${prefix}`),
+  getAllSKills: () => http.get<ApiResponse<SkillResType[]>>(`${prefix}`),
 
   getSkillFilter: (params: {
     currentPage: number;
