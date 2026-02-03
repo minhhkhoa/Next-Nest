@@ -154,7 +154,7 @@ export const handleNotificationNavigation = (
     //- start for job
     //- recruiter_admin nhận yêu cầu duyệt job mới
     case NotificationType.JOB_CREATED:
-      router.push(`/recruiter/manager/jobs`);
+      router.push(`/recruiter/manager/jobs?isActive=false`);
       break;
 
     //- recruiter nhận thông báo job đã được duyệt/từ chối
@@ -164,7 +164,7 @@ export const handleNotificationNavigation = (
 
     //- recruiter_admin nhận thông báo job được cập nhật bởi recruiter thường
     case NotificationType.JOB_UPDATED:
-      router.push(`/recruiter/manager/jobs`);
+      router.push(`/recruiter/manager/jobs?isActive=false`);
       break;
 
     //- end for job

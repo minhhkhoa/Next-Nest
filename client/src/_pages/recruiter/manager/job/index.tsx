@@ -26,6 +26,7 @@ import {
 } from "@/_pages/admin/jobs/components/blockFiltersJob";
 import { SearchBar } from "@/_pages/admin/NewsCategory/components/search-bar";
 import { useRouter } from "next/navigation";
+import { useQueryFilter } from "@/hooks/useQueryFilter";
 
 export default function RecruiterAdminJobsPage() {
   const { user } = useAppStore();
@@ -47,11 +48,6 @@ export default function RecruiterAdminJobsPage() {
   });
   const [currentPage, setCurrentPage] = React.useState(1);
   const [idDeleteMany, setIdDeleteMany] = useState<string[]>([]);
-
-  // const [jobState, setJobState] = useState<{
-  //   isOpen: boolean;
-  //   data?: JobResType;
-  // }>({ isOpen: false });
 
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
@@ -163,6 +159,13 @@ export default function RecruiterAdminJobsPage() {
     roleCodeName === roleRecruiterAdmin ? handleOpenDeleteModal : undefined,
     roleCodeName === roleRecruiterAdmin ? handleVerifyJob : undefined,
   );
+
+  //- custom Hook
+  useQueryFilter("isActive", (value) => {
+    if (value === "false") {
+      setFiltersJob((prev) => ({ ...prev, isActive: value }));
+    }
+  });
 
   return (
     <div className="min-h-screen bg-background">

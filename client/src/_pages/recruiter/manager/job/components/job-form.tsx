@@ -14,7 +14,6 @@ import {
 import {
   JobResType,
   jobCreate,
-  jobUpdate,
   jobUpdateRecuiter,
 } from "@/schemasvalidation/job";
 import { useAppStore } from "@/components/TanstackProvider";

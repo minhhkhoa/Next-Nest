@@ -1,10 +1,11 @@
 import RecruiterAdminJobsPage from "@/_pages/recruiter/manager/job";
-import React from "react";
+import { Spinner } from "@/components/ui/spinner";
+import React, { Suspense } from "react";
 
 export default function PageRecruiterAdminJobs() {
   return (
-    <div>
+    <Suspense fallback={<Spinner />}>
       <RecruiterAdminJobsPage />
-    </div>
+    </Suspense>
   );
 }
