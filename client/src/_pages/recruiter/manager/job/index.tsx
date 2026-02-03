@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import { useDebounce } from "use-debounce";
 import { Spinner } from "@/components/ui/spinner";
@@ -25,11 +25,14 @@ import {
   statusFilters,
 } from "@/_pages/admin/jobs/components/blockFiltersJob";
 import { SearchBar } from "@/_pages/admin/NewsCategory/components/search-bar";
+import { useRouter } from "next/navigation";
 
 export default function RecruiterAdminJobsPage() {
   const { user } = useAppStore();
   const roleCodeName = user?.roleCodeName;
   const roleRecruiterAdmin = getRoleRecruiterAdmin();
+
+  const router = useRouter();
 
   const [filtersJob, setFiltersJob] = useState<{
     title: string;
@@ -45,10 +48,10 @@ export default function RecruiterAdminJobsPage() {
   const [currentPage, setCurrentPage] = React.useState(1);
   const [idDeleteMany, setIdDeleteMany] = useState<string[]>([]);
 
-  const [jobState, setJobState] = useState<{
-    isOpen: boolean;
-    data?: JobResType;
-  }>({ isOpen: false });
+  // const [jobState, setJobState] = useState<{
+  //   isOpen: boolean;
+  //   data?: JobResType;
+  // }>({ isOpen: false });
 
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
@@ -107,9 +110,9 @@ export default function RecruiterAdminJobsPage() {
     }
   };
 
-  const handleOpenEditModal = (job: JobResType) => {
+  const handleOpenEdit = (job: JobResType) => {
     //- cần navigate đến trang chi tiết công việc để chỉnh sửa kèm theo data
-    setJobState({ isOpen: true, data: job });
+    router.push(`/recruiter/jobs/${job._id}`);
   };
 
   const handleOpenDeleteModal = (job: JobResType) => {
@@ -156,7 +159,7 @@ export default function RecruiterAdminJobsPage() {
   };
 
   const columns = getRecruiterJobColumns(
-    handleOpenEditModal,
+    handleOpenEdit,
     roleCodeName === roleRecruiterAdmin ? handleOpenDeleteModal : undefined,
     roleCodeName === roleRecruiterAdmin ? handleVerifyJob : undefined,
   );
@@ -183,6 +186,14 @@ export default function RecruiterAdminJobsPage() {
                     Xóa ({idDeleteMany.length})
                   </Button>
                 )}
+
+              <Button
+                onClick={() => router.push("/recruiter/manager/jobs/newJob")}
+                size="sm"
+              >
+                <Plus className="h-4 w-4" />
+                Thêm mới
+              </Button>
             </div>
           </div>
         </div>
