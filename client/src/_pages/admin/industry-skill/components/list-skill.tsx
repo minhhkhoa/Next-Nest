@@ -3,6 +3,7 @@
 import { Edit, RotateCcw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { IndustryResType } from "@/schemasvalidation/industry";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface SkillItem {
   _id: string;
@@ -34,38 +35,40 @@ export default function SkillList({
         </Button>
       </div>
       {data.length > 0 ? (
-        <div className="space-y-2">
-          {data.map((item) => (
-            <div
-              key={item._id}
-              className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted transition-colors group"
-            >
-              {/* Item content */}
-              <div className="flex-1">
-                <p className="font-medium text-foreground">{item.name.vi}</p>
-              </div>
+        <ScrollArea className="h-[450px] border p-2 rounded-md w-full">
+          <div className="space-y-2">
+            {data.map((item) => (
+              <div
+                key={item._id}
+                className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted transition-colors group"
+              >
+                {/* Item content */}
+                <div className="flex-1">
+                  <p className="font-medium text-foreground">{item.name.vi}</p>
+                </div>
 
-              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-8 w-8 hover:cursor-pointer rounded hover:!bg-background/80 transition-colors"
-                  onClick={() => onEdit(item)}
-                >
-                  <Edit size={16} className="text-muted-foreground" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-8 w-8 hover:cursor-pointer rounded hover:!bg-background/80 transition-colors"
-                  onClick={() => onDelete(item._id)}
-                >
-                  <Trash2 className="w-4 h-4 text-destructive" />
-                </Button>
+                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 w-8 hover:cursor-pointer rounded hover:!bg-background/80 transition-colors"
+                    onClick={() => onEdit(item)}
+                  >
+                    <Edit size={16} className="text-muted-foreground" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 w-8 hover:cursor-pointer rounded hover:!bg-background/80 transition-colors"
+                    onClick={() => onDelete(item._id)}
+                  >
+                    <Trash2 className="w-4 h-4 text-destructive" />
+                  </Button>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </ScrollArea>
       ) : (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <div className="bg-muted/50 border-2 border-dashed rounded-xl w-24 h-24 flex items-center justify-center mb-4">

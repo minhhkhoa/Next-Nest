@@ -33,18 +33,20 @@ import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonn
 
 interface IndustryFormProps {
   industry?: IndustryResType;
+  parentID?: string;
   onCancel: () => void;
 }
 
 export default function IndustryModalForm({
   industry,
+  parentID,
   onCancel,
 }: IndustryFormProps) {
   const form = useForm<CateIndustryCreateType>({
     resolver: zodResolver(cateIndustryCreate),
     defaultValues: {
       name: "",
-      parentId: "",
+      parentId: parentID || "",
     },
   });
 
@@ -83,19 +85,30 @@ export default function IndustryModalForm({
 
   useEffect(() => {
     if (industry) {
+      // Mode Edit
       form.reset({
         name: industry.name.vi,
-        parentId: industry.parentId,
+        parentId: industry.parentId || "",
+      });
+    } else if (parentID) {
+      // Mode Add Child từ nút Plus
+      form.reset({
+        name: "",
+        parentId: parentID,
       });
     }
-  }, [industry, form]);
+  }, [industry, parentID, form]);
 
   return (
     <Dialog open onOpenChange={onCancel}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {industry ? "Chỉnh sửa ngành nghề" : "Thêm ngành nghề mới"}
+            {industry
+              ? "Chỉnh sửa ngành nghề"
+              : parentID
+                ? "Thêm ngành nghề con"
+                : "Thêm ngành nghề mới"}
           </DialogTitle>
         </DialogHeader>
 
@@ -146,9 +159,7 @@ export default function IndustryModalForm({
               >
                 Hủy
               </Button>
-              <Button
-                type="submit"
-              >
+              <Button type="submit">
                 {isCreating || isUpdating ? (
                   <>
                     <Spinner className="mr-2 h-4 w-4 animate-spin" />

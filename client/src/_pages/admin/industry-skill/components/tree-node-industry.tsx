@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Edit, Trash2 } from "lucide-react";
+import { ChevronRight, Edit, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -22,6 +22,7 @@ interface TreeNodeProps {
   onEdit?: (industry: IndustryResType) => void;
   onDelete?: (nodeId: string) => void;
   onSelect?: (nodeId: string) => void;
+  onAddChild?: (parentId: string) => void;
   selected: string;
 }
 
@@ -31,6 +32,7 @@ export default function TreeNode({
   onEdit,
   onDelete,
   onSelect,
+  onAddChild,
   selected,
 }: TreeNodeProps) {
   const [isExpanded, setIsExpanded] = useState(true);
@@ -47,8 +49,8 @@ export default function TreeNode({
       <div
         className={cn(
           "group flex justify-between items-center gap-2 py-2.5 px-3 rounded-lg transition-all duration-200",
-          isHovered && "bg-muted/80", 
-          selected === node._id && "bg-muted/80"
+          isHovered && "bg-muted/80",
+          selected === node._id && "bg-muted/80",
         )}
         style={{ paddingLeft: `${paddingLeft + 12}px` }}
         onMouseEnter={() => setIsHovered(true)}
@@ -66,7 +68,7 @@ export default function TreeNode({
               size={18}
               className={cn(
                 "transition-transform duration-200 text-muted-foreground",
-                isExpanded && "rotate-90"
+                isExpanded && "rotate-90",
               )}
             />
           </button>
@@ -81,9 +83,22 @@ export default function TreeNode({
         <div
           className={cn(
             "flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity",
-            isHovered && "opacity-100"
+            isHovered && "opacity-100",
           )}
         >
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 hover:cursor-pointer rounded hover:!bg-background/80 transition-colors text-blue-500 hover:text-blue-600"
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddChild?.(node._id);
+            }}
+            title="Thêm ngành nghề con"
+          >
+            <Plus size={16} />
+          </Button>
+
           <Button
             variant="ghost"
             size="icon"
@@ -124,6 +139,7 @@ export default function TreeNode({
               onEdit={onEdit}
               onDelete={onDelete}
               onSelect={onSelect}
+              onAddChild={onAddChild}
               selected={selected}
             />
           ))}

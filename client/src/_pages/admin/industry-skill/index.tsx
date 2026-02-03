@@ -8,10 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  useDeleteIndustry,
-  useGetTreeIndustry,
-} from "@/queries/useIndustry";
+import { useDeleteIndustry, useGetTreeIndustry } from "@/queries/useIndustry";
 import TreeNode from "./components/tree-node-industry";
 import { SearchBar } from "../NewsCategory/components/search-bar";
 import { useDebounce } from "use-debounce";
@@ -26,6 +23,7 @@ import { DeleteConfirmModal } from "../NewsCategory/components/modals/delete-con
 import { SkillResType } from "@/schemasvalidation/skill";
 import SkillModalForm from "./components/modals/skill-modal-form";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function PageIndustrySkill() {
   const [deleteModal, setDeleteModal] = React.useState<{
@@ -40,6 +38,7 @@ export default function PageIndustrySkill() {
   const [industryModalState, setIndustryModalState] = React.useState<{
     isOpen: boolean;
     data?: IndustryResType;
+    parentID?: string;
   }>({ isOpen: false });
   const { data: dataIndustry, isLoading: treeLoading } = useGetTreeIndustry({
     name: debouncedSearchIndustry,
@@ -103,7 +102,7 @@ export default function PageIndustrySkill() {
       {/* Industries Section */}
       <div className="space-y-4">
         <Card className="h-full">
-          <CardHeader>
+          <CardHeader className="!mt-2">
             <CardTitle>Ngành nghề</CardTitle>
             <CardDescription>Quản lý toàn bộ ngành nghề</CardDescription>
           </CardHeader>
@@ -133,24 +132,37 @@ export default function PageIndustrySkill() {
                 </div>
               ) : industries && industries.length > 0 ? (
                 /* Có dữ liệu → render tree */
-                <div className="space-y-1">
-                  {/* phải map qua từng con để vẽ tree */}
-                  {industries.map((node) => (
-                    <TreeNode
-                      key={node._id}
-                      node={node}
-                      level={0}
-                      onEdit={(item) =>
-                        setIndustryModalState({ isOpen: true, data: item })
-                      }
-                      onDelete={(id) => {
-                        setDeleteModal({ isOpen: true, type: "industry", id });
-                      }}
-                      onSelect={(id) => setOnSelectedIndustry(id)}
-                      selected={onSelectedIndustry}
-                    />
-                  ))}
-                </div>
+                <ScrollArea className="h-[450px] border p-2 rounded-md w-full">
+                  <div className="space-y-1">
+                    {/* phải map qua từng con để vẽ tree */}
+                    {industries.map((node) => (
+                      <TreeNode
+                        key={node._id}
+                        node={node}
+                        level={0}
+                        onEdit={(item) =>
+                          setIndustryModalState({ isOpen: true, data: item })
+                        }
+                        onDelete={(id) => {
+                          setDeleteModal({
+                            isOpen: true,
+                            type: "industry",
+                            id,
+                          });
+                        }}
+                        onSelect={(id) => setOnSelectedIndustry(id)}
+                        selected={onSelectedIndustry}
+                        onAddChild={(parentId) =>
+                          setIndustryModalState({
+                            isOpen: true,
+                            data: undefined,
+                            parentID: parentId,
+                          })
+                        }
+                      />
+                    ))}
+                  </div>
+                </ScrollArea>
               ) : (
                 /* Không có kết quả tìm kiếm */
                 <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -185,7 +197,7 @@ export default function PageIndustrySkill() {
       {/* Skills Section */}
       <div className="space-y-4">
         <Card className="h-full">
-          <CardHeader>
+          <CardHeader className="!mt-2">
             <CardTitle>Skills</CardTitle>
             <CardDescription>Quản lý toàn bộ kỹ năng</CardDescription>
           </CardHeader>
@@ -227,6 +239,7 @@ export default function PageIndustrySkill() {
         {industryModalState.isOpen && (
           <IndustryModalForm
             industry={industryModalState.data}
+            parentID={industryModalState.parentID}
             onCancel={() => setIndustryModalState({ isOpen: false })}
           />
         )}
