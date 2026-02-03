@@ -1,10 +1,54 @@
 "use client";
 
 import { ChevronRight, Edit, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { IndustryResType } from "@/schemasvalidation/industry";
+
+//- Kiểm tra đệ quy xem node này hoặc bất kỳ con cháu nào có khớp search không
+const hasAnyChildMatch = (node: any, searchTerm: string): boolean => {
+  if (!searchTerm) return false;
+  const s = searchTerm.toLowerCase();
+
+  //- Kiểm tra chính nó
+  if (node.name.vi.toLowerCase().includes(s)) return true;
+
+  //- Kiểm tra đệ quy xuống các con
+  if (node.children && node.children.length > 0) {
+    return node.children.some((child: any) =>
+      hasAnyChildMatch(child, searchTerm),
+    );
+  }
+
+  return false;
+};
+
+//- Hàm Highlight chữ
+const highlightText = (text: string, highlight: string) => {
+  if (!highlight.trim()) return text;
+
+  const safeHighlight = highlight.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`(${safeHighlight})`, "gi");
+  const parts = text.split(regex);
+
+  return (
+    <span>
+      {parts.map((part, i) =>
+        part.toLowerCase() === highlight.toLowerCase() ? (
+          <span
+            key={i}
+            className="bg-primary text-primary-foreground px-1 rounded-sm font-bold"
+          >
+            {part}
+          </span>
+        ) : (
+          part
+        ),
+      )}
+    </span>
+  );
+};
 
 interface TreeNodeData {
   _id: string;
@@ -24,10 +68,12 @@ interface TreeNodeProps {
   onSelect?: (nodeId: string) => void;
   onAddChild?: (parentId: string) => void;
   selected: string;
+  searchTerm?: string;
 }
 
 export default function TreeNode({
   node,
+  searchTerm,
   level = 0,
   onEdit,
   onDelete,
@@ -35,8 +81,18 @@ export default function TreeNode({
   onAddChild,
   selected,
 }: TreeNodeProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+
+  // Tự động mở khi search
+  useEffect(() => {
+    if (searchTerm && searchTerm.trim() !== "") {
+      //- Chỉ cần "đám đàn em" phía dưới có thằng khớp là anh phải "mở cửa"
+      if (hasAnyChildMatch(node, searchTerm)) {
+        setIsExpanded(true);
+      }
+    }
+  }, [searchTerm, node]);
 
   if (!node) return null;
 
@@ -76,7 +132,7 @@ export default function TreeNode({
 
         {/* Tên node */}
         <span className="flex-1 font-medium text-foreground select-none">
-          {node.name.vi || node.name.en || "Không có tên"}
+          {highlightText(node.name.vi, searchTerm || "")}
         </span>
 
         {/* Nút hành động (chỉ hiện khi hover) */}
@@ -135,6 +191,7 @@ export default function TreeNode({
             <TreeNode
               key={child._id}
               node={child}
+              searchTerm={searchTerm}
               level={level + 1}
               onEdit={onEdit}
               onDelete={onDelete}

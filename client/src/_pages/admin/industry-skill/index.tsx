@@ -139,6 +139,7 @@ export default function PageIndustrySkill() {
                       <TreeNode
                         key={node._id}
                         node={node}
+                        searchTerm={debouncedSearchIndustry}
                         level={0}
                         onEdit={(item) =>
                           setIndustryModalState({ isOpen: true, data: item })
