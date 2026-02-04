@@ -117,7 +117,10 @@ export default function TreeNode({
         {/* Nút mở rộng/thu gọn */}
         {hasChildren && (
           <button
-            onClick={() => setIsExpanded(!isExpanded)}
+            onClick={(e) => {
+              e.stopPropagation(); //- chặn không cho onSelect chạy
+              setIsExpanded(!isExpanded);
+            }}
             className="flex items-center justify-center w-7 h-7 rounded hover:bg-background/80 transition-colors"
             aria-label={isExpanded ? "Thu gọn" : "Mở rộng"}
           >

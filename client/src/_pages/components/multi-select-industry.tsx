@@ -132,6 +132,12 @@ export function MultiSelectTree({
     return dataRender.length > 0 ? renderTree(dataRender) : [];
   }, [treeData, expandedNodes, renderTree]);
 
+  // Thêm hàm xóa tất cả
+  const handleClearAll = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onChange([]);
+  };
+
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (
@@ -148,9 +154,9 @@ export function MultiSelectTree({
   return (
     <div ref={containerRef} className={cn("w-full", className)}>
       {/* modal={true}: Khi bật chế độ này, Radix UI sẽ coi Popover là một "lớp phủ" độc lập (giống như một Modal nhỏ nằm trên Modal to). Nó sẽ thiết lập lại cơ chế quản lý sự kiện và focus, cho phép con lăn chuột hoạt động bên trong nó thay vì bị Dialog phía dưới chặn lại */}
-      <Popover modal={true}>
+      <Popover modal={true} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
-          <div className="border border-input rounded-md bg-background p-2 min-h-10 flex flex-wrap gap-2 items-center cursor-pointer">
+          <div className="relative pr-10 border border-input rounded-md bg-background p-2 min-h-10 flex flex-wrap gap-2 items-center cursor-pointer">
             {selected.length ? (
               selected.map((item) => (
                 <span
@@ -175,7 +181,29 @@ export function MultiSelectTree({
               </span>
             )}
 
-            <ChevronDown className="w-4 h-4 ml-auto text-muted-foreground" />
+            {/* Cụm icon điều khiển bên phải */}
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 text-muted-foreground">
+              {selected.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleClearAll}
+                  className="p-0.5 hover:text-destructive transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+
+              {selected.length > 0 && (
+                <div className="w-[1px] h-4 bg-border mx-0.5" />
+              )}
+
+              <ChevronDown
+                className={cn(
+                  "w-4 h-4 transition-transform duration-200",
+                  isOpen && "rotate-180",
+                )}
+              />
+            </div>
           </div>
         </PopoverTrigger>
 
@@ -205,7 +233,7 @@ export function MultiSelectTree({
             )}
           </div>
 
-          <ScrollArea className="h-40 w-full">
+          <ScrollArea className="h-60 w-full">
             <div className="py-2">
               {displayNodes.length > 0 ? (
                 displayNodes
