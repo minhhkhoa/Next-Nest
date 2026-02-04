@@ -72,6 +72,9 @@ export default function JobForm({
             initialData.skills?.map((item: any) =>
               typeof item === "string" ? item : item._id,
             ) || [],
+          otherSkills: initialData.otherSkills?.length
+            ? initialData.otherSkills.map((s: string) => ({ value: s }))
+            : [{ value: "" }],
           location: initialData.location,
           salary: initialData.salary || { min: 0, max: 0, currency: "VND" },
           level: initialData.level,
@@ -90,6 +93,7 @@ export default function JobForm({
           companyID: user?.employerInfo?.companyID || "",
           industryID: [],
           skills: [],
+          otherSkills: [{ value: "" }],
           location: "",
           quantity: 1,
           level: "",
@@ -119,9 +123,22 @@ export default function JobForm({
   //- Hàm xử lý submit
   const onHandleSubmit = async (values: any) => {
     try {
-      const { isHot, createdBy, updatedBy, slug, ...payload } = values;
+      const { isHot, createdBy, updatedBy, slug, otherSkills, ...payload } =
+        values;
 
-      await onSubmit(payload);
+      const formattedOtherSkills = otherSkills
+        ?.map((item: { value: string }) => item.value)
+        .filter((val: string) => val.trim() !== "");
+
+      //- nếu là tạo mới thì thêm companyID từ user
+      if (!isUpdate) {
+        payload.companyID = user?.employerInfo?.companyID || "";
+      }
+
+      await onSubmit({
+        ...payload,
+        otherSkills: formattedOtherSkills,
+      });
     } catch (error) {
       console.error("Lỗi khi submit form:", error);
     }
@@ -146,6 +163,10 @@ export default function JobForm({
 
         industryID: industryIdsOnly,
         skills: skillIdsOnly,
+
+        otherSkills: initialData.otherSkills?.length
+          ? initialData.otherSkills.map((s: string) => ({ value: s }))
+          : [{ value: "" }],
 
         startDate: initialData.startDate
           ? new Date(initialData.startDate)

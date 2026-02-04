@@ -61,6 +61,16 @@ export class CreateJobDto {
   @IsNotEmpty()
   skills: string[];
 
+  @ApiProperty({
+    description: 'Kỹ năng tự nhập thêm',
+    required: false,
+    type: [String],
+  })
+  @IsArray()
+  @IsString({ each: true }) // Kiểm tra từng phần tử trong mảng phải là string
+  @IsOptional() //- trường này không bắt buộc
+  otherSkills?: string[];
+
   @ApiProperty()
   @IsString()
   @IsNotEmpty()

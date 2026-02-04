@@ -64,6 +64,10 @@ export class Job {
   @Prop({ type: [{ type: Types.ObjectId, ref: Skill.name }], index: true })
   skills: Types.ObjectId[];
 
+  //- cho nhập tay
+  @Prop({ type: [String], default: [] })
+  otherSkills: string[];
+
   @Prop()
   location: string;
 
