@@ -46,7 +46,7 @@ export function MultiSelectSkills({
   // Gọi API lọc skill theo ngành nghề và tên
   const { data: skillsData, isLoading } = useGetSkillFilter({
     currentPage: 1,
-    pageSize: 100,
+    pageSize: 200,
     name: debouncedSearchSkill,
     industryIDs: industryIDs,
   });

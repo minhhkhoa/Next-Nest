@@ -55,7 +55,7 @@ export default function PageIndustrySkill() {
   }>({ isOpen: false });
   const { data: dataSkills, isLoading: skillLoading } = useGetSkillFilter({
     currentPage: 1,
-    pageSize: 100,
+    pageSize: 200,
     name: debouncedSearchSkill,
     industryIDs: onSelectedIndustry,
   });
