@@ -88,6 +88,7 @@ export function JobSpecs({ form }: { form: any }) {
             )}
           />
         ))}
+        
         <FormField
           control={form.control}
           name="quantity"

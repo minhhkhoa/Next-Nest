@@ -93,7 +93,7 @@ export default function JobForm({
           companyID: user?.employerInfo?.companyID || "",
           industryID: [],
           skills: [],
-          otherSkills: [{ value: "" }],
+          otherSkills: [{ value: "" }], // Mặc định có một ô trống để nhập kỹ năng khác
           location: "",
           quantity: 1,
           level: "",
@@ -126,14 +126,10 @@ export default function JobForm({
       const { isHot, createdBy, updatedBy, slug, otherSkills, ...payload } =
         values;
 
+      //- convert lại otherSkills từ array object sang array string cho đúng type server nhận
       const formattedOtherSkills = otherSkills
         ?.map((item: { value: string }) => item.value)
         .filter((val: string) => val.trim() !== "");
-
-      //- nếu là tạo mới thì thêm companyID từ user
-      if (!isUpdate) {
-        payload.companyID = user?.employerInfo?.companyID || "";
-      }
 
       await onSubmit({
         ...payload,
