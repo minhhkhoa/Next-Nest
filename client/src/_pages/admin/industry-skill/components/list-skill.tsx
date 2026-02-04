@@ -18,7 +18,7 @@ interface SkillListProps {
   data: SkillItem[];
   onEdit: (industry: SkillItem) => void;
   onDelete: (id: string) => void;
-  setOnSelectedIndustry: (id: string) => void;
+  setOnSelectedIndustry: (ids: string[]) => void;
 }
 
 export default function SkillList({
@@ -30,13 +30,13 @@ export default function SkillList({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-end">
-        <Button onClick={() => setOnSelectedIndustry("")}>
+        <Button onClick={() => setOnSelectedIndustry([])}>
           <RotateCcw className="w-5 h-5" />
         </Button>
       </div>
       {data.length > 0 ? (
-        <ScrollArea className="h-[450px] border p-2 rounded-md w-full">
-          <div className="space-y-2">
+        <ScrollArea className="h-[400px] border p-2 rounded-md w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {data.map((item) => (
               <div
                 key={item._id}
@@ -51,15 +51,16 @@ export default function SkillList({
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="h-8 w-8 hover:cursor-pointer rounded hover:!bg-background/80 transition-colors"
+                    className="h-8 w-8 rounded hover:!bg-background/80"
                     onClick={() => onEdit(item)}
                   >
                     <Edit size={16} className="text-muted-foreground" />
                   </Button>
+
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="h-8 w-8 hover:cursor-pointer rounded hover:!bg-background/80 transition-colors"
+                    className="h-8 w-8 rounded hover:!bg-background/80"
                     onClick={() => onDelete(item._id)}
                   >
                     <Trash2 className="w-4 h-4 text-destructive" />

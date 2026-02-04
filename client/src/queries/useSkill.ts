@@ -21,21 +21,21 @@ export const useGetSkillFilter = ({
   currentPage,
   pageSize,
   name,
-  industryID,
+  industryIDs,
 }: {
   currentPage: number;
   pageSize: number;
   name?: string;
-  industryID?: string;
+  industryIDs?: string[];
 }) => {
   return useQuery({
-    queryKey: ["getSkills_filter", currentPage, pageSize, name, industryID],
+    queryKey: ["getSkills_filter", currentPage, pageSize, name, industryIDs],
     queryFn: () =>
       skillApiRequest.getSkillFilter({
         currentPage,
         pageSize,
         name,
-        industryID,
+        industryIDs,
       }),
   });
 };

@@ -46,7 +46,7 @@ export default function PageIndustrySkill() {
   const industries = dataIndustry?.data;
 
   //- state skill
-  const [onSelectedIndustry, setOnSelectedIndustry] = React.useState("");
+  const [onSelectedIndustry, setOnSelectedIndustry] = React.useState<string[]>([]);
   const [searchSkill, setSearchSkill] = React.useState("");
   const [debouncedSearchSkill] = useDebounce(searchSkill, 500);
   const [skillModalState, setSkillModalState] = React.useState<{
@@ -57,7 +57,7 @@ export default function PageIndustrySkill() {
     currentPage: 1,
     pageSize: 100,
     name: debouncedSearchSkill,
-    industryID: onSelectedIndustry,
+    industryIDs: onSelectedIndustry,
   });
   const skills = dataSkills?.data?.result;
 
@@ -151,7 +151,14 @@ export default function PageIndustrySkill() {
                             id,
                           });
                         }}
-                        onSelect={(id) => setOnSelectedIndustry(id)}
+                        onSelect={(id) => {
+                          setOnSelectedIndustry(
+                            (prev) =>
+                              prev.includes(id)
+                                ? prev.filter((item) => item !== id) // Nếu có rồi thì xóa đi (Toggle off)
+                                : [...prev, id], // Nếu chưa có thì thêm vào (Toggle on)
+                          );
+                        }}
                         selected={onSelectedIndustry}
                         onAddChild={(parentId) =>
                           setIndustryModalState({

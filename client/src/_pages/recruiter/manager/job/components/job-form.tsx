@@ -46,8 +46,6 @@ export default function JobForm({
   const roleRecruiterAdmin = getRoleRecruiterAdmin();
   const isRecruiterAdmin = user?.roleCodeName === roleRecruiterAdmin;
 
-  console.log("initData: ", initialData);
-
   //- Fetch dữ liệu cây ngành nghề
   const { data: industryTree } = useGetTreeIndustry({});
 

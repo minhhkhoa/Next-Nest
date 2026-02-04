@@ -122,7 +122,6 @@ SkillFormProps) {
         if (resCreate.isError) return;
         SoftSuccessSonner(resCreate.message);
       }
-      onCancel();
     } catch (error) {
       console.error("Lỗi khi lưu skill:", error);
     }

@@ -67,7 +67,7 @@ interface TreeNodeProps {
   onDelete?: (nodeId: string) => void;
   onSelect?: (nodeId: string) => void;
   onAddChild?: (parentId: string) => void;
-  selected: string;
+  selected: string[];
   searchTerm?: string;
 }
 
@@ -104,9 +104,10 @@ export default function TreeNode({
       {/* Node chính */}
       <div
         className={cn(
-          "group flex justify-between items-center gap-2 py-2.5 px-3 rounded-lg transition-all duration-200",
+          "group flex justify-between items-center gap-2 py-2.5 px-3 rounded-lg transition-all duration-200 cursor-pointer",
           isHovered && "bg-muted/80",
-          selected === node._id && "bg-muted/80",
+          selected.includes(node._id) &&
+            "bg-primary/10 border-l-4 border-primary",
         )}
         style={{ paddingLeft: `${paddingLeft + 12}px` }}
         onMouseEnter={() => setIsHovered(true)}

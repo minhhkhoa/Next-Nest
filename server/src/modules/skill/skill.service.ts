@@ -8,7 +8,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 import mongoose from 'mongoose';
 import { FindSkillQueryDto } from './dto/skillDto.dto';
-import aqp from 'api-query-params';
+import { IndustryService } from '../industry/industry.service';
 
 @Injectable()
 export class SkillService {
@@ -16,7 +16,9 @@ export class SkillService {
     private readonly translationService: TranslationService,
     @InjectModel(Skill.name)
     private skillModel: SoftDeleteModel<SkillDocument>,
+    private industryService: IndustryService,
   ) {}
+
   async create(createSkillDto: CreateSkillDto) {
     try {
       //- dịch sang tiếng anh đã
@@ -25,11 +27,11 @@ export class SkillService {
         createSkillDto,
       );
 
-      const industry = await this.skillModel.create(dataLang);
+      const skill = await this.skillModel.create(dataLang);
 
       return {
-        _id: industry._id,
-        name: industry.name.en,
+        _id: skill._id,
+        name: skill.name.en,
       };
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
@@ -46,17 +48,12 @@ export class SkillService {
 
   async findAllByFilter(query: FindSkillQueryDto) {
     try {
-      const { currentPage, pageSize, name, industryID } = query;
+      const { currentPage, pageSize, name, industryIDs } = query;
+      // Khởi tạo filter cơ bản
+      const filterConditions: any = { isDeleted: false };
 
-      const queryForAqp = { name, industryID };
-      const { filter, sort } = aqp(queryForAqp);
-
-      //- Xây dựng điều kiện lọc
-      let filterConditions: any = { ...filter };
-
-      //- Xử lý filter cho name nếu truyền lên
+      // 1. Xử lý filter name
       if (name) {
-        delete filterConditions.name;
         const searchRegex = new RegExp(name, 'i');
         filterConditions.$or = [
           { 'name.vi': { $regex: searchRegex } },
@@ -64,42 +61,42 @@ export class SkillService {
         ];
       }
 
-      //- Xử lý filter cho industryID nếu truyền lên
-      if (industryID && industryID.length > 0) {
-        filterConditions.industryID = { $in: industryID }; //- Lọc theo mảng MongoID
+      //- Logic "Cha truyền con nối" - CỰC KỲ QUAN TRỌNG
+      if (industryIDs && industryIDs.length > 0) {
+        const targetIndustryIds =
+          await this.industryService.getAllIndustryIdsInSameFamily(industryIDs);
+
+        filterConditions.industryID = { $in: targetIndustryIds };
+      } else if (industryIDs === undefined || industryIDs.length === 0) {
+        // Nếu Khoa muốn: Khi không chọn ngành nào thì KHÔNG hiện skill nào,
+        // hoặc chỉ hiện skill không thuộc ngành nào, hãy xử lý ở đây.
+        // Hiện tại code của Khoa đang là: Không gửi industryIDs thì hiện TẤT CẢ skill (vì isDeleted: false).
       }
 
-      const defaultPage = currentPage > 0 ? +currentPage : 1;
-      let offset = (+defaultPage - 1) * +pageSize;
-      let defaultLimit = +pageSize ? +pageSize : 10;
+      //- Phân trang và Query
+      const defaultPage = +currentPage > 0 ? +currentPage : 1;
+      const defaultLimit = +pageSize > 0 ? +pageSize : 10;
+      const offset = (defaultPage - 1) * defaultLimit;
 
-      const totalItems = (await this.skillModel.find(filterConditions)).length;
+      const [totalItems, result] = await Promise.all([
+        this.skillModel.countDocuments(filterConditions),
+        this.skillModel
+          .find(filterConditions)
+          .skip(offset)
+          .limit(defaultLimit)
+          .sort('-createdAt')
+          .populate({ path: 'industryID', select: '_id name parentId' })
+          .lean(),
+      ]);
+
       const totalPages = Math.ceil(totalItems / defaultLimit);
-
-      // delete filterConditions.industryID;
-
-      const result = await this.skillModel
-        .find(filterConditions)
-        .skip(offset)
-        .limit(defaultLimit)
-        .sort('-createdAt')
-        .populate({
-          path: 'industryID',
-          select: '_id name parentId', // chỉ lấy những field cần
-          // Nếu muốn populate tiếp parentId thành object (ngành cha)
-          // populate: {
-          //   path: 'parentId',
-          //   select: '_id name'
-          // }
-        })
-        .exec();
 
       return {
         meta: {
           current: defaultPage,
-          pageSize: pageSize,
-          totalPages: totalPages,
-          totalItems: totalItems,
+          pageSize: defaultLimit,
+          totalPages,
+          totalItems,
         },
         result,
       };

@@ -1,9 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsNumber,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class FindSkillQueryDto {
   @ApiPropertyOptional({ example: 1 })
@@ -19,7 +16,10 @@ export class FindSkillQueryDto {
   @IsString()
   name?: string;
 
-  @ApiPropertyOptional({ example: '' })
+  @ApiPropertyOptional({ example: ['id1', 'id2'], type: [String] })
   @IsOptional()
-  industryID?: string;
+  @Transform(({ value }) => {
+    return Array.isArray(value) ? value : [value];
+  })
+  industryIDs?: string[];
 }

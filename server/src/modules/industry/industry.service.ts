@@ -4,7 +4,7 @@ import { UpdateIndustryDto } from './dto/update-industry.dto';
 import { TranslationService } from 'src/common/translation/translation.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { Industry, IndustryDocument } from './schemas/industry.schema';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import aqp from 'api-query-params';
@@ -37,6 +37,73 @@ export class IndustryService {
       throw new BadRequestCustom(error.message, !!error.message);
     }
   }
+
+  //- start for skill.service.ts
+  //- Hàm tìm tất cả các Gốc từ một danh sách ID bất kỳ
+  async findRootIds(industryIds: string[]): Promise<string[]> {
+    const roots = new Set<string>();
+
+    for (const id of industryIds) {
+      let current = await this.indusTryModel.findById(id).lean();
+
+      //- Vòng lặp leo ngược lên trên
+      while (current && current.parentId !== '000-00-000') {
+        current = await this.indusTryModel
+          .findOne({ _id: current.parentId })
+          .lean();
+      }
+
+      if (current) roots.add(current._id.toString());
+    }
+
+    return Array.from(roots);
+  }
+
+  //- Hàm lấy cả họ (Wrapper function)
+  async getAllIndustryIdsInSameFamily(
+    selectedIds: string[],
+  ): Promise<Types.ObjectId[]> {
+    // Bước 1: Tìm Root
+    const rootIds = await this.findRootIds(selectedIds);
+
+    // Bước 2: Từ Root, quét xuống lấy toàn bộ con cháu
+    const allFamilyIds = await this.getAllChildIndustryIds(rootIds);
+
+    return allFamilyIds;
+  }
+
+  //- Lấy tất cả ID con cháu của 1 mảng parentIds
+  async getAllChildIndustryIds(parentIds: any[]): Promise<Types.ObjectId[]> {
+    //- Chuyển tất cả input về String để query vào trường parentId
+    const stringParentIds = parentIds.map((id) => id.toString());
+
+    //- Khởi tạo kết quả bằng chính các ID truyền vào
+    const allIds = parentIds.map((id) => new Types.ObjectId(id.toString()));
+
+    //- Tìm các con trực tiếp
+    const children = await this.indusTryModel
+      .find({
+        parentId: { $in: stringParentIds },
+        isDeleted: false,
+      })
+      .select('_id')
+      .lean();
+
+    if (children.length > 0) {
+      const childrenIds = children.map((c) => c._id.toString());
+
+      //- Đệ quy lấy con cháu
+      const grandChildrenIds = await this.getAllChildIndustryIds(childrenIds);
+
+      //- Gộp kết quả (đã là ObjectId)
+      allIds.push(...grandChildrenIds);
+    }
+
+    //- Loại bỏ trùng lặp
+    return [...new Map(allIds.map((id) => [id.toString(), id])).values()];
+  }
+
+  //- end for skill.service.ts
 
   async findAll(currentPage: number, limit: number, query: string) {
     const { filter, sort, population } = aqp(query);
@@ -140,8 +207,7 @@ export class IndustryService {
       return this.getTreeIndustry();
     }
 
-    const ROOT_ID =
-      this.configService.get<string>('ROOT_PARENT_INDUSTRY_ID');
+    const ROOT_ID = this.configService.get<string>('ROOT_PARENT_INDUSTRY_ID');
     const searchRegex = new RegExp(query.trim(), 'i');
 
     // Bước 1: Tìm tất cả các ngành có tên khớp (vi hoặc en)

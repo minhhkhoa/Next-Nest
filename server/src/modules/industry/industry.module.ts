@@ -16,5 +16,6 @@ import { BusinessModule } from 'src/common/decorator/customize';
   ],
   controllers: [IndustryController],
   providers: [IndustryService],
+  exports: [IndustryService],
 })
 export class IndustryModule {}

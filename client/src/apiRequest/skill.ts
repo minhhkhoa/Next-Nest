@@ -14,9 +14,24 @@ const skillApiRequest = {
     currentPage: number;
     pageSize: number;
     name?: string;
-    industryID?: string;
-  }) =>
-    http.get<ApiResponse<SkillFilterResType>>(`${prefix}/filter`, { params }),
+    industryIDs?: string[];
+  }) => {
+    // Tự serialize nếu không muốn dùng thư viện qs
+    const searchParams = new URLSearchParams();
+    searchParams.append("currentPage", params.currentPage.toString());
+    searchParams.append("pageSize", params.pageSize.toString());
+    if (params.name) searchParams.append("name", params.name);
+
+    if (params.industryIDs) {
+      params.industryIDs.forEach((id) =>
+        searchParams.append("industryIDs", id),
+      );
+    }
+
+    return http.get<ApiResponse<SkillFilterResType>>(
+      `${prefix}/filter?${searchParams.toString()}`,
+    );
+  },
 
   createSkill: (payload: SkillCreateType) =>
     http.post<ApiResponse<any>>(`${prefix}`, payload),
