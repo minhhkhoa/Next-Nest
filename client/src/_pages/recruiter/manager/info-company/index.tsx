@@ -5,18 +5,14 @@ import React from "react";
 import CompanySetupPage from "./register-company";
 import PendingCompanyPage from "./components/pending-company";
 import ActiveCompanyPage from "./components/active-company";
-import { Loader } from "lucide-react";
+import { CompanySkeleton } from "@/components/skeletons/company-skeleton";
 
 export default function PageInfoCompany() {
   const { user } = useAppStore();
   const employerInfo = user?.employerInfo;
 
-  if (!user && employerInfo === undefined) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader className="animate-spin mx-auto mt-20" />
-      </div>
-    );
+  if (!user || employerInfo === undefined) {
+    return <CompanySkeleton />;
   }
 
   //- Trường hợp 1: employerInfo chưa tồn tại(undefine)
@@ -49,5 +45,5 @@ export default function PageInfoCompany() {
       <div>
         <PendingCompanyPage user={user} />
       </div>
-    )
+    );
 }

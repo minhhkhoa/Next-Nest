@@ -33,6 +33,7 @@ import {
 } from "./ui/collapsible";
 import { useAppStore } from "./TanstackProvider";
 import { getRoleRecruiterAdmin } from "@/lib/utils";
+import SidebarSkeleton from "./skeletons/SidebarSkeleton";
 
 const items = [
   {
@@ -61,6 +62,10 @@ export function AppSidebarRecruiter() {
 
   const roleCodeName = user?.roleCodeName;
   const roleRecruiterAdmin = getRoleRecruiterAdmin();
+
+  if (!roleCodeName) {
+    return <SidebarSkeleton />;
+  }
 
   return (
     <Sidebar collapsible="icon">

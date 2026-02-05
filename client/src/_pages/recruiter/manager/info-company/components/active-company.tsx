@@ -153,7 +153,7 @@ export default function ActiveCompanyPage({ companyId }: Props) {
   if (isLoading) return <CompanySkeleton />;
 
   return (
-    <div className="container mx-auto py-8 max-w-4xl space-y-6">
+    <div className="container mx-auto py-8 max-w-6xl space-y-6">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Header */}
@@ -277,14 +277,14 @@ export default function ActiveCompanyPage({ companyId }: Props) {
 
           {/* Grid Content */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
+            <Card className="gap-2">
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Building2 className="w-5 h-5 text-primary" /> Thông tin cơ
-                  bản
+                <CardTitle className="text-lg flex items-center gap-2 !mt-2">
+                  <Building2 className="w-5 h-5 text-primary" />
+                  Thông tin cơ bản
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 mb-2">
                 <FormField
                   control={form.control}
                   name="name"
@@ -393,13 +393,14 @@ export default function ActiveCompanyPage({ companyId }: Props) {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="gap-2">
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-primary" /> Mô tả
+                <CardTitle className="text-lg flex items-center gap-2 !mt-2">
+                  <FileText className="w-5 h-5 text-primary" />
+                  Mô tả
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4 mb-2">
                 <FormField
                   control={form.control}
                   name="description"
