@@ -162,7 +162,7 @@ export default function CreateCompanyForm({
       <motion.div variants={itemVariants}>
         <Card className="border-2 border-border/50">
           <CardHeader>
-            <CardTitle>
+            <CardTitle className="!mt-2">
               {currentStep === 1 ? "Thông tin cơ bản" : "Nhận diện thương hiệu"}
             </CardTitle>
             <CardDescription>
@@ -172,7 +172,7 @@ export default function CreateCompanyForm({
             </CardDescription>
           </CardHeader>
 
-          <CardContent>
+          <CardContent className="!mb-2">
             <motion.div
               key={currentStep}
               initial={{ opacity: 0, x: currentStep === 1 ? -20 : 20 }}

@@ -1,6 +1,7 @@
 "use client";
 
 import PendingCompanyPage from "@/_pages/recruiter/manager/info-company/components/pending-company";
+import CompanySetupPage from "@/_pages/recruiter/manager/info-company/register-company";
 import { AppSidebarRecruiter } from "@/components/app-sidebar-recruiter";
 import { useAppStore } from "@/components/TanstackProvider";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -13,6 +14,17 @@ export default function RecruiterLayout({
   children: React.ReactNode;
 }>) {
   const { user } = useAppStore();
+
+  //- nếu không có employerInfo thì bắt nó gia nhập công ty
+  if (!user?.employerInfo) {
+    return <CompanySetupPage />;
+  }
+
+  //- chạy tới đây là có employerInfo rồi
+  //- check xem nếu là pending thì hiển thị trang chờ phê duyệt
+  if (user.employerInfo.userStatus === "PENDING") {
+    return <PendingCompanyPage user={user} />;
+  }
 
   //- trước khi chạy vào các route con thì check xem employerInfo.status có bị khóa ko
   //- Nếu bị khóa thì thông báo

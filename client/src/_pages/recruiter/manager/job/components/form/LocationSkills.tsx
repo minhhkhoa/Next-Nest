@@ -56,7 +56,7 @@ export function LocationSkills({
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="font-semibold flex items-center gap-2">
-                  <Briefcase className="w-4 h-4" /> Ngành nghề
+                  <Briefcase className="w-4 h-4" /> Chuyên ngành liên quan
                 </FormLabel>
                 <FormControl>
                   <MultiSelectTree

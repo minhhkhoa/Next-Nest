@@ -27,7 +27,6 @@ export class TranslationService {
       client: 'gtx', // Dùng client gtx để ổn định, tránh 403
     };
 
-    // Nếu Khoa điền PROXY_URL, nó sẽ tự động kích hoạt Agent
     if (this.PROXY_URL) {
       this.logger.warn(`Đang sử dụng PROXY để dịch: ${this.PROXY_URL}`);
       options.requestOptions = {

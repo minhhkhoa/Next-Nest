@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  Clock,
-  RefreshCw,
-  ShieldCheck,
-  ExternalLink,
-} from "lucide-react";
+import { Clock, RefreshCw, ShieldCheck, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -40,8 +35,8 @@ const PendingCompanyPage = ({ user }: { user: UserResponseType }) => {
         <CardContent className="space-y-6 pt-4 text-center">
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Chào {user.name}, đội ngũ quản trị viên đã tiếp nhận yêu cầu đăng ký của
-              bạn. Quá trình xác thực thường diễn ra trong vòng
+              Chào {user.name}, đội ngũ quản trị viên đã tiếp nhận yêu cầu đăng
+              ký của bạn. Quá trình xác thực thường diễn ra trong vòng
               <span className="font-semibold text-foreground mx-1">
                 24h - 48h
               </span>{" "}
@@ -74,8 +69,14 @@ const PendingCompanyPage = ({ user }: { user: UserResponseType }) => {
         <Separator className="my-2" />
 
         <CardFooter className="flex flex-col gap-3">
-          <Button className="w-full gap-2" size="lg">
-            <RefreshCw className="w-4 h-4" /> Làm mới trạng thái
+          <Button
+            className="w-full gap-2"
+            size="lg"
+            //- refresh lại trang để kiểm tra trạng thái
+            onClick={() => window.location.reload()}
+          >
+            <RefreshCw className="w-4 h-4" /> 
+            Làm mới trạng thái
           </Button>
           <Button variant="link" className="w-full gap-2" size="lg">
             <Link href="/">Trở về trang chủ</Link>

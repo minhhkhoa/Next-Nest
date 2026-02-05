@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { use, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -28,6 +28,7 @@ import { ChevronLeft } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import { useGetCompanyDetail } from "@/queries/useCompany";
 
 interface JobFormProps {
   initialData?: JobResType;
@@ -45,6 +46,11 @@ export default function JobForm({
   const isUpdate = !!initialData;
   const roleRecruiterAdmin = getRoleRecruiterAdmin();
   const isRecruiterAdmin = user?.roleCodeName === roleRecruiterAdmin;
+
+  //- lấy ra công ty của recruiter
+  const { data: companyData } = useGetCompanyDetail(
+    user?.employerInfo?.companyID || "",
+  );
 
   //- Fetch dữ liệu cây ngành nghề
   const { data: industryTree } = useGetTreeIndustry({});
@@ -94,7 +100,7 @@ export default function JobForm({
           industryID: [],
           skills: [],
           otherSkills: [{ value: "" }], // Mặc định có một ô trống để nhập kỹ năng khác
-          location: "",
+          location: companyData?.data?.address || "",
           quantity: 1,
           level: "",
           employeeType: "",
@@ -243,7 +249,7 @@ export default function JobForm({
                 ) : isUpdate ? (
                   "Cập nhật"
                 ) : (
-                  "Đăng tin"
+                  "Tạo mới"
                 )}
               </Button>
             </div>
