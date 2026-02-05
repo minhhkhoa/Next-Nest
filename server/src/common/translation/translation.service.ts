@@ -1,67 +1,45 @@
 import { Injectable, Logger } from '@nestjs/common';
-import axios from 'axios';
 import { translationConfig } from './translation.config';
 import * as cheerio from 'cheerio';
 import { decode } from 'html-entities';
-import { ConfigService } from '@nestjs/config';
-
+import { translate } from 'google-translate-api-x';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 
 @Injectable()
 export class TranslationService {
   private readonly logger = new Logger(TranslationService.name);
 
-  private readonly libreTranslateUrl: string;
-
-  constructor(private readonly configService: ConfigService) {
-    this.libreTranslateUrl =
-      this.configService.get<string>('LIBRETRANSLATE_URL') as string;
-
-    this.logger.log(`LibreTranslate URL: ${this.libreTranslateUrl}`);
-  }
+  /**
+   * CẤU HÌNH PROXY THỦ CÔNG:
+   * Khi bị Google chặn (Lỗi 429), Khoa điền URL proxy vào đây.
+   * Định dạng: 'http://user:pass@ip:port' hoặc 'http://ip:port'
+   * Nếu không dùng, hãy để là null.
+   */
+  private readonly PROXY_URL = null;
 
   /**
-   * Gọi API LibreTranslate
-   * Chỉ cần dịch từ vi -> en
+   * Hàm lấy cấu hình dịch thuật linh hoạt
    */
-  private async callLibreTranslate(
-    text: string,
-    from = 'vi',
-    to = 'en',
-  ): Promise<string> {
-    try {
-      const response = await axios.post(
-        `${this.libreTranslateUrl}/translate`,
-        {
-          q: text,
-          source: from,
-          target: to,
-          format: 'text',
-        },
-        {
-          timeout: 10000,
-        },
-      );
+  private getTranslateOptions() {
+    const options: any = {
+      forceBatch: true, // Ưu tiên Batch để an toàn hơn
+      autoCorrect: true, // Tự động sửa lỗi chính tả
+      client: 'gtx', // Dùng client gtx để ổn định, tránh 403
+    };
 
-      return response.data.translatedText || text;
-    } catch (err: any) {
-      this.logger.error(`LibreTranslate error: ${err.message}`);
-      if (err.response?.data?.error) {
-        this.logger.error(`LibreTranslate server: ${err.response.data.error}`);
-      }
-      return text; //- Fallback: giữ nguyên
+    // Nếu Khoa điền PROXY_URL, nó sẽ tự động kích hoạt Agent
+    if (this.PROXY_URL) {
+      this.logger.warn(`Đang sử dụng PROXY để dịch: ${this.PROXY_URL}`);
+      options.requestOptions = {
+        agent: new HttpsProxyAgent(this.PROXY_URL),
+      };
     }
+
+    return options;
   }
 
   /**
-   * Dịch text thuần
-   */
-  async translateText(text: string, to = 'en', from = 'vi'): Promise<string> {
-    if (!text.trim()) return text;
-    return this.callLibreTranslate(text, from, to);
-  }
-
-  /**
-   * Dịch HTML – giữ cấu trúc, dịch từng đoạn nhỏ
+   * Dịch HTML – Giữ cấu trúc, dịch theo lô (Batch)
    */
   async translateHTML(html: string, to = 'en', from = 'vi'): Promise<string> {
     if (!html) return '';
@@ -69,70 +47,115 @@ export class TranslationService {
     const $ = cheerio.load(html, { xmlMode: false, decodeEntities: false });
     const ignoreTags = ['script', 'style', 'code', 'pre'];
 
-    //- Hàm dịch từng đoạn text nhỏ (tránh lỗi Stanza với dấu "-")
-    const translateNodeText = async (node: cheerio.Element) => {
+    const textNodes: any[] = [];
+    const textsToTranslate: string[] = [];
+
+    const collectNodes = (node: any) => {
       if (node.type === 'tag' && ignoreTags.includes(node.name)) return;
-
       if (node.type === 'text' && node.data?.trim()) {
-        let rawText = decode(node.data);
-
-        //- Tách thành các câu nhỏ để tránh lỗi Stanza
-        const sentences = rawText.split(/(?<=[.!?])\s+/);
-        let translated = '';
-
-        for (const sentence of sentences) {
-          if (sentence.trim()) {
-            const cleaned = sentence
-              .replace(/-\s+/g, ' ') //- Thay "- " bằng khoảng trắng
-              .replace(/\s+/g, ' ')
-              .trim();
-            if (cleaned) {
-              translated += (await this.translateText(cleaned, to, from)) + ' ';
-            } else {
-              translated += sentence + ' ';
-            }
-          } else {
-            translated += sentence;
-          }
+        const cleaned = decode(node.data).trim();
+        if (cleaned) {
+          textNodes.push(node);
+          textsToTranslate.push(cleaned);
         }
-
-        node.data = translated.trim();
       }
-
-      if (node.type === 'tag' && node.children) {
-        for (const child of node.children) {
-          await translateNodeText(child);
-        }
+      if (node.children) {
+        for (const child of node.children) collectNodes(child);
       }
     };
 
-    //- Dịch text nodes
-    await translateNodeText($('body')[0]);
+    collectNodes($('body')[0]);
+    if (textsToTranslate.length === 0) return html;
 
-    //- Dịch attributes
-    const attributesToTranslate = ['alt', 'title', 'placeholder'];
-    for (const attr of attributesToTranslate) {
-      $(`[${attr}]`).each((_, elem) => {
-        const value = $(elem).attr(attr);
-        if (value?.trim()) {
-          const decoded = decode(value);
-          //- Dịch từng phần nhỏ
-          const translated = decoded.split(/(?<=[.!?])\s+/).map(async (s) => {
-            const cleaned = s.replace(/-\s+/g, ' ').trim();
-            return cleaned ? await this.translateText(cleaned, to, from) : s;
-          });
-          Promise.all(translated).then((parts) => {
-            $(elem).attr(attr, parts.join(' '));
-          });
+    try {
+      // Chia nhỏ mảng nếu tổng ký tự > 4500 để không quá giới hạn 5000 của Google
+      const results = await this.translateLargeArray(
+        textsToTranslate,
+        from,
+        to,
+      );
+
+      textNodes.forEach((node, index) => {
+        if (results[index]?.text) {
+          node.data = results[index].text;
         }
       });
+    } catch (err: any) {
+      this.logger.error(`Batch Translation Error: ${err.message}`);
     }
 
     return $('body').html() || '';
   }
 
   /**
-   * Dịch dữ liệu module (giữ nguyên cấu trúc)
+   * Hàm bổ trợ: Chia nhỏ mảng text để dịch an toàn, tránh lỗi 429 và giới hạn 5000 ký tự
+   */
+  private async translateLargeArray(
+    texts: string[],
+    from: string,
+    to: string,
+  ): Promise<any[]> {
+    const batches: string[][] = [];
+    let currentBatch: string[] = [];
+    let currentLength = 0;
+
+    for (const text of texts) {
+      // Giới hạn an toàn 4000 ký tự cho mỗi lô gửi đi
+      if (currentLength + text.length > 4000) {
+        batches.push(currentBatch);
+        currentBatch = [];
+        currentLength = 0;
+      }
+      currentBatch.push(text);
+      currentLength += text.length;
+    }
+    if (currentBatch.length > 0) batches.push(currentBatch);
+
+    const finalResults: any[] = []; // Fix lỗi TS(2345) bằng cách khai báo any[]
+
+    for (const batch of batches) {
+      try {
+        const res = await translate(batch, {
+          from,
+          to,
+          ...this.getTranslateOptions(),
+        });
+        // Google trả về Array nếu input là Array
+        finalResults.push(...(Array.isArray(res) ? res : [res]));
+
+        // Nghỉ 300ms giữa các lô nếu nội dung quá dài
+        if (batches.length > 1) {
+          await new Promise((resolve) => setTimeout(resolve, 300));
+        }
+      } catch (error) {
+        this.logger.error(`Lỗi khi dịch lô: ${error.message}`);
+        // Nếu lỗi, đẩy giá trị null để giữ đúng index của mảng
+        batch.forEach(() => finalResults.push({ text: null }));
+      }
+    }
+    return finalResults;
+  }
+
+  /**
+   * Dịch text đơn lẻ
+   */
+  async translateText(text: string, to = 'en', from = 'vi'): Promise<string> {
+    if (!text?.trim()) return text;
+    try {
+      const res = await translate(text, {
+        from,
+        to,
+        ...this.getTranslateOptions(),
+      });
+      return (res as any).text || text;
+    } catch (err) {
+      this.logger.error(`Single Translate Error: ${err.message}`);
+      return text;
+    }
+  }
+
+  /**
+   * Dịch dữ liệu theo module config
    */
   async translateModuleData<T extends Record<string, any>>(
     module: keyof typeof translationConfig,
@@ -144,20 +167,16 @@ export class TranslationService {
     for (const field of fieldsToTranslate) {
       if (data[field]) {
         const vi = data[field];
-        let en: string;
-
         const isHTML = /<[^>]+>/.test(vi) || /&[a-zA-Z0-9#]+;/.test(vi);
 
-        if (isHTML) {
-          en = await this.translateHTML(vi, 'en', 'vi');
-        } else {
-          en = await this.translateText(vi, 'en', 'vi');
-        }
-
-        result[field] = { vi, en };
+        result[field] = {
+          vi,
+          en: isHTML
+            ? await this.translateHTML(vi)
+            : await this.translateText(vi),
+        };
       }
     }
-
     return result;
   }
 }

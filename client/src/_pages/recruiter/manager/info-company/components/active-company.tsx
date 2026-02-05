@@ -95,7 +95,7 @@ export default function ActiveCompanyPage({ companyId }: Props) {
       form.reset({
         name: company.data.name,
         address: company.data.address,
-        description: company.data.description?.vi || "",
+        description: company.data.description?.en || "",
         industryID: industryIdsOnly,
         totalMember: company.data.totalMember,
         website: company.data.website,
