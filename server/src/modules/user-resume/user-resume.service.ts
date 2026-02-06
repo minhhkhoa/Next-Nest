@@ -121,31 +121,55 @@ export class UserResumeService {
 
   async remove(id: string, user: UserDecoratorType) {
     try {
-      //- check id
       if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new BadRequestCustom('ID CV không đúng định dạng', true);
       }
-      
-      const result = await this.resumeModel.findOneAndUpdate(
-        { _id: id, userID: user.id },
-        {
-          isDeleted: true,
-          deletedAt: new Date(),
-          deletedBy: {
-            _id: user.id,
-            name: user.name,
-            email: user.email,
-            avatar: user.avatar,
-          },
-        },
-        { new: true },
-      );
 
-      if (!result) {
+      //- Tìm bản ghi trước để kiểm tra xem nó có đang là CV mặc định không
+      const resume = await this.resumeModel.findOne({
+        _id: id,
+        userID: user.id,
+        isDeleted: false,
+      });
+
+      if (!resume) {
         throw new BadRequestCustom(
           'Không tìm thấy CV để xóa hoặc bạn không có quyền',
           true,
         );
+      }
+
+      //- Tiến hành xóa mềm thủ công bằng findOneAndUpdate
+      await this.resumeModel.findOneAndUpdate(
+        { _id: id, userID: user.id },
+        {
+          $set: {
+            isDeleted: true,
+            deletedAt: new Date(),
+            deletedBy: {
+              _id: user.id,
+              name: user.name,
+              email: user.email,
+              avatar: user.avatar,
+            },
+            isDefault: false, // Khi xóa thì bỏ luôn trạng thái mặc định
+          },
+        },
+      );
+
+      //- Logic "Phục vụ tốt hơn": Nếu vừa xóa bản mặc định,
+      // tự động tìm bản CV còn lại mới nhất để đặt làm mặc định thay thế.
+      if (resume.isDefault) {
+        const nextResume = await this.resumeModel
+          .findOne({ userID: user.id, isDeleted: false })
+          .sort('-updatedAt');
+
+        if (nextResume) {
+          await this.resumeModel.updateOne(
+            { _id: nextResume._id },
+            { $set: { isDefault: true } },
+          );
+        }
       }
 
       return { message: 'Xóa bản CV thành công' };
