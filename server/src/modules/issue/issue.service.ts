@@ -14,12 +14,14 @@ import { ConfigService } from '@nestjs/config';
 import { UserService } from '../user/user.service';
 import { NotificationType } from 'src/common/constants/notification-type.enum';
 import { TranslationService } from 'src/common/translation/translation.service';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class IssueService {
   constructor(
     private readonly translationService: TranslationService,
     private readonly configService: ConfigService,
+    private mailService: MailService,
     @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
     private eventEmitter: EventEmitter2,
@@ -58,6 +60,15 @@ export class IssueService {
           },
         ],
       });
+
+      //- start gửi mail xác nhận tới user
+      this.mailService.sendIssueConfirmationMail(
+        user.email,
+        user.name,
+        newIssue.title.vi,
+        newIssue._id.toString(),
+      );
+      //- end gửi mail xác nhận tới user
 
       //- start ping event to notify admin
       try {
@@ -266,6 +277,16 @@ export class IssueService {
 
       if (!updatedIssue)
         throw new BadRequestCustom('Cập nhật phản hồi thất bại', true);
+
+      //- start gửi mail thông báo Admin đã trả lời Issue
+      this.mailService.sendAdminRepliedMail(
+        updatedIssue.createdBy.email,
+        updatedIssue.createdBy.name,
+        updatedIssue.title.vi,
+        updatedIssue._id.toString(),
+        updatedIssue.status,
+      );
+      //- end gửi mail thông báo Admin đã trả lời Issue
 
       //- start ping event to notify user
       try {

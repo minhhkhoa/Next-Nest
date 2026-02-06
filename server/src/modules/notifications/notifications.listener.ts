@@ -102,4 +102,13 @@ export class NotificationsListener {
   handleIssueCreated(payload: CreateNotificationDto) {
     return this.processNotification(payload, NotificationType.ISSUE_CREATED);
   }
+
+  //- phản hồi yêu cầu/báo cáo
+  @OnEvent(NotificationType.ISSUE_ADMIN_REPLY)
+  handleIssueAdminReplied(payload: CreateNotificationDto) {
+    return this.processNotification(
+      payload,
+      NotificationType.ISSUE_ADMIN_REPLY,
+    );
+  }
 }

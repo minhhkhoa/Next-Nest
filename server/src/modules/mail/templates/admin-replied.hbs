@@ -1,0 +1,39 @@
+<html lang='vi'>
+  <head>
+    <meta charset='UTF-8' />
+    <style>
+      body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+      .container { padding: 25px; border: 1px solid #e0e0e0; border-radius: 10px; max-width: 600px; margin: 0 auto; }
+      .header { color: #28a745; border-bottom: 2px solid #28a745; padding-bottom: 10px; }
+      .content { background-color: #f8f9fa; padding: 15px; border-radius: 5px; border-left: 4px solid #28a745; margin: 20px 0; }
+      .button { display: inline-block; padding: 12px 25px; background-color: #007bff; color: white !important; text-decoration: none; border-radius: 5px; font-weight: bold; }
+      .footer { margin-top: 25px; font-size: 0.85em; color: #888; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <h2 class='header'>Thông báo: Yêu cầu của bạn đã có phản hồi</h2>
+      <p>Xin chào <strong>{{name}}</strong>,</p>
+      <p>Chúng tôi đã xem xét và xử lý yêu cầu/báo cáo của bạn liên quan đến: <em>"{{title}}"</em>.</p>
+      
+      <p>Trạng thái hiện tại: <strong>{{status}}</strong></p>
+
+      <div class='content'>
+        <strong>Lưu ý:</strong> Để bảo mật thông tin, chi tiết phản hồi và hướng dẫn giải quyết từ Quản trị viên đã được cập nhật trực tiếp trong hệ thống.
+      </div>
+
+      <div style="text-align: center;">
+        <a href="{{linkDetail}}" class="button">Xem phản hồi chi tiết</a>
+      </div>
+
+      <p>Nếu bạn hài lòng với phản hồi này, vui lòng chọn "Đóng yêu cầu" trên ứng dụng để chúng tôi hoàn tất hồ sơ.</p>
+
+      <p>Cảm ơn bạn đã đồng hành cùng chúng tôi!<br />Đội ngũ Nice App</p>
+      
+      <div class='footer'>
+        <hr />
+        <p>Đây là thông báo tự động. Vui lòng truy cập WebApp để trao đổi thêm nếu cần thiết.</p>
+      </div>
+    </div>
+  </body>
+</html>
