@@ -12,7 +12,7 @@ import { IssueService } from './issue.service';
 import { CreateIssueDto } from './dto/create-issue.dto';
 import { UpdateIssueAdminDto, UpdateIssueDto } from './dto/update-issue.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ResponseMessage, userDecorator } from 'src/common/decorator/customize';
+import { PublicPermission, ResponseMessage, userDecorator } from 'src/common/decorator/customize';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { FindIssueQueryDto } from './dto/issueDto.dto';
 
@@ -21,6 +21,7 @@ import { FindIssueQueryDto } from './dto/issueDto.dto';
 export class IssueController {
   constructor(private readonly issueService: IssueService) {}
 
+  @PublicPermission()
   @Post()
   @ResponseMessage('Gửi yêu cầu hỗ trợ/báo cáo thành công')
   @ApiOperation({ summary: 'Người dùng (Ứng viên/HR) tạo yêu cầu mới' })
@@ -31,6 +32,7 @@ export class IssueController {
     return this.issueService.create(createIssueDto, user);
   }
 
+  @PublicPermission()
   @Get('filter')
   @ResponseMessage('Lấy danh sách yêu cầu với lọc nâng cao thành công')
   @ApiOperation({ summary: 'Admin lấy danh sách yêu cầu (Phân trang, Filter)' })
@@ -39,6 +41,7 @@ export class IssueController {
   }
 
   //- Người dùng xem lại lịch sử yêu cầu của chính họ
+  @PublicPermission()
   @Get('me')
   @ResponseMessage('Lấy danh sách yêu cầu cá nhân thành công')
   @ApiOperation({ summary: 'Người dùng xem lại lịch sử yêu cầu của chính họ' })
@@ -49,6 +52,7 @@ export class IssueController {
     return this.issueService.findAllByUser(user, query);
   }
 
+  @PublicPermission()
   @Get(':id')
   @ResponseMessage('Lấy chi tiết yêu cầu thành công')
   @ApiOperation({ summary: 'Xem chi tiết yêu cầu và phản hồi từ admin' })
@@ -57,6 +61,7 @@ export class IssueController {
   }
 
   //- Dành cho Admin xử lý phản hồi
+  @PublicPermission()
   @Patch('admin-reply')
   @ResponseMessage('Phản hồi yêu cầu thành công')
   @ApiOperation({
@@ -70,6 +75,7 @@ export class IssueController {
   }
 
   //- Dành cho User muốn sửa thông tin khi chưa xử lý hoặc Đóng yêu cầu
+  @PublicPermission()
   @Patch(':id')
   @ResponseMessage('Cập nhật yêu cầu thành công')
   @ApiOperation({ summary: 'Người dùng cập nhật nội dung yêu cầu' })
@@ -81,6 +87,7 @@ export class IssueController {
     return this.issueService.update(id, updateIssueDto, user);
   }
 
+  @PublicPermission()
   @Delete(':id')
   @ResponseMessage('Xóa yêu cầu thành công')
   @ApiOperation({ summary: 'Xóa yêu cầu (Xóa mềm hoặc xóa cứng)' })

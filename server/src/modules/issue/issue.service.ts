@@ -332,7 +332,7 @@ export class IssueService {
       const issue = await this.issueModel.findById(id);
       if (!issue) throw new BadRequestCustom('Không tìm thấy yêu cầu', true);
 
-      // Kiểm tra chính chủ
+      //- Kiểm tra chính chủ
       if (issue.createdBy._id.toString() !== user.id) {
         throw new BadRequestCustom(
           'Bạn không có quyền chỉnh sửa yêu cầu này',
@@ -340,7 +340,7 @@ export class IssueService {
         );
       }
 
-      // Chỉ cho sửa khi Admin chưa xử lý
+      //- Chỉ cho sửa khi Admin chưa xử lý
       if (issue.status !== 'PENDING') {
         throw new BadRequestCustom(
           'Yêu cầu đã được tiếp nhận, không thể chỉnh sửa',
@@ -364,12 +364,28 @@ export class IssueService {
         throw new BadRequestCustom('ID không đúng định dạng', true);
       }
 
-      const result = await this.issueModel.softDelete({ _id: id });
+      //- check tồn tại yêu cầu
+      const issue = await this.issueModel.findOne({ _id: id });
+      if (!issue) throw new BadRequestCustom('Không tìm thấy yêu cầu', true);
 
-      // Cập nhật người xóa
-      await this.issueModel.updateOne(
+      const isOwner = issue.createdBy._id.toString() === user.id;
+
+      const textRoleAdmin = this.configService.get<string>('role_super_admin');
+      const isSuperAdmin = user.roleCodeName === textRoleAdmin;
+
+      if (!isOwner && !isSuperAdmin) {
+        throw new BadRequestCustom('Bạn không có quyền xóa yêu cầu này', true);
+      }
+
+      const update = {
+        deletedBy: { _id: user.id, name: user.name, email: user.email },
+        isDeleted: true,
+        deletedAt: new Date(),
+      };
+
+      const result = await this.issueModel.updateOne(
         { _id: id },
-        { deletedBy: { _id: user.id, name: user.name, email: user.email } },
+        { $set: update },
       );
 
       return result;

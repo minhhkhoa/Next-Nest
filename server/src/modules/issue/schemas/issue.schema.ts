@@ -63,6 +63,15 @@ export class Issue {
     updatedAt: Date;
     note: string;
   }[];
+
+  @Prop({ default: false })
+  isDeleted: boolean;
+
+  @Prop({ type: Object })
+  updatedBy: UserAudit;
+
+  @Prop({ type: Object })
+  deletedBy: UserAudit;
 }
 
 export const IssueSchema = SchemaFactory.createForClass(Issue);
