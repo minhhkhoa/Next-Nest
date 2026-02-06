@@ -7,6 +7,9 @@ import { ISSUE_STATUS_OPTIONS } from 'src/common/constants/issue-const';
 export class UpdateIssueDto extends PartialType(CreateIssueDto) {}
 
 export class UpdateIssueAdminDto {
+  @IsNotEmpty({ message: 'ID không được để trống' })
+  id: string;
+
   @IsNotEmpty({ message: 'Trạng thái không được để trống' })
   @IsEnum(ISSUE_STATUS_OPTIONS.map((opt) => opt.value), {
     message: 'Trạng thái không hợp lệ',

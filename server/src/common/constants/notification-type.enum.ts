@@ -12,6 +12,11 @@ export enum NotificationType {
   JOB_VERIFIED = 'JOB_VERIFIED', // RECRUITER nhận: Tin tuyển dụng được duyệt/từ chối
   JOB_UPDATED = 'JOB_UPDATED', // RECRUITER_ADMIN nhận: Tin tuyển dụng được cập nhật bởi RECRUITER thường
 
+  //- module issue
+  ISSUE_CREATED = 'ISSUE_CREATED', // Admin nhận: Có yêu cầu/báo cáo mới từ user
+  ISSUE_ADMIN_REPLY = 'ISSUE_ADMIN_REPLY', // User nhận: Admin đã phản hồi yêu cầu
+
+
   //- Module Resume
   RESUME_SUBMITTED = 'RESUME_SUBMITTED', // Recruiter nhận: Có CV mới
   RESUME_STATUS_CHANGED = 'RESUME_STATUS_CHANGED', // Candidate nhận: Trạng thái CV thay đổi

@@ -96,4 +96,10 @@ export class NotificationsListener {
   handleJobVerified(payload: CreateNotificationDto) {
     return this.processNotification(payload, NotificationType.JOB_VERIFIED);
   }
+
+  //- tạo mới yêu cầu/báo cáo
+  @OnEvent(NotificationType.ISSUE_CREATED)
+  handleIssueCreated(payload: CreateNotificationDto) {
+    return this.processNotification(payload, NotificationType.ISSUE_CREATED);
+  }
 }

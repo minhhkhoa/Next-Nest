@@ -4,7 +4,7 @@ import {
   ISSUE_STATUS_OPTIONS,
   ISSUE_TYPE_OPTIONS,
 } from 'src/common/constants/issue-const';
-import { UserAudit } from 'src/utils/typeSchemas';
+import { MultiLang, UserAudit } from 'src/utils/typeSchemas';
 
 @Schema({ timestamps: true })
 export class Issue {
@@ -23,10 +23,10 @@ export class Issue {
   targetId: mongoose.Schema.Types.ObjectId;
 
   @Prop({ required: true })
-  title: string;
+  title: MultiLang;
 
   @Prop({ required: true })
-  description: string;
+  description: MultiLang;
 
   //- Mảng URL ảnh bằng chứng đính kèm
   @Prop({ type: [String] })
@@ -49,7 +49,7 @@ export class Issue {
   })
   adminResponse: {
     adminId: mongoose.Schema.Types.ObjectId;
-    content: string;
+    content: MultiLang;
     repliedAt: Date;
   };
 
