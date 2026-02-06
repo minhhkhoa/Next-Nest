@@ -25,6 +25,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-yet';
 import { IssueModule } from './modules/issue/issue.module';
+import { UserResumeModule } from './modules/user-resume/user-resume.module';
 
 @Module({
   imports: [
@@ -88,6 +89,7 @@ import { IssueModule } from './modules/issue/issue.module';
     NotificationsModule,
     JobsModule,
     IssueModule,
+    UserResumeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

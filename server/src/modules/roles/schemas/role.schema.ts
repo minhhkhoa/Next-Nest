@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument, Types } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 import { Permission } from 'src/modules/permissions/schemas/permission.schema';
 import { MultiLang, UserAudit } from 'src/utils/typeSchemas';
 
