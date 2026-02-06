@@ -11,7 +11,7 @@ import {
 } from './schemas/detail-profile.schema';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { FindUserQueryDto } from 'src/modules/user/dto/userDto.dto';
 
 @Injectable()
@@ -164,6 +164,20 @@ export class DetailProfileService {
           select: 'name _id',
         },
       ]);
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
+  async findByUserIdForResume(userId: string) {
+    try {
+      const profile = await this.detailProfileModel
+        .findOne({ userID: userId, isDeleted: false })
+        .populate({ path: 'industryID', select: 'name' })
+        .populate({ path: 'skillID', select: 'name' })
+        .lean();
+
+      return profile;
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }

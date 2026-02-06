@@ -147,6 +147,45 @@ export class UserService {
     return this.detailProfileService.findAllByFilter(query);
   }
 
+  async getProfileForResume(userId: string) {
+    try {
+      //- check id đã
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        throw new BadRequestCustom('ID không đúng định dạng', !!userId);
+      }
+      
+      const user = await this.userModel
+        .findById(userId)
+        .select('name email avatar')
+        .lean();
+
+      if (!user) throw new BadRequestCustom('Không tìm thấy người dùng', true);
+
+      //- Gọi sang DetailProfileService để lấy thông tin chi tiết
+      const profile =
+        await this.detailProfileService.findByUserIdForResume(userId);
+
+      //- Gộp dữ liệu trả về cho FE
+      return {
+        personalInfo: {
+          name: user.name,
+          email: user.email,
+          avatar: user.avatar,
+          gender: profile?.gender || 'Boy',
+          address: profile?.address || '',
+        },
+        professionalSummary: profile?.sumary || '',
+        education: profile?.education || [],
+        skills: profile?.skillID || [],
+        industries: profile?.industryID || [],
+        desiredSalary: profile?.desiredSalary || { min: 0, max: 0 },
+        level: profile?.level || '',
+      };
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
   //- reset userStatus ve pending/active khi công ty dc accept/reject
   async resetUsersStatusByCompanyID(companyId: string, action: string) {
     try {

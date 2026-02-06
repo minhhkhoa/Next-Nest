@@ -39,6 +39,15 @@ export class UserController {
     return this.userService.findAllByFilter(query);
   }
 
+  @Get('resume-data')
+  @ResponseMessage('Lấy dữ liệu hồ sơ để tạo CV thành công')
+  @ApiOperation({
+    summary: 'Lấy thông tin tổng hợp từ User và DetailProfile để auto-fill CV',
+  })
+  async getResumeData(@userDecorator() user: UserDecoratorType) {
+    return await this.userService.getProfileForResume(user.id);
+  }
+
   @ResponseMessage('Tìm kiếm toàn bộ người dùng thành công')
   @ApiOperation({ summary: 'get all user' })
   @Get()
