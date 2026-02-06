@@ -256,7 +256,7 @@ export class CompanyService {
     }
   }
 
-  //- còn thiếu 1 vài api nữa, nào code tới FE mình làm thêm. 
+  //- còn thiếu 1 vài api nữa, nào code tới FE mình làm thêm.
   //- Làm thêm tới nơi rồi nè muahaha sau 3 tháng:>>.
 
   async findOne(id: string) {
@@ -294,6 +294,14 @@ export class CompanyService {
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }
+  }
+
+  //- dùng khi bên user service cần gọi trong transaction
+  async findOneForInternal(id: string, session: mongoose.ClientSession) {
+    return await this.companyModel
+      .findById(id)
+      .session(session)
+      .lean();
   }
 
   async restore(id: string, user: UserDecoratorType) {
@@ -615,5 +623,68 @@ export class CompanyService {
     } finally {
       session.endSession();
     }
+  }
+
+  //- được gọi khi xử lý logic: khôi phục người dùng là owner công ty
+  async restoreBySystem(
+    companyId: string,
+    user: UserDecoratorType,
+    session: mongoose.ClientSession,
+  ) {
+    // 1. Khôi phục trạng thái Company
+    const company = await this.companyModel.findOneAndUpdate(
+      { _id: companyId, isDeleted: true },
+      {
+        $set: { isDeleted: false },
+        $unset: { deletedAt: 1, deletedBy: 1 },
+        updatedBy: {
+          _id: user.id,
+          email: user.email,
+          name: user.name,
+          avatar: user.avatar,
+        },
+      },
+      { session, new: true },
+    );
+
+    if (!company) return null;
+
+    // 2. Kích hoạt lại toàn bộ nhân viên thuộc công ty
+    await this.userService.reactivateByCompany(companyId, session);
+
+    // 3. Khôi phục toàn bộ Job của công ty
+    await this.jobService.restoreManyByCompany(companyId, session);
+
+    return company;
+  }
+
+  //- được gọi khi xử lý logic: xóa người dùng là owner công ty
+  async removeBySystem(
+    companyId: string,
+    user: UserDecoratorType,
+    session: mongoose.ClientSession,
+  ) {
+    // 1. Soft Delete Company
+    await this.companyModel.updateOne(
+      { _id: companyId },
+      {
+        $set: {
+          isDeleted: true,
+          deletedBy: {
+            _id: user.id,
+            email: user.email,
+            name: user.name,
+            avatar: user.avatar,
+          },
+        },
+      },
+      { session },
+    );
+
+    // 2. Vô hiệu hóa toàn bộ nhân viên (userStatus = INACTIVE)
+    await this.userService.deactivateByCompany([companyId], session);
+
+    // 3. Tắt toàn bộ Job (isDeleted = true, status = inactive)
+    await this.jobService.softDeleteManyByCompany([companyId], session);
   }
 }

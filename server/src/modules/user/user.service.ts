@@ -25,6 +25,7 @@ import {
   ApproveCompanyDto,
   JoinCompanyDto,
 } from '../company/dto/companyDto.dto';
+import { JobsService } from '../jobs/jobs.service';
 
 @Injectable()
 export class UserService {
@@ -153,7 +154,7 @@ export class UserService {
       if (!mongoose.Types.ObjectId.isValid(userId)) {
         throw new BadRequestCustom('ID không đúng định dạng', !!userId);
       }
-      
+
       const user = await this.userModel
         .findById(userId)
         .select('name email avatar')
@@ -727,7 +728,8 @@ export class UserService {
     return result;
   }
 
-  async restoreUserAndProfile(id: string) {
+  //- khôi phục tài khoản
+  async restoreUserAndProfile(id: string, adminInfo: UserDecoratorType) {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new BadRequestCustom('ID không đúng định dạng');
     }
@@ -736,24 +738,68 @@ export class UserService {
     session.startTransaction();
 
     try {
-      // 1. Khôi phục User
+      // 1. Khôi phục bản ghi User
+      // Chúng ta sử dụng findOneAndUpdate để lấy được dữ liệu bản ghi SAU khi update (new: true)
       const user = await this.userModel.findOneAndUpdate(
         { _id: id, isDeleted: true },
-        { $set: { isDeleted: false, deletedAt: null } },
+        {
+          $set: { isDeleted: false },
+          $unset: { deletedAt: 1, deletedBy: 1 },
+          updatedBy: {
+            _id: adminInfo.id,
+            name: adminInfo.name,
+            email: adminInfo.email,
+            avatar: adminInfo.avatar,
+          },
+        },
         { session, new: true },
       );
 
-      if (!user) {
+      if (!user)
         throw new Error(
           'Không tìm thấy người dùng bị xóa hoặc tài khoản đang hoạt động',
         );
-      }
 
-      // 2. Gọi Service khôi phục Profile (Sửa lỗi báo đỏ ở đây)
+      // 2. Khôi phục DetailProfile (CV, thông tin chi tiết...)
       await this.detailProfileService.restoreByUserId(id, session);
 
+      // 3. Xử lý logic khôi phục hệ sinh thái Công ty
+      const companyID = user.employerInfo?.companyID;
+      if (companyID) {
+        if (user.employerInfo?.isOwner) {
+          // CASE 1: Là Owner quay lại -> Khôi phục cả hệ sinh thái
+          await this.companyService.restoreBySystem(
+            companyID.toString(),
+            adminInfo,
+            session,
+          );
+
+          await this.userModel.updateOne(
+            { _id: id },
+            { $set: { 'employerInfo.userStatus': 'ACTIVE' } },
+            { session },
+          );
+        } else {
+          // CASE 2: Là nhân viên quay lại(bao cả chủ cũ về nhân viên) -> Chỉ kích hoạt nếu công ty đang hoạt động
+          const company = await this.companyService.findOneForInternal(
+            companyID.toString(),
+            session,
+          );
+
+          if (company && !company.isDeleted) {
+            await this.userModel.updateOne(
+              { _id: id },
+              { $set: { 'employerInfo.userStatus': 'ACTIVE' } },
+              { session },
+            );
+          }
+        }
+      }
+
       await session.commitTransaction();
-      return { message: 'Khôi phục tài khoản thành công' };
+      return {
+        message: 'Khôi phục tài khoản và các dữ liệu liên quan thành công',
+      };
     } catch (error) {
       await session.abortTransaction();
       throw new BadRequestCustom(error.message);
@@ -803,7 +849,11 @@ export class UserService {
   }
 
   //- Chức năng xóa mềm đồng bộ cả 2 collection user & detailProfile (Transaction)
-  async softDeleteUserAndProfile(id: string) {
+  async softDeleteUserAndProfile(
+    id: string,
+    adminInfo: UserDecoratorType,
+    newOwnerID?: string,
+  ) {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new BadRequestCustom('ID không đúng định dạng');
     }
@@ -812,23 +862,117 @@ export class UserService {
     session.startTransaction();
 
     try {
-      // 1. Xóa mềm User
-      const userUpdate = await this.userModel.findOneAndUpdate(
-        { _id: id, isDeleted: false },
-        { $set: { isDeleted: true, deletedAt: new Date() } },
-        { session, new: true },
-      );
+      //- check newOwnerID nếu có
+      if (newOwnerID && !mongoose.Types.ObjectId.isValid(newOwnerID)) {
+        throw new BadRequestCustom('ID người thay thế không đúng định dạng');
+      }
 
-      if (!userUpdate) {
+      const userNewOwner = await this.userModel.findById(newOwnerID);
+
+      if (newOwnerID && (!userNewOwner || userNewOwner.isDeleted)) {
+        throw new BadRequestCustom(
+          'Người dùng thay thế không tồn tại hoặc đã bị xóa',
+        );
+      }
+
+      // 1. Lấy thông tin User để kiểm tra vai trò
+      const userToDelete = await this.userModel.findById(id).session(session);
+      if (!userToDelete || userToDelete.isDeleted) {
         throw new Error('Người dùng không tồn tại hoặc đã bị xóa');
       }
 
-      // 2. Gọi hàm xóa bên DetailProfileService và truyền session vào
+      // 2. Xử lý logic Owner Công ty
+      const companyID = userToDelete.employerInfo?.companyID;
+      // KIỂM TRA NẾU LÀ CHỦ SỞ HỮU
+      if (userToDelete.employerInfo?.isOwner && companyID) {
+        if (newOwnerID) {
+          // TRƯỜNG HỢP CÓ NGƯỜI THAY THẾ
+          // 1. Chuyển quyền Owner & Nâng Role cho người mới
+          //- lấy role RECRUITER_ADMIN
+          const getNameRoleRecruiterAdmin = this.configService.get<string>(
+            'role_recruiter_admin',
+          );
+          const roleRecruiterAdmin = await this.roleService.getRoleByName(
+            getNameRoleRecruiterAdmin!,
+          );
+
+          if (!roleRecruiterAdmin) {
+            throw new Error(
+              'Hệ thống chưa cấu hình Role RECRUITER_ADMIN cho Nhà tuyển dụng',
+            );
+          }
+
+          await this.userModel.updateOne(
+            { _id: newOwnerID },
+            {
+              $set: {
+                'employerInfo.isOwner': true,
+                roleID: roleRecruiterAdmin._id,
+              },
+            },
+            { session },
+          );
+
+          // 2. Hạ quyền người cũ xuống thành nhân viên bình thường trước khi xóa
+          //- hạ về role RECRUITER,
+          const getNameRoleRecruiter =
+            this.configService.get<string>('role_recruiter'); // 'RECRUITER'
+          const roleRecruiter = await this.roleService.getRoleByName(
+            getNameRoleRecruiter!,
+          );
+
+          if (!roleRecruiter) {
+            throw new Error(
+              'Hệ thống chưa cấu hình Role RECRUITER cho Nhà tuyển dụng',
+            );
+          }
+
+          await this.userModel.updateOne(
+            { _id: id },
+            {
+              $set: {
+                'employerInfo.isOwner': false,
+                roleID: roleRecruiter._id, // Hạ về Recruiter
+              },
+            },
+            { session },
+          );
+        } else {
+          // TRƯỜNG HỢP KHÔNG CÓ AI THAY THẾ (Owner duy nhất)
+          // Tắt toàn bộ hệ sinh thái công ty
+          await this.companyService.removeBySystem(
+            companyID.toString(),
+            adminInfo,
+            session,
+          );
+        }
+      }
+
+      // 3. Tiến hành xóa mềm User
+      await this.userModel.findOneAndUpdate(
+        { _id: id },
+        {
+          $set: {
+            isDeleted: true,
+            deletedAt: new Date(),
+            deletedBy: {
+              _id: adminInfo.id,
+              name: adminInfo.name,
+              email: adminInfo.email,
+              avatar: adminInfo.avatar,
+            },
+          },
+        },
+        { session },
+      );
+
+      // 4. Xóa Profile
       await this.detailProfileService.softCheckDeleteByUserId(id, session);
 
-      // Hoàn tất transaction
       await session.commitTransaction();
-      return { message: 'Đã xóa đồng bộ User và Profile' };
+      return {
+        message: 'Đã xóa người dùng và xử lý các ràng buộc công ty thành công',
+      };
     } catch (error) {
       await session.abortTransaction();
       throw new BadRequestCustom(error.message);

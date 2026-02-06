@@ -99,8 +99,11 @@ export class UserController {
 
   @Patch(':id/restore')
   @ResponseMessage('Khôi phục tài khoản thành công')
-  restoreUser(@Param('id') id: string) {
-    return this.userService.restoreUserAndProfile(id);
+  restoreUser(
+    @Param('id') id: string,
+    @userDecorator() admin: UserDecoratorType,
+  ) {
+    return this.userService.restoreUserAndProfile(id, admin);
   }
 
   @ResponseMessage('Cập nhật thông tin người dùng thành công')
@@ -120,7 +123,7 @@ export class UserController {
   // API Xóa mềm đồng bộ
   @Delete(':id')
   @ResponseMessage('Xóa người dùng thành công')
-  remove(@Param('id') id: string) {
-    return this.userService.softDeleteUserAndProfile(id);
+  remove(@Param('id') id: string, @userDecorator() admin: UserDecoratorType) {
+    return this.userService.softDeleteUserAndProfile(id, admin);
   }
 }
