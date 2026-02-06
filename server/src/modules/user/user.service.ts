@@ -25,7 +25,6 @@ import {
   ApproveCompanyDto,
   JoinCompanyDto,
 } from '../company/dto/companyDto.dto';
-import { JobsService } from '../jobs/jobs.service';
 
 @Injectable()
 export class UserService {

@@ -1,6 +1,6 @@
 import { ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { CreateCompanyDto } from './create-company.dto';
-import { IsBoolean, IsEnum, IsOptional } from 'class-validator';
+import { IsEnum, IsOptional } from 'class-validator';
 
 export class UpdateCompanyDto extends PartialType(CreateCompanyDto) {
   @ApiPropertyOptional({ enum: ['PENDING', 'ACCEPT', 'REJECTED'] })

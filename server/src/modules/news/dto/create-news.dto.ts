@@ -1,6 +1,12 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsBoolean, IsEnum, IsMongoId, IsNotEmpty, IsOptional } from "class-validator";
-import { NewsStatus } from "src/utils/typeSchemas";
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsBoolean,
+  IsEnum,
+  IsMongoId,
+  IsNotEmpty,
+  IsOptional,
+} from 'class-validator';
+import { NewsStatus } from 'src/utils/typeSchemas';
 
 export class CreateNewsDto {
   @ApiProperty()
