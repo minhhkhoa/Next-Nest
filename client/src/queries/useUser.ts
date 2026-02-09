@@ -50,6 +50,14 @@ export const useGetMembersByCompanyId = (companyId?: string) => {
   });
 };
 
+//- lấy thông tin điền vào cv
+export const useGetResumeData = () => {
+  return useQuery({
+    queryKey: ["resume-data"],
+    queryFn: () => userApiRequest.getResumeData(),
+  });
+}
+
 export const useGetAllUserByFilter = ({
   currentPage,
   pageSize,

@@ -132,3 +132,43 @@ export const ApproveCompany = z.object({
 
 export type TypeApproveCompany = z.infer<typeof ApproveCompany>;
 //- end payload
+
+//- start type for cv-templates
+export const apiUserForCVRes = z.object({
+  personalInfo: z.object({
+    name: z.string(),
+    email: z.string(),
+    avatar: z.string(),
+    gender: z.string(),
+    address: z.string(),
+  }),
+  professionalSummary: z.string(),
+  education: z.array(
+    z.object({
+      school: z.string(),
+      degree: z.string(),
+      startDate: z.date(),
+      endDate: z.date(),
+    }),
+  ),
+  skills: z.array(
+    z.object({
+      _id: z.string(),
+      name: MultiLang,
+    }),
+  ),
+  industries: z.array(
+    z.object({
+      _id: z.string(),
+      name: MultiLang,
+    }),
+  ),
+  desiredSalary: z.object({
+    min: z.number(),
+    max: z.number(),
+  }),
+  level: z.string(),
+});
+
+export type apiUserForCVResType = z.infer<typeof apiUserForCVRes>;
+//- end type for cv-templates

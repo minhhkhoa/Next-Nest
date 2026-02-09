@@ -1,5 +1,6 @@
 import http from "@/lib/http";
 import {
+  apiUserForCVResType,
   GetAllUserByFilterResType,
   TypeApproveCompany,
   TypeJoinCompany,
@@ -17,6 +18,10 @@ const userApiRequest = {
 
   restore: (id: string) =>
     http.patch<ApiResponse<any>>(`${prefix}/${id}/restore`, {}),
+
+  //- api lấy dữ liệu điền vào cv
+  getResumeData: () =>
+    http.get<ApiResponse<apiUserForCVResType>>(`${prefix}/resume-data`),
 
   getAllUserByFilter: (params: {
     currentPage: number;
