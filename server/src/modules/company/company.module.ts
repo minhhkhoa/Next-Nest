@@ -22,6 +22,6 @@ import { JobsModule } from '../jobs/jobs.module';
   ],
   controllers: [CompanyController],
   providers: [CompanyService],
-  exports: [CompanyService],
+  exports: [CompanyService, MongooseModule],
 })
 export class CompanyModule {}

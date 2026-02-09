@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   Ip,
+  UseGuards,
 } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';
@@ -24,9 +25,11 @@ import {
   RecruiteAdminApproveJobDto,
 } from './dto/jobDto.dto';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
+import { CompanyStatusGuard } from 'src/common/guard/company-status.guard';
 
 @ApiTags('jobs')
 @Controller('jobs')
+@UseGuards(CompanyStatusGuard)
 export class JobsController {
   constructor(private readonly jobsService: JobsService) {}
 

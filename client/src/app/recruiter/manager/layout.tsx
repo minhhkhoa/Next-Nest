@@ -3,8 +3,10 @@
 import PendingCompanyPage from "@/_pages/recruiter/manager/info-company/components/pending-company";
 import CompanySetupPage from "@/_pages/recruiter/manager/info-company/register-company";
 import { AppSidebarRecruiter } from "@/components/app-sidebar-recruiter";
+import { Spinner } from "@/components/ui/spinner";
 import { useAppStore } from "@/components/TanstackProvider";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { useGetCompanyDetail } from "@/queries/useCompany";
 
 //- SEO đếch gì mấy page con này.
 
@@ -14,6 +16,25 @@ export default function RecruiterLayout({
   children: React.ReactNode;
 }>) {
   const { user } = useAppStore();
+  const isUserLoading = !user._id;
+
+  //- lấy ra công ty
+  const { data: companyDetail, isLoading: isCompanyLoading } =
+    useGetCompanyDetail(user?.employerInfo?.companyID || "");
+
+  //- Trong khi đang tải thông tin user hoặc công ty, hiển thị loading
+  if (isUserLoading || isCompanyLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner />
+      </div>
+    );
+  }
+
+  //- check xem công ty được kích hoạt chưa
+  if (companyDetail?.data && companyDetail.data.status !== "ACCEPT") {
+    return <PendingCompanyPage user={user} />;
+  }
 
   //- nếu không có employerInfo thì bắt nó gia nhập công ty
   if (!user?.employerInfo) {
