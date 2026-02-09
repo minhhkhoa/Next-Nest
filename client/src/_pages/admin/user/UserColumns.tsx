@@ -24,6 +24,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export const getUserColumns = (
   onEdit: (role: apiUserResType) => void,
@@ -100,6 +105,47 @@ export const getUserColumns = (
             </span>
           </div>
         </>
+      );
+    },
+  },
+
+  //- thuộc công ty
+  {
+    id: "company",
+    header: "Thuộc công ty",
+    cell: ({ row }) => {
+      const company = row.original.company;
+      const companyName = company?.name || "Tài khoản cá nhân";
+      const avatarCompany = company?.logo || "/avatar-default.webp";
+
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center gap-3 max-w-[240px]">
+              {/* Logo company */}
+              <Avatar className="w-10 h-10 border border-border">
+                <AvatarImage src={avatarCompany || undefined} />
+                <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
+                  {companyName}
+                </AvatarFallback>
+              </Avatar>
+              {/* Company name */}
+              <span
+                className="
+                text-sm text-foreground
+                line-clamp-2
+                break-words
+              "
+              >
+                {companyName}
+              </span>
+            </div>
+          </TooltipTrigger>
+
+          <TooltipContent className="max-w-xs break-words">
+            {companyName}
+          </TooltipContent>
+        </Tooltip>
       );
     },
   },

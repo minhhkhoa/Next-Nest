@@ -2,6 +2,7 @@ import z, { email } from "zod";
 import { MetaFilter } from "./NewsCategory";
 import { apiRoleRes } from "./role";
 import { MultiLang } from "./trans";
+import { apiCompanyRes } from "./company";
 
 export const apiProfileUserRes = z.object({
   user: z.object({
@@ -102,6 +103,7 @@ export const apiUserRes = z.object({
     createdAt: z.date(),
     updatedAt: z.date(),
   }),
+  company: apiCompanyRes.optional(),
 });
 
 export type apiUserResType = z.infer<typeof apiUserRes>;

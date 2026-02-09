@@ -56,12 +56,14 @@ export const useGetAllUserByFilter = ({
   name,
   email,
   address,
+  companyName,
 }: {
   currentPage: number;
   pageSize: number;
   name?: string;
   email?: string;
   address?: string;
+  companyName?: string;
 }) => {
   return useQuery({
     queryKey: [
@@ -71,6 +73,7 @@ export const useGetAllUserByFilter = ({
       name,
       email,
       address,
+      companyName,
     ],
     queryFn: () =>
       userApiRequest.getAllUserByFilter({
@@ -79,6 +82,7 @@ export const useGetAllUserByFilter = ({
         name,
         email,
         address,
+        companyName,
       }),
   });
 };

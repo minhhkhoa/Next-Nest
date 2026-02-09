@@ -1,9 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsNumber,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class FindUserQueryDto {
   @ApiPropertyOptional({ example: 1 })
@@ -28,4 +24,10 @@ export class FindUserQueryDto {
   @IsOptional()
   @IsString()
   address?: string;
+
+  //- lọc theo tên công ty
+  @ApiPropertyOptional({ example: '' })
+  @IsOptional()
+  @IsString()
+  companyName?: string;
 }

@@ -36,7 +36,7 @@ export class DetailProfileService {
   }
 
   async findAllByFilter(query: FindUserQueryDto) {
-    const { currentPage = 1, pageSize = 10, name, email, address } = query;
+    const { currentPage = 1, pageSize = 10, name, email, address, companyName } = query;
 
     const page = Number(currentPage) > 0 ? Number(currentPage) : 1;
     const limit = Number(pageSize) > 0 ? Number(pageSize) : 10;
@@ -52,6 +52,9 @@ export class DetailProfileService {
     const userMatch: any = {};
     if (name) userMatch['user.name'] = { $regex: name, $options: 'i' };
     if (email) userMatch['user.email'] = { $regex: email, $options: 'i' };
+
+    if (companyName)
+      userMatch['company.name'] = { $regex: companyName, $options: 'i' };
 
     const pipeline: any[] = [
       { $match: profileMatch },
@@ -85,7 +88,7 @@ export class DetailProfileService {
         },
       },
 
-      // --- XỬ LÝ TRƯỜNG HỢP USER BỊ XÓA HOẶC BỊ ẨN ---
+      // --- XỬ LÝ TRƯỜDNG HỢP USER BỊ XÓA HOẶC BỊ ẨN ---
       // Nếu Khoa dùng Soft Delete cho User, hãy lọc thêm ở đây
       {
         $match: {
@@ -109,8 +112,74 @@ export class DetailProfileService {
         },
       },
 
-      // Lọc theo name/email của User (nếu có truyền query)
+      // >>> NEW: Chuyển companyID trong employerInfo sang ObjectId
+      {
+        $addFields: {
+          'user.employerInfo.companyObjectId': {
+            $cond: [
+              {
+                $and: [
+                  { $ifNull: ['$user.employerInfo.companyID', false] },
+                  {
+                    $ne: [
+                      { $type: '$user.employerInfo.companyID' },
+                      'missing',
+                    ],
+                  },
+                ],
+              },
+              {
+                $cond: [
+                  { $eq: [{ $type: '$user.employerInfo.companyID' }, 'objectId'] },
+                  '$user.employerInfo.companyID',
+                  { $toObjectId: '$user.employerInfo.companyID' },
+                ],
+              },
+              null,
+            ],
+          },
+        },
+      },
+      // <<< END NEW
+
+      // >>> NEW: Lookup lấy Company từ trong User
+      {
+        $lookup: {
+          from: 'companies',
+          localField: 'user.employerInfo.companyObjectId',
+          foreignField: '_id',
+          as: 'company',
+        },
+      },
+      {
+        $unwind: {
+          path: '$company',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      // <<< END NEW
+
+      // Lọc theo name/email/company của User (nếu có truyền query)
       Object.keys(userMatch).length ? { $match: userMatch } : null,
+
+      // Gom nhóm lại để đưa company vào đúng cấu trúc
+      {
+        $group: {
+          _id: '$_id',
+          // Lấy lại tất cả các trường của detailProfile
+          doc: { $first: '$$ROOT' },
+          // Lấy company
+          company: { $first: '$company' },
+        },
+      },
+      // Tái cấu trúc lại document
+      {
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects: ['$doc', { company: '$company' }],
+          },
+        },
+      },
 
       {
         $facet: {
@@ -123,6 +192,7 @@ export class DetailProfileService {
                 userObjectId: 0,
                 'user.password': 0,
                 'user.refresh_token': 0,
+                'user.employerInfo.companyObjectId': 0, // Xóa field tạm
               },
             },
           ],

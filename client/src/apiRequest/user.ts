@@ -24,6 +24,7 @@ const userApiRequest = {
     name?: string;
     email?: string;
     address?: string;
+    companyName?: string;
   }) =>
     http.get<ApiResponse<GetAllUserByFilterResType>>(`${prefix}/filter`, {
       params,

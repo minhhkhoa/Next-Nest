@@ -9,8 +9,6 @@ import {
 import React from "react";
 import TableUser from "./TableUser";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { useDebounce } from "use-debounce";
 import { Spinner } from "@/components/ui/spinner";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
@@ -20,6 +18,7 @@ import { DeleteConfirmModal } from "../NewsCategory/components/modals/delete-con
 import { useGetAllRole } from "@/queries/useRole";
 import { UserDialogForm } from "./components/user-modal-form";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
+import { UserSearchFilters } from "./components/UserSearchFilters";
 
 interface CompanyMember {
   _id: string;
@@ -30,9 +29,17 @@ interface CompanyMember {
 
 export default function UserPageManagement() {
   const [currentPage, setCurrentPage] = React.useState(1);
-  const [searchName, setSearchName] = React.useState("");
-  const [searchEmail, setSearchEmail] = React.useState("");
-  const [searchAddress, setSearchAddress] = React.useState("");
+  const [searchValue, setSearchValue] = React.useState<{
+    name: string;
+    email: string;
+    address: string;
+    companyName: string;
+  }>({
+    name: "",
+    email: "",
+    address: "",
+    companyName: "",
+  });
   const [selectedNewOwner, setSelectedNewOwner] = React.useState<
     string | undefined
   >();
@@ -49,9 +56,13 @@ export default function UserPageManagement() {
     companyId?: string;
   }>({ isOpen: false, id: "" });
 
-  const [debouncedSearchName] = useDebounce(searchName, 500);
-  const [debouncedSearchEmail] = useDebounce(searchEmail, 500);
-  const [debouncedSearchAddress] = useDebounce(searchAddress, 500);
+  const [debouncedSearchName] = useDebounce(searchValue.name, 500);
+  const [debouncedSearchEmail] = useDebounce(searchValue.email, 500);
+  const [debouncedSearchAddress] = useDebounce(searchValue.address, 500);
+  const [debouncedSearchCompanyName] = useDebounce(
+    searchValue.companyName,
+    500,
+  );
 
   const { data: listUser, isLoading: isLoadingUser } = useGetAllUserByFilter({
     currentPage,
@@ -59,6 +70,7 @@ export default function UserPageManagement() {
     name: debouncedSearchName,
     email: debouncedSearchEmail,
     address: debouncedSearchAddress,
+    companyName: debouncedSearchCompanyName,
   });
 
   //- khôi phục
@@ -79,22 +91,6 @@ export default function UserPageManagement() {
   }, [companyMembers, deleteModal.id]);
 
   const { data: listRoles } = useGetAllRole();
-
-  const changeTypeSearch = (type: string, value: string) => {
-    switch (type) {
-      case "name":
-        setSearchName(value);
-        break;
-      case "email":
-        setSearchEmail(value);
-        break;
-      case "address":
-        setSearchAddress(value);
-        break;
-      default:
-        break;
-    }
-  };
 
   const { mutateAsync: deleteUserMutation, isPending: isDeleteRole } =
     useDeleteUser();
@@ -175,50 +171,10 @@ export default function UserPageManagement() {
 
       <Card className="mb-6 border border-border !p-0">
         <CardContent className="p-6">
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-foreground">
-                Tìm theo tên
-              </label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Nhập tên..."
-                  value={searchName}
-                  onChange={(e) => changeTypeSearch("name", e.target.value)}
-                  className="pl-9 bg-background"
-                />
-              </div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-foreground">
-                Tìm theo email
-              </label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Nhập email..."
-                  value={searchEmail}
-                  onChange={(e) => changeTypeSearch("email", e.target.value)}
-                  className="pl-9 bg-background"
-                />
-              </div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-foreground">
-                Tìm theo địa chỉ
-              </label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Nhập địa chỉ..."
-                  value={searchAddress}
-                  onChange={(e) => changeTypeSearch("address", e.target.value)}
-                  className="pl-9 bg-background"
-                />
-              </div>
-            </div>
-          </div>
+          <UserSearchFilters
+            searchValue={searchValue}
+            setSearchValue={setSearchValue}
+          />
         </CardContent>
       </Card>
       {!isLoadingUser ? (
