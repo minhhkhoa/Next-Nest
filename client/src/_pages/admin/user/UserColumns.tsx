@@ -12,6 +12,7 @@ import {
   User,
   MoreVertical,
   Lock,
+  Unlock,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -26,7 +27,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const getUserColumns = (
   onEdit: (role: apiUserResType) => void,
-  onDelete: (role: apiUserResType) => void
+  onDelete: (role: apiUserResType) => void,
+  onRestore: (id: string) => void,
 ): ColumnDef<apiUserResType>[] => [
   // AVATAR
   {
@@ -189,6 +191,19 @@ export const getUserColumns = (
                 Chi tiết
               </div>
             </DropdownMenuItem>
+
+            {onRestore && row.original.user?.isDeleted && (
+              <DropdownMenuItem
+                className="hover:!bg-green-500 text-green-500"
+                onClick={() => onRestore(row.original.userID)}
+              >
+                <div className="flex gap-3 items-center ">
+                  <Unlock className="mr-2 h-4 w-4 hover:text-white" />
+                  Mở khóa tài khoản
+                </div>
+              </DropdownMenuItem>
+            )}
+
             <DropdownMenuItem
               className="hover:!bg-red-500 text-red-500"
               onClick={() => onDelete(row.original)}

@@ -42,6 +42,14 @@ export const useRestoreUser = () => {
   });
 };
 
+export const useGetMembersByCompanyId = (companyId?: string) => {
+  return useQuery({
+    queryKey: ["members-by-company", companyId],
+    queryFn: () => userApiRequest.getMemberCompanyForSuperAdmin(companyId!),
+    enabled: !!companyId, //- Chỉ gọi khi có companyId
+  });
+};
+
 export const useGetAllUserByFilter = ({
   currentPage,
   pageSize,
@@ -78,7 +86,8 @@ export const useGetAllUserByFilter = ({
 export const useDeleteUser = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => userApiRequest.deleteUser(id),
+    mutationFn: ({ id, newOwnerID }: { id: string; newOwnerID?: string }) =>
+      userApiRequest.deleteUser(id, newOwnerID),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["getAllUserByFilter"] });
     },

@@ -15,6 +15,7 @@ interface DeleteConfirmModalProps {
   isDeleting?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
+  children?: React.ReactNode;
 }
 
 export function DeleteConfirmModal({
@@ -22,20 +23,26 @@ export function DeleteConfirmModal({
   isDeleting,
   onConfirm,
   onCancel,
+  children,
 }: DeleteConfirmModalProps) {
   return (
     <Dialog open onOpenChange={onCancel}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
 
-        <p className="text-muted-foreground">
-          Bạn chắc chắn muốn xóa mục này? Hành động này không thể hoàn tác.
-        </p>
+        <div className="py-2">
+          <p className="text-muted-foreground text-sm">
+            Bạn chắc chắn muốn khóa mục này? Hành động này có thể ảnh hưởng đến
+            các dữ liệu liên quan.
+          </p>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onCancel}>
+          {children}
+        </div>
+
+        <DialogFooter className="!gap-2 sm:gap-0">
+          <Button variant="outline" onClick={onCancel} disabled={isDeleting}>
             Hủy
           </Button>
           <Button
@@ -44,12 +51,12 @@ export function DeleteConfirmModal({
             disabled={isDeleting}
           >
             {isDeleting ? (
-              <div className="flex gap-3">
-                <Spinner className="w-4 h-4 mr-2" />
-                xóa
+              <div className="flex items-center gap-2">
+                <Spinner className="w-4 h-4" />
+                Đang xử lý...
               </div>
             ) : (
-              "Xóa"
+              "Xác nhận khóa"
             )}
           </Button>
         </DialogFooter>

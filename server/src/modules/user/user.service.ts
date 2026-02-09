@@ -186,6 +186,17 @@ export class UserService {
     }
   }
 
+  async findMembersByCompany(companyId: string) {
+    return await this.userModel
+      .find({
+        'employerInfo.companyID': companyId,
+        isDeleted: false,
+        'employerInfo.userStatus': 'ACTIVE',
+      })
+      .select('name email avatar')
+      .lean();
+  }
+
   //- reset userStatus ve pending/active khi công ty dc accept/reject
   async resetUsersStatusByCompanyID(companyId: string, action: string) {
     try {
@@ -857,6 +868,12 @@ export class UserService {
       throw new BadRequestCustom('ID không đúng định dạng');
     }
 
+    if (newOwnerID === id) {
+      throw new BadRequestCustom(
+        'Không thể chuyển nhượng quyền sở hữu cho chính người đang bị xóa',
+      );
+    }
+
     const session = await this.connection.startSession();
     session.startTransaction();
 
@@ -884,6 +901,20 @@ export class UserService {
       const companyID = userToDelete.employerInfo?.companyID;
       // KIỂM TRA NẾU LÀ CHỦ SỞ HỮU
       if (userToDelete.employerInfo?.isOwner && companyID) {
+        //- Tìm xem công ty còn ai khác không
+        const otherStaff = await this.userModel.countDocuments({
+          'employerInfo.companyID': companyID,
+          _id: { $ne: id },
+          isDeleted: false,
+        });
+
+        //- Nếu còn người mà Admin không gửi newOwnerID lên -> Chặn lại
+        if (otherStaff > 0 && !newOwnerID) {
+          throw new BadRequestCustom(
+            'Công ty vẫn còn nhân viên, vui lòng chỉ định người thay thế quyền sở hữu.',
+          );
+        }
+
         if (newOwnerID) {
           // TRƯỜNG HỢP CÓ NGƯỜI THAY THẾ
           // 1. Chuyển quyền Owner & Nâng Role cho người mới

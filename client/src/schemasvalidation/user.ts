@@ -1,4 +1,4 @@
-import z from "zod";
+import z, { email } from "zod";
 import { MetaFilter } from "./NewsCategory";
 import { apiRoleRes } from "./role";
 import { MultiLang } from "./trans";
@@ -88,6 +88,15 @@ export const apiUserRes = z.object({
         id: z.string(),
       })
       .optional(),
+
+    employerInfo: z
+      .object({
+        companyID: z.string(),
+        userStatus: z.string(),
+        isOwner: z.boolean(),
+      })
+      .optional(),
+
     isDeleted: z.boolean(),
     deletedAt: z.date(),
     createdAt: z.date(),

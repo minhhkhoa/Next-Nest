@@ -48,6 +48,13 @@ export class UserController {
     return await this.userService.getProfileForResume(user.id);
   }
 
+  @Get('members-of-company/:companyId')
+  @ResponseMessage('Lấy danh sách thành viên công ty cho admin thành công')
+  @ApiOperation({ summary: 'Lấy thành viên công ty theo companyId dành cho super_admin' })
+  async getMembersByCompanyId(@Param('companyId') companyId: string) {
+    return this.userService.findMembersByCompany(companyId);
+  }
+
   @ResponseMessage('Tìm kiếm toàn bộ người dùng thành công')
   @ApiOperation({ summary: 'get all user' })
   @Get()
@@ -123,7 +130,11 @@ export class UserController {
   // API Xóa mềm đồng bộ
   @Delete(':id')
   @ResponseMessage('Xóa người dùng thành công')
-  remove(@Param('id') id: string, @userDecorator() admin: UserDecoratorType) {
-    return this.userService.softDeleteUserAndProfile(id, admin);
+  remove(
+    @Param('id') id: string,
+    @Query('newOwnerID') newOwnerID: string,
+    @userDecorator() admin: UserDecoratorType,
+  ) {
+    return this.userService.softDeleteUserAndProfile(id, admin, newOwnerID);
   }
 }

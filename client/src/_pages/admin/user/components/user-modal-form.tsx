@@ -84,7 +84,9 @@ export function UserDialogForm({
 
       // Case: Admin Tắt Switch (isActive: false) nhưng DB đang hoạt động (isDeleted: false) -> Gọi Delete
       else if (values.isActive === false && currentIsDeleted === false) {
-        actions.push(deleteMutation(data.user._id));
+        actions.push(deleteMutation({
+          id: data.user._id,
+        }));
       }
 
       /**

@@ -29,7 +29,14 @@ const userApiRequest = {
       params,
     }),
 
-  deleteUser: (id: string) => http.delete<ApiResponse<any>>(`${prefix}/${id}`),
+  //- lấy danh sách thành viên trong công ty cho super_admin( quản lý)
+  getMemberCompanyForSuperAdmin: (companyId: string) =>
+    http.get<ApiResponse<any>>(`${prefix}/members-of-company/${companyId}`),
+
+  deleteUser: (id: string, newOwnerID?: string) =>
+    http.delete<ApiResponse<any>>(
+      `${prefix}/${id}${newOwnerID ? `?newOwnerID=${newOwnerID}` : ""}`,
+    ),
 
   //- Gửi yêu cầu gia nhập một công ty (dành cho Recruiter)
   joinCompany: (payload: TypeJoinCompany) =>
