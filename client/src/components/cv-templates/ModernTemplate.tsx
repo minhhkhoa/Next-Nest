@@ -1,263 +1,884 @@
+"use client";
+
 import { apiUserForCVResType } from "@/schemasvalidation/user";
 import Image from "next/image";
+import { useForm, useFieldArray, Control } from "react-hook-form";
+import { Form, FormField } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Plus, Trash2, PencilLine, Upload, Save } from "lucide-react";
+import { cn, uploadToCloudinary } from "@/lib/utils";
+import { useMutation } from "@tanstack/react-query";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useCreateUserResumeMutate } from "@/queries/useUserResume";
+
+// Helper để format ngày tháng an toàn
+const formatDate = (date: Date | string | undefined) => {
+  if (!date) return "";
+  const d = new Date(date);
+  return isNaN(d.getTime()) ? "" : d.getFullYear().toString();
+};
+
+type CVFormValues = {
+  personalInfo: {
+    name: string;
+    email: string;
+    avatar: string;
+    phone: string;
+    description: string;
+  };
+  professionalSummary: string;
+  skills: { value: string }[];
+  education: {
+    school: string;
+    degree: string;
+    startDate: string;
+    endDate: string;
+  }[];
+  experience: {
+    company: string;
+    position: string;
+    startDate: string;
+    endDate: string;
+    responsibilities: { value: string }[];
+  }[];
+  projects: {
+    name: string;
+    description: string;
+  }[];
+};
 
 export default function ModernTemplate({
   data,
 }: {
   data: apiUserForCVResType;
 }) {
-  const getYear = (dateString: Date) => new Date(dateString).getFullYear();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Mapping dữ liệu API vào Form
+  const defaultValues: CVFormValues = {
+    personalInfo: {
+      name: data.personalInfo.name || "",
+      email: data.personalInfo.email || "",
+      avatar: data.personalInfo.avatar || "/placeholder-user.jpg",
+      phone: "099.999.9999", // Placeholder
+      description: "Software Engineer", // Giá trị mặc định
+    },
+    professionalSummary:
+      data.professionalSummary || "Mục tiêu nghề nghiệp của bạn...",
+    skills:
+      data.skills && data.skills.length > 0
+        ? data.skills.map((s) => ({
+            value:
+              (s as any).name?.vi ||
+              (s as any).name ||
+              (typeof s === "string" ? s : ""),
+          }))
+        : [{ value: "Kỹ năng 1" }, { value: "Kỹ năng 2" }],
+    education:
+      data.education && data.education.length > 0
+        ? data.education.map((e) => ({
+            school: e.school,
+            degree: e.degree,
+            startDate: formatDate(e.startDate),
+            endDate: formatDate(e.endDate),
+          }))
+        : [
+            {
+              school: "Tên trường ĐH",
+              degree: "Bằng cấp",
+              startDate: "2020",
+              endDate: "2024",
+            },
+          ],
+    experience: [
+      {
+        company: "Công ty gần nhất",
+        position: "Vị trí làm việc",
+        startDate: "2022",
+        endDate: "Hiện tại",
+        responsibilities: [{ value: "Mô tả công việc chính..." }],
+      },
+    ],
+    projects: [
+      {
+        name: "Tên dự án",
+        description: "Mô tả ngắn gọn về dự án...",
+      },
+    ],
+  };
+
+  const form = useForm<CVFormValues>({
+    defaultValues,
+    mode: "onChange",
+  });
+
+  const { mutate: saveResume, isPending: isSaving } = useCreateUserResumeMutate();
+  const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+  const [resumeName, setResumeName] = useState("CV chưa đặt tên");
+
+  const handleSaveCV = () => {
+    const formData = form.getValues();
+    saveResume(
+      {
+        resumeName,
+        templateID: "modern-template", 
+        content: formData,
+        isDefault: false, 
+      },
+      {
+        onSuccess: () => {
+          setIsSaveDialogOpen(false);
+          toast.success("Đã lưu CV thành công!");
+        },
+        onError: () => {
+          toast.error("Lưu CV thất bại. Vui lòng thử lại.");
+        }
+      }
+    );
+  };
+
+  // Mutation upload ảnh
+  const uploadImageMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const url = await uploadToCloudinary(file);
+      if (!url) {
+        throw new Error("Upload failed");
+      }
+      return url;
+    },
+    onSuccess: (url) => {
+      // Cập nhật giá trị avatar trong form sau khi upload thành công
+      form.setValue("personalInfo.avatar", url);
+      toast.success("Tải ảnh lên thành công!");
+    },
+    onError: () => {
+      toast.error("Tải ảnh lên thất bại. Vui lòng thử lại.");
+    },
+  });
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        // Limit 5MB
+        toast.error("Dung lượng ảnh không được quá 5MB");
+        return;
+      }
+      uploadImageMutation.mutate(file);
+    }
+  };
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const { control, handleSubmit } = form;
+
+  // Field Arrays
   const {
-    personalInfo,
-    skills,
-    education,
-    professionalSummary,
-    desiredSalary,
-    industries,
-    level,
-  } = data;
+    fields: skillFields,
+    append: appendSkill,
+    remove: removeSkill,
+  } = useFieldArray({
+    control,
+    name: "skills",
+  });
+
+  const {
+    fields: eduFields,
+    append: appendEdu,
+    remove: removeEdu,
+  } = useFieldArray({
+    control,
+    name: "education",
+  });
+
+  const {
+    fields: expFields,
+    append: appendExp,
+    remove: removeExp,
+  } = useFieldArray({
+    control,
+    name: "experience",
+  });
+
+  const {
+    fields: projFields,
+    append: appendProj,
+    remove: removeProj,
+  } = useFieldArray({
+    control,
+    name: "projects",
+  });
+
+  // --- STYLE CLASSES ---
+  // Style chung cho các ô input để người dùng nhận biết có thể sửa
+  // text-foreground: màu chữ tự động theo theme (đen ở sáng, trắng ở tối)
+  // bg-transparent: nền trong suốt
+  // hover:bg-muted/50: khi rê chuột vào thì hơi xám nhẹ để báo hiệu
+  // border-transparent hover:border-dashed: viền ẩn, hiện nét đứt khi hover
+  const editableBase =
+    "transition-all duration-200 ease-in-out bg-transparent border border-transparent rounded-sm focus-visible:ring-1 focus-visible:ring-ring focus-visible:bg-background hover:bg-muted/40 hover:border-dashed hover:border-muted-foreground/30 px-1 -mx-1";
+
+  const inputClass = cn(editableBase, "text-foreground w-full shadow-none");
+  const titleClass = cn(
+    editableBase,
+    "font-bold text-foreground w-full shadow-none",
+  );
+  const mutedClass = cn(
+    editableBase,
+    "text-muted-foreground w-full shadow-none",
+  );
+
+  // Style riêng cho phần Header (nền xanh) thì chữ phải luôn sáng màu (hoặc tuỳ chỉnh)
+  // Ở đây tôi giả định Header màu Xanh Emerald thì chữ trắng là đẹp nhất bất kể theme
+  const headerInputClass =
+    "bg-transparent border border-transparent hover:border-white/50 hover:bg-white/10 text-white placeholder:text-white/70 focus-visible:ring-white focus-visible:ring-offset-0 rounded-sm px-1 -mx-1 w-full transition-all";
 
   return (
-    <div className="">
-      <div className="border-1 shadow-lg shadow-gray-700 rounded-lg">
-        {/* <!-- top content --> */}
-        <div className="flex rounded-t-lg bg-top-color sm:px-2 w-full">
-          <div className="h-40 w-40 overflow-hidden sm:rounded-full sm:relative sm:p-0 top-10 left-5 p-3">
-            <Image
-              src={personalInfo.avatar}
-              width={200}
-              height={200}
-              alt="Avatar"
-            />
-          </div>
-
-          <div className="w-2/3 sm:text-center pl-5 mt-10 text-start">
-            <p className="font-poppins font-bold text-heading sm:text-4xl text-2xl">
-              {personalInfo.name}
-            </p>
-            <p className="text-heading">Software Engineer</p>
-          </div>
-        </div>
-
-        {/* <!-- main content --> */}
-        <div className="p-5">
-          <div className="flex flex-col sm:flex-row sm:mt-10">
-            <div className="flex flex-col sm:w-1/3">
-              {/* <!-- My contact --> */}
-              <div className="py-3 sm:order-none order-3">
-                <h2 className="text-lg font-poppins font-bold text-top-color">
-                  My Contact
-                </h2>
-                <div className="border-2 w-20 border-top-color my-3"></div>
-
-                <div>
-                  <div className="flex items-center my-1">
-                    <a className="w-6 text-gray-700 hover:text-orange-600">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 448 512"
-                        className="h-4"
-                      >
-                        <path
-                          fill="currentColor"
-                          d="M100.28 448H7.4V148.9h92.88zM53.79 108.1C24.09 108.1 0 83.5 0 53.8a53.79 53.79 0 0 1 107.58 0c0 29.7-24.1 54.3-53.79 54.3zM447.9 448h-92.68V302.4c0-34.7-.7-79.2-48.29-79.2-48.29 0-55.69 37.7-55.69 76.7V448h-92.78V148.9h89.08v40.8h1.3c12.4-23.5 42.69-48.3 87.88-48.3 94 0 111.28 61.9 111.28 142.3V448z"
-                        ></path>
-                      </svg>
-                    </a>
-                    <div className="ml-2 truncate">{personalInfo.email}</div>
-                  </div>
-                  <div className="flex items-center my-1">
-                    <a
-                      className="w-6 text-gray-700 hover:text-orange-600"
-                      aria-label="Visit TrendyMinds YouTube"
-                      href=""
-                      target="_blank"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 576 512"
-                        className="h-4"
-                      >
-                        <path
-                          fill="currentColor"
-                          d="M549.655 124.083c-6.281-23.65-24.787-42.276-48.284-48.597C458.781 64 288 64 288 64S117.22 64 74.629 75.486c-23.497 6.322-42.003 24.947-48.284 48.597-11.412 42.867-11.412 132.305-11.412 132.305s0 89.438 11.412 132.305c6.281 23.65 24.787 41.5 48.284 47.821C117.22 448 288 448 288 448s170.78 0 213.371-11.486c23.497-6.321 42.003-24.171 48.284-47.821 11.412-42.867 11.412-132.305 11.412-132.305s0-89.438-11.412-132.305zm-317.51 213.508V175.185l142.739 81.205-142.739 81.201z"
-                        ></path>
-                      </svg>
-                    </a>
-                    <div>4574358775</div>
-                  </div>
-                  <div className="flex items-center my-1">
-                    <a
-                      className="w-6 text-gray-700 hover:text-orange-600"
-                      aria-label="Visit TrendyMinds Facebook"
-                      href=""
-                      target="_blank"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 320 512"
-                        className="h-4"
-                      >
-                        <path
-                          fill="currentColor"
-                          d="m279.14 288 14.22-92.66h-88.91v-60.13c0-25.35 12.42-50.06 52.24-50.06h40.42V6.26S260.43 0 225.36 0c-73.22 0-121.08 44.38-121.08 124.72v70.62H22.89V288h81.39v224h100.17V288z"
-                        ></path>
-                      </svg>
-                    </a>
-                    <div>sale galli latur</div>
-                  </div>
-                  <div className="flex items-center my-1">
-                    <a
-                      className="w-6 text-gray-700 hover:text-orange-600"
-                      aria-label="Visit TrendyMinds Twitter"
-                      href=""
-                      target="_blank"
-                    >
-                      <svg
-                        className="h-4"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 512 512"
-                      >
-                        <path
-                          fill="currentColor"
-                          d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"
-                        ></path>
-                      </svg>
-                    </a>
-                    <div>amitpachange21</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* <!-- Skills --> */}
-              <div>
-                <h2 className="text-lg font-poppins font-bold text-top-color">
-                  Kỹ năng
-                </h2>
-                {skills.map((skill, index) => (
-                  <ul key={index} className="flex items-center my-1">
-                    <li className="ml-2">{skill.name.vi}</li>
-                  </ul>
-                ))}
-              </div>
-              {/* <!-- Education Background --> */}
-              <div className="py-3 sm:order-none order-1">
-                <h2 className="text-lg font-poppins font-bold text-top-color">
-                  Education Background
-                </h2>
-                <div className="border-2 w-20 border-top-color my-3"></div>
-
-                <div className="flex flex-col space-y-1">
-                  {education.map((item, index) => (
-                    <div key={index} className="flex flex-col">
-                      <p className="font-semibold text-xs text-gray-700">
-                        {getYear(item.startDate)} - {getYear(item.endDate)}
-                      </p>
-
-                      <p className="text-sm font-medium">
-                        <span className="text-green-700 uppercase">
-                          {item.degree}
-                        </span>
-                        , {item.school}.
-                      </p>
-                    </div>
-                  ))}
-                </div>
+    <>
+      {/* Floating Action Button */}
+      <div className="fixed bottom-10 right-10 z-50 print:hidden">
+        <Dialog open={isSaveDialogOpen} onOpenChange={setIsSaveDialogOpen}>
+          <DialogTrigger asChild>
+            <Button size="lg" className="rounded-full shadow-lg">
+              <Save className="mr-2 h-4 w-4" />
+              Lưu CV
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Lưu hồ sơ CV</DialogTitle>
+              <DialogDescription>
+                Đặt tên cho CV của bạn để dễ dàng tìm kiếm lại sau này.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex items-center space-x-2">
+              <div className="grid flex-1 gap-2">
+                <Input
+                  id="resumeName"
+                  value={resumeName}
+                  onChange={(e) => setResumeName(e.target.value)}
+                  placeholder="Nhập tên CV..."
+                />
               </div>
             </div>
-
-            <div className="flex flex-col sm:w-2/3 order-first sm:order-none sm:-mt-10">
-              {/* <!-- About me --> */}
-              <div className="py-3">
-                <h2 className="text-lg font-poppins font-bold text-top-color">
-                  About Me
-                </h2>
-                <div className="border-2 w-20 border-top-color my-3"></div>
-                <p>
-                  To get a career opportunity which would help me to utilize my
-                  academic background to assist me to gain experience, employ my
-                  excellent skills, and enable me to make positive contribution.
-                </p>
-              </div>
-
-              {/* <!-- Professional Experience --> */}
-              <div className="py-3">
-                <h2 className="text-lg font-poppins font-bold text-top-color">
-                  Professional Experience
-                </h2>
-                <div className="border-2 w-20 border-top-color my-3"></div>
-
-                <div className="flex flex-col">
-                  <div className="flex flex-col">
-                    <p className="text-lg font-bold text-gray-700">
-                      Netcracker Technology | Software Engineer
-                    </p>
-                    <p className="font-semibold text-sm text-gray-700">
-                      2021 - Present
-                    </p>
-                    <p className="font-semibold text-sm text-gray-700 mt-2 mb-1">
-                      Key Responsibilities
-                    </p>
-                    <ul className="text-sm list-disc pl-4 space-y-1">
-                      <li>Working on customer facing product</li>
-                      <li>Deliverying highly efficient solutions</li>
-                      <li>Solving critical bugs</li>
-                    </ul>
-                  </div>
-
-                  <div className="flex flex-col mt-8">
-                    <p className="text-lg font-bold text-gray-700">
-                      TailwindFlex.com | Lead
-                    </p>
-                    <p className="font-semibold text-sm text-gray-700">
-                      2020-2021
-                    </p>
-                    <p className="font-semibold text-sm text-gray-700 mt-2 mb-1">
-                      Key Responsibilities
-                    </p>
-                    <ul className="text-sm list-disc pl-4 space-y-1">
-                      <li>Developed usable components</li>
-                      <li>Solving complex problems</li>
-                      <li>Solving critical bugs</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              {/* <!-- Projects --> */}
-              <div className="py-3">
-                <h2 className="text-lg font-poppins font-bold text-top-color">
-                  Projects
-                </h2>
-                <div className="border-2 w-20 border-top-color my-3"></div>
-
-                <div className="flex flex-col">
-                  <div className="flex flex-col">
-                    <p className="text-lg font-semibold text-gray-700">
-                      Used Books mobile app
-                    </p>
-                    <p className="font-normal text-sm text-gray-700 mb-1 pl-2">
-                      A platform to sell as well as to buy used books only for
-                      PCCoE College due to this reuse of books will be there
-                      beneficial for environment also indirectly helps increase
-                      communication between juniors and seniors.
-                    </p>
-                  </div>
-                  <div className="flex flex-col">
-                    <p className="text-lg font-semibold text-gray-700">
-                      Parking Automation System
-                    </p>
-                    <p className="font-normal text-sm text-gray-700 mb-1 pl-2">
-                      it’s a web application which helps you to book your slot
-                      for your car just like booking a movie ticket from home.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+            <DialogFooter className="sm:justify-end">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setIsSaveDialogOpen(false)}
+              >
+                Hủy
+              </Button>
+              <Button type="button" onClick={handleSaveCV} disabled={isSaving}>
+                {isSaving ? "Đang lưu..." : "Lưu hồ sơ"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
-    </div>
+
+      <Form {...form}>
+        <form
+          onSubmit={handleSubmit((d) => console.log(d))}
+          className="w-full max-w-[210mm] mx-auto min-h-screen pb-20"
+        >
+          {/* Container chính: dùng bg-card để lấy màu nền theo theme (trắng/đen) */}
+          <div className="border border-border shadow-xl rounded-lg bg-card overflow-hidden text-card-foreground">
+            {/* <!-- Header --> */}
+          {/* Giữ bg-emerald-600 vì đây là màu brand của template */}
+          <div className="flex flex-col sm:flex-row rounded-t-lg bg-emerald-600 sm:px-2 w-full text-white pb-5 sm:pb-0">
+            <div
+              className="group/avatar relative h-40 w-40 sm:top-10 sm:left-5 mx-auto mt-5 sm:mt-0 p-1 border-4 border-card bg-card rounded-full overflow-hidden shrink-0 cursor-pointer"
+              onClick={handleAvatarClick}
+            >
+              {/* Input file ẩn */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept="image/*"
+                onChange={handleImageChange}
+              />
+
+              {/* Overlay khi hover */}
+              <div className="absolute inset-0 bg-black/40 hidden group-hover/avatar:flex items-center justify-center z-10 transition-all rounded-full">
+                <Upload className="w-8 h-8 text-white" />
+              </div>
+
+              {/* Hiển thị Avatar từ Form state để update ngay khi upload */}
+              <FormField
+                control={control}
+                name="personalInfo.avatar"
+                render={({ field }) => (
+                  <Image
+                    src={
+                      field.value ||
+                      data.personalInfo.avatar ||
+                      "/placeholder-user.jpg"
+                    }
+                    width={200}
+                    height={200}
+                    alt="Avatar"
+                    className="object-cover w-full h-full"
+                  />
+                )}
+              />
+              {/* Loading indicator */}
+              {uploadImageMutation.isPending && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
+                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              )}
+            </div>
+
+            <div className="sm:w-2/3 sm:pl-10 mt-5 sm:mt-14 px-4 text-center sm:text-left">
+              <div className="group relative w-full mb-2">
+                <FormField
+                  control={control}
+                  name="personalInfo.name"
+                  render={({ field }) => (
+                    <input
+                      {...field}
+                      className={cn(
+                        headerInputClass,
+                        "font-poppins font-bold text-3xl sm:text-4xl sm:text-left text-center",
+                      )}
+                      placeholder="Họ và tên"
+                    />
+                  )}
+                />
+                <PencilLine className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50 opacity-0 group-hover:opacity-100 pointer-events-none" />
+              </div>
+
+              <div className="group relative w-full sm:w-2/3">
+                <FormField
+                  control={control}
+                  name="personalInfo.description"
+                  render={({ field }) => (
+                    <input
+                      {...field}
+                      className={cn(
+                        headerInputClass,
+                        "text-lg sm:text-left text-center opacity-90",
+                      )}
+                      placeholder="Chức danh (VD: Software Engineer)"
+                    />
+                  )}
+                />
+                <PencilLine className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50 opacity-0 group-hover:opacity-100 pointer-events-none" />
+              </div>
+            </div>
+          </div>
+
+          {/* <!-- Main Content --> */}
+          <div className="p-5 sm:pt-14">
+            <div className="flex flex-col sm:flex-row gap-8">
+              {/* --- Cột trái: Thông tin liên hệ, Kỹ năng, Học vấn --- */}
+              <div className="flex flex-col sm:w-1/3 space-y-8">
+                {/* Contact */}
+                <div>
+                  <h2 className="text-lg font-bold text-emerald-600 uppercase tracking-wide mb-2 flex items-center gap-2">
+                    Liên hệ
+                  </h2>
+                  <div className="border-b-2 border-emerald-600 w-12 mb-4"></div>
+
+                  <div className="flex flex-col gap-3 text-sm">
+                    <div className="flex items-center group">
+                      <span className="w-6 shrink-0 text-emerald-600">✉️</span>
+                      <div className="w-full relative">
+                        <FormField
+                          control={control}
+                          name="personalInfo.email"
+                          render={({ field }) => (
+                            <Input
+                              {...field}
+                              className={cn(inputClass, "h-8")}
+                              placeholder="Email"
+                            />
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center group">
+                      <span className="w-6 shrink-0 text-emerald-600">📞</span>
+                      <div className="w-full relative">
+                        <FormField
+                          control={control}
+                          name="personalInfo.phone"
+                          render={({ field }) => (
+                            <Input
+                              {...field}
+                              className={cn(inputClass, "h-8")}
+                              placeholder="Số điện thoại"
+                            />
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Skills */}
+                <div className="group/section relative">
+                  <div className="flex justify-between items-center mb-2">
+                    <h2 className="text-lg font-bold text-emerald-600 uppercase tracking-wide">
+                      Kỹ năng
+                    </h2>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-emerald-600 opacity-0 group-hover/section:opacity-100 transition-opacity"
+                      onClick={() => appendSkill({ value: "Kỹ năng mới" })}
+                      title="Thêm kỹ năng"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="border-b-2 border-emerald-600 w-12 mb-4"></div>
+
+                  <div className="flex flex-col gap-2">
+                    {skillFields.map((field, index) => (
+                      <div
+                        key={field.id}
+                        className="flex items-center group relative hover:translate-x-1 transition-transform"
+                      >
+                        <span className="mr-2 text-emerald-600 text-lg leading-none">
+                          •
+                        </span>
+                        <FormField
+                          control={control}
+                          name={`skills.${index}.value`}
+                          render={({ field }) => (
+                            <Input {...field} className={inputClass} />
+                          )}
+                        />
+                        {/* Chỉ hiện nút xoá nếu có nhiều hơn 1 dòng */}
+                        {skillFields.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-destructive opacity-0 group-hover:opacity-100 absolute right-0"
+                            onClick={() => removeSkill(index)}
+                            title="Xóa dòng này"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Education */}
+                <div className="group/section relative">
+                  <div className="flex justify-between items-center mb-2">
+                    <h2 className="text-lg font-bold text-emerald-600 uppercase tracking-wide">
+                      Học vấn
+                    </h2>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-emerald-600 opacity-0 group-hover/section:opacity-100 transition-opacity"
+                      onClick={() =>
+                        appendEdu({
+                          school: "Tên trường",
+                          degree: "Ngành học",
+                          startDate: "2020",
+                          endDate: "2024",
+                        })
+                      }
+                      title="Thêm học vấn"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="border-b-2 border-emerald-600 w-12 mb-4"></div>
+
+                  <div className="flex flex-col gap-6">
+                    {eduFields.map((item, index) => (
+                      <div
+                        key={item.id}
+                        className="flex flex-col group relative pl-2 border-l-2 border-transparent hover:border-emerald-200 transition-colors"
+                      >
+                        {/* Chỉ hiện nút xoá nếu có nhiều hơn 1 dòng */}
+                        {eduFields.length > 1 && (
+                          <div className="absolute top-0 right-0 hidden group-hover:block z-10">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 text-destructive"
+                              onClick={() => removeEdu(index)}
+                              title="Xóa"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        )}
+
+                        <div className="flex items-center text-xs text-muted-foreground mb-1">
+                          <FormField
+                            control={control}
+                            name={`education.${index}.startDate`}
+                            render={({ field }) => (
+                              <input
+                                {...field}
+                                className="bg-transparent w-10 text-center focus:outline-none focus:border-b border-muted-foreground hover:text-foreground"
+                                placeholder="Năm"
+                              />
+                            )}
+                          />
+                          <span className="mx-1">-</span>
+                          <FormField
+                            control={control}
+                            name={`education.${index}.endDate`}
+                            render={({ field }) => (
+                              <input
+                                {...field}
+                                className="bg-transparent w-14 text-center focus:outline-none focus:border-b border-muted-foreground hover:text-foreground"
+                                placeholder="Hiện tại"
+                              />
+                            )}
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <FormField
+                            control={control}
+                            name={`education.${index}.degree`}
+                            render={({ field }) => (
+                              <Input
+                                {...field}
+                                className={cn(
+                                  titleClass,
+                                  "text-emerald-600 text-sm uppercase",
+                                )}
+                                placeholder="Bằng cấp / Ngành học"
+                              />
+                            )}
+                          />
+                          <FormField
+                            control={control}
+                            name={`education.${index}.school`}
+                            render={({ field }) => (
+                              <Input
+                                {...field}
+                                className={cn(
+                                  titleClass,
+                                  "font-normal text-foreground",
+                                )}
+                                placeholder="Tên trường học"
+                              />
+                            )}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* --- Cột phải: Giới thiệu, Kinh nghiệm, Dự án --- */}
+              <div className="flex flex-col sm:w-2/3 space-y-8">
+                {/* About me */}
+                <div>
+                  <h2 className="text-lg font-bold text-emerald-600 uppercase tracking-wide mb-2">
+                    Giới thiệu bản thân
+                  </h2>
+                  <div className="border-b-2 border-emerald-600 w-12 mb-4"></div>
+                  <FormField
+                    control={control}
+                    name="professionalSummary"
+                    render={({ field }) => (
+                      <Textarea
+                        {...field}
+                        className={cn(
+                          editableBase,
+                          "min-h-[80px] w-full resize-none text-foreground bg-transparent shadow-none",
+                        )}
+                        placeholder="Viết một đoạn ngắn giới thiệu về bản thân và mục tiêu nghề nghiệp..."
+                      />
+                    )}
+                  />
+                </div>
+
+                {/* Professional Experience */}
+                <div className="group/section relative">
+                  <div className="flex justify-between items-center mb-2">
+                    <h2 className="text-lg font-bold text-emerald-600 uppercase tracking-wide">
+                      Kinh nghiệm làm việc
+                    </h2>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-emerald-600 opacity-0 group-hover/section:opacity-100 transition-opacity"
+                      onClick={() =>
+                        appendExp({
+                          company: "Tên công ty",
+                          position: "Chức vụ",
+                          startDate: "2023",
+                          endDate: "Hiện tại",
+                          responsibilities: [{ value: "Mô tả công việc..." }],
+                        })
+                      }
+                      title="Thêm kinh nghiệm"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="border-b-2 border-emerald-600 w-12 mb-4"></div>
+
+                  <div className="flex flex-col space-y-8">
+                    {expFields.map((item, index) => (
+                      <div
+                        key={item.id}
+                        className="group relative rounded-md p-2 -ml-2 hover:bg-muted/10 transition-colors"
+                      >
+                        {expFields.length > 1 && (
+                          <div className="absolute right-2 top-2 hidden group-hover:block z-10">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 text-destructive"
+                              onClick={() => removeExp(index)}
+                              title="Xóa mục này"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        )}
+
+                        <div className="mb-2">
+                          <FormField
+                            control={control}
+                            name={`experience.${index}.company`}
+                            render={({ field }) => (
+                              <Input
+                                {...field}
+                                className={cn(titleClass, "text-xl")}
+                                placeholder="Tên công ty"
+                              />
+                            )}
+                          />
+
+                          <div className="flex flex-wrap items-center text-sm font-semibold text-emerald-600 mt-1">
+                            <div className="relative min-w-[150px]">
+                              <FormField
+                                control={control}
+                                name={`experience.${index}.position`}
+                                render={({ field }) => (
+                                  <Input
+                                    {...field}
+                                    className="bg-transparent border-none p-0 h-auto font-semibold focus:outline-none placeholder:text-emerald-600/50 text-emerald-700 dark:text-emerald-500"
+                                    placeholder="Chức vụ"
+                                  />
+                                )}
+                              />
+                            </div>
+                            <span className="mx-2 text-muted-foreground">
+                              |
+                            </span>
+                            <div className="flex items-center text-muted-foreground font-normal">
+                              <FormField
+                                control={control}
+                                name={`experience.${index}.startDate`}
+                                render={({ field }) => (
+                                  <input
+                                    {...field}
+                                    className="bg-transparent w-10 text-center focus:outline-none focus:border-b border-muted-foreground hover:text-foreground"
+                                    placeholder="Năm"
+                                  />
+                                )}
+                              />
+                              <span className="mx-1">-</span>
+                              <FormField
+                                control={control}
+                                name={`experience.${index}.endDate`}
+                                render={({ field }) => (
+                                  <input
+                                    {...field}
+                                    className="bg-transparent w-16 text-center focus:outline-none focus:border-b border-muted-foreground hover:text-foreground"
+                                    placeholder="Hiện tại"
+                                  />
+                                )}
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="pl-2 border-l-2 border-border/50">
+                          <ResponsibilitiesEditor
+                            index={index}
+                            control={control}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Projects */}
+                <div className="group/section relative">
+                  <div className="flex justify-between items-center mb-2">
+                    <h2 className="text-lg font-bold text-emerald-600 uppercase tracking-wide">
+                      Dự án nổi bật
+                    </h2>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-emerald-600 opacity-0 group-hover/section:opacity-100 transition-opacity"
+                      onClick={() =>
+                        appendProj({
+                          name: "Tên dự án mới",
+                          description: "Mô tả dự án...",
+                        })
+                      }
+                      title="Thêm dự án"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="border-b-2 border-emerald-600 w-12 mb-4"></div>
+
+                  <div className="flex flex-col space-y-6">
+                    {projFields.map((item, index) => (
+                      <div
+                        key={item.id}
+                        className="group relative rounded-md p-2 -ml-2 hover:bg-muted/10 transition-colors"
+                      >
+                        {projFields.length > 1 && (
+                          <div className="absolute right-2 top-2 hidden group-hover:block z-10">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 text-destructive"
+                              onClick={() => removeProj(index)}
+                              title="Xóa dự án này"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        )}
+                        <FormField
+                          control={control}
+                          name={`projects.${index}.name`}
+                          render={({ field }) => (
+                            <Input
+                              {...field}
+                              className={cn(titleClass, "text-lg")}
+                              placeholder="Tên dự án"
+                            />
+                          )}
+                        />
+                        <FormField
+                          control={control}
+                          name={`projects.${index}.description`}
+                          render={({ field }) => (
+                            <Textarea
+                              {...field}
+                              className={cn(
+                                mutedClass,
+                                "resize-none min-h-[60px] text-sm mt-1",
+                              )}
+                              placeholder="Mô tả dự án..."
+                            />
+                          )}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </Form>
+    </>
+  );
+}
+
+// Subcomponent cho danh sách trách nhiệm công việc
+function ResponsibilitiesEditor({
+  index,
+  control,
+}: {
+  index: number;
+  control: Control<CVFormValues>;
+}) {
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: `experience.${index}.responsibilities`,
+  });
+
+  return (
+    <ul className="list-none space-y-1">
+      {fields.map((resp, respIndex) => (
+        <li key={resp.id} className="group flex items-start text-sm">
+          <span className="mr-2 mt-1.5 h-1.5 w-1.5 rounded-full bg-emerald-600 shrink-0"></span>
+          <FormField
+            control={control}
+            name={`experience.${index}.responsibilities.${respIndex}.value`}
+            render={({ field }) => (
+              <Textarea
+                {...field}
+                className="min-h-[28px] h-[28px] py-1 border-none shadow-none resize-none focus-visible:ring-0 w-full overflow-hidden leading-tight bg-transparent hover:bg-muted/30 hover:border-dashed hover:border-gray-300 rounded-sm -ml-1 pl-1 transition-all"
+                placeholder="..."
+                onInput={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  target.style.height = "auto";
+                  target.style.height = `${target.scrollHeight}px`;
+                }}
+              />
+            )}
+          />
+          {fields.length > 1 && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 text-destructive opacity-0 group-hover:opacity-100 shrink-0 ml-1"
+              onClick={() => remove(respIndex)}
+              title="Xóa dòng này"
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          )}
+        </li>
+      ))}
+      <li>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="text-xs text-emerald-600 h-6 px-2 mt-1 hover:bg-emerald-50 dark:hover:bg-emerald-950"
+          onClick={() => append({ value: "" })}
+        >
+          + Thêm dòng
+        </Button>
+      </li>
+    </ul>
   );
 }
