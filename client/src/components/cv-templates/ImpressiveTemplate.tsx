@@ -140,7 +140,7 @@ export default function ImpressiveTemplate({
     fileInputRef.current?.click();
   };
 
-  const { control, handleSubmit } = form;
+  const { control } = form;
 
   const {
     fields: skillFields,
