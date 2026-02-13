@@ -115,6 +115,12 @@ export const formatDateInput = (date: string) => {
   return new Date(date).toISOString().split("T")[0];
 };
 
+export const formatDateForTemplate = (date: Date | string | undefined) => {
+  if (!date) return "";
+  const d = new Date(date);
+  return isNaN(d.getTime()) ? "" : d.getFullYear().toString();
+};
+
 export const generateSlugUrl = ({ name, id }: { name: string; id: string }) => {
   return `${name}-i.${id}`;
 };

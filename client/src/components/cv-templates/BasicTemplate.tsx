@@ -16,50 +16,14 @@ import {
   Link as LinkIcon,
   MapPin,
 } from "lucide-react";
-import { cn, uploadToCloudinary } from "@/lib/utils";
+import { cn, formatDateForTemplate, uploadToCloudinary } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { useCreateUserResumeMutate } from "@/queries/useUserResume";
 import { SaveResumeDialog } from "../SaveResumeDialog";
+import { CVFormValues } from "@/types/apiResponse";
 
-// Helper date format
-const formatDate = (date: Date | string | undefined) => {
-  if (!date) return "";
-  const d = new Date(date);
-  return isNaN(d.getTime()) ? "" : d.getFullYear().toString();
-};
-
-type CVFormValues = {
-  personalInfo: {
-    name: string;
-    email: string;
-    avatar: string;
-    phone: string;
-    description: string;
-    address?: string;
-    link?: string;
-  };
-  professionalSummary: string;
-  skills: { value: string }[];
-  education: {
-    school: string;
-    degree: string;
-    startDate: string;
-    endDate: string;
-  }[];
-  experience: {
-    company: string;
-    position: string;
-    startDate: string;
-    endDate: string;
-    responsibilities: { value: string }[];
-  }[];
-  projects: {
-    name: string;
-    description: string;
-  }[];
-};
 
 export default function BasicTemplate({ data }: { data: apiUserForCVResType }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -97,8 +61,8 @@ export default function BasicTemplate({ data }: { data: apiUserForCVResType }) {
         ? data.education.map((e) => ({
             school: e.school,
             degree: e.degree,
-            startDate: formatDate(e.startDate),
-            endDate: formatDate(e.endDate),
+            startDate: formatDateForTemplate(e.startDate),
+            endDate: formatDateForTemplate(e.endDate),
           }))
         : [
             {
