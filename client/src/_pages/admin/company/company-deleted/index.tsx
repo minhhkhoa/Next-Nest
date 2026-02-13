@@ -10,7 +10,6 @@ import { SearchBar } from "../../NewsCategory/components/search-bar";
 import TableCompany from "../tableCompany";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import Link from "next/link";
-import { Arrow } from "@radix-ui/react-popover";
 import { ArrowLeft } from "lucide-react";
 
 const statusFilters = [
@@ -60,7 +59,9 @@ export default function PageAdminCompanyDeleted() {
       if (res?.isError) return;
 
       SoftSuccessSonner(res?.message);
-    } catch (error) {}
+    } catch (error) {
+      console.error("Lỗi khôi phục công ty:", error);
+    }
   };
 
   const columns = getCompanyColumns(

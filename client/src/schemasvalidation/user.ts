@@ -1,4 +1,4 @@
-import z, { email } from "zod";
+import z from "zod";
 import { MetaFilter } from "./NewsCategory";
 import { apiRoleRes } from "./role";
 import { MultiLang } from "./trans";

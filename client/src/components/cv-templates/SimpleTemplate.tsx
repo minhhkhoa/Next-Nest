@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { useCreateUserResumeMutate } from "@/queries/useUserResume";
 import { SaveResumeDialog } from "../SaveResumeDialog";
 import { CVFormValues } from "@/types/apiResponse";
+import { CV_TEMPLATES } from "@/lib/constant";
 
 export default function SimpleTemplate({
   data,
@@ -113,7 +114,7 @@ export default function SimpleTemplate({
     saveResume(
       {
         resumeName,
-        templateID: "simple-template",
+        templateID: CV_TEMPLATES.simpleTemplate,
         content: formData,
         isDefault: false,
       },

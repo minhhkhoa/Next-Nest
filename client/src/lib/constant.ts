@@ -133,3 +133,12 @@ export const COMPANY_SCALES = [
   { value: "201-500", label: "201 - 500 nhân viên" },
   { value: "500+", label: "Trên 500 nhân viên" },
 ];
+
+//- start template cv
+export const CV_TEMPLATES = {
+  basicTemplate: "basic-template",
+  impressiveTemplate: "impressive-template",
+  modernTemplate: "modern-template",
+  simpleTemplate: "simple-template",
+};
+//- end template cv

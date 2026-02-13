@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { useCreateUserResumeMutate } from "@/queries/useUserResume";
 import { SaveResumeDialog } from "../SaveResumeDialog";
 import { CVFormValues } from "@/types/apiResponse";
+import { CV_TEMPLATES } from "@/lib/constant";
 
 export default function ImpressiveTemplate({
   data,
@@ -91,7 +92,7 @@ export default function ImpressiveTemplate({
     saveResume(
       {
         resumeName,
-        templateID: "impressive-template",
+        templateID: CV_TEMPLATES.impressiveTemplate,
         content: formData,
         isDefault: false,
       },

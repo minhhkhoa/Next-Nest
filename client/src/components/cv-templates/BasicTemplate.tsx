@@ -23,7 +23,7 @@ import { toast } from "sonner";
 import { useCreateUserResumeMutate } from "@/queries/useUserResume";
 import { SaveResumeDialog } from "../SaveResumeDialog";
 import { CVFormValues } from "@/types/apiResponse";
-
+import { CV_TEMPLATES } from "@/lib/constant";
 
 export default function BasicTemplate({ data }: { data: apiUserForCVResType }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -114,7 +114,7 @@ export default function BasicTemplate({ data }: { data: apiUserForCVResType }) {
     saveResume(
       {
         resumeName,
-        templateID: "basic-template",
+        templateID: CV_TEMPLATES.basicTemplate,
         content: formData,
         isDefault: false,
       },

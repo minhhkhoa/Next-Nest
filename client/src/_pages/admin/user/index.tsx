@@ -74,7 +74,7 @@ export default function UserPageManagement() {
   });
 
   //- khôi phục
-  const { mutateAsync: restoreMutation, isPending: isRestoring } =
+  const { mutateAsync: restoreMutation } =
     useRestoreUser();
 
   const { data: companyMembers } = useGetMembersByCompanyId(
