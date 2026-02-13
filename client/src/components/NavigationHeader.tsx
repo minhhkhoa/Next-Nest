@@ -91,31 +91,33 @@ export default function NavigationHeaderMenu() {
           </NavigationMenuItem>
 
           <NavigationMenuItem>
-            <NavigationMenuTrigger>Tạo cv</NavigationMenuTrigger>
+            <NavigationMenuTrigger>
+              <Link href="/cv-templates">Tạo cv</Link>
+            </NavigationMenuTrigger>
             <NavigationMenuContent>
               <ul className="grid w-[300px] gap-4">
                 <li>
                   <NavigationMenuLink asChild>
-                    <Link href="#">
-                      <div className="font-medium">Components</div>
+                    <Link href="/cv-templates">
+                      <div className="font-medium">Xem các mẫu cv</div>
                       <div className="text-muted-foreground">
-                        Browse all components in the library.
+                        Duyệt qua các mẫu CV chuyên nghiệp của chúng tôi.
                       </div>
                     </Link>
                   </NavigationMenuLink>
                   <NavigationMenuLink asChild>
-                    <Link href="#">
-                      <div className="font-medium">Documentation</div>
+                    <Link href="/cv-templates">
+                      <div className="font-medium">Cv cho lập trình viên</div>
                       <div className="text-muted-foreground">
-                        Learn how to use the library.
+                        Mẫu CV được thiết kế đặc biệt cho các lập trình viên.
                       </div>
                     </Link>
                   </NavigationMenuLink>
                   <NavigationMenuLink asChild>
-                    <Link href="#">
-                      <div className="font-medium">Blog</div>
+                    <Link href="/cv-templates">
+                      <div className="font-medium">Cv cho kế toán</div>
                       <div className="text-muted-foreground">
-                        Read our latest blog posts.
+                        Mẫu CV được thiết kế đặc biệt cho các kế toán.
                       </div>
                     </Link>
                   </NavigationMenuLink>

@@ -40,6 +40,9 @@ import { UserResumeModule } from './modules/user-resume/user-resume.module';
         store: await redisStore({
           url: configService.get<string>('REDIS_URL'),
           ttl: 600000, //- time to live: 10 phút
+          socket: {
+            connectTimeout: 30000, //- Tăng timeout lên 30s để tránh lỗi kết nối chậm trên Docker Windows
+          },
         }),
       }),
       inject: [ConfigService],

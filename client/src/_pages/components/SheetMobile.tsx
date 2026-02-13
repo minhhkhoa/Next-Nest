@@ -80,14 +80,15 @@ function NavItemSheetMobile() {
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="item-1">
               <div className="flex items-center justify-between">
-                <span>Tạo cv</span>
+                <Link href="/cv-templates">Tạo cv</Link>
                 <div className="flex-1">
                   <AccordionTrigger className="flex-1 justify-end" />
                 </div>
               </div>
               <AccordionContent className="flex flex-col gap-4 text-balance ml-5">
-                <p>Text1</p>
-                <p>Text2</p>
+                <Link href="/cv-templates">Danh sách mẫu cv</Link>
+                <Link href="/cv-templates">Cv dành cho lập trình viên</Link>
+                <Link href="/cv-templates">Cv dành cho kế toán</Link>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
