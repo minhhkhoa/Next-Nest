@@ -1,5 +1,6 @@
 "use client";
 
+import BasicTemplate from "@/components/cv-templates/BasicTemplate";
 import ModernTemplate from "@/components/cv-templates/ModernTemplate";
 import CVSkeleton from "@/components/skeletons/cv-skeleton";
 import { useGetResumeData } from "@/queries/useUser";
@@ -16,7 +17,7 @@ export default function TemplateResumePage() {
   return (
     <div className="p-4">
       {!isLoading && resumeData?.data && (
-        <ModernTemplate data={resumeData?.data} />
+        <BasicTemplate data={resumeData?.data} />
       )}
     </div>
   );
