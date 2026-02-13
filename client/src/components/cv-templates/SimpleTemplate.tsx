@@ -206,17 +206,8 @@ export default function SimpleTemplate({
 
   return (
     <>
-      <SaveResumeDialog
-        open={isSaveDialogOpen}
-        onOpenChange={setIsSaveDialogOpen}
-        resumeName={resumeName}
-        onResumeNameChange={setResumeName}
-        onSave={handleSaveCV}
-        isSaving={isSaving}
-      />
-
       <Form {...form}>
-        <form className="w-full max-w-[210mm] mx-auto min-h-screen bg-background text-foreground pb-20 font-sans">
+        <form className="w-full max-w-[210mm] mx-auto min-h-screen bg-background text-foreground pb-2 font-sans">
           <div className="container mx-auto py-8">
             <div className="bg-card shadow-lg rounded-lg p-8 sm:p-12 border border-border">
               {/* Header Section */}
@@ -670,6 +661,15 @@ export default function SimpleTemplate({
           </div>
         </form>
       </Form>
+
+      <SaveResumeDialog
+        open={isSaveDialogOpen}
+        onOpenChange={setIsSaveDialogOpen}
+        resumeName={resumeName}
+        onResumeNameChange={setResumeName}
+        onSave={handleSaveCV}
+        isSaving={isSaving}
+      />
     </>
   );
 }

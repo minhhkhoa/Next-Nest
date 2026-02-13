@@ -30,12 +30,12 @@ export function SaveResumeDialog({
   isSaving,
 }: SaveResumeDialogProps) {
   return (
-    <div className="fixed bottom-10 right-10 z-50 print:hidden">
+    <div className="flex justify-end mt-6 print:hidden">
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogTrigger asChild>
-          <Button size="lg" className="rounded-full shadow-lg">
+          <Button size="lg" className="rounded-full shadow-lg min-w-[200px]">
             <Save className="mr-2 h-4 w-4" />
-            Lưu CV
+            Lưu hồ sơ CV
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-md">

@@ -201,19 +201,10 @@ export default function BasicTemplate({ data }: { data: apiUserForCVResType }) {
 
   return (
     <>
-      <SaveResumeDialog
-        open={isSaveDialogOpen}
-        onOpenChange={setIsSaveDialogOpen}
-        resumeName={resumeName}
-        onResumeNameChange={setResumeName}
-        onSave={handleSaveCV}
-        isSaving={isSaving}
-      />
-
       <Form {...form}>
         <form
           onSubmit={handleSubmit((d) => console.log(d))}
-          className="w-full max-w-[210mm] mx-auto min-h-screen pb-20"
+          className="w-full max-w-[210mm] mx-auto min-h-screen pb-2"
         >
           {/* Main Card */}
           <div className="border border-border shadow-xl rounded-lg bg-card overflow-hidden text-card-foreground">
@@ -733,6 +724,15 @@ export default function BasicTemplate({ data }: { data: apiUserForCVResType }) {
           </div>
         </form>
       </Form>
+
+      <SaveResumeDialog
+        open={isSaveDialogOpen}
+        onOpenChange={setIsSaveDialogOpen}
+        resumeName={resumeName}
+        onResumeNameChange={setResumeName}
+        onSave={handleSaveCV}
+        isSaving={isSaving}
+      />
     </>
   );
 }

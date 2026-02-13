@@ -185,17 +185,8 @@ export default function ImpressiveTemplate({
 
   return (
     <>
-      <SaveResumeDialog
-        open={isSaveDialogOpen}
-        onOpenChange={setIsSaveDialogOpen}
-        resumeName={resumeName}
-        onResumeNameChange={setResumeName}
-        onSave={handleSaveCV}
-        isSaving={isSaving}
-      />
-
       <Form {...form}>
-        <form className="w-full max-w-[210mm] mx-auto min-h-screen pb-20 bg-background text-foreground">
+        <form className="w-full max-w-[210mm] mx-auto min-h-screen pb-2 bg-background text-foreground">
           <div className="container mx-auto py-8">
             <div className="grid grid-cols-4 sm:grid-cols-12 gap-6">
               {/* Sidebar */}
@@ -647,6 +638,15 @@ export default function ImpressiveTemplate({
           </div>
         </form>
       </Form>
+
+      <SaveResumeDialog
+        open={isSaveDialogOpen}
+        onOpenChange={setIsSaveDialogOpen}
+        resumeName={resumeName}
+        onResumeNameChange={setResumeName}
+        onSave={handleSaveCV}
+        isSaving={isSaving}
+      />
     </>
   );
 }
