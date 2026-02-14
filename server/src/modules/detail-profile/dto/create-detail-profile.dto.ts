@@ -98,7 +98,6 @@ export class CreateDetailProfileDto {
   level: string;
 
   @ApiProperty()
-  @IsNotEmpty({ message: 'Địa chỉ người dùng không được để trống' })
   address: string;
 }
 

@@ -3,7 +3,7 @@
 import CVSkeleton from "@/components/skeletons/cv-skeleton";
 import { useGetResumeData } from "@/queries/useUser";
 import React from "react";
-import TemplateDetail from "./TemplateDetail";
+import PageTemplateDetail from "./TemplateDetail";
 
 export default function WrapDetailTemplate({
   templateId,
@@ -16,10 +16,11 @@ export default function WrapDetailTemplate({
 
   if (!isLoading && !resumeData?.data)
     return <div>Không có dữ liệu để hiển thị</div>;
+  
   return (
     <div className="p-4">
       {!isLoading && resumeData?.data && (
-        <TemplateDetail templateId={templateId} data={resumeData.data} />
+        <PageTemplateDetail templateId={templateId} data={resumeData.data} />
       )}
     </div>
   );

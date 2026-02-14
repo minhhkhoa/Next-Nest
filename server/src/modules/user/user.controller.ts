@@ -12,7 +12,11 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ResponseMessage, userDecorator } from 'src/common/decorator/customize';
+import {
+  PublicPermission,
+  ResponseMessage,
+  userDecorator,
+} from 'src/common/decorator/customize';
 import { FindUserQueryDto } from './dto/userDto.dto';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import {
@@ -39,6 +43,7 @@ export class UserController {
     return this.userService.findAllByFilter(query);
   }
 
+  @PublicPermission()
   @Get('resume-data')
   @ResponseMessage('Lấy dữ liệu hồ sơ để tạo CV thành công')
   @ApiOperation({
@@ -50,7 +55,9 @@ export class UserController {
 
   @Get('members-of-company/:companyId')
   @ResponseMessage('Lấy danh sách thành viên công ty cho admin thành công')
-  @ApiOperation({ summary: 'Lấy thành viên công ty theo companyId dành cho super_admin' })
+  @ApiOperation({
+    summary: 'Lấy thành viên công ty theo companyId dành cho super_admin',
+  })
   async getMembersByCompanyId(@Param('companyId') companyId: string) {
     return this.userService.findMembersByCompany(companyId);
   }

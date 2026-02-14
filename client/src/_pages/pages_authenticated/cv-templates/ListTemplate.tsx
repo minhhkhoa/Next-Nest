@@ -16,39 +16,39 @@ import { ArrowRight, Star } from "lucide-react";
 
 export const listTemplateMetadata = [
   {
+    id: CV_TEMPLATES.basicTemplate,
     title: "Mẫu Cv cơ bản",
     description:
       "Mẫu CV đơn giản, dễ nhìn, phù hợp với nhiều ngành nghề khác nhau.",
     image: "/image_template/basic_template.png",
-    link: CV_TEMPLATES.basicTemplate,
     popular: true,
   },
   {
+    id: CV_TEMPLATES.impressiveTemplate,
     title: "Mẫu Cv ấn tượng",
     description:
       "Mẫu CV ấn tượng, nổi bật với thiết kế sáng tạo và chuyên nghiệp.",
     image: "/image_template/impressive_template.png",
-    link: CV_TEMPLATES.impressiveTemplate,
     popular: false,
   },
   {
+    id: CV_TEMPLATES.modernTemplate,
     title: "Mẫu Cv hiện đại",
     description: "Mẫu CV hiện đại, phù hợp với xu hướng thiết kế mới nhất.",
     image: "/image_template/modern_template.png",
-    link: CV_TEMPLATES.modernTemplate,
     popular: true,
   },
   {
+    id: CV_TEMPLATES.simpleTemplate,
     title: "Mẫu Cv đơn giản",
     description:
       "Mẫu CV đơn giản, tập trung vào nội dung và thông tin cá nhân.",
     image: "/image_template/simple_template.png",
-    link: CV_TEMPLATES.simpleTemplate,
     popular: false,
   },
 ];
 
-export default function ListTemplate() {
+export default function PageListTemplate() {
   return (
     <div className="container mx-auto py-10 px-4">
       <div className="flex flex-col text-center mb-12 space-y-4">
@@ -78,7 +78,7 @@ export default function ListTemplate() {
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                 <Button variant="default" className="rounded-full" asChild>
-                  <Link href={`/cv-templates/${template.link}`}>
+                  <Link href={`/cv-templates/${template.id}`}>
                     Xem chi tiết
                   </Link>
                 </Button>
@@ -109,7 +109,7 @@ export default function ListTemplate() {
 
             <CardFooter className="pt-0">
               <Button className="w-full group/btn" variant="outline" asChild>
-                <Link href={`/cv-templates/${template.link}`}>
+                <Link href={`/cv-templates/${template.id}`}>
                   Sử dụng mẫu này
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
                 </Link>

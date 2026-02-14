@@ -6,7 +6,7 @@ import { CV_TEMPLATES } from "@/lib/constant";
 import { apiUserForCVResType } from "@/schemasvalidation/user";
 import React from "react";
 
-export default function TemplateDetail({
+export default function PageTemplateDetail({
   templateId,
   data,
 }: {

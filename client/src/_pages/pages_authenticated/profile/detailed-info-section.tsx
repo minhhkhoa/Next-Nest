@@ -87,7 +87,7 @@ export function DetailedInfoSection() {
             endDate: edu.endDate,
           }))
         : [],
-      level: formData?.level,
+      level: formData?.level || LEVEL_OPTIONS[0].value,
       address: formData?.address,
     };
 
@@ -203,7 +203,7 @@ export function DetailedInfoSection() {
             </Label>
             {isEditing ? (
               <Select
-                value={formData?.level}
+                value={formData?.level || LEVEL_OPTIONS[0].value}
                 onValueChange={(value) => handleChange("level", value)}
               >
                 <SelectTrigger id="level" className="mt-2">

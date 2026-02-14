@@ -10,6 +10,10 @@ export const CreateUserResumeSchema = z.object({
 export type CreateUserResumeType = z.infer<typeof CreateUserResumeSchema>;
 export type UserResumeResponseType = CreateUserResumeType & {
   _id: string;
+  userID: string;
+  image?: string;
+  title?: string;
+  description?: string;
   createdAt: string;
   updatedAt: string;
 };

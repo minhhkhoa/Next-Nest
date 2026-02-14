@@ -1,6 +1,6 @@
 "use client";
 
-import { Settings, LogOut, LayoutDashboard, User } from "lucide-react";
+import { Settings, LogOut, LayoutDashboard, User, Folder } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -96,6 +96,11 @@ export function UserAvatarMenu() {
         <DropdownMenuItem className="cursor-pointer">
           <User className="mr-2 h-4 w-4" />
           <Link href="/profile">Hồ sơ cá nhân</Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuItem className="cursor-pointer">
+          <Folder className="mr-2 h-4 w-4" />
+          <Link href="/my-cv">My Cv</Link>
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
