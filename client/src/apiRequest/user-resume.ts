@@ -13,6 +13,9 @@ const userResumeApiRequest = {
     
   findOne: (id: string) =>
     http.get<ApiResponse<UserResumeResponseType>>(`${prefix}/${id}`),
+
+  update: (id: string, body: Partial<CreateUserResumeType>) =>
+    http.patch<ApiResponse<UserResumeResponseType>>(`${prefix}/${id}`, body),
 };
 
 export default userResumeApiRequest;

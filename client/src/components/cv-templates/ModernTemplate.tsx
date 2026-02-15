@@ -7,46 +7,73 @@ import { Form, FormField } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, PencilLine, Upload } from "lucide-react";
+import { Plus, Trash2, PencilLine, Upload, Save } from "lucide-react";
 import { cn, formatDateForTemplate, uploadToCloudinary } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { useCreateUserResumeMutate } from "@/queries/useUserResume";
+import {
+  useCreateUserResumeMutate,
+  useUpdateUserResumeMutate,
+} from "@/queries/useUserResume";
 import { SaveResumeDialog } from "../SaveResumeDialog";
-import { CVFormValues } from "@/types/apiResponse";
+import { CVFormValues, TemplateProps } from "@/types/apiResponse";
 import { CV_TEMPLATES } from "@/lib/constant";
 
 export default function ModernTemplate({
   data,
-}: {
-  data: apiUserForCVResType;
-}) {
+  isEdit,
+  resumeId,
+}: TemplateProps) {
+  const { mutate: updateResume, isPending: isUpdating } =
+    useUpdateUserResumeMutate();
+
+  const handleUpdateCV = () => {
+    const formData = form.getValues();
+    if (!resumeId) return;
+
+    updateResume(
+      {
+        id: resumeId,
+        body: {
+          content: formData,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success("Cập nhật CV thành công!");
+        },
+        onError: () => {
+          toast.error("Cập nhật CV thất bại. Vui lòng thử lại.");
+        },
+      },
+    );
+  };
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  console.log("ModernTemplate data:", data);
+  console.log("ModernTemplate isEdit:", isEdit);
 
   // Mapping dữ liệu API vào Form
   const defaultValues: CVFormValues = {
     personalInfo: {
-      name: data.personalInfo.name || "",
-      email: data.personalInfo.email || "",
-      avatar: data.personalInfo.avatar || "/placeholder-user.jpg",
+      name: data?.personalInfo.name || "",
+      email: data?.personalInfo.email || "",
+      avatar: data?.personalInfo.avatar || "/placeholder-user.jpg",
       phone: "099.999.9999", // Placeholder
       description: "Software Engineer", // Giá trị mặc định
     },
     professionalSummary:
-      data.professionalSummary || "Mục tiêu nghề nghiệp của bạn...",
+      data?.professionalSummary || "Mục tiêu nghề nghiệp của bạn...",
     skills:
-      data.skills && data.skills.length > 0
-        ? data.skills.map((s) => ({
-            value:
-              (s as any).name?.vi ||
-              (s as any).name ||
-              (typeof s === "string" ? s : ""),
+      data?.skills && data.skills.length > 0
+        ? data.skills.map((s: any) => ({
+            value: (s as any).value,
           }))
         : [{ value: "Kỹ năng 1" }, { value: "Kỹ năng 2" }],
     education:
-      data.education && data.education.length > 0
-        ? data.education.map((e) => ({
+      data?.education && data.education.length > 0
+        ? data.education.map((e: any) => ({
             school: e.school,
             degree: e.degree,
             startDate: formatDateForTemplate(e.startDate),
@@ -60,21 +87,39 @@ export default function ModernTemplate({
               endDate: "2024",
             },
           ],
-    experience: [
-      {
-        company: "Công ty gần nhất",
-        position: "Vị trí làm việc",
-        startDate: "2022",
-        endDate: "Hiện tại",
-        responsibilities: [{ value: "Mô tả công việc chính..." }],
-      },
-    ],
-    projects: [
-      {
-        name: "Tên dự án",
-        description: "Mô tả ngắn gọn về dự án...",
-      },
-    ],
+    experience:
+      data?.experience && data.experience.length > 0
+        ? data.experience.map((e: any) => ({
+            company: e.company,
+            position: e.position,
+            startDate: formatDateForTemplate(e.startDate),
+            endDate: formatDateForTemplate(e.endDate),
+            responsibilities:
+              e.responsibilities && e.responsibilities.length > 0
+                ? e.responsibilities.map((r: any) => ({ value: r.value }))
+                : [{ value: "Mô tả công việc chính..." }],
+          }))
+        : [
+            {
+              company: "Công ty gần nhất",
+              position: "Vị trí làm việc",
+              startDate: "2022",
+              endDate: "Hiện tại",
+              responsibilities: [{ value: "Mô tả công việc chính..." }],
+            },
+          ],
+    projects:
+      data?.projects && data.projects.length > 0
+        ? data.projects.map((p: any) => ({
+            name: p.name,
+            description: p.description,
+          }))
+        : [
+            {
+              name: "Tên dự án",
+              description: "Mô tả ngắn gọn về dự án...",
+            },
+          ],
   };
 
   const form = useForm<CVFormValues>({
@@ -236,7 +281,7 @@ export default function ModernTemplate({
                     <Image
                       src={
                         field.value ||
-                        data.personalInfo.avatar ||
+                        data?.personalInfo.avatar ||
                         "/placeholder-user.jpg"
                       }
                       width={200}
@@ -727,17 +772,38 @@ export default function ModernTemplate({
               </div>
             </div>
           </div>
+
+          
+          {isEdit && (
+            <div className="flex justify-end mt-4">
+              <Button
+                className="shadow-xl"
+                size="lg"
+                onClick={handleUpdateCV}
+                disabled={isUpdating}
+              >
+                {isUpdating ? (
+                  <span className="animate-spin mr-2">⏳</span>
+                ) : (
+                  <Save className="mr-2 h-5 w-5" />
+                )}
+                Lưu thay đổi
+              </Button>
+            </div>
+          )}
         </form>
       </Form>
 
-      <SaveResumeDialog
-        open={isSaveDialogOpen}
-        onOpenChange={setIsSaveDialogOpen}
-        resumeName={resumeName}
-        onResumeNameChange={setResumeName}
-        onSave={handleSaveCV}
-        isSaving={isSaving}
-      />
+      {!isEdit && (
+        <SaveResumeDialog
+          open={isSaveDialogOpen}
+          onOpenChange={setIsSaveDialogOpen}
+          resumeName={resumeName}
+          onResumeNameChange={setResumeName}
+          onSave={handleSaveCV}
+          isSaving={isSaving}
+        />
+      )}
     </>
   );
 }

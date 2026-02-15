@@ -16,6 +16,7 @@ import { ArrowRight } from "lucide-react";
 import { useGetUserResumes } from "@/queries/useUserResume";
 import { listTemplateMetadata } from "../cv-templates/ListTemplate";
 import ListCvSkeleton from "@/components/skeletons/list-cv-skeleton";
+import { generateSlugUrl } from "@/lib/utils";
 
 export default function PageMyListCv() {
   const { data: listMyCvFetch, isLoading } = useGetUserResumes();
@@ -45,7 +46,9 @@ export default function PageMyListCv() {
           Danh sách mẫu CV của tôi
         </h1>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Dưới đây là danh sách các mẫu CV mà bạn đã tạo. Bạn có thể xem, chỉnh sửa hoặc tạo mới các mẫu CV của mình để phù hợp với nhu cầu ứng tuyển của bạn.
+          Dưới đây là danh sách các mẫu CV mà bạn đã tạo. Bạn có thể xem, chỉnh
+          sửa hoặc tạo mới các mẫu CV của mình để phù hợp với nhu cầu ứng tuyển
+          của bạn.
         </p>
       </div>
 
@@ -71,7 +74,9 @@ export default function PageMyListCv() {
                 />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                   <Button variant="default" className="rounded-full" asChild>
-                    <Link href={`/my-cv/${template.templateID}`}>
+                    <Link
+                      href={`/my-cv/${generateSlugUrl({ name: template.templateID, id: template._id })}?edit=true`}
+                    >
                       Xem chi tiết
                     </Link>
                   </Button>
@@ -92,7 +97,9 @@ export default function PageMyListCv() {
 
               <CardFooter className="pt-0">
                 <Button className="w-full group/btn" variant="outline" asChild>
-                  <Link href={`/my-cv/${template.templateID}`}>
+                  <Link
+                    href={`/my-cv/${generateSlugUrl({ name: template.templateID, id: template._id })}?edit=true`}
+                  >
                     Chỉnh sửa
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
                   </Link>

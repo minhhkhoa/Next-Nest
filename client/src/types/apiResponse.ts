@@ -1,3 +1,5 @@
+import { apiUserForCVResType } from "@/schemasvalidation/user";
+
 export interface ApiResponse<T> {
   statusCode: number;
   message: string;
@@ -35,6 +37,12 @@ export type CVFormValues = {
     name: string;
     description: string;
   }[];
+};
+
+export type TemplateProps = {
+  data?: any;
+  isEdit?: boolean;
+  resumeId?: string;
 };
 
 

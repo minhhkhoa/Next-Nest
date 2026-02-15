@@ -15,36 +15,68 @@ import {
   Mail,
   Link as LinkIcon,
   MapPin,
+  Save,
 } from "lucide-react";
 import { cn, formatDateForTemplate, uploadToCloudinary } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { useCreateUserResumeMutate } from "@/queries/useUserResume";
+import {
+  useCreateUserResumeMutate,
+  useUpdateUserResumeMutate,
+} from "@/queries/useUserResume";
 import { SaveResumeDialog } from "../SaveResumeDialog";
-import { CVFormValues } from "@/types/apiResponse";
+import { CVFormValues, TemplateProps } from "@/types/apiResponse";
 import { CV_TEMPLATES } from "@/lib/constant";
 
-export default function BasicTemplate({ data }: { data: apiUserForCVResType }) {
+export default function BasicTemplate({
+  data,
+  isEdit,
+  resumeId,
+}: TemplateProps) {
+  const { mutate: updateResume, isPending: isUpdating } =
+    useUpdateUserResumeMutate();
+
+  const handleUpdateCV = () => {
+    const formData = form.getValues();
+    if (!resumeId) return;
+
+    updateResume(
+      {
+        id: resumeId,
+        body: {
+          content: formData,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success("Cập nhật CV thành công!");
+        },
+        onError: () => {
+          toast.error("Cập nhật CV thất bại. Vui lòng thử lại.");
+        },
+      },
+    );
+  };
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Mapping Data
   const defaultValues: CVFormValues = {
     personalInfo: {
-      name: data.personalInfo.name || "Nguyễn Văn A",
-      email: data.personalInfo.email || "example@gmail.com",
-      avatar: data.personalInfo.avatar || "/placeholder-user.jpg",
+      name: data?.personalInfo.name || "Nguyễn Văn A",
+      email: data?.personalInfo.email || "example@gmail.com",
+      avatar: data?.personalInfo.avatar || "/placeholder-user.jpg",
       phone: "099.999.9999",
       description: "Lập trình viên Fullstack",
       address: "Hà Nội, Việt Nam",
       link: "linkedin.com/in/nguyenvana",
     },
     professionalSummary:
-      data.professionalSummary ||
+      data?.professionalSummary ||
       "Tôi là một lập trình viên có kinh nghiệm, đam mê học hỏi công nghệ mới...",
     skills:
-      data.skills && data.skills.length > 0
-        ? data.skills.map((s) => ({
+      data?.skills && data.skills.length > 0
+        ? data.skills.map((s: any) => ({
             value:
               (s as any).name?.vi ||
               (s as any).name ||
@@ -57,8 +89,8 @@ export default function BasicTemplate({ data }: { data: apiUserForCVResType }) {
             { value: "Tailwind CSS" },
           ],
     education:
-      data.education && data.education.length > 0
-        ? data.education.map((e) => ({
+      data?.education && data.education.length > 0
+        ? data.education.map((e: any) => ({
             school: e.school,
             degree: e.degree,
             startDate: formatDateForTemplate(e.startDate),
@@ -73,30 +105,55 @@ export default function BasicTemplate({ data }: { data: apiUserForCVResType }) {
             },
           ],
 
-    experience: [
-      {
-        company: "Công ty ABC",
-        position: "Lập trình viên ReactJS",
-        startDate: "2025",
-        endDate: "Hiện tại",
-        responsibilities: [
-          {
-            value:
-              "Phát triển giao diện người dùng, tối ưu hóa hiệu năng website...",
-          },
-        ],
-      },
-    ],
-    projects: [
-      {
-        name: "Website Thương mại điện tử",
-        description: "Xây dựng website bán hàng với đầy đủ tính năng...",
-      },
-      {
-        name: "Ứng dụng Quản lý công việc",
-        description: "Phát triển ứng dụng giúp quản lý công việc hiệu quả...",
-      },
-    ],
+    experience:
+      data?.experience && data.experience.length > 0
+        ? data.experience.map((e: any) => ({
+            company: e.company,
+            position: e.position,
+            startDate: formatDateForTemplate(e.startDate),
+            endDate: formatDateForTemplate(e.endDate),
+            responsibilities:
+              e.responsibilities && e.responsibilities.length > 0
+                ? e.responsibilities.map((r: any) => ({ value: r.value }))
+                : [
+                    {
+                      value:
+                        "Phát triển giao diện người dùng, tối ưu hóa hiệu năng website...",
+                    },
+                  ],
+          }))
+        : [
+            {
+              company: "Công ty ABC",
+              position: "Lập trình viên ReactJS",
+              startDate: "2025",
+              endDate: "Hiện tại",
+              responsibilities: [
+                {
+                  value:
+                    "Phát triển giao diện người dùng, tối ưu hóa hiệu năng website...",
+                },
+              ],
+            },
+          ],
+
+    projects:
+      data?.projects && data.projects.length > 0
+        ? data.projects.map((p: any) => ({
+            name: p.name,
+            description: p.description,
+          }))
+        : [
+            {
+              name: "Website Thương mại điện tử",
+              description: "Xây dựng website bán hàng với đầy đủ tính năng...",
+            },
+            {
+              name: "Ứng dụng Quản lý công việc",
+              description:
+                "Phát triển ứng dụng giúp quản lý công việc hiệu quả...",
+            },
+          ],
   };
 
   const form = useForm<CVFormValues>({
@@ -722,17 +779,37 @@ export default function BasicTemplate({ data }: { data: apiUserForCVResType }) {
               CV được tạo bởi Next-Nest CV Builder
             </div>
           </div>
+
+          {isEdit && (
+            <div className="fixed bottom-10 right-10 z-50">
+              <Button
+                className="shadow-xl"
+                size="lg"
+                onClick={handleUpdateCV}
+                disabled={isUpdating}
+              >
+                {isUpdating ? (
+                  <span className="animate-spin mr-2">⏳</span>
+                ) : (
+                  <Save className="mr-2 h-5 w-5" />
+                )}
+                Lưu thay đổi
+              </Button>
+            </div>
+          )}
         </form>
       </Form>
 
-      <SaveResumeDialog
-        open={isSaveDialogOpen}
-        onOpenChange={setIsSaveDialogOpen}
-        resumeName={resumeName}
-        onResumeNameChange={setResumeName}
-        onSave={handleSaveCV}
-        isSaving={isSaving}
-      />
+      {!isEdit && (
+        <SaveResumeDialog
+          open={isSaveDialogOpen}
+          onOpenChange={setIsSaveDialogOpen}
+          resumeName={resumeName}
+          onResumeNameChange={setResumeName}
+          onSave={handleSaveCV}
+          isSaving={isSaving}
+        />
+      )}
     </>
   );
 }

@@ -6,38 +6,65 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { Form, FormField } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, Upload } from "lucide-react";
+import { Plus, Trash2, Upload, Save } from "lucide-react";
 import { cn, formatDateForTemplate, uploadToCloudinary } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { useCreateUserResumeMutate } from "@/queries/useUserResume";
+import {
+  useCreateUserResumeMutate,
+  useUpdateUserResumeMutate,
+} from "@/queries/useUserResume";
 import { SaveResumeDialog } from "../SaveResumeDialog";
-import { CVFormValues } from "@/types/apiResponse";
+import { CVFormValues, TemplateProps } from "@/types/apiResponse";
 import { CV_TEMPLATES } from "@/lib/constant";
 
 export default function ImpressiveTemplate({
   data,
-}: {
-  data: apiUserForCVResType;
-}) {
+  isEdit,
+  resumeId,
+}: TemplateProps) {
+  const { mutate: updateResume, isPending: isUpdating } =
+    useUpdateUserResumeMutate();
+
+  const handleUpdateCV = () => {
+    const formData = form.getValues();
+    if (!resumeId) return;
+
+    updateResume(
+      {
+        id: resumeId,
+        body: {
+          content: formData,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success("Cập nhật CV thành công!");
+        },
+        onError: () => {
+          toast.error("Cập nhật CV thất bại. Vui lòng thử lại.");
+        },
+      },
+    );
+  };
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Mapping dữ liệu API vào Form
   const defaultValues: CVFormValues = {
     personalInfo: {
-      name: data.personalInfo.name || "John Doe",
-      email: data.personalInfo.email || "john.doe@example.com",
-      avatar: data.personalInfo.avatar || "/placeholder-user.jpg",
+      name: data?.personalInfo.name || "John Doe",
+      email: data?.personalInfo.email || "john.doe@example.com",
+      avatar: data?.personalInfo.avatar || "/placeholder-user.jpg",
       phone: "099.999.9999",
       description: "Software Developer",
     },
     professionalSummary:
-      data.professionalSummary ||
+      data?.professionalSummary ||
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit...",
     skills:
-      data.skills && data.skills.length > 0
-        ? data.skills.map((s) => ({
+      data?.skills && data.skills.length > 0
+        ? data.skills.map((s: any) => ({
             value:
               (s as any).name?.vi ||
               (s as any).name ||
@@ -45,8 +72,8 @@ export default function ImpressiveTemplate({
           }))
         : [{ value: "JavaScript" }, { value: "React" }, { value: "Node.js" }],
     education:
-      data.education && data.education.length > 0
-        ? data.education.map((e) => ({
+      data?.education && data.education.length > 0
+        ? data.education.map((e: any) => ({
             school: e.school,
             degree: e.degree,
             startDate: formatDateForTemplate(e.startDate),
@@ -60,21 +87,39 @@ export default function ImpressiveTemplate({
               endDate: "2024",
             },
           ],
-    experience: [
-      {
-        company: "ABC Company",
-        position: "Web Developer",
-        startDate: "2017",
-        endDate: "2019",
-        responsibilities: [{ value: "Lorem ipsum dolor sit amet..." }],
-      },
-    ],
-    projects: [
-      {
-        name: "Project Name",
-        description: "Project Description...",
-      },
-    ],
+    experience:
+      data?.experience && data.experience.length > 0
+        ? data.experience.map((e: any) => ({
+            company: e.company,
+            position: e.position,
+            startDate: formatDateForTemplate(e.startDate),
+            endDate: formatDateForTemplate(e.endDate),
+            responsibilities:
+              e.responsibilities && e.responsibilities.length > 0
+                ? e.responsibilities.map((r: any) => ({ value: r.value }))
+                : [{ value: "Lorem ipsum dolor sit amet..." }],
+          }))
+        : [
+            {
+              company: "ABC Company",
+              position: "Web Developer",
+              startDate: "2017",
+              endDate: "2019",
+              responsibilities: [{ value: "Lorem ipsum dolor sit amet..." }],
+            },
+          ],
+    projects:
+      data?.projects && data.projects.length > 0
+        ? data.projects.map((p: any) => ({
+            name: p.name,
+            description: p.description,
+          }))
+        : [
+            {
+              name: "Project Name",
+              description: "Project Description...",
+            },
+          ],
   };
 
   const form = useForm<CVFormValues>({
@@ -472,9 +517,7 @@ export default function ImpressiveTemplate({
                 {/* Education Section */}
                 <div className="bg-card shadow rounded-lg p-6 border border-border">
                   <div className="flex items-center justify-between mb-4 border-b border-border pb-2">
-                    <h2 className="text-xl font-bold text-primary">
-                      Học vấn
-                    </h2>
+                    <h2 className="text-xl font-bold text-primary">Học vấn</h2>
                     <Button
                       type="button"
                       variant="ghost"
@@ -636,17 +679,37 @@ export default function ImpressiveTemplate({
               </div>
             </div>
           </div>
+
+          {isEdit && (
+            <div className="fixed bottom-10 right-10 z-50">
+              <Button
+                className="shadow-xl"
+                size="lg"
+                onClick={handleUpdateCV}
+                disabled={isUpdating}
+              >
+                {isUpdating ? (
+                  <span className="animate-spin mr-2">⏳</span>
+                ) : (
+                  <Save className="mr-2 h-5 w-5" />
+                )}
+                Lưu thay đổi
+              </Button>
+            </div>
+          )}
         </form>
       </Form>
 
-      <SaveResumeDialog
-        open={isSaveDialogOpen}
-        onOpenChange={setIsSaveDialogOpen}
-        resumeName={resumeName}
-        onResumeNameChange={setResumeName}
-        onSave={handleSaveCV}
-        isSaving={isSaving}
-      />
+      {!isEdit && (
+        <SaveResumeDialog
+          open={isSaveDialogOpen}
+          onOpenChange={setIsSaveDialogOpen}
+          resumeName={resumeName}
+          onResumeNameChange={setResumeName}
+          onSave={handleSaveCV}
+          isSaving={isSaving}
+        />
+      )}
     </>
   );
 }

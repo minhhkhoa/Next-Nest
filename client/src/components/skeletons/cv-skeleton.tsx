@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CVSkeleton() {
   return (
-    <div className="w-full max-w-[210mm] mx-auto min-h-screen pb-20">
+    <div className="w-full max-w-[210mm] mx-auto min-h-screen pt-3 pb-20">
       <div className="border border-border shadow-xl rounded-lg bg-card overflow-hidden">
         {/* Header Skeleton */}
         <div className="flex flex-col sm:flex-row rounded-t-lg bg-muted sm:px-2 w-full pb-5 sm:pb-0 h-[200px] relative">
