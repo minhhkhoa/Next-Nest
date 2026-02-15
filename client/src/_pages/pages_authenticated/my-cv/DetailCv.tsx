@@ -5,13 +5,14 @@ import ImpressiveTemplate from "@/components/cv-templates/ImpressiveTemplate";
 import ModernTemplate from "@/components/cv-templates/ModernTemplate";
 import SimpleTemplate from "@/components/cv-templates/SimpleTemplate";
 import CVSkeleton from "@/components/skeletons/cv-skeleton";
+import { CV_TEMPLATES } from "@/lib/constant";
 import { getIdFromSlugUrl } from "@/lib/utils";
 import { useGetUserResumeDetail } from "@/queries/useUserResume";
 import { useSearchParams } from "next/navigation";
 import React from "react";
 
 export default function PageDetailCv({ id }: { id: string }) {
-  //- lấy ra biến bool isEdit từ query params để biết được đang ở chế độ xem chi tiết hay chỉnh sửa, nếu isEdit === true thì sẽ hiển thị form chỉnh sửa, ngược lại sẽ hiển thị form xem chi tiết
+  //- lấy ra biến bool edit từ query params để biết được đang ở chế độ nào
   const searchParams = useSearchParams();
   const isEdit = searchParams.get("edit") === "true";
 
@@ -25,7 +26,7 @@ export default function PageDetailCv({ id }: { id: string }) {
 
   const getTemplateComponent = (templateID: string) => {
     switch (templateID) {
-      case "basic-template":
+      case CV_TEMPLATES.basicTemplate:
         return (
           <BasicTemplate
             data={detailCvFetch?.data?.content}
@@ -33,7 +34,7 @@ export default function PageDetailCv({ id }: { id: string }) {
             resumeId={detailCvFetch?.data?._id}
           />
         );
-      case "impressive-template":
+      case CV_TEMPLATES.impressiveTemplate:
         return (
           <ImpressiveTemplate
             data={detailCvFetch?.data?.content}
@@ -41,7 +42,7 @@ export default function PageDetailCv({ id }: { id: string }) {
             resumeId={detailCvFetch?.data?._id}
           />
         );
-      case "modern-template":
+      case CV_TEMPLATES.modernTemplate:
         return (
           <ModernTemplate
             data={detailCvFetch?.data?.content}
@@ -49,7 +50,7 @@ export default function PageDetailCv({ id }: { id: string }) {
             resumeId={detailCvFetch?.data?._id}
           />
         );
-      case "simple-template":
+      case CV_TEMPLATES.simpleTemplate:
         return (
           <SimpleTemplate
             data={detailCvFetch?.data?.content}
