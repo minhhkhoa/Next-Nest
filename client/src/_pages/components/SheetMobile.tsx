@@ -16,9 +16,10 @@ import {
 } from "@/components/ui/sheet";
 import { generateSlugUrl } from "@/lib/utils";
 import { useGetListCategories } from "@/queries/useNewsCategory";
-import { Menu, Package2 } from "lucide-react";
+import { Menu } from "lucide-react";
 import Link from "next/link";
 import React from "react";
+import AppLogo from "./AppLogo";
 
 export default function SheetMobile() {
   return (
@@ -32,14 +33,22 @@ export default function SheetMobile() {
       <SheetContent side="left">
         <SheetTitle></SheetTitle>
         <nav className="grid gap-6 text-lg font-medium ml-5">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-lg font-semibold"
-          >
-            <Package2 className="h-6 w-6" />
-            <span className="sr-only">Find Job</span>
-          </Link>
+          <div className="flex items-center gap-2">
+            <div className="relative h-10 w-10 overflow-hidden rounded-lg">
+              <video
+                src="/videos/video_logo.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="h-full w-full object-cover"
+              />
+            </div>
 
+            <Link href="/" className=" text-lg font-semibold">
+              JobHub
+            </Link>
+          </div>
           <NavItemSheetMobile />
         </nav>
         <Button className="mx-4">

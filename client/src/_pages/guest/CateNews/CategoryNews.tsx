@@ -135,7 +135,7 @@ function BlockNewsNice({
       {/* Main Container - Split Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 lg:gap-8">
         {/* Block Left - Featured News */}
-        <div className="flex flex-col rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300">
+        <div className="flex flex-col rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 bg-white border border-gray-100">
           <Link
             href={`/news/${generateSlugUrl({
               name: firstNews.slugNews.vi,
@@ -153,7 +153,7 @@ function BlockNewsNice({
             </div>
 
             {/* Content Section */}
-            <div className="p-4 md:p-6 flex flex-col flex-1 bg-slate-50">
+            <div className="p-4 md:p-6 flex flex-col flex-1 bg-white">
               <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 line-clamp-3 mb-3 hover:text-primary transition-colors">
                 {firstNews.title.vi}
               </h3>
@@ -185,7 +185,7 @@ function BlockNewsNice({
                 name: newsItem.slugNews.vi,
                 id: newsItem._id,
               })}`}
-              className="group bg-gray-300 rounded-xl p-4 md:p-5 shadow-md hover:shadow-lg hover:bg-slate-50 transition-all duration-300 border border-slate-100 hover:border-primary/20 flex gap-4"
+              className="group bg-white rounded-xl p-4 md:p-5 shadow-sm hover:shadow-md hover:bg-white transition-all duration-200 border border-gray-100 hover:border-primary/50 hover:border-4 flex gap-4"
             >
               {/* Text Content */}
               <div className="flex-1 flex flex-col min-w-0">

@@ -37,7 +37,7 @@ export function ModeToggle() {
             className="flex justify-between items-center"
           >
             {t.label}
-            {theme === t.value && <Check className="h-4 w-4 text-white" />}
+            {theme === t.value && <Check className="h-4 w-4" />}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
