@@ -14,6 +14,7 @@ import styles from "@/app/bootstrap.module.css";
 import BlockNewsWithPagination from "./components/BlockNewsWithPagination";
 
 export default function PageNewsDetail({ slug }: { slug?: string }) {
+  const [currentPage, setCurrentPage] = React.useState(1);
   const idNews = getIdFromSlugUrl(slug || "");
 
   const { data } = useGetListCategories();
@@ -21,7 +22,6 @@ export default function PageNewsDetail({ slug }: { slug?: string }) {
   const { data: news, isLoading } = useGetNewsById(idNews);
   const newsDetail = news?.data;
 
-  const [currentPage, setCurrentPage] = React.useState(1);
   const idCateNewsDetail = newsDetail?.cateNewsID[0]._id;
 
   const { data: listNews, isLoading: isLoadingListNews } = useGetListNewsFilter(
@@ -30,8 +30,17 @@ export default function PageNewsDetail({ slug }: { slug?: string }) {
       pageSize: 6,
       cateNewsID: idCateNewsDetail,
       status: "active",
-    }
+    },
   );
+
+  if (!newsDetail) {
+    return (
+      <div className="w-full flex justify-center items-center h-[300px]">
+        <p className="text-gray-500">Không tìm thấy bài viết</p>
+      </div>
+    );
+  }
+
   const totalPages = listNews?.data?.meta?.totalPages || 1;
   const current = listNews?.data?.meta?.current || 1;
   const onPageChange = (page: number) => {

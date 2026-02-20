@@ -20,8 +20,14 @@ import {
   BookMarked,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAppStore } from "./TanstackProvider";
 
 export default function BlockIssue() {
+  const { isLogin } = useAppStore();
+
+  //- Chỉ hiển thị nếu người dùng đã đăng nhập
+  if (!isLogin) return null;
+
   return (
     <div className="fixed bottom-20 right-4 z-50 flex flex-col items-end gap-3 sm:right-5">
       {/* Container cho các nút chức năng mở rộng sau này */}

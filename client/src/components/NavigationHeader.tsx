@@ -16,6 +16,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useGetListCategories } from "@/queries/useNewsCategory";
 import { generateSlugUrl } from "@/lib/utils";
+import { useAppStore } from "./TanstackProvider";
 
 const components: { title: string; href: string; description: string }[] = [
   {
@@ -57,6 +58,7 @@ const components: { title: string; href: string; description: string }[] = [
 
 export default function NavigationHeaderMenu() {
   const isMobile = useIsMobile();
+  const { isLogin } = useAppStore();
 
   const { data: listCateNews } = useGetListCategories();
 
@@ -90,41 +92,43 @@ export default function NavigationHeaderMenu() {
             </NavigationMenuContent>
           </NavigationMenuItem>
 
-          <NavigationMenuItem>
-            <NavigationMenuTrigger>
-              <Link href="/cv-templates">Tạo cv</Link>
-            </NavigationMenuTrigger>
-            <NavigationMenuContent>
-              <ul className="grid w-[300px] gap-4">
-                <li>
-                  <NavigationMenuLink asChild>
-                    <Link href="/cv-templates">
-                      <div className="font-medium">Xem các mẫu cv</div>
-                      <div className="text-muted-foreground">
-                        Duyệt qua các mẫu CV chuyên nghiệp của chúng tôi.
-                      </div>
-                    </Link>
-                  </NavigationMenuLink>
-                  <NavigationMenuLink asChild>
-                    <Link href="/cv-templates">
-                      <div className="font-medium">Cv cho lập trình viên</div>
-                      <div className="text-muted-foreground">
-                        Mẫu CV được thiết kế đặc biệt cho các lập trình viên.
-                      </div>
-                    </Link>
-                  </NavigationMenuLink>
-                  <NavigationMenuLink asChild>
-                    <Link href="/cv-templates">
-                      <div className="font-medium">Cv cho kế toán</div>
-                      <div className="text-muted-foreground">
-                        Mẫu CV được thiết kế đặc biệt cho các kế toán.
-                      </div>
-                    </Link>
-                  </NavigationMenuLink>
-                </li>
-              </ul>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
+          {isLogin && (
+            <NavigationMenuItem>
+              <NavigationMenuTrigger>
+                <Link href="/cv-templates">Tạo cv</Link>
+              </NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <ul className="grid w-[300px] gap-4">
+                  <li>
+                    <NavigationMenuLink asChild>
+                      <Link href="/cv-templates">
+                        <div className="font-medium">Xem các mẫu cv</div>
+                        <div className="text-muted-foreground">
+                          Duyệt qua các mẫu CV chuyên nghiệp của chúng tôi.
+                        </div>
+                      </Link>
+                    </NavigationMenuLink>
+                    <NavigationMenuLink asChild>
+                      <Link href="/cv-templates">
+                        <div className="font-medium">Cv cho lập trình viên</div>
+                        <div className="text-muted-foreground">
+                          Mẫu CV được thiết kế đặc biệt cho các lập trình viên.
+                        </div>
+                      </Link>
+                    </NavigationMenuLink>
+                    <NavigationMenuLink asChild>
+                      <Link href="/cv-templates">
+                        <div className="font-medium">Cv cho kế toán</div>
+                        <div className="text-muted-foreground">
+                          Mẫu CV được thiết kế đặc biệt cho các kế toán.
+                        </div>
+                      </Link>
+                    </NavigationMenuLink>
+                  </li>
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+          )}
 
           <NavigationMenuItem>
             <NavigationMenuTrigger>
