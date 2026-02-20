@@ -1,5 +1,3 @@
-import { apiUserForCVResType } from "@/schemasvalidation/user";
-
 export interface ApiResponse<T> {
   statusCode: number;
   message: string;

@@ -1,6 +1,5 @@
 "use client";
 
-import { apiUserForCVResType } from "@/schemasvalidation/user";
 import Image from "next/image";
 import { useForm, useFieldArray, Control } from "react-hook-form";
 import { Form, FormField } from "@/components/ui/form";

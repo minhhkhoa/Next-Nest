@@ -1,6 +1,5 @@
 "use client";
 
-import { apiUserForCVResType } from "@/schemasvalidation/user";
 import Image from "next/image";
 import { useForm, useFieldArray } from "react-hook-form";
 import { Form, FormField } from "@/components/ui/form";
@@ -18,7 +17,6 @@ import {
 import { SaveResumeDialog } from "../SaveResumeDialog";
 import { CVFormValues, TemplateProps } from "@/types/apiResponse";
 import { CV_TEMPLATES } from "@/lib/constant";
-import { is } from "date-fns/locale";
 
 export default function SimpleTemplate({
   data,
