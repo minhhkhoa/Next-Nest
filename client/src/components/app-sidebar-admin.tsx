@@ -11,6 +11,7 @@ import {
   FolderKanban,
   ChevronDown,
   DoorClosedLocked,
+  Mailbox,
 } from "lucide-react";
 
 import {
@@ -48,6 +49,10 @@ const items = [
     url: "/admin/industry-skill",
     icon: Factory,
   },
+];
+
+const items2 = [
+  { title: "Lỗi & Phản hồi", url: "/admin/issue", icon: Mailbox },
 ];
 
 export function AppSidebarAdmin() {
@@ -190,6 +195,32 @@ export function AppSidebarAdmin() {
                       </CollapsibleContent>
                     </SidebarMenuItem>
                   </Collapsible>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
+
+          {/* 4. Phần Lỗi & Phản hồi - dùng items2 */}
+          {isSuperAdmin && (
+            <SidebarGroup>
+              <SidebarGroupLabel>issue</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {items2.map((item) => (
+                    <SidebarMenuItem className="mr-2.5" key={item.title}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={pathname.startsWith(item.url)}
+                        tooltip={item.title}
+                        className="data-[active=true]:bg-primary data-[active=true]:text-white"
+                      >
+                        <Link href={item.url}>
+                          <item.icon />
+                          <span className="truncate">{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
