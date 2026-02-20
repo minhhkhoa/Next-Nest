@@ -72,7 +72,7 @@ export class IssueService {
 
       //- start ping event to notify admin
       try {
-        // Tìm Super Admin để gửi thông báo (Bạn có thể dùng hàm tương tự getRecruiterAdminByCompanyID nhưng cho Super Admin)
+        // Tìm Super Admin để gửi thông báo
         const textRoleAdmin =
           this.configService.get<string>('role_super_admin');
         const superAdmin = await this.userService.getUserByRoleSuperAdmin(
@@ -118,9 +118,11 @@ export class IssueService {
     try {
       const { currentPage, pageSize, type, status, searchText } = query;
 
-      const queryForAqp = { type, status, searchText };
-
-      const { filter, sort } = aqp(queryForAqp);
+      const queryForAqp: any = {};
+      if (currentPage) queryForAqp.currentPage = currentPage;
+      if (pageSize) queryForAqp.pageSize = pageSize;
+      
+      const { filter } = aqp(queryForAqp);
       let filterConditions: any = { ...filter };
 
       //- Xóa các field phân trang khỏi filter của mongo
@@ -131,12 +133,14 @@ export class IssueService {
       if (type) filterConditions.type = type;
       if (status) filterConditions.status = status;
 
-      //- Xử lý search text
+      // - Xử lý search text
       if (searchText) {
         delete filterConditions.searchText;
         filterConditions.$or = [
-          { title: { $regex: searchText, $options: 'i' } },
-          { description: { $regex: searchText, $options: 'i' } },
+          { 'title.vi': { $regex: searchText, $options: 'i' } },
+          { 'title.en': { $regex: searchText, $options: 'i' } },
+          { 'description.vi': { $regex: searchText, $options: 'i' } },
+          { 'description.en': { $regex: searchText, $options: 'i' } },
         ];
       }
 

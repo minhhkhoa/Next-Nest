@@ -12,7 +12,7 @@ import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestruc
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import { IssueResType } from "@/schemasvalidation/issue";
 import { useDeleteIssue, useGetIssueFilter } from "@/queries/useIssue";
-import TableIssue from "./issueRole";
+import TableIssue from "./tableIssue";
 import { IssueDialogForm } from "./components/issue-modal-form";
 
 export default function PageIssue() {
@@ -21,7 +21,7 @@ export default function PageIssue() {
     status: string;
     searchText: string;
   }>({
-    type: "SUPPORT",
+    type: "FEEDBACK",
     status: "PENDING",
     searchText: "",
   });

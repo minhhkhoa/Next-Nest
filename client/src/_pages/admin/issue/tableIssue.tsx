@@ -106,7 +106,7 @@ export default function TableIssue({
       {/* pagination */}
       <div className="flex flex-col md:flex-row items-center py-4 px-2">
         <span className="text-sm text-muted-foreground whitespace-nowrap">
-          Hiển thị {data.length}/{meta?.totalItems} vai trò
+          Hiển thị {data.length}/{meta?.totalItems} kết quả
         </span>
 
         <DataTablePagination meta={meta} onPageChange={setCurrentPage} />

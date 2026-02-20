@@ -25,7 +25,6 @@ export class CreateIssueDto {
   type: string;
 
   @IsOptional()
-  @IsMongoId({ message: 'ID đối tượng liên quan không hợp lệ' })
   targetId?: string; //- để là optional vì không phải issue nào cũng có targetId vd: SUPPORT, FEEDBACK
 
   @IsOptional()

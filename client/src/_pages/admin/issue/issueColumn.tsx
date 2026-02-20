@@ -69,22 +69,12 @@ export const getIssueColumns = (
 
   // Trạng thái
   {
-    id: "isActived",
+    id: "status",
     header: "Trạng thái",
     cell: ({ row }) => {
-      const isActived = row.original.status;
+      const status = row.original.status;
 
-      return (
-        <span
-          className={`inline-block rounded px-2 py-1 text-xs font-semibold ${
-            isActived
-              ? "bg-green-100 text-green-800"
-              : "bg-red-100 text-red-800"
-          }`}
-        >
-          {isActived ? "Hoạt động" : "Dừng hoạt động"}
-        </span>
-      );
+      return generateStatusOptions(status);
     },
   },
 
@@ -142,3 +132,39 @@ export const getIssueColumns = (
     },
   },
 ];
+
+function generateStatusOptions(status: string) {
+  //- có biến ISSUE_STATUS_OPTIONS, dựa vào đó mà tạo ra màu sắc và text tương ứng
+  switch (status) {
+    case "PENDING":
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+          Chờ xử lý
+        </span>
+      );
+    case "IN_PROGRESS":
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
+          Đang xử lý
+        </span>
+      );
+    case "RESOLVED":
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
+          Đã giải quyết
+        </span>
+      );
+    case "REJECTED":
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">
+          Bị từ chối
+        </span>
+      );
+    default:
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+          Không xác định
+        </span>
+      );
+  }
+}

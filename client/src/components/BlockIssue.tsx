@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import {
   Popover,
@@ -21,9 +21,13 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppStore } from "./TanstackProvider";
+import { IssueDialogForm } from "@/_pages/admin/issue/components/issue-modal-form";
 
 export default function BlockIssue() {
   const { isLogin } = useAppStore();
+
+  //- State để quản lý trạng thái mở của modal
+  const [isOpen, setIsOpen] = useState(false);
 
   //- Chỉ hiển thị nếu người dùng đã đăng nhập
   if (!isLogin) return null;
@@ -104,22 +108,26 @@ export default function BlockIssue() {
               <Button
                 variant="ghost"
                 className="w-full justify-start gap-3 h-auto py-3 px-4 font-normal hover:bg-accent hover:text-accent-foreground"
-                asChild
+                onClick={() => setIsOpen(true)}
               >
-                <Link href="">
-                  <PlusCircle className="h-4 w-4 text-green-500" />
-                  <div className="flex flex-col items-start text-left">
-                    <span className="text-sm font-medium">Đóng góp thêm</span>
-                    <span className="text-xs text-muted-foreground">
-                      Gửi báo cáo lỗi hoặc ý kiến
-                    </span>
-                  </div>
-                </Link>
+                <PlusCircle className="h-4 w-4 text-green-500" />
+                <div className="flex flex-col items-start text-left">
+                  <span className="text-sm font-medium">Đóng góp thêm</span>
+                  <span className="text-xs text-muted-foreground">
+                    Gửi báo cáo lỗi hoặc ý kiến
+                  </span>
+                </div>
               </Button>
             </div>
           </PopoverContent>
         </Popover>
       </TooltipProvider>
+
+      <IssueDialogForm
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        issue={undefined}
+      />
     </div>
   );
 }
