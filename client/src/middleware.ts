@@ -6,7 +6,7 @@ import { envConfig } from "../config";
 const SECRET_KEY = new TextEncoder().encode(envConfig.NEXT_PUBLIC_JWT_SECRET);
 
 // 1. Cấu hình nhóm Route protected
-export const protectedPaths = ["/profile", "/setting"];
+const protectedPaths = ["/profile", "/setting", "/change-password"];
 
 // 2. Cấu hình nhóm Role
 const SYSTEM_ADMIN_ROLES = [
@@ -21,6 +21,8 @@ const RECRUITER_ROLES = [
 
 //- các path mà nhà tuyển dụng được phép truy cập dù chưa có role
 const RECRUITER_BYPASS_PATHS = ["/recruiter/welcome", "/recruiter/register"];
+
+const FORBIDDEN_PATH = "/unauthorized";
 
 export async function middleware(request: NextRequest) {
   const token = request.cookies.get("access_token")?.value;
@@ -58,14 +60,7 @@ export async function middleware(request: NextRequest) {
       if (isAdminRoute) {
         //- chỉ cho phép nhóm System Admin vào
         if (!SYSTEM_ADMIN_ROLES.includes(role)) {
-          //- Nếu là Nhà tuyển dụng đi lạc vào Admin -> Đá về Dashboard của Recruiter
-          if (RECRUITER_ROLES.includes(role)) {
-            return NextResponse.redirect(
-              new URL("/recruiter/manager/dashboard", request.url),
-            );
-          }
-          //- các role khác (Candidate) -> Đá về Home
-          return NextResponse.redirect(new URL("/", request.url));
+          return NextResponse.rewrite(new URL(FORBIDDEN_PATH, request.url));
         }
       }
 
@@ -73,15 +68,7 @@ export async function middleware(request: NextRequest) {
       if (isRecruiterRoute) {
         //- chỉ cho phép nhóm Recruiter vào
         if (!RECRUITER_ROLES.includes(role)) {
-          //- nếu Super Admin đi lạc vào trang Recruiter -> Đá về Admin Dashboard
-          if (SYSTEM_ADMIN_ROLES.includes(role)) {
-            return NextResponse.redirect(
-              new URL("/admin/dashboard", request.url),
-            );
-          }
-
-          //- các role khác (Candidate) -> Đá về Home
-          return NextResponse.redirect(new URL("/", request.url));
+          return NextResponse.rewrite(new URL(FORBIDDEN_PATH, request.url));
         }
       }
 
