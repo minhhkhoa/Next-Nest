@@ -28,6 +28,11 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get("access_token")?.value;
   const path = request.nextUrl.pathname;
 
+  //- không cho hiển thị vào trang /unauthorized
+  if (path === FORBIDDEN_PATH) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
   //- chặn về trang login khi đã login thành công
   if (token && path === "/login") {
     return NextResponse.redirect(new URL("/", request.url));

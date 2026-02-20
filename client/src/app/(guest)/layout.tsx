@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import Footer from "./Footer";
 import BreadcrumbSite from "@/components/site-breadcrumb";
 import HeaderClient from "@/_pages/components/HeaderClient";
+import BlockIssue from "@/components/BlockIssue";
 
 export default async function ClientLayout({
   children,
@@ -21,6 +22,8 @@ export default async function ClientLayout({
         <BreadcrumbSite />
       </div>
       {children}
+
+      <BlockIssue />
 
       {/* footer */}
       <div className="md:-mx-30">

@@ -12,7 +12,11 @@ import { IssueService } from './issue.service';
 import { CreateIssueDto } from './dto/create-issue.dto';
 import { UpdateIssueAdminDto, UpdateIssueDto } from './dto/update-issue.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { PublicPermission, ResponseMessage, userDecorator } from 'src/common/decorator/customize';
+import {
+  PublicPermission,
+  ResponseMessage,
+  userDecorator,
+} from 'src/common/decorator/customize';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { FindIssueQueryDto } from './dto/issueDto.dto';
 

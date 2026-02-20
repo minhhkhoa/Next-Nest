@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import HeaderClient from "@/_pages/components/HeaderClient";
 import BreadcrumbSite from "@/components/site-breadcrumb";
 import Footer from "../(guest)/Footer";
+import BlockIssue from "@/components/BlockIssue";
 
 export default async function AuthenticatedLayout({
   children,
@@ -21,6 +22,8 @@ export default async function AuthenticatedLayout({
         <BreadcrumbSite />
       </div>
       {children}
+
+      <BlockIssue />
 
       {/* Có thể giữ hoặc bỏ Footer tùy UX Khoa muốn */}
       <div className="md:-mx-30 mt-auto">
