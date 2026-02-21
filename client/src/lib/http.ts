@@ -9,9 +9,17 @@ import {
 import { jwtDecode } from "jwt-decode";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 
+const isTunnel =
+  typeof window !== "undefined" &&
+  window.location.hostname.includes("devtunnels.ms");
+
+const baseURL = isTunnel
+  ? envConfig.NEXT_PUBLIC_API_URL_SERVER_TUNNEL
+  : envConfig.NEXT_PUBLIC_API_URL_SERVER;
+
 //- Tạo instance Axios
 const instance = axios.create({
-  baseURL: envConfig.NEXT_PUBLIC_API_URL_SERVER,
+  baseURL: baseURL,
   withCredentials: true,
   timeout: 10000, // Timeout 10 giây
   headers: {
@@ -21,14 +29,14 @@ const instance = axios.create({
 
 //- tạo riêng 1 cái cho refresh token
 export const refreshInstance = axios.create({
-  baseURL: envConfig.NEXT_PUBLIC_API_URL_SERVER,
+  baseURL: baseURL,
   timeout: 50000,
   withCredentials: true,
 });
 
 //- tạo riêng 1 cái cho xóa access token
 export const accessInstance = axios.create({
-  baseURL: envConfig.NEXT_PUBLIC_API_URL_SERVER,
+  baseURL: baseURL,
   timeout: 50000,
   withCredentials: true,
 });

@@ -6,6 +6,7 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { envConfig } from "../../../config";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SectionRecruiter() {
   const { user } = useAppStore();
@@ -13,7 +14,7 @@ export default function SectionRecruiter() {
   //- ngăn nháy vì server không biết biến user nên nó sẽ show bạn là nhà tuyển dụng
   //- và khi hydrat thì thấy có user và vi phạm if isRecruiter nên tắt ==> Nháy
   if (!user?._id) {
-    return null;
+    return <Skeleton className="w-[150px] h-8" />;
   }
 
   const isCandidate =

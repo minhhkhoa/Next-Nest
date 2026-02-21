@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import AppLogo from "./AppLogo";
 import UserSection from "./UserSection";
@@ -7,10 +9,17 @@ import NavigationHeaderMenu from "@/components/NavigationHeader";
 import SheetMobile from "./SheetMobile";
 import NotificationBell from "@/components/NotificationBell";
 import SectionRecruiter from "./section-recruiter";
+import { useAppStore } from "@/components/TanstackProvider";
+import AppHeaderSkeleton from "@/components/skeletons/AppHeader";
 
-export default function HeaderClient({
-  isLoginSSR,
-}: Readonly<{ isLoginSSR: boolean }>) {
+export default function HeaderClient() {
+  const { isLogin } = useAppStore();
+
+
+  if (!isLogin) {
+    return <AppHeaderSkeleton />;
+  }
+
   return (
     <div className="z-50 h-12 border-b border-b-gray-200 dark:border-b-gray-800 bg-background md:-mx-26">
       <div className="container mx-auto flex h-full items-center justify-between">
@@ -29,12 +38,12 @@ export default function HeaderClient({
         </div>
 
         <div className="flex items-center gap-2 mr-3 md:mr-10">
-          {isLoginSSR && <NotificationBell />}
-          {!isLoginSSR && <UserSection />}
-          {isLoginSSR && <UserAvatarMenu />}
+          {isLogin && <NotificationBell />}
+          {!isLogin && <UserSection />}
+          {isLogin && <UserAvatarMenu />}
           <ModeToggle />
 
-          {isLoginSSR && <SectionRecruiter />}
+          {isLogin && <SectionRecruiter />}
         </div>
       </div>
     </div>

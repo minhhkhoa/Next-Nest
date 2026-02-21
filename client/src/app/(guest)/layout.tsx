@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 import Footer from "./Footer";
 import BreadcrumbSite from "@/components/site-breadcrumb";
 import HeaderClient from "@/_pages/components/HeaderClient";
@@ -9,13 +8,10 @@ export default async function ClientLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get("access_token");
-  const isLoginSSR = !!accessToken;
 
   return (
     <div className="md:px-26">
-      <HeaderClient isLoginSSR={isLoginSSR} />
+      <HeaderClient />
 
       {/* breadcrumb */}
       <div className="mt-2">

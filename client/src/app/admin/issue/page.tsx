@@ -1,10 +1,11 @@
 import PageIssueAdmin from "@/_pages/admin/issue";
-import React from "react";
+import { Spinner } from "@/components/ui/spinner";
+import React, { Suspense } from "react";
 
 export default function IssueAdminPage() {
   return (
-    <div>
+    <Suspense fallback={<Spinner />}>
       <PageIssueAdmin />
-    </div>
+    </Suspense>
   );
 }

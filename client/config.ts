@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const configSchema = z.object({
   NEXT_PUBLIC_API_URL_SERVER: z.string(),
+  NEXT_PUBLIC_API_URL_SERVER_TUNNEL: z.string(),
   NEXT_PUBLIC_API_URL_SERVER_BASE: z.string(),
   NEXT_PUBLIC_API_URL_CLIENT: z.string(),
   NEXT_PUBLIC_TOKEN_TEST: z.string(),
@@ -20,6 +21,7 @@ export const configSchema = z.object({
 
 const configProject = configSchema.safeParse({
   NEXT_PUBLIC_API_URL_SERVER: process.env.NEXT_PUBLIC_API_URL_SERVER,
+  NEXT_PUBLIC_API_URL_SERVER_TUNNEL: process.env.NEXT_PUBLIC_API_URL_SERVER_TUNNEL,
   NEXT_PUBLIC_API_URL_SERVER_BASE: process.env.NEXT_PUBLIC_API_URL_SERVER_BASE,
   NEXT_PUBLIC_API_URL_CLIENT: process.env.NEXT_PUBLIC_API_URL_CLIENT,
   NEXT_PUBLIC_TOKEN_TEST: process.env.NEXT_PUBLIC_TOKEN_TEST,
