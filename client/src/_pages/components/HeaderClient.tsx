@@ -11,12 +11,27 @@ import NotificationBell from "@/components/NotificationBell";
 import SectionRecruiter from "./section-recruiter";
 import { useAppStore } from "@/components/TanstackProvider";
 import AppHeaderSkeleton from "@/components/skeletons/AppHeader";
+import { getAccessTokenFromLocalStorage } from "@/lib/utils";
 
 export default function HeaderClient() {
   const { isLogin } = useAppStore();
 
+  const token = React.useMemo(
+    () =>
+      typeof window !== "undefined" ? getAccessTokenFromLocalStorage() : null,
+    [],
+  );
 
-  if (!isLogin) {
+  const [isClient, setIsClient] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  //- Nếu chưa hydrat hóa xong (isClient = false)
+  //- HOẶC có token (đã từng đăng nhập) nhưng state isLogin chưa cập nhật kịp -> hiện Skeleton
+  //- Tránh việc nháy nút "Đăng nhập" (UserSection) khi user thực tế đã login rồi
+  if (!isClient || (token && !isLogin)) {
     return <AppHeaderSkeleton />;
   }
 
