@@ -22,6 +22,9 @@ const issueApiRequest = {
 
   deleteIssue: (id: string) => http.delete<ApiResponse<any>>(`${prefix}/${id}`),
 
+  deleteManyIssue: (ids: string[]) =>
+    http.delete<ApiResponse<any>>(`${prefix}/deleteMany`, { data: { ids } }),
+
   //- Admin
   getIssueFilter: (params: {
     currentPage: number;

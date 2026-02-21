@@ -11,7 +11,7 @@ import { DeleteConfirmModal } from "../NewsCategory/components/modals/delete-con
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import { IssueResType } from "@/schemasvalidation/issue";
-import { useDeleteIssue, useGetIssueFilter } from "@/queries/useIssue";
+import { useDeleteIssue, useGetIssueFilter, useDeleteManyIssue } from "@/queries/useIssue";
 import TableIssue from "./tableIssue";
 import { IssueDialogForm } from "./components/issue-modal-form";
 import {
@@ -46,6 +46,10 @@ export default function PageIssueAdmin() {
     isOpen: boolean;
     id: string;
   }>({ isOpen: false, id: "" });
+  const [deleteManyModal, setDeleteManyModal] = useState<{
+    isOpen: boolean;
+    ids: string[];
+  }>({ isOpen: false, ids: [] });
 
   const [debouncedSearchName] = useDebounce(filters.searchText, 500);
 
@@ -59,6 +63,8 @@ export default function PageIssueAdmin() {
 
   const { mutateAsync: deleteIssueMutation, isPending: isDeleteIssue } =
     useDeleteIssue();
+  const { mutateAsync: deleteManyIssueMutation, isPending: isDeleteManyIssue } =
+    useDeleteManyIssue();
 
   const handleConfirmDelete = async () => {
     try {
@@ -73,6 +79,25 @@ export default function PageIssueAdmin() {
       console.log("error delete permission: ", error);
     }
   };
+
+  const handleConfirmDeleteMany = async () => {
+    try {
+      const res = await deleteManyIssueMutation(idDeleteMany);
+
+      if (res.isError) {
+        SoftDestructiveSonner("Có lỗi xảy ra khi xóa nhiều báo cáo");
+        return;
+      }
+
+      SoftSuccessSonner(res.message);
+      setDeleteManyModal({ isOpen: false, ids: [] });
+      setIdDeleteMany([]);
+    } catch (error) {
+      SoftDestructiveSonner("Có lỗi xảy ra khi xóa nhiều báo cáo");
+      console.log("error delete many issue: ", error); // Using correct modal control and logic
+    }
+  };
+
 
   const handleOpenEditModal = (issue: IssueResType) => {
     setIssueModalState({ isOpen: true, data: issue });
@@ -110,7 +135,9 @@ export default function PageIssueAdmin() {
                 <Button
                   variant="destructive"
                   size="sm"
-                  onClick={() => {}}
+                  onClick={() =>
+                    setDeleteManyModal({ isOpen: true, ids: idDeleteMany })
+                  }
                   className="gap-2"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -220,6 +247,16 @@ export default function PageIssueAdmin() {
           isDeleting={isDeleteIssue}
           onConfirm={handleConfirmDelete}
           onCancel={() => setDeleteModal({ isOpen: false, id: "" })}
+        />
+      )}
+
+      {/* modal confirm delete many */}
+      {deleteManyModal.isOpen && (
+        <DeleteConfirmModal
+          title={`Xóa ${deleteManyModal.ids.length} vấn đề`}
+          isDeleting={isDeleteManyIssue}
+          onConfirm={handleConfirmDeleteMany}
+          onCancel={() => setDeleteManyModal({ isOpen: false, ids: [] })}
         />
       )}
     </div>

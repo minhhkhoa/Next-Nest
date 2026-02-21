@@ -1,5 +1,5 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsNumber, IsOptional, IsString } from 'class-validator';
+import { ApiPropertyOptional, ApiProperty } from '@nestjs/swagger';
+import { IsIn, IsNumber, IsOptional, IsString, IsArray, IsNotEmpty, IsMongoId } from 'class-validator';
 import {
   ISSUE_STATUS_OPTIONS,
   ISSUE_TYPE_OPTIONS,
@@ -30,4 +30,15 @@ export class FindIssueQueryDto {
   @IsOptional()
   @IsString()
   searchText: string;
+}
+
+export class DeleteManyIssueDto {
+  @ApiProperty({
+    description: 'Array of issue IDs to delete',
+    type: [String],
+  })
+  @IsArray()
+  @IsNotEmpty()
+  @IsMongoId({ each: true })
+  ids: string[];
 }

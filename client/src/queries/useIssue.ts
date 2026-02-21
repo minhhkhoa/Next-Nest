@@ -121,3 +121,14 @@ export const useDeleteIssue = () => {
     },
   });
 };
+
+export const useDeleteManyIssue = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (ids: string[]) => issueApiRequest.deleteManyIssue(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["getIssue_filter"] });
+      queryClient.invalidateQueries({ queryKey: ["getMyIssue"] });
+    },
+  });
+};

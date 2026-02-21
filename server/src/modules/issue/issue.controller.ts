@@ -18,7 +18,7 @@ import {
   userDecorator,
 } from 'src/common/decorator/customize';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
-import { FindIssueQueryDto } from './dto/issueDto.dto';
+import { FindIssueQueryDto, DeleteManyIssueDto } from './dto/issueDto.dto';
 
 @ApiTags('issue')
 @Controller('issue')
@@ -89,6 +89,17 @@ export class IssueController {
     @userDecorator() user: UserDecoratorType,
   ) {
     return this.issueService.update(id, updateIssueDto, user);
+  }
+
+  @PublicPermission()
+  @Delete('deleteMany')
+  @ResponseMessage('Xóa nhiều yêu cầu thành công')
+  @ApiOperation({ summary: 'Xóa nhiều yêu cầu (Xóa mềm)' })
+  removeMany(
+    @Body() deleteDto: DeleteManyIssueDto,
+    @userDecorator() user: UserDecoratorType,
+  ) {
+    return this.issueService.removeMany(deleteDto.ids, user);
   }
 
   @PublicPermission()
