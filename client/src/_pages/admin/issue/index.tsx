@@ -14,16 +14,25 @@ import { IssueResType } from "@/schemasvalidation/issue";
 import { useDeleteIssue, useGetIssueFilter } from "@/queries/useIssue";
 import TableIssue from "./tableIssue";
 import { IssueDialogForm } from "./components/issue-modal-form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ISSUE_STATUS_OPTIONS, ISSUE_TYPE_OPTIONS } from "@/lib/constant";
+import { useQueryFilter } from "@/hooks/useQueryFilter";
 
-export default function PageIssue() {
+export default function PageIssueAdmin() {
   const [filters, setFilters] = useState<{
-    type: string;
-    status: string;
-    searchText: string;
+    type: string | undefined;
+    status: string | undefined;
+    searchText: string | undefined;
   }>({
-    type: "FEEDBACK",
-    status: "PENDING",
-    searchText: "",
+    type: undefined,
+    status: undefined,
+    searchText: undefined,
   });
   const [currentPage, setCurrentPage] = React.useState(1);
   const [idDeleteMany, setIdDeleteMany] = useState<string[]>([]);
@@ -47,7 +56,6 @@ export default function PageIssue() {
     status: filters.status,
     searchText: debouncedSearchName,
   });
-
 
   const { mutateAsync: deleteIssueMutation, isPending: isDeleteIssue } =
     useDeleteIssue();
@@ -73,6 +81,13 @@ export default function PageIssue() {
   const handleOpenDeleteModal = (issue: IssueResType) => {
     setDeleteModal({ isOpen: true, id: issue._id });
   };
+
+  //- custom Hook
+  useQueryFilter("statusFilterIssue", (value) => {
+    if (value === "PENDING") {
+      setFilters((prev) => ({ ...prev, status: value }));
+    }
+  });
 
   const columns = getIssueColumns(handleOpenEditModal, handleOpenDeleteModal);
 
@@ -108,11 +123,62 @@ export default function PageIssue() {
       </div>
       {/* Main Content */}
       <div className="mx-auto max-w-7xl px-6">
-        <div className="mb-6">
-          <SearchBar
-            value={filters.searchText}
-            onChange={(value) => setFilters({ ...filters, searchText: value })}
-          />
+        <div className="mb-6 flex flex-col md:flex-row md:items-center gap-4">
+          <div className="flex-1">
+            <SearchBar
+              value={filters.searchText ?? ""}
+              onChange={(value) =>
+                setFilters({ ...filters, searchText: value })
+              }
+              placeholder="Tìm kiếm vấn đề..."
+            />
+          </div>
+
+          <div className="flex gap-4">
+            <Select
+              value={filters.type || "all"}
+              onValueChange={(value) =>
+                setFilters({
+                  ...filters,
+                  type: value === "all" ? undefined : value,
+                })
+              }
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Loại vấn đề" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả loại</SelectItem>
+                {ISSUE_TYPE_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label.vi}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={filters.status || "all"}
+              onValueChange={(value) =>
+                setFilters({
+                  ...filters,
+                  status: value === "all" ? undefined : value,
+                })
+              }
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Trạng thái" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả trạng thái</SelectItem>
+                {ISSUE_STATUS_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label.vi}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* Table */}

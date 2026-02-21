@@ -175,6 +175,16 @@ export const handleNotificationNavigation = (
 
     //- end for job
 
+    //- start issue
+    case NotificationType.ISSUE_CREATED: //- Admin nhận: Có yêu cầu/báo cáo mới từ user
+      router.push(`/admin/issue/?statusFilterIssue=PENDING`);
+      break;
+
+    case NotificationType.ISSUE_ADMIN_REPLY: //- User nhận: Admin đã phản hồi yêu cầu
+      router.push(`/issue`);
+      break;
+    //- end for issue
+
     case NotificationType.RESUME_SUBMITTED:
       router.push(`/recruiter/resumes`);
       break;

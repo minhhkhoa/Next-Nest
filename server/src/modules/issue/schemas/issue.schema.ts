@@ -42,7 +42,7 @@ export class Issue {
   @Prop({
     type: {
       adminId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-      content: String,
+      content: { vi: String, en: String },
       repliedAt: Date,
     },
     _id: false, //- Không tạo _id riêng cho subdocument này

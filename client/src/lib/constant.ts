@@ -145,18 +145,72 @@ export const CV_TEMPLATES = {
 
 //- start constant cho issue
 export const ISSUE_TYPE_OPTIONS = [
-  { value: "REPORT_JOB", label: "Report Job" },
-  { value: "REPORT_USER", label: "Report User" },
-  { value: "REPORT_COMPANY", label: "Report Company" },
-  { value: "SUPPORT", label: "Support" },
-  { value: "FEEDBACK", label: "Feedback" },
+  {
+    value: "REPORT_JOB",
+    label: {
+      en: "Report Job",
+      vi: "Báo cáo tuyển dụng",
+    },
+  },
+  {
+    value: "REPORT_USER",
+    label: {
+      en: "Report User",
+      vi: "Báo cáo người dùng",
+    },
+  },
+  {
+    value: "REPORT_COMPANY",
+    label: {
+      en: "Report Company",
+      vi: "Báo cáo công ty",
+    },
+  },
+  {
+    value: "SUPPORT",
+    label: {
+      en: "Support",
+      vi: "Hỗ trợ",
+    },
+  },
+  {
+    value: "FEEDBACK",
+    label: {
+      en: "Feedback",
+      vi: "Phản hồi",
+    },
+  },
 ];
 
 export const ISSUE_STATUS_OPTIONS = [
-  { value: "PENDING", label: "Pending" },
-  { value: "PROCESSING", label: "Processing" },
-  { value: "RESOLVED", label: "Resolved" },
-  { value: "CLOSED", label: "Closed" },
+  {
+    value: "PENDING",
+    label: {
+      en: "Pending",
+      vi: "Chờ xử lý",
+    },
+  },
+  {
+    value: "PROCESSING",
+    label: {
+      en: "Processing",
+      vi: "Đang xử lý",
+    },
+  },
+  {
+    value: "RESOLVED",
+    label: {
+      en: "Resolved",
+      vi: "Đã giải quyết",
+    },
+  },
+  {
+    value: "CLOSED",
+    label: {
+      en: "Closed",
+      vi: "Đã đóng",
+    },
+  },
 ];
 
 //- end constant cho issue

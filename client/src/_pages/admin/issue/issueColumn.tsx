@@ -67,6 +67,16 @@ export const getIssueColumns = (
     },
   },
 
+  // LOẠI VẤN ĐỀ
+  {
+    id: "type",
+    header: "Loại vấn đề",
+    cell: ({ row }) => {
+      const type = row.original.type;
+      return generateTypeIssue(type);
+    },
+  },
+
   // Trạng thái
   {
     id: "status",
@@ -114,7 +124,7 @@ export const getIssueColumns = (
             <DropdownMenuItem onClick={() => onEdit(permission)}>
               <div className="flex gap-3 items-center">
                 <Pen className="mr-2 h-4 w-4" />
-                Chỉnh sửa
+                Phản hồi
               </div>
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -133,6 +143,48 @@ export const getIssueColumns = (
   },
 ];
 
+function generateTypeIssue(type: string) {
+  //- có biến ISSUE_TYPE_OPTIONS, dựa vào đó mà tạo ra màu sắc và text tương ứng
+  switch (type) {
+    case "REPORT_JOB":
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
+          Báo cáo tin tuyển dụng
+        </span>
+      );
+    case "REPORT_USER":
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
+          Báo cáo người dùng
+        </span>
+      );
+    case "REPORT_COMPANY":
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+          Báo cáo công ty
+        </span>
+      );
+    case "SUPPORT":
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+          Hỗ trợ
+        </span>
+      );
+    case "FEEDBACK":
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-800">
+          Phản hồi
+        </span>
+      );
+    default:
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+          Không xác định
+        </span>
+      );
+  }
+}
+
 function generateStatusOptions(status: string) {
   //- có biến ISSUE_STATUS_OPTIONS, dựa vào đó mà tạo ra màu sắc và text tương ứng
   switch (status) {
@@ -142,7 +194,7 @@ function generateStatusOptions(status: string) {
           Chờ xử lý
         </span>
       );
-    case "IN_PROGRESS":
+    case "PROCESSING":
       return (
         <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
           Đang xử lý
@@ -154,7 +206,7 @@ function generateStatusOptions(status: string) {
           Đã giải quyết
         </span>
       );
-    case "REJECTED":
+    case "CLOSED":
       return (
         <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">
           Bị từ chối

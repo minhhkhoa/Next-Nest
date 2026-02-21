@@ -162,8 +162,8 @@ export class IssueService {
         meta: {
           current: defaultPage,
           pageSize: defaultLimit,
-          pages: totalPages,
-          total: totalItems,
+          totalPages: totalPages,
+          totalItems: totalItems,
         },
         result,
       };

@@ -1,10 +1,10 @@
-import PageIssue from "@/_pages/admin/issue";
+import PageIssueAdmin from "@/_pages/admin/issue";
 import React from "react";
 
-export default function IssuePage() {
+export default function IssueAdminPage() {
   return (
     <div>
-      <PageIssue />
+      <PageIssueAdmin />
     </div>
   );
 }
