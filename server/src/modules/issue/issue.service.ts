@@ -121,7 +121,7 @@ export class IssueService {
       const queryForAqp: any = {};
       if (currentPage) queryForAqp.currentPage = currentPage;
       if (pageSize) queryForAqp.pageSize = pageSize;
-      
+
       const { filter } = aqp(queryForAqp);
       let filterConditions: any = { ...filter };
 
@@ -162,8 +162,8 @@ export class IssueService {
         meta: {
           current: defaultPage,
           pageSize: defaultLimit,
-          totalPages: totalPages,
-          totalItems: totalItems,
+          totalPages,
+          totalItems,
         },
         result,
       };
@@ -178,12 +178,22 @@ export class IssueService {
    */
   async findAllByUser(user: UserDecoratorType, query: FindIssueQueryDto) {
     try {
-      const { currentPage, pageSize, type, status } = query;
+      const { currentPage, pageSize, type, status, searchText } = query;
 
       //- Thiết lập điều kiện lọc: Bắt buộc phải là của người đang login
       const filterConditions: any = {
-        'createdBy._id': new mongoose.Types.ObjectId(user.id),
+        'createdBy._id': user.id,
       };
+
+      // - Xử lý search text
+      if (searchText) {
+        filterConditions.$or = [
+          { 'title.vi': { $regex: searchText, $options: 'i' } },
+          { 'title.en': { $regex: searchText, $options: 'i' } },
+          { 'description.vi': { $regex: searchText, $options: 'i' } },
+          { 'description.en': { $regex: searchText, $options: 'i' } },
+        ];
+      }
 
       //- Thêm các bộ lọc bổ sung nếu người dùng chọn trên UI
       if (type) filterConditions.type = type;
@@ -207,8 +217,8 @@ export class IssueService {
         meta: {
           current: defaultPage,
           pageSize: defaultLimit,
-          pages: totalPages,
-          total: totalItems,
+          totalPages,
+          totalItems,
         },
         result,
       };
@@ -352,9 +362,15 @@ export class IssueService {
         );
       }
 
+      //- Xử lý đa ngôn ngữ cho dữ liệu cập nhật
+      const dataLang = await this.translationService.translateModuleData(
+        'issue',
+        updateDto,
+      );
+
       return await this.issueModel.findByIdAndUpdate(
         id,
-        { ...updateDto },
+        { ...dataLang },
         { new: true },
       );
     } catch (error) {

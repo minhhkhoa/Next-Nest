@@ -93,7 +93,7 @@ export default function BlockIssue() {
                 className="w-full justify-start gap-3 h-auto py-3 px-4 font-normal hover:bg-accent hover:text-accent-foreground"
                 asChild
               >
-                <Link href="">
+                <Link href="/issue">
                   <ListChecks className="h-4 w-4 text-blue-500" />
                   <div className="flex flex-col items-start text-left">
                     <span className="text-sm font-medium">

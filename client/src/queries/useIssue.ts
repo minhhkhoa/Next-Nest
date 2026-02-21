@@ -83,12 +83,13 @@ export const useCreateIssue = () => {
   });
 };
 
+//- Update Issue cho người dùng chỉnh sửa yêu cầu của chính họ (chỉ khi status là PENDING)
 export const useUpdateIssue = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: IssueUpdateType }) =>
       issueApiRequest.updateIssue(id, payload),
-    onSuccess: (data, { id }) => {
+    onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ["getIssue_filter"] });
       queryClient.invalidateQueries({ queryKey: ["getMyIssue"] });
       queryClient.invalidateQueries({ queryKey: ["getIssue", id] });
@@ -102,9 +103,10 @@ export const useAdminReplyIssue = () => {
   return useMutation({
     mutationFn: (payload: IssueAdminUpdateType) =>
       issueApiRequest.adminReply(payload),
-    onSuccess: (data, payload) => {
+    onSuccess: (_, payload) => {
       queryClient.invalidateQueries({ queryKey: ["getIssue_filter"] });
       queryClient.invalidateQueries({ queryKey: ["getIssue", payload.id] });
+      queryClient.invalidateQueries({ queryKey: ["getMyIssue"] });
     },
   });
 };

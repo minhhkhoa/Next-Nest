@@ -47,6 +47,19 @@ export const SocketListener = () => {
       socket.on("new-notification", (data) => {
         console.log("📩 Receive new notification:", data);
 
+        //- làm mới 1 số api, chỉ hoạt động khi tính năng có ping thì client mới có biến 'data' trên kia để làm.
+
+        //- start issue
+        if (data.metadata.module === "ISSUE") {
+          queryClient.invalidateQueries({ queryKey: ["getMyIssue"] });
+          queryClient.invalidateQueries({
+            queryKey: ["getIssue", data.issueId],
+          });
+          queryClient.invalidateQueries({ queryKey: ["getIssue_filter"] });
+        }
+
+        //- end issue
+
         //- Hiển thị Toast thông báo nhanh
         SoftSuccessSonner("Bạn có một thông báo mới!");
 

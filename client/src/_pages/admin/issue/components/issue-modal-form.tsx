@@ -146,7 +146,6 @@ export function IssueDialogForm({ onClose, issue, open }: IssueDialogProps) {
           adminReply: values.adminReply,
         };
 
-        console.log("payload: ", payload);
         const res = await adminReplyMutation(payload);
 
         if (res.isError) {
