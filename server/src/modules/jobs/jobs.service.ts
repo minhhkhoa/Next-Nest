@@ -235,13 +235,15 @@ export class JobsService {
         title,
         isHot,
         fieldCompany,
+        address,
+        level,
       } = query;
 
       //- Mặc định: Chỉ lấy Job Active, Status = active, IsDeleted = false
-      let filterConditions: any = { 
-        isActive: true, 
+      let filterConditions: any = {
+        isActive: true,
         status: 'active',
-        isDeleted: false 
+        isDeleted: false,
       };
 
       //- Lọc theo Title (MultiLang)
@@ -252,15 +254,38 @@ export class JobsService {
           { 'title.en': { $regex: searchRegex } },
         ];
       }
-      
+
+      //- Lọc theo Address (Location)
+      if (address && address !== null && address !== '') {
+        //- Xử lý các trường hợp đặc biệt về tên địa điểm
+        let regexPattern = address;
+
+        if (address.includes('Hồ Chí Minh') || address.includes('HCM')) {
+          //- Tìm theo: Hồ Chí Minh, HCM, TPHCM, TP. Hồ Chí Minh
+          regexPattern = 'Hồ Chí Minh|HCM|TPHCM';
+        } else if (address.includes('Hà Nội')) {
+          //- Tìm theo: Hà Nội, HN, Ha Noi, HaNoi
+          regexPattern = 'Hà Nội|HN|Ha Noi|HaNoi';
+        } else if (address.includes('Đà Nẵng')) {
+          regexPattern = 'Đà Nẵng|Da Nang|DaNang';
+        }
+
+        filterConditions.location = { $regex: new RegExp(regexPattern, 'i') };
+      }
+
+      //- Lọc theo Level
+      if (level && level !== null && level !== '') {
+        filterConditions.level = level;
+      }
+
       //- Lọc Job Hot
       if (isHot !== undefined && isHot !== null && isHot === 'true') {
-          filterConditions['isHot.isHotJob'] = true;
+        filterConditions['isHot.isHotJob'] = true;
       }
 
       //- Xây dựng Pipeline
       const pipeline: any[] = [
-        { $match: filterConditions }, 
+        { $match: filterConditions },
         {
           $lookup: {
             from: 'companies',
@@ -271,12 +296,28 @@ export class JobsService {
         },
         { $unwind: '$company' },
         //- Chỉ hiển thị Job của công ty đã được duyệt và chưa bị xóa
-        { 
-             $match: { 
-                 'company.isDeleted': false, 
-                 'company.status': 'ACCEPT' 
-             } 
-        }
+        {
+          $match: {
+            'company.isDeleted': false,
+            'company.status': 'ACCEPT',
+          },
+        },
+        {
+          $lookup: {
+            from: 'industries',
+            localField: 'industryID',
+            foreignField: '_id',
+            as: 'industryID',
+          },
+        },
+        {
+          $lookup: {
+            from: 'skills',
+            localField: 'skills',
+            foreignField: '_id',
+            as: 'skills',
+          },
+        },
       ];
 
       //- Lọc theo tên công ty (Sau khi Lookup)
@@ -293,8 +334,8 @@ export class JobsService {
       }
 
       //- Tính toán phân trang
-      const defaultPage = (currentPage && currentPage > 0) ? +currentPage : 1;
-      const defaultLimit = (pageSize && pageSize > 0) ? +pageSize : 10;
+      const defaultPage = currentPage && currentPage > 0 ? +currentPage : 1;
+      const defaultLimit = pageSize && pageSize > 0 ? +pageSize : 10;
       const skip = (defaultPage - 1) * defaultLimit;
 
       //- Count total
@@ -325,7 +366,10 @@ export class JobsService {
         result,
       };
     } catch (error) {
-       throw new BadRequestCustom('Lỗi truy vấn Job Public: ' + error.message, true);
+      throw new BadRequestCustom(
+        'Lỗi truy vấn Job Public: ' + error.message,
+        true,
+      );
     }
   }
 

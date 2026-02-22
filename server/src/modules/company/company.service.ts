@@ -199,17 +199,48 @@ export class CompanyService {
       const defaultLimit = +pageSize > 0 ? +pageSize : 10;
       let offset = (defaultPage - 1) * defaultLimit;
 
-      // Chuẩn IT: Dùng countDocuments thay vì .find().length
-      const totalItems =
-        await this.companyModel.countDocuments(filterConditions);
-      const totalPages = Math.ceil(totalItems / defaultLimit);
+      // Build aggregation pipeline
+      const pipeline: any[] = [
+        { $match: filterConditions },
+        { 
+             $lookup: {
+                from: 'jobs',
+                let: { companyId: '$_id' },
+                pipeline: [
+                     { $match: { 
+                         $expr: {
+                             $and: [
+                                 { $eq: ['$companyID', '$$companyId'] },
+                                 //- chỉ tính job active
+                                 { $eq: ['$isActive', true] },
+                                 { $eq: ['$status', 'active'] }, 
+                                 { $eq: ['$isDeleted', false] }
+                             ]
+                         }
+                     }},
+                     { $count: 'totalJob' }
+                ],
+                as: 'jobsCount'
+             }
+        },
+        { 
+            $addFields: {
+                totalJob: { $ifNull: [ { $arrayElemAt: ['$jobsCount.totalJob', 0] }, 0 ] }
+            }
+        },
+        { $project: { jobsCount: 0 } }, 
+        { $sort: { createdAt: -1 } },
+        { $skip: offset },
+        { $limit: defaultLimit }
+      ];
 
-      const result = await this.companyModel
-        .find(filterConditions)
-        .skip(offset)
-        .limit(defaultLimit)
-        .sort('-createdAt')
-        .exec();
+      // Execute queries
+      const [totalItems, result] = await Promise.all([
+          this.companyModel.countDocuments(filterConditions),
+          this.companyModel.aggregate(pipeline).exec()
+      ]);
+
+      const totalPages = Math.ceil(totalItems / defaultLimit);
 
       return {
         meta: {

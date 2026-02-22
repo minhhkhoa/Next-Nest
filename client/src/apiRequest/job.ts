@@ -33,6 +33,8 @@ const jobApiRequest = {
     title?: string;
     isHot?: string;
     fieldCompany?: string;
+    level?: string;
+    address?: string;
   }) =>
     http.get<ApiResponse<TypeGetAllJobFilter>>(`${prefix}/filter-public`, { params }),
 

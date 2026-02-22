@@ -48,6 +48,8 @@ export const useGetJobsFilterPublic = (params: {
   title?: string;
   isHot?: string;
   fieldCompany?: string;
+  address?: string;
+  level?: string;
 }) => {
   return useQuery({
     queryKey: ["jobs-filter-public", params],

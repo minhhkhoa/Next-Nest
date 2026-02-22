@@ -67,6 +67,16 @@ export class FindJobQueryDto {
   @IsOptional()
   @IsString()
   fieldCompany?: string;
+
+  @ApiPropertyOptional({ example: 'Hà Nội' })
+  @IsOptional()
+  @IsString()
+  address?: string;
+
+  @ApiPropertyOptional({ example: 'intern' })
+  @IsOptional()
+  @IsString()
+  level?: string;
 }
 
 export class DeleteManyJobDto {
