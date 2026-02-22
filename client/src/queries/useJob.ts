@@ -41,6 +41,20 @@ export const useGetJobsFilter = (params: {
   });
 };
 
+//- Hook lấy danh sách công việc PUBLIC (Không cần login, chỉ active)
+export const useGetJobsFilterPublic = (params: {
+  currentPage: number;
+  pageSize: number;
+  title?: string;
+  isHot?: string;
+  fieldCompany?: string;
+}) => {
+  return useQuery({
+    queryKey: ["jobs-filter-public", params],
+    queryFn: () => jobApiRequest.findJobFilterPublic(params),
+  });
+};
+
 //- Hook lấy toàn bộ công việc (không lọc)
 export const useGetAllJobs = () => {
   return useQuery({

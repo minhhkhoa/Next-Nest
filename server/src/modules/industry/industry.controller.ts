@@ -12,8 +12,11 @@ import { IndustryService } from './industry.service';
 import { CreateIndustryDto } from './dto/create-industry.dto';
 import { UpdateIndustryDto } from './dto/update-industry.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ResponseMessage } from 'src/common/decorator/customize';
-import { FindIndustryQueryDto, FindIndustryWithName } from './dto/industryDto.dto';
+import { Public, ResponseMessage } from 'src/common/decorator/customize';
+import {
+  FindIndustryQueryDto,
+  FindIndustryWithName,
+} from './dto/industryDto.dto';
 
 @ApiTags('industry')
 @Controller('industry')
@@ -38,6 +41,7 @@ export class IndustryController {
     );
   }
 
+  @Public()
   @ResponseMessage('Lấy tất cả ngành nghề theo cây thành công')
   @ApiOperation({ summary: 'Get build tree' })
   @Get('tree')

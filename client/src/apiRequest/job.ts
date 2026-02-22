@@ -27,6 +27,15 @@ const jobApiRequest = {
   }) =>
     http.get<ApiResponse<TypeGetAllJobFilter>>(`${prefix}/filter`, { params }),
 
+  findJobFilterPublic: (params: {
+    currentPage: number;
+    pageSize: number;
+    title?: string;
+    isHot?: string;
+    fieldCompany?: string;
+  }) =>
+    http.get<ApiResponse<TypeGetAllJobFilter>>(`${prefix}/filter-public`, { params }),
+
   //- Tìm tất cả công việc (Không lọc)
   findAll: () => http.get<ApiResponse<JobResType[]>>(prefix),
 

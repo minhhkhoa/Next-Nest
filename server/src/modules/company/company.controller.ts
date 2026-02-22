@@ -12,7 +12,11 @@ import { CompanyService } from './company.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ResponseMessage, userDecorator } from 'src/common/decorator/customize';
+import {
+  Public,
+  ResponseMessage,
+  userDecorator,
+} from 'src/common/decorator/customize';
 import {
   AdminApproveCompanyDto,
   DeleteManyCompanyDto,
@@ -77,6 +81,7 @@ export class CompanyController {
   }
 
   //- endpoint này lấy cả đã xóa và chưa xóa mềm
+  @Public()
   @ResponseMessage('Lấy tất cả công ty có lọc nâng cao thành công')
   @ApiOperation({ summary: 'GettAll company with filter' })
   @Get('filter')

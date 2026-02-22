@@ -15,6 +15,7 @@ import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
+  Public,
   PublicPermission,
   ResponseMessage,
   userDecorator,
@@ -51,6 +52,16 @@ export class JobsController {
     @userDecorator() user: UserDecoratorType,
   ) {
     return this.jobsService.findJobFilter(query, user);
+  }
+
+  @Public()
+  @ResponseMessage('Tìm công việc Công Khai cho Trang Chủ')
+  @ApiOperation({ summary: 'get all by filter public for HomePage' })
+  @Get('filter-public')
+  findJobFilterPublic(
+    @Query() query: FindJobQueryDto,
+  ) {
+    return this.jobsService.findJobFilterPublic(query);
   }
 
   @ResponseMessage('Tìm tất cả công việc thành công')

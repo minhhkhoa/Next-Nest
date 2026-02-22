@@ -226,6 +226,109 @@ export class JobsService {
     }
   }
 
+  //- API Public cho trang chủ (Không cần login, chỉ lấy job active)
+  async findJobFilterPublic(query: FindJobQueryDto) {
+    try {
+      const {
+        currentPage,
+        pageSize,
+        title,
+        isHot,
+        fieldCompany,
+      } = query;
+
+      //- Mặc định: Chỉ lấy Job Active, Status = active, IsDeleted = false
+      let filterConditions: any = { 
+        isActive: true, 
+        status: 'active',
+        isDeleted: false 
+      };
+
+      //- Lọc theo Title (MultiLang)
+      if (title && title !== null && title !== '') {
+        const searchRegex = new RegExp(title, 'i');
+        filterConditions.$or = [
+          { 'title.vi': { $regex: searchRegex } },
+          { 'title.en': { $regex: searchRegex } },
+        ];
+      }
+      
+      //- Lọc Job Hot
+      if (isHot !== undefined && isHot !== null && isHot === 'true') {
+          filterConditions['isHot.isHotJob'] = true;
+      }
+
+      //- Xây dựng Pipeline
+      const pipeline: any[] = [
+        { $match: filterConditions }, 
+        {
+          $lookup: {
+            from: 'companies',
+            localField: 'companyID',
+            foreignField: '_id',
+            as: 'company',
+          },
+        },
+        { $unwind: '$company' },
+        //- Chỉ hiển thị Job của công ty đã được duyệt và chưa bị xóa
+        { 
+             $match: { 
+                 'company.isDeleted': false, 
+                 'company.status': 'ACCEPT' 
+             } 
+        }
+      ];
+
+      //- Lọc theo tên công ty (Sau khi Lookup)
+      if (fieldCompany && fieldCompany !== null && fieldCompany !== '') {
+        const searchRegex = new RegExp(fieldCompany, 'i');
+        pipeline.push({
+          $match: {
+            $or: [
+              { 'company.name': searchRegex },
+              { 'company.taxCode': searchRegex },
+            ],
+          },
+        });
+      }
+
+      //- Tính toán phân trang
+      const defaultPage = (currentPage && currentPage > 0) ? +currentPage : 1;
+      const defaultLimit = (pageSize && pageSize > 0) ? +pageSize : 10;
+      const skip = (defaultPage - 1) * defaultLimit;
+
+      //- Count total
+      const countPipeline = [...pipeline]; // Clone pipeline for counting
+      countPipeline.push({ $count: 'total' });
+
+      //- Paging
+      pipeline.push(
+        { $sort: { createdAt: -1 } },
+        { $skip: skip },
+        { $limit: defaultLimit },
+      );
+
+      const [countResult, result] = await Promise.all([
+        this.jobModel.aggregate(countPipeline).exec(),
+        this.jobModel.aggregate(pipeline).exec(),
+      ]);
+
+      const totalItems = countResult.length > 0 ? countResult[0].total : 0;
+
+      return {
+        meta: {
+          current: defaultPage,
+          pageSize: defaultLimit,
+          totalPages: Math.ceil(totalItems / defaultLimit),
+          totalItems: totalItems,
+        },
+        result,
+      };
+    } catch (error) {
+       throw new BadRequestCustom('Lỗi truy vấn Job Public: ' + error.message, true);
+    }
+  }
+
   async findAll() {
     try {
       return await this.jobModel.find().exec();

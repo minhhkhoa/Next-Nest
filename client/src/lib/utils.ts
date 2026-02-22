@@ -245,3 +245,14 @@ export const getRoleRecruiter = () => {
 export const getRoleCandidate = () => {
   return envConfig.NEXT_PUBLIC_ROLE_CANDIDATE;
 };
+
+export const convertToSlug = (text: string) => {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[đĐ]/g, "d")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-");
+};

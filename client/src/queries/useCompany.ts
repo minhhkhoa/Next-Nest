@@ -5,6 +5,19 @@ import {
 } from "@/schemasvalidation/company";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+export const useGetCompanies = (params: { page: number; pageSize: number }) => {
+  return useQuery({
+    queryKey: ["companies-home", params],
+    queryFn: () =>
+      companyApiRequest.findAllByFilter({
+        currentPage: params.page,
+        pageSize: params.pageSize,
+        status: "ACCEPT",
+        isDeleted: "false",
+      }),
+  });
+};
+
 export function useCreateCompany() {
   const queryClient = useQueryClient();
   return useMutation({
