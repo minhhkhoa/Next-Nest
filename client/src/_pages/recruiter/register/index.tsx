@@ -113,7 +113,7 @@ export default function RecruiterRegisterForm() {
   return (
     <Card className="w-full max-w-md shadow-2xl border-border/50">
       <CardHeader className="space-y-2 text-center">
-        <CardTitle className="text-3xl font-bold tracking-tight">
+        <CardTitle className="text-3xl font-bold tracking-tight pt-2">
           Đăng ký làm nhà tuyển dụng
         </CardTitle>
         <CardDescription className="text-base">
@@ -201,7 +201,7 @@ export default function RecruiterRegisterForm() {
           </form>
         </Form>
       </CardContent>
-      <CardFooter className="flex justify-center">
+      <CardFooter className="flex justify-center pb-2">
         <p className="text-sm text-muted-foreground">
           Bạn đã có tài khoản?{" "}
           <Link

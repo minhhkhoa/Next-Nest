@@ -6,8 +6,17 @@ export default function AppHeaderSkeleton() {
     <div className="z-50 h-12 border-b border-b-gray-200 dark:border-b-gray-800 bg-background md:-mx-26">
       <div className="container mx-auto flex h-full items-center justify-between">
         {/* Logo */}
-        <div className="pl-3 md:pl-10">
-          <Skeleton className="h-5 w-16 rounded-sm" />
+        <div className="flex items-center gap-6">
+          <div className="pl-3 md:pl-10">
+            <Skeleton className="h-5 w-16 rounded-sm" />
+          </div>
+
+          {/* NavigationHeaderMenu */}
+          <div className="hidden md:flex  md:items-center md:gap-6">
+            <Skeleton className="h-5 w-[100px] rounded-sm" />
+            <Skeleton className="h-5 w-[100px] rounded-sm" />
+            <Skeleton className="h-5 w-[100px] rounded-sm" />
+          </div>
         </div>
 
         {/* Nút và avatar */}

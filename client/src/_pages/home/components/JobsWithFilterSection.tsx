@@ -61,10 +61,10 @@ export default function JobsWithFilterSection() {
 
   return (
     <section className="py-16 bg-background">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-end md:items-center mb-8 gap-4">
           <div>
-            <h2 className="text-3xl font-bold text-primary mb-2">
+            <h2 className="text-3xl font-bold text-primary mb-2 pl-4 border-l-4 border-primary">
               Việc làm mới nhất
             </h2>
             <p className="text-muted-foreground">

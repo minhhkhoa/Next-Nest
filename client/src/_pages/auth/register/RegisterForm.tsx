@@ -132,7 +132,7 @@ export default function RegisterForm() {
   return (
     <Card className="w-full max-w-md shadow-2xl border-border/50">
       <CardHeader className="space-y-2 text-center">
-        <CardTitle className="text-3xl font-bold tracking-tight">
+        <CardTitle className="text-3xl font-bold tracking-tight pt-2">
           Đăng ký
         </CardTitle>
         <CardDescription className="text-base">
@@ -253,7 +253,7 @@ export default function RegisterForm() {
           </Button>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-center">
+      <CardFooter className="flex justify-center pb-2">
         <p className="text-sm text-muted-foreground">
           Bạn đã có tài khoản?{" "}
           <a href="/login" className="text-primary font-medium hover:underline">

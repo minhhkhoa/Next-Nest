@@ -15,11 +15,17 @@ export default function TopBrandsSection() {
 
   return (
     <section className="py-16 bg-background">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto">
         <div className="flex justify-between items-center mb-10">
-          <h2 className="text-3xl font-bold text-primary">
-            Nhà tuyển dụng hàng đầu
-          </h2>
+          <div className="flex flex-col gap-3">
+            <h2 className="text-3xl font-bold text-primary pl-4 border-l-4 border-primary">
+              Nhà tuyển dụng hàng đầu
+            </h2>
+            <p className="text-muted-foreground">
+              Khám phá các công ty hàng đầu đang tuyển dụng
+            </p>
+          </div>
+
           <Link href="/companies">
             <Button
               variant="ghost"

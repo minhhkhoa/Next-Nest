@@ -25,11 +25,14 @@ export default function HotJobsSection() {
 
   return (
     <section className="py-16 bg-background">
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center mb-10">
+      <div className="container mx-auto">
+        <div className="flex flex-col gap-3 mb-10">
           <h2 className="text-3xl font-bold text-primary relative pl-4 border-l-4 border-primary">
             Công việc nổi bật
           </h2>
+          <p className="text-muted-foreground">
+            Những cơ hội nghề nghiệp hấp dẫn đang chờ đón bạn
+          </p>
         </div>
 
         {isLoading ? (

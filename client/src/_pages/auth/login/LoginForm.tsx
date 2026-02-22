@@ -134,7 +134,7 @@ export default function LoginForm() {
 
   return (
     <Card className="w-full max-w-md shadow-2xl border-border/50">
-      <CardHeader className="space-y-2 text-center">
+      <CardHeader className="space-y-2 text-center pt-2">
         <CardTitle className="text-3xl font-bold tracking-tight">
           Đăng nhập
         </CardTitle>
@@ -256,7 +256,7 @@ export default function LoginForm() {
           </Button>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-center">
+      <CardFooter className="flex justify-center pb-2">
         <p className="text-sm text-muted-foreground">
           Bạn chưa có tài khoản?{" "}
           <a
