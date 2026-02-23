@@ -63,6 +63,7 @@ export default function PageMyIssue() {
         await deleteMutation.mutateAsync(issueToDelete);
         SoftSuccessSonner("Đã xóa vấn đề thành công");
       } catch (e) {
+        console.log("Lỗi xóa vấn đề: ", e);
         SoftDestructiveSonner("Xóa vấn đề thất bại");
       } finally {
         setDeleteDialogOpen(false);

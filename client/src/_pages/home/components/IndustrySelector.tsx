@@ -41,7 +41,6 @@ const PaginatedIndustryList = ({
   items,
   selectedValue,
   onSelect,
-  parentId,
 }: {
   items: Industry[];
   selectedValue?: string;
