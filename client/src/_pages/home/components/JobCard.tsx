@@ -2,7 +2,6 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { format, differenceInDays } from "date-fns";
-import { vi } from "date-fns/locale";
 import { MapPin, DollarSign, Clock } from "lucide-react";
 import { JobResType } from "@/schemasvalidation/job";
 import { convertToSlug } from "@/lib/utils";

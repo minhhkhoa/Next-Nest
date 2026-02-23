@@ -87,6 +87,8 @@ export const segmentNameMap: Record<string, string> = {
   news: "Tin tức",
   profile: "Trang cá nhân",
   settings: "Cài đặt",
+  jobs: "Việc làm",
+  companies: "Công ty",
   // - end page public
 };
 

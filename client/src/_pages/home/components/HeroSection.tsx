@@ -13,13 +13,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Command,
   CommandEmpty,
   CommandGroup,
@@ -33,9 +26,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useGetTreeIndustry } from "@/queries/useIndustry";
-import { convertToSlug, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { ADDRESS_OPTIONS } from "@/lib/constant";
+import IndustrySelector from "./IndustrySelector";
 
 export default function HeroSection() {
   const router = useRouter();
@@ -55,27 +49,21 @@ export default function HeroSection() {
     if (searchParams.get("keyword")) setKeyword(searchParams.get("keyword")!);
     if (searchParams.get("location"))
       setLocation(searchParams.get("location")!);
+    if (searchParams.get("industry"))
+      setIndustry(searchParams.get("industry")!);
   }, [searchParams]);
 
-  const handleSearch = () => {
+  const handleSearch = (keywordOverride?: string, industryOverride?: string) => {
     const params = new URLSearchParams();
-    if (keyword) params.set("keyword", keyword);
+    const currentKeyword = typeof keywordOverride === "string" ? keywordOverride : keyword;
+    const currentIndustry = typeof industryOverride === "string" ? industryOverride : industry;
+    
+    if (currentKeyword) params.set("keyword", currentKeyword);
     if (location) params.set("location", location);
+    if (currentIndustry) params.set("industry", currentIndustry);
 
-    if (industry) {
-      const selectedIndustry = industries.find((item) => item._id === industry);
-      let path = "/jobs"; // Default
-      if (selectedIndustry) {
-        const slug = convertToSlug(selectedIndustry.name?.vi || "");
-        path = `/${slug}`;
-      }
-
-      const queryString = params.toString();
-      router.push(`${path}${queryString ? `?${queryString}` : ""}`);
-    } else {
-      const queryString = params.toString();
-      router.push(`/jobs${queryString ? `?${queryString}` : ""}`);
-    }
+    const queryString = params.toString();
+    router.push(`/jobs${queryString ? `?${queryString}` : ""}`);
   };
 
   return (
@@ -128,20 +116,15 @@ export default function HeroSection() {
           </div>
 
           {/* Industry Select */}
-          <div className="flex-1 w-full flex items-center md:border-r border-border md:px-4 relative">
+          <div className="hidden md:flex-1 w-full md:flex items-center md:border-r border-border md:px-4 relative">
             <Briefcase className="text-muted-foreground w-5 h-5 mr-2" />
-            <Select value={industry} onValueChange={setIndustry}>
-              <SelectTrigger className="border-none shadow-none focus:ring-0 px-2 text-base w-full text-left font-normal text-muted-foreground pr-8">
-                <SelectValue placeholder="Ngành nghề" />
-              </SelectTrigger>
-              <SelectContent>
-                {industries.map((ind: any) => (
-                  <SelectItem key={ind._id} value={ind._id}>
-                    {ind.name?.vi || ind.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <IndustrySelector
+              industries={industries}
+              value={industry}
+              onSelect={(id) => {
+                setIndustry(id);
+              }}
+            />
             {industry && (
               <X
                 className="w-4 h-4 text-muted-foreground absolute right-8 cursor-pointer hover:text-foreground z-10"
@@ -238,7 +221,7 @@ export default function HeroSection() {
 
           <Button
             className="w-full md:w-auto px-8 py-6 rounded-lg text-lg font-medium transition-all"
-            onClick={handleSearch}
+            onClick={() => handleSearch()}
           >
             Tìm kiếm
           </Button>
@@ -250,7 +233,7 @@ export default function HeroSection() {
             className="font-medium text-primary cursor-pointer hover:underline"
             onClick={() => {
               setKeyword("Marketing");
-              handleSearch();
+              handleSearch("Marketing");
             }}
           >
             Marketing
@@ -259,7 +242,7 @@ export default function HeroSection() {
             className="font-medium text-primary cursor-pointer hover:underline"
             onClick={() => {
               setKeyword("Developer");
-              handleSearch();
+              handleSearch("Developer");
             }}
           >
             Developer
@@ -268,7 +251,7 @@ export default function HeroSection() {
             className="font-medium text-primary cursor-pointer hover:underline"
             onClick={() => {
               setKeyword("Designer");
-              handleSearch();
+              handleSearch("Designer");
             }}
           >
             Designer
