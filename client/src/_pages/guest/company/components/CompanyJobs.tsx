@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import DataTablePagination from "@/components/DataTablePagination";
 import ListJobSkeleton from "@/components/skeletons/list-job";
+import { generateSlugUrl } from "@/lib/utils";
 
 interface CompanyJobsProps {
   companyId: string;
@@ -41,9 +42,12 @@ export default function CompanyJobs({ companyId }: CompanyJobsProps) {
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-        {jobs.map((job: any) => (
+        {jobs.map((job) => (
           <Link
-            href={`/job-detail/${job._id}`}
+            href={`/jobs/${generateSlugUrl({
+              name: job.slug.vi,
+              id: job._id,
+            })}`}
             key={job._id}
             className="block group"
           >
@@ -96,11 +100,6 @@ export default function CompanyJobs({ companyId }: CompanyJobsProps) {
                         {job.level && (
                           <Badge variant="outline" className="bg-muted/50">
                             {job.level}
-                          </Badge>
-                        )}
-                        {job.experiment && (
-                          <Badge variant="outline" className="bg-muted/50">
-                            {job.experiment}
                           </Badge>
                         )}
                       </div>
