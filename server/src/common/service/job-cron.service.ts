@@ -50,6 +50,7 @@ export class JobCronService {
     }
   }
 
+  // - Cron Job chạy mỗi 10 phút để đồng bộ lượt xem từ Redis về MongoDB
   @Cron(CronExpression.EVERY_10_MINUTES)
   // @Cron('*/30 * * * * *')
   async syncViewsToDb() {
@@ -102,6 +103,41 @@ export class JobCronService {
       this.logger.log(`Đã đồng bộ thành công ${successCount} công việc.`);
     } catch (error) {
       this.logger.error(`Lỗi thực thi v6/v7: ${error.message}`);
+    }
+  }
+
+  //- cron job chạy mỗi ngày để set lại isHot của công việc khi đã hết hạn
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT) //- chạy vào lúc 00:00 hàng ngày
+  async handleAutoRemoveHotStatus() {
+    this.logger.debug('Đang thực thi tác vụ quét Job Hot hết hạn...');
+    try {
+      const now = new Date();
+      //- Tìm các job đang là Hot Job và thời hạn hotUntil nhỏ hơn hiện tại
+      const result = await this.jobModel.updateMany(
+        {
+          'isHot.isHotJob': true,
+          'isHot.hotUntil': { $lt: now },
+        },
+        {
+          $set: {
+            isHot: {
+              isHotJob: false,
+              hotUntil: null,
+            },
+          },
+        },
+      );
+
+      if (result.modifiedCount > 0) {
+        this.logger.log(
+          `Hệ thống đã tự động gỡ bỏ trạng thái Hot của ${result.modifiedCount} tin tuyển dụng.`,
+        );
+      }
+    } catch (error) {
+      this.logger.error(
+        'Lỗi khi chạy Cron Job tự động gỡ bỏ trạng thái Hot:',
+        error,
+      );
     }
   }
 }
