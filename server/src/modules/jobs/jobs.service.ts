@@ -16,7 +16,7 @@ import { ConfigService } from '@nestjs/config';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Job, JobDocument } from './schemas/job.schema';
-import { generateMultiLangSlug } from 'src/utils/generate-slug';
+import { generateMultiLangSlug, slugify } from 'src/utils/generate-slug';
 import { UserService } from '../user/user.service';
 import { NotificationType } from 'src/common/constants/notification-type.enum';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -487,6 +487,8 @@ export class JobsService {
         _id: id,
         isDeleted: false,
       })
+      .populate({ path: 'companyID', model: 'Company' })
+      .populate({ path: 'skills', model: 'Skill' })
       .exec();
 
     if (!job) {
@@ -523,6 +525,20 @@ export class JobsService {
       const currentAdditional = (await cache.get(viewKey)) || 0;
       const jobObject = job.toObject();
 
+      //- Xử lý company đã populate
+      //- Giữ companyID là ID, thêm field company là object
+      const company = jobObject.companyID;
+      if (company && typeof company === 'object' && '_id' in company) {
+        jobObject.companyID = (company as any)._id; // Gán lại ID
+
+        //- add slug to company object
+        if ((company as any).name) {
+          (company as any).slug = slugify((company as any).name);
+        }
+
+        (jobObject as any).company = company; // Thêm field company
+      }
+
       return {
         ...jobObject,
         totalViews: (jobObject.totalViews || 0) + currentAdditional,
@@ -530,7 +546,22 @@ export class JobsService {
     } catch (redisError) {
       //- Fail-safe: Redis lỗi thì vẫn cho xem Job, chỉ là không tăng view
       console.error('Redis View Count Error:', redisError.message);
-      return job.toObject();
+
+      const jobObject = job.toObject();
+      const company = jobObject.companyID;
+
+      if (company && typeof company === 'object' && '_id' in company) {
+        jobObject.companyID = (company as any)._id;
+
+        //- add slug to company object
+        if ((company as any).name) {
+          (company as any).slug = slugify((company as any).name);
+        }
+
+        (jobObject as any).company = company;
+      }
+
+      return jobObject;
     }
   }
 
@@ -878,6 +909,90 @@ export class JobsService {
       );
     } catch (error) {
       if (error instanceof ForbiddenException) throw error;
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
+  async findRelatedJobs(
+    id: string,
+    pagination: { page: number; limit: number },
+  ) {
+    const { page, limit } = pagination;
+    const skip = (page - 1) * limit;
+
+    try {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new BadRequestCustom('ID không hợp lệ', true);
+      }
+      const currentJob = await this.jobModel.findById(id).select('industryID');
+
+      if (!currentJob) {
+        return {
+          meta: {
+            current: page,
+            pageSize: limit,
+            totalPages: 0,
+            totalItems: 0,
+          },
+          result: [],
+        };
+      }
+
+      const industryIDs = currentJob.industryID;
+      if (!industryIDs || industryIDs.length === 0) {
+        return {
+          meta: {
+            current: page,
+            pageSize: limit,
+            totalPages: 0,
+            totalItems: 0,
+          },
+          result: [],
+        };
+      }
+
+      const query = {
+        _id: { $ne: id },
+        industryID: { $in: industryIDs },
+        isActive: true,
+        status: 'active',
+        isDeleted: false,
+      };
+
+      const [relatedJobs, totalItems] = await Promise.all([
+        this.jobModel
+          .find(query)
+          .skip(skip)
+          .limit(limit)
+          .populate('companyID')
+          .populate('skills')
+          .populate('industryID'),
+        this.jobModel.countDocuments(query),
+      ]);
+
+      const totalPages = Math.ceil(totalItems / limit);
+
+      // Transform similar to findOne
+      const result = relatedJobs.map((job) => {
+        const jobObject = job.toObject();
+        const company = jobObject.companyID;
+        if (company && typeof company === 'object' && '_id' in company) {
+          jobObject.companyID = (company as any)._id; // Gán lại ID
+          (jobObject as any).company = company; // Thêm field company
+        }
+        return jobObject;
+      });
+
+      return {
+        meta: {
+          current: page,
+          pageSize: limit,
+          totalPages,
+          totalItems,
+        },
+        result,
+      };
+    } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }
   }

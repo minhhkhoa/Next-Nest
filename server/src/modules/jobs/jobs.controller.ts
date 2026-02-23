@@ -93,7 +93,7 @@ export class JobsController {
     return await this.jobsService.handleVerifyJob(verifyDto, recruiter_admin);
   }
 
-  @PublicPermission()
+  @Public()
   @ResponseMessage('Tìm công việc theo ID thành công')
   @ApiOperation({ summary: 'Tìm công việc theo ID' })
   @Get(':id')
@@ -128,5 +128,20 @@ export class JobsController {
   @Delete(':id')
   remove(@Param('id') id: string, @userDecorator() user: UserDecoratorType) {
     return this.jobsService.remove(id, user);
+  }
+
+  @Public()
+  @ResponseMessage('Tìm công việc liên quan thành công')
+  @ApiOperation({ summary: 'Tìm công việc liên quan bởi ID' })
+  @Get(':id/related')
+  getRelatedJobs(
+    @Param('id') id: string,
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+  ) {
+    return this.jobsService.findRelatedJobs(id, {
+      page: page ? +page : 1,
+      limit: limit ? +limit : 5,
+    });
   }
 }

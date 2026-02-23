@@ -17,7 +17,7 @@ export const apiJobRes = z.object({
   industryID: z.array(z.string()),
   description: MultiLang,
   skills: z.array(z.string()),
-  otherSkills: z.array(z.string()),
+  otherSkills: z.array(z.string()).optional(),
   location: z.string(),
   salary: z.object({
     min: z.number(),
@@ -80,7 +80,7 @@ export const jobCreate = z
     skills: z.array(z.string()).min(1, "Vui lòng chọn ít nhất một kỹ năng"),
 
     otherSkills: z.array(otherSkillItemSchema).optional(),
-    
+
     location: z.string().min(1, "Địa chỉ làm việc không được để trống"),
     salary: salaryRangeSchema,
 

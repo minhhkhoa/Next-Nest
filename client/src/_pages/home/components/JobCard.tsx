@@ -4,7 +4,7 @@ import Link from "next/link";
 import { format, differenceInDays } from "date-fns";
 import { MapPin, DollarSign, Clock } from "lucide-react";
 import { JobResType } from "@/schemasvalidation/job";
-import { convertToSlug } from "@/lib/utils";
+import { generateSlugUrl } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -18,11 +18,6 @@ interface JobCardProps {
 }
 
 export default function JobCard({ job }: JobCardProps) {
-  const generateSlugUrl = (job: JobResType) => {
-    const slug = job.slug?.vi || convertToSlug(job.title?.vi || "");
-    return `/jobs/${slug}`;
-  };
-
   const getSalaryText = (min: number, max: number, currency: string) => {
     if (min === 0 && max === 0) return "Thỏa thuận";
     return `${min.toLocaleString()} - ${max.toLocaleString()} ${currency}`;
@@ -47,7 +42,10 @@ export default function JobCard({ job }: JobCardProps) {
         </div>
         <div className="flex-1 overflow-hidden">
           <Link
-            href={generateSlugUrl(job)}
+            href={`/jobs/${generateSlugUrl({
+              name: job.slug.vi || job.title.vi,
+              id: job._id,
+            })}`}
             className="hover:text-primary transition-colors block mb-1"
           >
             <h3
@@ -95,7 +93,7 @@ export default function JobCard({ job }: JobCardProps) {
         </div>
 
         <div className="flex flex-wrap gap-1">
-          <i>Kỹ năng yêu cầu:</i>
+          <i className="text-xs text-muted-foreground">Kỹ năng yêu cầu:</i>
           {job.skills &&
             job.skills.slice(0, 3).map((skill: any, index) => (
               <Badge

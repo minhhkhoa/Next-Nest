@@ -68,6 +68,28 @@ const jobApiRequest = {
 
   //- Xóa đơn lẻ một công việc (Soft delete)
   remove: (id: string) => http.delete<ApiResponse<any>>(`${prefix}/${id}`),
+
+  //- Lấy danh sách việc làm liên quan
+  getRelatedJobs: ({
+    id,
+    page,
+    limit,
+  }: {
+    id: string;
+    page: number;
+    limit: number;
+  }) =>
+    http.get<
+      ApiResponse<{
+        meta: {
+          current: number;
+          pageSize: number;
+          totalPages: number;
+          totalItems: number;
+        };
+        result: JobResType[];
+      }>
+    >(`${prefix}/${id}/related`, { params: { page, limit } }),
 };
 
 export default jobApiRequest;

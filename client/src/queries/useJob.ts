@@ -123,3 +123,13 @@ export function useRestoreJob() {
     },
   });
 }
+
+//- Hook lấy danh sách công việc liên quan
+export const useGetRelatedJobs = (id: string, page: number, limit: number) => {
+  return useQuery({
+    queryKey: ["related-jobs", id, page, limit],
+    queryFn: () => jobApiRequest.getRelatedJobs({ id, page, limit }),
+    enabled: !!id,
+    placeholderData: (previousData) => previousData,
+  });
+};
