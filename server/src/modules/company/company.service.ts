@@ -26,6 +26,7 @@ import {
 } from './dto/companyDto.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 import { JobsService } from '../jobs/jobs.service';
+import { slugify } from 'src/utils/generate-slug';
 
 @Injectable()
 export class CompanyService {
@@ -242,6 +243,13 @@ export class CompanyService {
 
       const totalPages = Math.ceil(totalItems / defaultLimit);
 
+      const data = result.map((item) => {
+        return {
+          ...item,
+          slug: slugify(item.name)
+        }
+      })
+
       return {
         meta: {
           current: defaultPage,
@@ -249,7 +257,7 @@ export class CompanyService {
           totalPages: totalPages,
           totalItems: totalItems,
         },
-        result,
+        result: data,
       };
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);

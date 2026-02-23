@@ -3,16 +3,17 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useGetCompanies } from "@/queries/useCompany";
+import ListJobSkeleton from "@/components/skeletons/list-job";
+import { generateSlugUrl } from "@/lib/utils";
 
-export default function TopBrandsSection() {
+export default function TopCompaniesSection() {
   const { data: listCompanies, isLoading } = useGetCompanies({
     page: 1,
-    pageSize: 12,
+    pageSize: 8,
   });
   const companies = listCompanies?.data?.result || [];
 
@@ -29,7 +30,7 @@ export default function TopBrandsSection() {
             </p>
           </div>
 
-          <Link href="/companies">
+          <Link href="/company">
             <Button
               variant="ghost"
               className="text-primary hover:text-primary/80 hover:bg-primary/10"
@@ -40,16 +41,17 @@ export default function TopBrandsSection() {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <Skeleton key={i} className="h-32 w-full rounded-lg" />
-            ))}
-          </div>
+          <ListJobSkeleton />
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {companies.map((company: any) => (
+            {companies.map((company) => (
               <div key={company._id} className="group relative">
-                <Link href={`/companies/${company._id}`}>
+                <Link
+                  href={`/company/${generateSlugUrl({
+                    name: company.slug || company.name,
+                    id: company._id,
+                  })}`}
+                >
                   <Card className="h-full border hover:border-primary transition-all duration-300 hover:shadow-lg bg-card">
                     <CardContent className="p-4 flex flex-col items-center justify-center h-40 text-center">
                       <div className="relative w-20 h-20 mb-3 grayscale group-hover:grayscale-0 transition-all duration-300">

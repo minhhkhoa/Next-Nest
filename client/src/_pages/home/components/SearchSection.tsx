@@ -31,7 +31,7 @@ import { motion } from "framer-motion";
 import { ADDRESS_OPTIONS } from "@/lib/constant";
 import IndustrySelector from "./IndustrySelector";
 
-export default function HeroSection() {
+export default function SearchSection() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -53,11 +53,16 @@ export default function HeroSection() {
       setIndustry(searchParams.get("industry")!);
   }, [searchParams]);
 
-  const handleSearch = (keywordOverride?: string, industryOverride?: string) => {
+  const handleSearch = (
+    keywordOverride?: string,
+    industryOverride?: string,
+  ) => {
     const params = new URLSearchParams();
-    const currentKeyword = typeof keywordOverride === "string" ? keywordOverride : keyword;
-    const currentIndustry = typeof industryOverride === "string" ? industryOverride : industry;
-    
+    const currentKeyword =
+      typeof keywordOverride === "string" ? keywordOverride : keyword;
+    const currentIndustry =
+      typeof industryOverride === "string" ? industryOverride : industry;
+
     if (currentKeyword) params.set("keyword", currentKeyword);
     if (location) params.set("location", location);
     if (currentIndustry) params.set("industry", currentIndustry);

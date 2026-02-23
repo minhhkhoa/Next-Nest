@@ -5,6 +5,8 @@ import { ActionBy } from "./NewsCategory";
 export const apiCompanyRes = z.object({
   _id: z.string(),
   name: z.string(),
+  slug: z.string().optional(),
+  totalJob: z.number().optional(),
   taxCode: z.string(),
   status: z.string(),
   address: z.string(),
