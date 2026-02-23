@@ -43,7 +43,7 @@ export default function JobsWithFilterSection() {
 
   const [keywordDebounce] = useDebounce(keyword, 500);
 
-  const { data, isLoading } = useGetJobsFilterPublic({
+  const { data: listJobs, isLoading } = useGetJobsFilterPublic({
     currentPage: page,
     pageSize: 8,
     title: keywordDebounce,
@@ -51,8 +51,8 @@ export default function JobsWithFilterSection() {
     level: level === "all" ? undefined : level,
   });
 
-  const jobs = data?.data?.result || [];
-  const meta = data?.data?.meta || {
+  const jobs = listJobs?.data?.result || [];
+  const meta = listJobs?.data?.meta || {
     current: 1,
     pageSize: 8,
     totalPages: 1,

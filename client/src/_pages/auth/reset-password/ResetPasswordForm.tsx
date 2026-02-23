@@ -43,7 +43,10 @@ export default function ResetPasswordForm() {
   const token = params.get("token") ?? "";
   const email = params.get("email") ?? "";
 
-  const { data, isLoading } = useValidateResetPassword(token, email);
+  const { data: validateResetPassword, isLoading } = useValidateResetPassword(
+    token,
+    email,
+  );
   const { mutateAsync: resetPassword } = useResetPassword();
 
   const form = useForm<ResetPasswordFormValues>({
@@ -56,7 +59,6 @@ export default function ResetPasswordForm() {
 
   const onSubmit = async (values: ResetPasswordFormValues) => {
     try {
-      console.log("Resetting password with:", values);
       const res = await resetPassword({
         token,
         email,
@@ -81,7 +83,7 @@ export default function ResetPasswordForm() {
     );
   }
 
-  if (!data?.data?.valid) {
+  if (!validateResetPassword?.data?.valid) {
     return (
       <div className="flex flex-col justify-center items-center h-screen">
         <div className="text-center text-red-500">

@@ -10,8 +10,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useGetCompanies } from "@/queries/useCompany";
 
 export default function TopBrandsSection() {
-  const { data, isLoading } = useGetCompanies({ page: 1, pageSize: 12 });
-  const companies = data?.data?.result || [];
+  const { data: listCompanies, isLoading } = useGetCompanies({
+    page: 1,
+    pageSize: 12,
+  });
+  const companies = listCompanies?.data?.result || [];
 
   return (
     <section className="py-16 bg-background">

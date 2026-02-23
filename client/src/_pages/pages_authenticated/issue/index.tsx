@@ -29,7 +29,11 @@ export default function PageMyIssue() {
   //- Debounce search input để tránh gọi API quá nhiều
   const [debouncedSearch] = useDebounce(searchText, 500);
 
-  const { data, isLoading, isError } = useGetMyIssue({
+  const {
+    data: listIssues,
+    isLoading,
+    isError,
+  } = useGetMyIssue({
     currentPage: page,
     pageSize: 8,
     searchText: debouncedSearch,
@@ -105,7 +109,8 @@ export default function PageMyIssue() {
             </h3>
             <p className="text-muted-foreground">Vui lòng thử lại sau.</p>
           </div>
-        ) : !data?.data?.result || data?.data?.result.length === 0 ? (
+        ) : !listIssues?.data?.result ||
+          listIssues?.data?.result.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-16 text-center border-2 border-dashed rounded-lg bg-muted/20">
             <ArchiveX className="h-16 w-16 text-muted-foreground mb-4 opacity-50" />
             <h3 className="text-lg font-medium">Không tìm thấy vấn đề nào</h3>
@@ -115,7 +120,7 @@ export default function PageMyIssue() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {data?.data?.result.map((issue) => (
+            {listIssues?.data?.result.map((issue) => (
               <IssueCard
                 key={issue._id}
                 issue={issue}
@@ -128,13 +133,13 @@ export default function PageMyIssue() {
       </div>
 
       {/* Pagination */}
-      {data?.data?.meta && data.data.meta.totalItems > 0 && (
+      {listIssues?.data?.meta && listIssues.data.meta.totalItems > 0 && (
         <DataTablePagination
           meta={{
-            current: data.data.meta.current,
-            pageSize: data.data.meta.pageSize,
-            totalPages: data.data.meta.totalPages,
-            totalItems: data.data.meta.totalItems,
+            current: listIssues.data.meta.current,
+            pageSize: listIssues.data.meta.pageSize,
+            totalPages: listIssues.data.meta.totalPages,
+            totalItems: listIssues.data.meta.totalItems,
           }}
           onPageChange={onPageChange}
         />

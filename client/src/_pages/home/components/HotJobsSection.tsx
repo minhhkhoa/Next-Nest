@@ -8,15 +8,14 @@ import ListJobSkeleton from "@/components/skeletons/list-job";
 
 export default function HotJobsSection() {
   const [page, setPage] = useState(1);
-  const pageSize = 8;
-  const { data, isLoading } = useGetJobsFilterPublic({
+  const { data: listJobs, isLoading } = useGetJobsFilterPublic({
     currentPage: page,
-    pageSize,
+    pageSize: 8,
     isHot: "true",
   });
 
-  const jobs = data?.data?.result || [];
-  const meta = data?.data?.meta || {
+  const jobs = listJobs?.data?.result || [];
+  const meta = listJobs?.data?.meta || {
     current: 1,
     pageSize: 8,
     totalPages: 1,

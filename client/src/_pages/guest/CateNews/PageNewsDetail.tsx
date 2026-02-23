@@ -17,8 +17,10 @@ export default function PageNewsDetail({ slug }: { slug?: string }) {
   const [currentPage, setCurrentPage] = React.useState(1);
   const idNews = getIdFromSlugUrl(slug || "");
 
-  const { data } = useGetListCategories();
-  const restCategories = data?.data?.filter((item) => item._id !== idNews);
+  const { data: listCategories } = useGetListCategories();
+  const restCategories = listCategories?.data?.filter(
+    (item) => item._id !== idNews,
+  );
   const { data: news, isLoading } = useGetNewsById(idNews);
   const newsDetail = news?.data;
 

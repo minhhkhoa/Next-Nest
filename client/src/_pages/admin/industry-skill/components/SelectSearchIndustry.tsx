@@ -39,13 +39,13 @@ export default function SelectSearchIndustry({
   const [search, setSearch] = useState("");
   const [debouncedSearch] = useDebounce(search, 300);
 
-  const { data, isLoading } = useGetIndustryFilter({
+  const { data: industriesFilter, isLoading } = useGetIndustryFilter({
     currentPage: 1,
     pageSize: 100,
     name: debouncedSearch,
   });
 
-  const industries = data?.data?.result || [];
+  const industries = industriesFilter?.data?.result || [];
 
   //- ngành nghề được chọn khi edit
   const selectedLabel =

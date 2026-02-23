@@ -11,14 +11,14 @@ export default function BlockWrap({
   children: React.ReactNode;
 }>) {
   const { setUser, setLogin, isLogin } = useAppStore();
-  const { data } = useGetProfile(isLogin);
+  const { data: myProfile } = useGetProfile(isLogin);
 
   useEffect(() => {
-    if (data?.data?.user) {
-      setUser(data.data.user as UserResponseType);
+    if (myProfile?.data?.user) {
+      setUser(myProfile.data.user as UserResponseType);
       setLogin(true);
     }
-  }, [data, setUser, setLogin]);
+  }, [myProfile, setUser, setLogin]);
 
   return <>{children}</>;
 }
