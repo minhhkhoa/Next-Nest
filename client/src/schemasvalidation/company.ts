@@ -11,7 +11,15 @@ export const apiCompanyRes = z.object({
   status: z.string(),
   address: z.string(),
   description: MultiLang,
-  industryID: z.array(z.string()),
+  industryID: z.union([
+    z.array(z.string()),
+    z.array(
+      z.object({
+        _id: z.string(),
+        name: MultiLang,
+      }),
+    ),
+  ]),
   totalMember: z.string(),
   website: z.string(),
   logo: z.string(),

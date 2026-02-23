@@ -3,7 +3,7 @@
 import React from "react";
 import HotJobsSection from "./components/HotJobsSection";
 import JobsWithFilterSection from "./components/JobsWithFilterSection";
-import AD from "./components/ad";
+import { ADHorizontal } from "./components/ad";
 import SearchSection from "./components/SearchSection";
 import TopCompaniesSection from "./components/TopCompaniesSection";
 
@@ -13,17 +13,17 @@ export default function Home() {
       {/* Khối Hero & Search */}
       <SearchSection />
 
-      <AD />
+      <ADHorizontal />
 
       {/* Khối Công việc Nổi bật */}
       <HotJobsSection />
 
-      <AD />
+      <ADHorizontal />
 
       {/* Khối Việc làm Mới nhất & Lọc */}
       <JobsWithFilterSection />
 
-      <AD />
+      <ADHorizontal />
 
       {/* Khối Nhà tuyển dụng Hàng đầu */}
       <TopCompaniesSection />

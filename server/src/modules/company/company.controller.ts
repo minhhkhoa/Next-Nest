@@ -89,6 +89,7 @@ export class CompanyController {
     return this.companyService.findAllByFilter(query);
   }
 
+  @Public()
   @ResponseMessage('Lấy công ty theo id thành công')
   @ApiOperation({ summary: 'Get detail company by id' })
   @Get(':id')

@@ -320,15 +320,23 @@ export class JobsService {
         },
       ];
 
-      //- Lọc theo tên công ty (Sau khi Lookup)
+      //- Lọc theo tên công ty, mst, id (Sau khi Lookup)
       if (fieldCompany && fieldCompany !== null && fieldCompany !== '') {
         const searchRegex = new RegExp(fieldCompany, 'i');
+        const orConditions: any[] = [
+          { 'company.name': searchRegex },
+          { 'company.taxCode': searchRegex },
+        ];
+
+        if (mongoose.Types.ObjectId.isValid(fieldCompany)) {
+          orConditions.push({
+            'company._id': new mongoose.Types.ObjectId(fieldCompany),
+          });
+        }
+
         pipeline.push({
           $match: {
-            $or: [
-              { 'company.name': searchRegex },
-              { 'company.taxCode': searchRegex },
-            ],
+            $or: orConditions,
           },
         });
       }
