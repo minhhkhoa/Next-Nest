@@ -5,7 +5,7 @@ import {
   useGetListNewsDashboard,
 } from "@/queries/useNewsCategory";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   NewsHotType,

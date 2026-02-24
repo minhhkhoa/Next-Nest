@@ -11,7 +11,7 @@ import {
 } from "@/queries/useNewsCategory";
 import Image from "next/image";
 import React from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { NewsResFilterType } from "@/schemasvalidation/NewsCategory";
 import { Spinner } from "@/components/ui/spinner";
 import { ArrowRight, PenIcon } from "lucide-react";

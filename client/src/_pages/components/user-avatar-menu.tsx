@@ -14,11 +14,10 @@ import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/components/TanstackProvider";
 import { useLogoutMutation } from "@/queries/useAuth";
 import { handleInitName, removeTokensFromLocalStorage } from "@/lib/utils";
-import { useRouter } from "next/navigation";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import { envConfig } from "../../../config";
 import { allowedRoles } from "@/lib/constant";
-import Link from "next/link";
+import { Link, useRouter } from "@/i18n/navigation";
 
 export function UserAvatarMenu() {
   const { isLogin, setLogin, user } = useAppStore();

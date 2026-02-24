@@ -27,9 +27,8 @@ import {
 import { useTheme } from "next-themes";
 import { useLoginMutation } from "@/queries/useAuth";
 import { setAccessTokenToLocalStorage } from "@/lib/utils";
-import { useRouter } from "next/navigation";
 import { useAppStore } from "@/components/TanstackProvider";
-import Link from "next/link";
+import { Link, useRouter } from "@/i18n/navigation";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import { envConfig } from "../../../../config";
@@ -259,12 +258,12 @@ export default function LoginForm() {
       <CardFooter className="flex justify-center pb-2">
         <p className="text-sm text-muted-foreground">
           Bạn chưa có tài khoản?{" "}
-          <a
+          <Link
             href="/register"
             className="text-primary font-medium hover:underline"
           >
             Đăng ký ngay
-          </a>
+          </Link>
         </p>
       </CardFooter>
     </Card>

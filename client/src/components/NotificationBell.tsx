@@ -12,7 +12,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
-import { useRouter } from "next/navigation";
 import {
   useDeleteNotification,
   useGetCountUnread,
@@ -22,6 +21,7 @@ import {
 } from "@/queries/useNotification";
 import { handleNotificationNavigation } from "@/lib/utils";
 import { NotificationResType } from "@/schemasvalidation/notification";
+import { useRouter } from "@/i18n/navigation";
 
 export default function NotificationBell() {
   const router = useRouter();
@@ -32,7 +32,7 @@ export default function NotificationBell() {
   const { data: listRes, isLoading } = useGetNotificationsFilter({
     currentPage: 1,
     pageSize: 10,
-    isLogin
+    isLogin,
   });
 
   // 2. Các hành động (Mutations)

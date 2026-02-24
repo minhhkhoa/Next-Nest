@@ -15,7 +15,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { format } from "date-fns";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { generateSlugUrl } from "@/lib/utils";
 

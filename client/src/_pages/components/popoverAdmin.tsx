@@ -12,13 +12,12 @@ import { handleInitName, removeTokensFromLocalStorage } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { LogOut, Settings, User } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useLogoutMutation } from "@/queries/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQueryClient } from "@tanstack/react-query";
 import { useIsMobile } from "@/hooks/use-mobile";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
-import Link from "next/link";
+import { Link, useRouter } from "@/i18n/navigation";
 
 export default function PopoverAdmin() {
   const router = useRouter();

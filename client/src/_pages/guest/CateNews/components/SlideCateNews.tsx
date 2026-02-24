@@ -11,7 +11,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { generateSlugUrl } from "@/lib/utils";
 import { CategoryNewsResType } from "@/schemasvalidation/NewsCategory";
 

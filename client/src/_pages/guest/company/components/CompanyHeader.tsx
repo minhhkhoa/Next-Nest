@@ -5,7 +5,7 @@ import Image from "next/image";
 import { CompanyResType } from "@/schemasvalidation/company";
 import { Button } from "@/components/ui/button";
 import { Globe, Users, Plus } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useAppStore } from "@/components/TanstackProvider";
 
 interface CompanyHeaderProps {

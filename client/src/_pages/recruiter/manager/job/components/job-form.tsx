@@ -3,7 +3,6 @@
 import React, { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
 import {
   Form,
   FormControl,
@@ -29,6 +28,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { useGetCompanyDetail } from "@/queries/useCompany";
+import { useRouter } from "@/i18n/navigation";
 
 interface JobFormProps {
   initialData?: JobResType;

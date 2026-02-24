@@ -10,7 +10,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { NewsResFilterType } from "@/schemasvalidation/NewsCategory";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { PenIcon } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";

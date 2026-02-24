@@ -9,7 +9,7 @@ import { getCompanyColumns } from "../companyColumn";
 import { SearchBar } from "../../NewsCategory/components/search-bar";
 import TableCompany from "../tableCompany";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { ArrowLeft } from "lucide-react";
 
 const statusFilters = [

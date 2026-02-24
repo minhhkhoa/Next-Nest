@@ -12,7 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { UserResponseType } from "@/schemasvalidation/user";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 const PendingCompanyPage = ({ user }: { user: UserResponseType }) => {
   return (

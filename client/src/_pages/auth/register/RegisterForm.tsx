@@ -26,13 +26,13 @@ import {
 } from "@/components/ui/form";
 import { useTheme } from "next-themes";
 import { useRegisterMutation } from "@/queries/useAuth";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { setAccessTokenToLocalStorage } from "@/lib/utils";
 import { useAppStore } from "@/components/TanstackProvider";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import { envConfig } from "../../../../config";
+import { Link, useRouter } from "@/i18n/navigation";
 
 export default function RegisterForm() {
   const { setLogin } = useAppStore();
@@ -84,7 +84,7 @@ export default function RegisterForm() {
     const popup = window.open(
       `${envConfig.NEXT_PUBLIC_API_URL_SERVER}/auth/${provider}`,
       "SocialLogin",
-      `width=${width},height=${height},left=${left},top=${top}`
+      `width=${width},height=${height},left=${left},top=${top}`,
     );
 
     if (popup) {
@@ -256,9 +256,12 @@ export default function RegisterForm() {
       <CardFooter className="flex justify-center pb-2">
         <p className="text-sm text-muted-foreground">
           Bạn đã có tài khoản?{" "}
-          <a href="/login" className="text-primary font-medium hover:underline">
+          <Link
+            href="/login"
+            className="text-primary font-medium hover:underline"
+          >
             Đăng nhập ngay
-          </a>
+          </Link>
         </p>
       </CardFooter>
     </Card>

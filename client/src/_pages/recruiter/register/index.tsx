@@ -27,12 +27,11 @@ import {
   useLogoutMutation,
   useRecruiterRegisterMutation,
 } from "@/queries/useAuth";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAppStore } from "@/components/TanstackProvider";
 import { useQueryClient } from "@tanstack/react-query";
 import { removeTokensFromLocalStorage } from "@/lib/utils";
-import Link from "next/link";
+import { Link, useRouter } from "@/i18n/navigation";
 
 export default function RecruiterRegisterForm() {
   const { setLogin } = useAppStore();

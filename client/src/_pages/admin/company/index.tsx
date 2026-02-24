@@ -18,7 +18,7 @@ import TableCompany from "./tableCompany";
 import { useQueryFilter } from "@/hooks/useQueryFilter";
 import { CompanyDialogForm } from "./components/company-modal-form";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Popover } from "@radix-ui/react-popover";
 import { PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DeleteConfirmModal } from "../NewsCategory/components/modals/delete-confirm-modal";

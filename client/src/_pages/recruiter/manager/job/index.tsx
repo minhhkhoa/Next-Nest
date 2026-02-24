@@ -25,8 +25,8 @@ import {
   statusFilters,
 } from "@/_pages/admin/jobs/components/blockFiltersJob";
 import { SearchBar } from "@/_pages/admin/NewsCategory/components/search-bar";
-import { useRouter } from "next/navigation";
 import { useQueryFilter } from "@/hooks/useQueryFilter";
+import { useRouter } from "@/i18n/navigation";
 
 export default function RecruiterAdminJobsPage() {
   const { user } = useAppStore();

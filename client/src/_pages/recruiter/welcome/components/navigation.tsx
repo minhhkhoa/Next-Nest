@@ -2,9 +2,8 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { Link, useRouter } from "@/i18n/navigation";
 import { removeTokensFromLocalStorage } from "@/lib/utils";
-import { useRouter } from "next/navigation";
 import { useAppStore } from "@/components/TanstackProvider";
 import { useLogoutMutation } from "@/queries/useAuth";
 import { useQueryClient } from "@tanstack/react-query";

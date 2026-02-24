@@ -3,7 +3,7 @@
 import { useAppStore } from "@/components/TanstackProvider";
 import { Separator } from "@/components/ui/separator";
 import { ArrowRight } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import React from "react";
 import { envConfig } from "../../../config";
 import { Skeleton } from "@/components/ui/skeleton";

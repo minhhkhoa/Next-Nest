@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useGetRelatedJobs } from "@/queries/useJob";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, DollarSign } from "lucide-react";
 import Image from "next/image";

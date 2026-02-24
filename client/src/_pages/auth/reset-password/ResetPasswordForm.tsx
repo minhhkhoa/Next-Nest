@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/form";
 import { useSearchParams } from "next/navigation";
 import { useResetPassword, useValidateResetPassword } from "@/queries/useAuth";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 
 const resetPasswordSchema = z
