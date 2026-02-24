@@ -15,11 +15,14 @@ import { useAppStore } from "@/components/TanstackProvider";
 import { useLogoutMutation } from "@/queries/useAuth";
 import { handleInitName, removeTokensFromLocalStorage } from "@/lib/utils";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
-import { envConfig } from "../../../config";
+import { envConfig } from "../../config";
 import { allowedRoles } from "@/lib/constant";
 import { Link, useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 
 export function UserAvatarMenu() {
+  const t = useTranslations("Header.AvatarNavigate");
+
   const { isLogin, setLogin, user } = useAppStore();
   const router = useRouter();
   const { mutateAsync: mutationLogout } = useLogoutMutation();
@@ -84,33 +87,33 @@ export function UserAvatarMenu() {
 
         {/* Phần Quản lý */}
         <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground">
-          Quản lý
+          {t("Manager.Title")}
         </DropdownMenuLabel>
         {allowedRoles.includes(roleName) && (
           <DropdownMenuItem onClick={onManageClick} className="cursor-pointer">
             <LayoutDashboard className="mr-2 h-4 w-4" />
-            <span>Trang quản lý</span>
+            <span>{t("Manager.PageManager")}</span>
           </DropdownMenuItem>
         )}
         <DropdownMenuItem className="cursor-pointer">
           <User className="mr-2 h-4 w-4" />
-          <Link href="/profile">Hồ sơ cá nhân</Link>
+          <Link href="/profile">{t("Manager.MyProfile")}</Link>
         </DropdownMenuItem>
 
         <DropdownMenuItem className="cursor-pointer">
           <Folder className="mr-2 h-4 w-4" />
-          <Link href="/my-cv">My Cv</Link>
+          <Link href="/my-cv">{t("Manager.MyCv")}</Link>
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
 
         {/* Phần Cài đặt */}
         <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground">
-          Cài đặt
+          {t("Setting.Title")}
         </DropdownMenuLabel>
         <DropdownMenuItem className="cursor-pointer">
           <Settings className="mr-2 h-4 w-4" />
-          <Link href={"/settings"}>Cài đặt tài khoản</Link>
+          <Link href={"/settings"}>{t("Setting.AccountSetting")}</Link>
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
@@ -122,7 +125,7 @@ export function UserAvatarMenu() {
             className="cursor-pointer text-destructive focus:text-destructive"
           >
             <LogOut className="mr-2 h-4 w-4" />
-            <span>Đăng xuất</span>
+            <span>{t("Logout")}</span>
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>

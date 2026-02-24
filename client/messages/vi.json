@@ -3,8 +3,48 @@
     "NavigateHeader": {
       "Home": "Trang chủ",
       "Jobs": "Việc làm",
-      "CreateCv": "Tạo CV",
-      "Career": "Hành trang nghề nghiệp"
+      "CreateCv": {
+        "Title": "Tạo CV",
+        "Item1": {
+          "Title": "Xem các mẫu Cv",
+          "Description": "Duyệt qua các mẫu cv chuyên nghiệp của chúng tôi."
+        },
+        "Item2": {
+          "Title": "Cv cho lập trình viên",
+          "Description": "Mẫu Cv được thiết kế đặc biệt cho các lập trình viên"
+        },
+        "Item3": {
+          "Title": "Cv cho kế toán",
+          "Description": "Mẫu Cv được thiết kế đặc biệt cho các kế toán."
+        }
+      },
+      "Career": "Hành trang nghề nghiệp",
+      "SheetButton": "Đăng tin tuyển dụng"
+    },
+    "Bell": {
+      "Title": "Thông báo",
+      "MarkAllAsRead": "Đánh dấu tất cả là đã đọc",
+      "NoNotifications": "Bạn chưa có thông báo nào",
+      "ViewAll": "Xem tất cả thông báo"
+    },
+
+    "AvatarNavigate": {
+      "Manager": {
+        "Title": "Quản lý",
+        "PageManager": "Trang quản lý",
+        "MyProfile": "Hồ sơ cá nhân",
+        "MyCv": "CV của tôi"
+      },
+      "Setting": {
+        "Title": "Cài đặt",
+        "AccountSetting": "Cài đặt tài khoản"
+      },
+      "Logout": "Đăng xuất"
+    },
+
+    "SwitchLanguage": {
+      "English": "Tiếng Anh",
+      "Vietnamese": "Tiếng Việt"
     }
   },
   "Footer": {

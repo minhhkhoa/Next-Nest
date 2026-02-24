@@ -3,8 +3,47 @@
     "NavigateHeader": {
       "Home": "Home",
       "Jobs": "Jobs",
-      "CreateCv": "Create CV",
-      "Career": "Professional luggage"
+      "CreateCv": {
+        "Title": "Create CV",
+        "Item1": {
+          "Title": "Explore CV Templates",
+          "Description": "Browse through our collection of professional CV templates."
+        },
+        "Item2": {
+          "Title": "CV for Developers",
+          "Description": "CV templates specifically designed for developers."
+        },
+        "Item3": {
+          "Title": "CV for Accountant",
+          "Description": "CV templates specifically designed for accountants."
+        }
+      },
+      "Career": "Professional luggage",
+      "SheetButton": "Post a job"
+    },
+    "Bell": {
+      "Title": "Notifications",
+      "MarkAllAsRead": "Mark all as read",
+      "NoNotifications": "You have no notifications",
+      "ViewAll": "View all notifications"
+    },
+    "AvatarNavigate": {
+      "Manager": {
+        "Title": "Manager",
+        "PageManager": "Page Manager",
+        "MyProfile": "My Profile",
+        "MyCv": "My CV"
+      },
+      "Setting": {
+        "Title": "Setting",
+        "AccountSetting": "Account Setting"
+      },
+      "Logout": "Logout"
+    },
+
+    "SwitchLanguage": {
+      "English": "English",
+      "Vietnamese": "Vietnamese"
     }
   },
   "Footer": {

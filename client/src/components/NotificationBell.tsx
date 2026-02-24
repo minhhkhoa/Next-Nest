@@ -22,8 +22,11 @@ import {
 import { handleNotificationNavigation } from "@/lib/utils";
 import { NotificationResType } from "@/schemasvalidation/notification";
 import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 
 export default function NotificationBell() {
+
+  const t = useTranslations("Header.Bell");
   const router = useRouter();
   const { isLogin } = useAppStore();
 
@@ -67,7 +70,7 @@ export default function NotificationBell() {
 
       <PopoverContent className="w-[380px] p-0" align="end">
         <div className="flex items-center justify-between border-b p-4">
-          <h4 className="font-bold text-lg">Thông báo</h4>
+          <h4 className="font-bold text-lg">{t("Title")}</h4>
           <Button
             variant="ghost"
             size="sm"
@@ -75,7 +78,7 @@ export default function NotificationBell() {
             onClick={() => markAllReadMutation.mutate()}
             disabled={unreadCount === 0 || markAllReadMutation.isPending}
           >
-            <CheckCheck className="mr-1 h-3 w-3" /> Đánh dấu tất cả đã đọc
+            <CheckCheck className="mr-1 h-3 w-3" /> {t("MarkAllAsRead")}
           </Button>
         </div>
 
@@ -131,7 +134,7 @@ export default function NotificationBell() {
           ) : (
             <div className="flex h-40 flex-col items-center justify-center text-muted-foreground">
               <Bell className="h-10 w-10 mb-2 opacity-20" />
-              <p className="text-sm">Bạn chưa có thông báo nào</p>
+              <p className="text-sm">{t("NoNotifications")}</p>
             </div>
           )}
         </ScrollArea>
@@ -143,7 +146,7 @@ export default function NotificationBell() {
             className="w-full text-xs"
             onClick={() => router.push("/admin/notifications")}
           >
-            Xem tất cả thông báo
+            {t("ViewAll")}
           </Button>
         </div>
       </PopoverContent>

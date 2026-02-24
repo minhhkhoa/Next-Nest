@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { useGetListCategories } from "@/queries/useNewsCategory";
 import { generateSlugUrl } from "@/lib/utils";
 import { useAppStore } from "./TanstackProvider";
+import { useTranslations } from "next-intl";
 
 const components: { title: string; href: string; description: string }[] = [
   {
@@ -57,6 +58,8 @@ const components: { title: string; href: string; description: string }[] = [
 ];
 
 export default function NavigationHeaderMenu() {
+
+  const t = useTranslations("Header.NavigateHeader");
   const isMobile = useIsMobile();
   const { isLogin } = useAppStore();
 
@@ -71,12 +74,12 @@ export default function NavigationHeaderMenu() {
               asChild
               className={navigationMenuTriggerStyle()}
             >
-              <Link href="/">Trang chủ</Link>
+              <Link href="/">{t("Home")}</Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
 
           <NavigationMenuItem>
-            <NavigationMenuTrigger>Việc làm</NavigationMenuTrigger>
+            <NavigationMenuTrigger>{t("Jobs")}</NavigationMenuTrigger>
             <NavigationMenuContent>
               <ul className="grid gap-2 sm:w-[400px] md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                 {components.map((component) => (
@@ -95,32 +98,32 @@ export default function NavigationHeaderMenu() {
           {isLogin && (
             <NavigationMenuItem>
               <NavigationMenuTrigger>
-                <Link href="/cv-templates">Tạo cv</Link>
+                <Link href="/cv-templates">{t("CreateCv.Title")}</Link>
               </NavigationMenuTrigger>
               <NavigationMenuContent>
                 <ul className="grid w-[300px] gap-4">
                   <li>
                     <NavigationMenuLink asChild>
                       <Link href="/cv-templates">
-                        <div className="font-medium">Xem các mẫu cv</div>
+                        <div className="font-medium">{t("CreateCv.Item1.Title")}</div>
                         <div className="text-muted-foreground">
-                          Duyệt qua các mẫu CV chuyên nghiệp của chúng tôi.
+                          {t("CreateCv.Item1.Description")}
                         </div>
                       </Link>
                     </NavigationMenuLink>
                     <NavigationMenuLink asChild>
                       <Link href="/cv-templates">
-                        <div className="font-medium">Cv cho lập trình viên</div>
+                        <div className="font-medium">{t("CreateCv.Item2.Title")}</div>
                         <div className="text-muted-foreground">
-                          Mẫu CV được thiết kế đặc biệt cho các lập trình viên.
+                          {t("CreateCv.Item2.Description")}
                         </div>
                       </Link>
                     </NavigationMenuLink>
                     <NavigationMenuLink asChild>
                       <Link href="/cv-templates">
-                        <div className="font-medium">Cv cho kế toán</div>
+                        <div className="font-medium">{t("CreateCv.Item3.Title")}</div>
                         <div className="text-muted-foreground">
-                          Mẫu CV được thiết kế đặc biệt cho các kế toán.
+                          {t("CreateCv.Item3.Description")}
                         </div>
                       </Link>
                     </NavigationMenuLink>
@@ -132,7 +135,7 @@ export default function NavigationHeaderMenu() {
 
           <NavigationMenuItem>
             <NavigationMenuTrigger>
-              <Link href="/cate-news">Hành trang nghề nghiệp</Link>
+              <Link href="/cate-news">{t("Career")}</Link>
             </NavigationMenuTrigger>
             <NavigationMenuContent>
               <ul className="grid w-[200px]">

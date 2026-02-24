@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import AppLogo from "./AppLogo";
+import AppLogo from "../../components/AppLogo";
 import UserSection from "./UserSection";
-import { UserAvatarMenu } from "./user-avatar-menu";
+import { UserAvatarMenu } from "../../components/user-avatar-menu";
 import { ModeToggle } from "@/components/ModeToggle";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import NavigationHeaderMenu from "@/components/NavigationHeader";
