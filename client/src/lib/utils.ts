@@ -245,3 +245,15 @@ export const getRoleRecruiter = () => {
 export const getRoleCandidate = () => {
   return envConfig.NEXT_PUBLIC_ROLE_CANDIDATE;
 };
+
+/**
+ * Kiểm tra chuỗi có phải là MongoDB ObjectId hợp lệ hay không
+ * @param id Chuỗi cần kiểm tra
+ */
+export const isValidObjectId = (id: string): boolean => {
+  // Regex: 24 ký tự hex (0-9, a-f)
+  const objectIdRegex = /^[0-9a-fA-F]{24}$/;
+
+  // Trả về true nếu khớp, ngược lại false
+  return objectIdRegex.test(id);
+};

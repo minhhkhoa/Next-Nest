@@ -16,18 +16,21 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ADHorizontal, ADVertical } from "@/_pages/home/components/ad";
+import { useGetLang } from "@/hooks/use-get-lang";
 
 interface CompanyInfoProps {
   company: CompanyResType;
 }
 
 export default function CompanyInfo({ company }: CompanyInfoProps) {
+  const { getLang } = useGetLang();
+
   const industries = Array.isArray(company.industryID)
     ? company.industryID
     : [];
 
   const [isExpanded, setIsExpanded] = useState(false);
-  const description = company.description.vi || company.description.en || "";
+  const description = getLang(company.description) || "";
   const shouldTruncate = description.length > 500;
 
   return (
@@ -99,7 +102,7 @@ export default function CompanyInfo({ company }: CompanyInfoProps) {
                     >
                       {typeof industry === "string"
                         ? industry
-                        : industry.name.vi || industry.name.en}
+                        : getLang(industry.name)}
                     </Badge>
                   ))}
                 </div>

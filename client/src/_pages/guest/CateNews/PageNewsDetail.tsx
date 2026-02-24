@@ -1,6 +1,8 @@
 "use client";
 
-import { formatDateInput, getIdFromSlugUrl } from "@/lib/utils";
+import {
+  formatDateInput,
+} from "@/lib/utils";
 import {
   useGetListCategories,
   useGetListNewsFilter,
@@ -10,18 +12,20 @@ import Image from "next/image";
 import React from "react";
 import SlideCateNews from "./components/SlideCateNews";
 import { Spinner } from "@/components/ui/spinner";
-import styles from "@/app/bootstrap.module.css";
+import styles from "@/app/[locale]/bootstrap.module.css";
 import BlockNewsWithPagination from "./components/BlockNewsWithPagination";
+import { useGetLang } from "@/hooks/use-get-lang";
 
-export default function PageNewsDetail({ slug }: { slug?: string }) {
+export default function PageNewsDetail({ idNews }: { idNews: string }) {
+  const { getLang } = useGetLang();
   const [currentPage, setCurrentPage] = React.useState(1);
-  const idNews = getIdFromSlugUrl(slug || "");
 
   const { data: listCategories } = useGetListCategories();
   const restCategories = listCategories?.data?.filter(
     (item) => item._id !== idNews,
   );
-  const { data: news, isLoading } = useGetNewsById(idNews);
+  const { data: news, isLoading, error } = useGetNewsById(idNews);
+
   const newsDetail = news?.data;
 
   const idCateNewsDetail = newsDetail?.cateNewsID[0]._id;
@@ -35,10 +39,18 @@ export default function PageNewsDetail({ slug }: { slug?: string }) {
     },
   );
 
-  if (!newsDetail) {
+  if (error) {
     return (
       <div className="w-full flex justify-center items-center h-[300px]">
         <p className="text-gray-500">Không tìm thấy bài viết</p>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="w-full flex justify-center items-center h-[300px]">
+        <Spinner />
       </div>
     );
   }
@@ -71,9 +83,9 @@ export default function PageNewsDetail({ slug }: { slug?: string }) {
         ) : (
           <div className="boder rounded-2xl p-3 max-w-[850px] flex flex-col gap-3">
             <p className="text-2xl md:text-4xl font-bold text-primary">
-              {newsDetail?.title.vi}
+              {getLang(newsDetail?.title)}
             </p>
-            <p>{newsDetail?.cateNewsID[0].name.vi}</p>
+            <p>{getLang(newsDetail?.cateNewsID[0].name)}</p>
             <p className="text-xs md:text-sm text-gray-500 mb-3 flex items-center gap-1">
               Tác giả: {newsDetail?.createdBy.name} •{" "}
               {formatDateInput(newsDetail?.createdAt.toString() || "")}

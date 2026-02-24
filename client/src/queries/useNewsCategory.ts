@@ -5,7 +5,9 @@ import {
 import {
   CateNewsCreateType,
   NewsCreateType,
+  NewsResType,
 } from "@/schemasvalidation/NewsCategory";
+import { ApiResponse } from "@/types/apiResponse";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 //- category News

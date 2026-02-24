@@ -13,12 +13,14 @@ import { vi } from "date-fns/locale";
 import DataTablePagination from "@/components/DataTablePagination";
 import ListJobSkeleton from "@/components/skeletons/list-job";
 import { generateSlugUrl } from "@/lib/utils";
+import { useGetLang } from "@/hooks/use-get-lang";
 
 interface CompanyJobsProps {
   companyId: string;
 }
 
 export default function CompanyJobs({ companyId }: CompanyJobsProps) {
+  const { getLang } = useGetLang();
   const [currentPage, setCurrentPage] = useState(1);
   const { data: jobsData, isLoading } = useGetJobsFilterPublic({
     currentPage: currentPage,
@@ -45,7 +47,7 @@ export default function CompanyJobs({ companyId }: CompanyJobsProps) {
         {jobs.map((job) => (
           <Link
             href={`/jobs/${generateSlugUrl({
-              name: job.slug.vi,
+              name: getLang(job.slug),
               id: job._id,
             })}`}
             key={job._id}
@@ -69,7 +71,7 @@ export default function CompanyJobs({ companyId }: CompanyJobsProps) {
                   <div className="flex-1 flex flex-col md:flex-row justify-between gap-4">
                     <div className="flex-1 space-y-2">
                       <h3 className="text-xl font-bold group-hover:text-primary transition-colors line-clamp-1">
-                        {job.title?.vi || job.title?.en}
+                        {getLang(job.title)}
                       </h3>
 
                       <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">

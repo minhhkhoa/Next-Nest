@@ -1,6 +1,5 @@
 "use client";
 
-import { getIdFromSlugUrl } from "@/lib/utils";
 import { useGetCompanyDetail } from "@/queries/useCompany";
 import React from "react";
 import CompanyHeader from "./components/CompanyHeader";
@@ -8,19 +7,14 @@ import CompanyInfo from "./components/CompanyInfo";
 import CompanyJobs from "./components/CompanyJobs";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function PageDetailCompany({
-  companyId,
-}: {
-  companyId: string;
-}) {
-  const idCompany = getIdFromSlugUrl(companyId);
+export default function PageDetailCompany({ idCompany }: { idCompany: string }) {
   const {
     data: companyData,
-    isLoading,
-    error,
+    isLoading: isLoadingCompanyData,
+    error: errorCompanyData
   } = useGetCompanyDetail(idCompany);
 
-  if (isLoading) {
+  if (isLoadingCompanyData) {
     return (
       <div className="container mx-auto px-4 py-8 space-y-8">
         <Skeleton className="w-full h-[300px] rounded-lg" />
@@ -37,7 +31,7 @@ export default function PageDetailCompany({
     );
   }
 
-  if (error || !companyData?.data) {
+  if (errorCompanyData || !companyData?.data) {
     return (
       <div className="container mx-auto px-4 py-20 text-center">
         Không tìm thấy thông tin công ty

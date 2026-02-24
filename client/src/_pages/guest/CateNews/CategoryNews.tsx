@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  generateSlugUrl,
-  getIdFromSlugUrl,
-} from "@/lib/utils";
+import { generateSlugUrl } from "@/lib/utils";
 import {
   useGetCategoryById,
   useGetListCategories,
@@ -18,30 +15,63 @@ import { ArrowRight, PenIcon } from "lucide-react";
 import SlideCateNews from "./components/SlideCateNews";
 import BlockNewsWithPagination from "./components/BlockNewsWithPagination";
 
-export default function CategoryNewsPage({ slug }: { slug?: string }) {
-  const idCateNews = getIdFromSlugUrl(slug || "");
-  const { data: categoryData } = useGetCategoryById(idCateNews);
-  const { data } = useGetListCategories();
+export default function CategoryNewsPage({
+  idCateNews,
+}: {
+  idCateNews: string;
+}) {
+  const {
+    data: categoryData,
+    isLoading: isLoadingCategoryData,
+    error: errorCategoryData,
+  } = useGetCategoryById(idCateNews);
+  const {
+    data,
+    isLoading: isLoadingListCategories,
+    error: errorListCategories,
+  } = useGetListCategories();
   const [currentPage, setCurrentPage] = React.useState(1);
   const onPageChange = (page: number) => {
     setCurrentPage(page);
   };
-  const { data: listNews, isLoading: isLoadingListNews } = useGetListNewsFilter(
-    {
-      currentPage: currentPage,
-      pageSize: 6,
-      cateNewsID: idCateNews,
-      status: "active",
-    }
-  );
+  const {
+    data: listNews,
+    isLoading: isLoadingListNews,
+    error: errorListNews,
+  } = useGetListNewsFilter({
+    currentPage: currentPage,
+    pageSize: 6,
+    cateNewsID: idCateNews,
+    status: "active",
+  });
 
   //- do mình lười ko viết api lấy tin tức nổi bật nên call lại 1 api 2 lần tách ra để nó không bị hiện UI spin (ở tin tức nổi bật) khi change pagination của danh sách tin tức
-  const { data: listNews2 } = useGetListNewsFilter({
+  const {
+    data: listNews2,
+    isLoading,
+    error,
+  } = useGetListNewsFilter({
     currentPage: 1, //- ko phu thuoc vao state
     pageSize: 5,
     cateNewsID: idCateNews,
     status: "active",
   });
+
+  if (error || errorListNews || errorCategoryData || errorListCategories) {
+    return (
+      <div className="w-full flex justify-center items-center h-[300px]">
+        <p className="text-gray-500">Không tìm thấy bài viết</p>
+      </div>
+    );
+  }
+
+  if (isLoading || isLoadingCategoryData || isLoadingListCategories) {
+    return (
+      <div className="w-full flex justify-center items-center h-[300px]">
+        <Spinner />
+      </div>
+    );
+  }
   const totalPages = listNews?.data?.meta?.totalPages || 1;
   const current = listNews?.data?.meta?.current || 1;
   const restCategories = data?.data?.filter((item) => item._id !== idCateNews);
@@ -138,15 +168,15 @@ function BlockNewsNice({
         <div className="flex flex-col rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 bg-white border border-gray-100">
           <Link
             href={`/news/${generateSlugUrl({
-              name: firstNews.slugNews.vi,
-              id: firstNews._id,
+              name: firstNews?.slugNews.vi,
+              id: firstNews?._id,
             })}`}
             className="flex-1 flex flex-col"
           >
             <div className="relative overflow-hidden bg-slate-200 h-64 md:h-72 lg:h-80">
               <Image
-                src={firstNews.image || "/placeholder.svg"}
-                alt={firstNews.title.vi}
+                src={firstNews?.image || "/placeholder.svg"}
+                alt={firstNews?.title.vi || "Tin tức nổi bật"}
                 fill
                 className="object-cover w-full h-full transform transition-transform duration-300 hover:scale-110"
               />
@@ -155,17 +185,17 @@ function BlockNewsNice({
             {/* Content Section */}
             <div className="p-4 md:p-6 flex flex-col flex-1 bg-white">
               <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 line-clamp-3 mb-3 hover:text-primary transition-colors">
-                {firstNews.title.vi}
+                {firstNews?.title.vi}
               </h3>
 
               <p className="text-xs md:text-sm text-gray-500 mb-3 flex items-center gap-1">
                 <PenIcon className="inline-block w-3 h-3 md:w-4 md:h-4 mr-1 mb-0.5" />
-                {firstNews.createdBy.name} •{" "}
-                {formatDateInput(firstNews.createdAt)}
+                {firstNews?.createdBy.name} •{" "}
+                {formatDateInput(firstNews?.createdAt)}
               </p>
 
               <p className="text-sm md:text-base text-gray-700 line-clamp-2 mb-4 flex-1">
-                {firstNews.summary.vi}
+                {firstNews?.summary.vi}
               </p>
 
               <div className="flex items-center gap-1 text-primary font-semibold hover:gap-2 transition-all text-sm md:text-base">
@@ -178,7 +208,7 @@ function BlockNewsNice({
 
         {/* Block Right - News List */}
         <div className="flex flex-col gap-3 md:gap-4">
-          {restNews.map((newsItem) => (
+          {restNews?.map((newsItem) => (
             <Link
               key={newsItem._id}
               href={`/news/${generateSlugUrl({

@@ -6,6 +6,7 @@ import { MapPin, DollarSign, Clock } from "lucide-react";
 import { JobResType } from "@/schemasvalidation/job";
 import { generateSlugUrl } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { useGetLang } from "@/hooks/use-get-lang";
 import {
   Card,
   CardContent,
@@ -18,6 +19,8 @@ interface JobCardProps {
 }
 
 export default function JobCard({ job }: JobCardProps) {
+  const { getLang } = useGetLang();
+
   const getSalaryText = (min: number, max: number, currency: string) => {
     if (min === 0 && max === 0) return "Thỏa thuận";
     return `${min.toLocaleString()} - ${max.toLocaleString()} ${currency}`;
@@ -43,16 +46,16 @@ export default function JobCard({ job }: JobCardProps) {
         <div className="flex-1 overflow-hidden">
           <Link
             href={`/jobs/${generateSlugUrl({
-              name: job.slug.vi || job.title.vi,
+              name: getLang(job.slug) || getLang(job.title),
               id: job._id,
             })}`}
             className="hover:text-primary transition-colors block mb-1"
           >
             <h3
               className="font-bold text-base leading-tight line-clamp-2"
-              title={job.title?.vi}
+              title={getLang(job.title)}
             >
-              {job.title?.vi}
+              {getLang(job.title)}
             </h3>
           </Link>
           <p
@@ -101,7 +104,7 @@ export default function JobCard({ job }: JobCardProps) {
                 variant="secondary"
                 className="font-normal text-xs bg-secondary text-secondary-foreground hover:bg-secondary/80"
               >
-                {skill.name?.vi || skill.name?.en}
+                {getLang(skill.name)}
               </Badge>
             ))}
           {job.skills && job.skills.length > 3 && (

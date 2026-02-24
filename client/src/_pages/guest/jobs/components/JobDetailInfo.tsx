@@ -1,4 +1,4 @@
-import React from "react";
+import React, { use } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import { format } from "date-fns";
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { generateSlugUrl } from "@/lib/utils";
+import { useGetLang } from "@/hooks/use-get-lang";
 
 interface JobDetailInfoProps {
   job: JobResType;
@@ -44,6 +45,8 @@ function InfoItem({
 }
 
 export default function JobDetailInfo({ job }: JobDetailInfoProps) {
+  const { getLang } = useGetLang();
+
   return (
     <div className="space-y-6">
       {/* Header Section */}
@@ -66,7 +69,7 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
 
             <div className="flex-1 space-y-3">
               <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-                {job.title.vi}
+                {getLang(job.title)}
               </h1>
               <div className="text-lg font-medium text-muted-foreground">
                 {job.company?.name}
@@ -116,7 +119,7 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
                 <div
                   className="prose max-w-none text-muted-foreground dark:prose-invert"
                   dangerouslySetInnerHTML={{
-                    __html: job.description.vi || job.description.en,
+                    __html: getLang(job.description) || "",
                   }}
                 />
               </div>
@@ -154,7 +157,9 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
                     {job.company.address && (
                       <div className="flex items-start gap-2 text-sm text-muted-foreground">
                         <MapPin className="w-4 h-4 mt-1 flex-shrink-0" />
-                        <span className="line-clamp-2">{job.company.address}</span>
+                        <span className="line-clamp-2">
+                          {job.company.address}
+                        </span>
                       </div>
                     )}
                     {job.company.website && (
@@ -174,7 +179,7 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
                 </div>
                 {/* Short description */}
                 <div className="text-muted-foreground text-sm line-clamp-4">
-                  {job.company.description?.vi || job.company.description?.en}
+                  {getLang(job.company.description)}
                 </div>
                 <Link
                   href={`/company/${generateSlugUrl({
@@ -231,7 +236,7 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
                       variant="outline"
                       className="font-normal bg-muted text-muted-foreground"
                     >
-                      {typeof skill === "object" ? skill.name.vi : skill}
+                      {typeof skill === "object" ? getLang(skill.name) : skill}
                     </Badge>
                   ))}
                   {job.otherSkills &&

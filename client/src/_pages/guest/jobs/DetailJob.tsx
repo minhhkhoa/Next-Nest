@@ -8,16 +8,18 @@ import RelatedJobs from "./components/RelatedJobs";
 import { ADHorizontal } from "@/_pages/home/components/ad";
 import DetailJobSkeleton from "@/components/skeletons/DetailJob";
 
-export default function PageDetailJob({ jobId }: { jobId: string }) {
-  const idJob = getIdFromSlugUrl(jobId);
+export default function PageDetailJob({ idJob }: { idJob: string }) {
+  const {
+    data: jobDetail,
+    isLoading: isLoadingJobDetail,
+    error: errorJobDetail,
+  } = useGetJobDetail(idJob);
 
-  const { data: jobDetail, isLoading, error } = useGetJobDetail(idJob);
-
-  if (isLoading) {
+  if (isLoadingJobDetail) {
     return <DetailJobSkeleton />;
   }
 
-  if (error || !jobDetail?.data) {
+  if (errorJobDetail || !jobDetail?.data) {
     return (
       <div className="container mx-auto py-8 text-center">
         <h1 className="text-2xl font-bold text-red-500">
