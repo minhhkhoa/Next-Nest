@@ -5,6 +5,7 @@ import AppLogo from "./AppLogo";
 import UserSection from "./UserSection";
 import { UserAvatarMenu } from "./user-avatar-menu";
 import { ModeToggle } from "@/components/ModeToggle";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import NavigationHeaderMenu from "@/components/NavigationHeader";
 import SheetMobile from "./SheetMobile";
 import NotificationBell from "@/components/NotificationBell";
@@ -55,6 +56,8 @@ export default function HeaderClient() {
           {isLogin && <NotificationBell />}
           {!isLogin && <UserSection />}
           {isLogin && <UserAvatarMenu />}
+
+          <LanguageSwitcher />
           <ModeToggle />
 
           {isLogin && <SectionRecruiter />}

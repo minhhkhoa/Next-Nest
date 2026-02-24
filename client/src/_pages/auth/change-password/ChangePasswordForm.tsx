@@ -66,12 +66,12 @@ export default function ChangePasswordForm() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Đổi mật khẩu</CardTitle>
+        <CardTitle className="pt-2">Đổi mật khẩu</CardTitle>
         <CardDescription>
           Cập nhật mật khẩu của bạn để bảo mật tài khoản
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pb-2">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
