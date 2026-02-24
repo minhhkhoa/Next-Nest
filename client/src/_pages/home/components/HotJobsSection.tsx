@@ -5,8 +5,11 @@ import { useGetJobsFilterPublic } from "@/queries/useJob";
 import JobCard from "./JobCard";
 import DataTablePagination from "@/components/DataTablePagination";
 import ListJobSkeleton from "@/components/skeletons/list-job";
+import { useTranslations } from "next-intl";
 
 export default function HotJobsSection() {
+  const t = useTranslations("PageHome.HotJobsSection");
+
   const [page, setPage] = useState(1);
   const { data: listJobs, isLoading } = useGetJobsFilterPublic({
     currentPage: page,
@@ -27,10 +30,10 @@ export default function HotJobsSection() {
       <div className="container mx-auto">
         <div className="flex flex-col gap-3 mb-10">
           <h2 className="text-3xl font-bold text-primary relative pl-4 border-l-4 border-primary">
-            Công việc nổi bật
+            {t("Title")}
           </h2>
           <p className="text-muted-foreground">
-            Những cơ hội nghề nghiệp hấp dẫn đang chờ đón bạn
+            {t("Description")}
           </p>
         </div>
 
@@ -53,7 +56,7 @@ export default function HotJobsSection() {
           </>
         ) : (
           <div className="text-center py-12 text-muted-foreground">
-            Không tìm thấy công việc nổi bật nào.
+            {t("NoJobsFound")}
           </div>
         )}
       </div>

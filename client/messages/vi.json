@@ -86,5 +86,51 @@
       "address": "123 Đường Tuyển Dụng, Hà Nội, Việt Nam"
     },
     "copyright": "© 2025 JobHub. Tất cả quyền được bảo lưu."
+  },
+
+  "PageHome": {
+    "SearchSection": {
+      "Title1": "Tìm kiếm công việc mơ ước của bạn",
+      "Title2": " với hàng nghìn cơ hội hấp dẫn",
+      "Description": "Khám phá cơ hội nghề nghiệp tốt nhất từ các công ty hàng đầu. Kết nối với nhà tuyển dụng uy tín và phát triển sự nghiệp của bạn ngay hôm nay.",
+      "BlockFilter": {
+        "Search": "Tìm kiếm ...",
+        "Industry": "Ngành nghề",
+        "Location": "Địa điểm",
+        "SearchButton": "Tìm kiếm",
+        "NoData": "Không có dữ liệu",
+        "PlaceholderLocation": "Tìm địa điểm...",
+        "LocationAll": "Tất cả địa điểm"
+      },
+      "PopularSearch": "Tìm kiếm phổ biến: "
+    },
+    "AD": {
+      "Title": "Tuyển Dụng Nhanh",
+      "Description": "Đẩy tin tuyển dụng của bạn lên top để tiếp cận hàng ngàn ứng viên tiềm năng",
+      "Button": "Đăng tin ngay"
+    },
+
+    "HotJobsSection": {
+      "Title": "Công việc nổi bật",
+      "Description": "Những cơ hội nghề nghiệp hấp dẫn đang chờ đón bạn",
+      "NoJobsFound": "Không tìm thấy công việc nổi bật nào."
+    },
+
+    "JobsWithFilterSection":{
+      "Title": "Việc làm mới nhất",
+      "Description": "Cập nhật liên tục các cơ hội nghề nghiệp mới nhất",
+      "PlaceholderSearch": "Tìm kiếm công việc ...",
+      "PlaceholderLocation": "Tìm địa điểm ...",
+      "LevelAll": "Tất cả cấp bậc",
+      "LocationAll": "Tất cả địa điểm",
+      "NoLocation": "Không có dữ liệu địa điểm",
+      "NoJobsFound": "Không tìm thấy công việc nào."
+    },
+
+    "TopCompaniesSection": {
+      "Title": "Công ty hàng đầu",
+      "Description": "Khám phá các công ty hàng đầu đang tuyển dụng",
+      "ViewAll": "Xem tất cả"
+    }
   }
 }

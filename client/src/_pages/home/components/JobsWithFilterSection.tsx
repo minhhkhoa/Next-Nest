@@ -31,8 +31,11 @@ import { useDebounce } from "use-debounce";
 import ListJobSkeleton from "@/components/skeletons/list-job";
 import { ADDRESS_OPTIONS, LEVEL_OPTIONS } from "@/lib/constant";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 export default function JobsWithFilterSection() {
+  const t = useTranslations("PageHome.JobsWithFilterSection");
+
   const [page, setPage] = useState(1);
   const [openLocation, setOpenLocation] = useState(false);
 
@@ -65,11 +68,9 @@ export default function JobsWithFilterSection() {
         <div className="flex flex-col md:flex-row justify-between items-end md:items-center mb-8 gap-4">
           <div>
             <h2 className="text-3xl font-bold text-primary mb-2 pl-4 border-l-4 border-primary">
-              Việc làm mới nhất
+              {t("Title")}
             </h2>
-            <p className="text-muted-foreground">
-              Cập nhật liên tục các cơ hội nghề nghiệp mới nhất
-            </p>
+            <p className="text-muted-foreground">{t("Description")}</p>
           </div>
 
           {/* Filter Bar */}
@@ -77,7 +78,7 @@ export default function JobsWithFilterSection() {
             <div className="relative min-w-[200px] flex-1 md:flex-none">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Tìm theo tên..."
+                placeholder={t("PlaceholderSearch")}
                 className="pl-9 pr-8 bg-background"
                 value={keyword}
                 onChange={(e) => {
@@ -109,7 +110,7 @@ export default function JobsWithFilterSection() {
                     className="w-full md:w-[200px] justify-between bg-background font-normal"
                   >
                     {location === "all"
-                      ? "Tất cả địa điểm"
+                      ? t("LocationAll")
                       : ADDRESS_OPTIONS.find(
                           (framework) => framework === location,
                         )}
@@ -118,9 +119,9 @@ export default function JobsWithFilterSection() {
                 </PopoverTrigger>
                 <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
                   <Command>
-                    <CommandInput placeholder="Tìm địa điểm..." />
+                    <CommandInput placeholder={t("PlaceholderLocation")} />
                     <CommandList>
-                      <CommandEmpty>Không tìm thấy.</CommandEmpty>
+                      <CommandEmpty>{t("NoLocation")}</CommandEmpty>
                       <CommandGroup>
                         <CommandItem
                           value="all"
@@ -136,7 +137,7 @@ export default function JobsWithFilterSection() {
                               location === "all" ? "opacity-100" : "opacity-0",
                             )}
                           />
-                          Tất cả địa điểm
+                          {t("LocationAll")}
                         </CommandItem>
                         {ADDRESS_OPTIONS.map((framework) => (
                           <CommandItem
@@ -194,7 +195,7 @@ export default function JobsWithFilterSection() {
                   <SelectValue placeholder="Cấp bậc" />
                 </SelectTrigger>
                 <SelectContent className="w-[200px]">
-                  <SelectItem value="all">Tất cả cấp bậc</SelectItem>
+                  <SelectItem value="all">{t("LevelAll")}</SelectItem>
                   {LEVEL_OPTIONS.map((item) => (
                     <SelectItem key={item.value} value={item.value}>
                       {item.label}
@@ -237,7 +238,7 @@ export default function JobsWithFilterSection() {
           </>
         ) : (
           <div className="text-center py-12 text-muted-foreground bg-background rounded-lg border border-dashed">
-            Không tìm thấy công việc phù hợp.
+            {t("NoJobsFound")}
           </div>
         )}
       </div>

@@ -30,8 +30,11 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { ADDRESS_OPTIONS } from "@/lib/constant";
 import IndustrySelector from "./IndustrySelector";
+import { useTranslations } from "next-intl";
 
 export default function SearchSection() {
+  const t = useTranslations("PageHome.SearchSection");
+
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -82,8 +85,8 @@ export default function SearchSection() {
           transition={{ duration: 0.5 }}
           className="text-3xl md:text-5xl font-bold text-primary mb-6"
         >
-          Tìm kiếm công việc mơ ước của bạn <br className="hidden md:block" />
-          với hàng nghìn cơ hội hấp dẫn
+          {t("Title1")} <br className="hidden md:block" />
+          {t("Title2")}
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 20 }}
@@ -91,9 +94,7 @@ export default function SearchSection() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="text-muted-foreground max-w-2xl mb-10"
         >
-          Khám phá cơ hội nghề nghiệp tốt nhất từ các công ty hàng đầu. Kết nối
-          với nhà tuyển dụng uy tín và phát triển sự nghiệp của bạn ngay hôm
-          nay.
+          {t("Description")}
         </motion.p>
 
         <motion.div
@@ -106,7 +107,7 @@ export default function SearchSection() {
           <div className="flex-1 w-full flex items-center md:border-r border-border md:pr-4 relative">
             <Search className="text-muted-foreground w-5 h-5 mr-2" />
             <Input
-              placeholder="Vị trí, Từ khóa..."
+              placeholder={t("BlockFilter.Search")}
               className="border-none shadow-none focus-visible:ring-0 px-2 text-base pr-8"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
@@ -129,6 +130,7 @@ export default function SearchSection() {
               onSelect={(id) => {
                 setIndustry(id);
               }}
+              placeholder={t("BlockFilter.Industry")}
             />
             {industry && (
               <X
@@ -159,15 +161,15 @@ export default function SearchSection() {
                     ? ADDRESS_OPTIONS.find(
                         (framework) => framework === location,
                       )
-                    : "Địa điểm"}
+                    : t("BlockFilter.Location")}
                   {/* <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /> */}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[300px] p-0">
                 <Command>
-                  <CommandInput placeholder="Tìm địa điểm..." />
+                  <CommandInput placeholder={t("BlockFilter.PlaceholderLocation")} />
                   <CommandList>
-                    <CommandEmpty>Không tìm thấy.</CommandEmpty>
+                    <CommandEmpty>{t("BlockFilter.NoData")}</CommandEmpty>
                     <CommandGroup>
                       <CommandItem
                         value="all"
@@ -182,7 +184,7 @@ export default function SearchSection() {
                             location === "" ? "opacity-100" : "opacity-0",
                           )}
                         />
-                        Tất cả địa điểm
+                        {t("BlockFilter.LocationAll")}
                       </CommandItem>
                       {ADDRESS_OPTIONS.map((framework) => (
                         <CommandItem
@@ -228,12 +230,12 @@ export default function SearchSection() {
             className="w-full md:w-auto px-8 py-6 rounded-lg text-lg font-medium transition-all"
             onClick={() => handleSearch()}
           >
-            Tìm kiếm
+            {t("BlockFilter.SearchButton")}
           </Button>
         </motion.div>
 
         <div className="mt-8 flex gap-4 text-sm text-muted-foreground animate-in fade-in slide-in-from-bottom-5 duration-700 delay-300">
-          <span>Phổ biến:</span>
+          <span>{t("PopularSearch")}: </span>
           <span
             className="font-medium text-primary cursor-pointer hover:underline"
             onClick={() => {

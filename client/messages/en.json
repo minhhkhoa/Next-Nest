@@ -85,5 +85,51 @@
       "address": "123 Recruitment Street, Hanoi, Vietnam"
     },
     "copyright": "© 2025 JobHub. All rights reserved."
+  },
+
+  "PageHome": {
+    "SearchSection": {
+      "Title1": "Find your dream job ",
+      "Title2": " with thousands of attractive opportunities",
+      "Description": "Discover the best career opportunities from leading companies. Connect with reputable employers and advance your career today.",
+      "BlockFilter": {
+        "Search": "Search ...",
+        "Industry": "Industry",
+        "Location": "Location",
+        "SearchButton": "Search",
+        "NoData": "No data",
+        "PlaceholderLocation": "Search location...",
+        "LocationAll": "All Location"
+      },
+      "PopularSearch": "Popular Search: "
+    },
+
+    "AD": {
+      "Title": "Quick Post",
+      "Description": "Boost your job posting to the top to reach thousands of potential candidates",
+      "Button": "Post now"
+    },
+    "HotJobsSection": {
+      "Title": "Hot Jobs",
+      "Description": "Hot job opportunities waiting for you",
+      "NoJobsFound": "No hot jobs found."
+    },
+
+    "JobsWithFilterSection": {
+      "Title": "Latest Jobs",
+      "Description": "Continuously updated with the latest career opportunities",
+      "PlaceholderSearch": "Search jobs ...",
+      "PlaceholderLocation": "Search location ...",
+      "LevelAll": "All Levels",
+      "LocationAll": "All Locations",
+      "NoLocation": "No location data available",
+      "NoJobsFound": "No jobs found."
+    },
+
+    "TopCompaniesSection": {
+      "Title": "Top Companies",
+      "Description": "Discover top companies that are hiring",
+      "ViewAll": "View all"
+    }
   }
 }

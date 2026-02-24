@@ -9,8 +9,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useGetCompanies } from "@/queries/useCompany";
 import ListJobSkeleton from "@/components/skeletons/list-job";
 import { generateSlugUrl } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 export default function TopCompaniesSection() {
+  const t = useTranslations("PageHome.TopCompaniesSection");
+
   const { data: listCompanies, isLoading } = useGetCompanies({
     page: 1,
     pageSize: 8,
@@ -23,10 +26,10 @@ export default function TopCompaniesSection() {
         <div className="flex justify-between items-center mb-10">
           <div className="flex flex-col gap-3">
             <h2 className="text-3xl font-bold text-primary pl-4 border-l-4 border-primary">
-              Nhà tuyển dụng hàng đầu
+              {t("Title")}
             </h2>
             <p className="text-muted-foreground">
-              Khám phá các công ty hàng đầu đang tuyển dụng
+              {t("Description")}
             </p>
           </div>
 
@@ -35,7 +38,7 @@ export default function TopCompaniesSection() {
               variant="ghost"
               className="text-primary hover:text-primary/80 hover:bg-primary/10"
             >
-              Xem tất cả <ArrowRight className="ml-2 w-4 h-4" />
+              {t("ViewAll")} <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
           </Link>
         </div>
