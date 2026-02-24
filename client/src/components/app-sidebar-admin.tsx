@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/collapsible";
 import { useAppStore } from "./TanstackProvider";
 import { envConfig } from "../../config";
-import PopoverAdmin from "@/_pages/components/popoverAdmin";
+import PopoverAdmin from "@/components/popoverAdmin";
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
 
 const items = [

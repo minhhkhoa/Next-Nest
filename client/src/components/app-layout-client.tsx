@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import HeaderClient from "@/_pages/components/HeaderClient";
+import HeaderClient from "@/components/HeaderClient";
 import Footer from "@/app/[locale]/(guest)/Footer";
 
 //- file này có tác dụng là bọc ngoài header và footer vì khi tạo chức năng ở commit trước đó với layout(tổng) thì header và footer không được hiển thị (vì mình không đặt nó vào), nên tạm thời tạo file này để bọc ngoài header và footer.

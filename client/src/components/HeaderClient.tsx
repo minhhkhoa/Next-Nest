@@ -1,15 +1,15 @@
 "use client";
 
 import React from "react";
-import AppLogo from "../../components/AppLogo";
+import AppLogo from "./AppLogo";
 import UserSection from "./UserSection";
-import { UserAvatarMenu } from "../../components/user-avatar-menu";
+import { UserAvatarMenu } from "./user-avatar-menu";
 import { ModeToggle } from "@/components/ModeToggle";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import NavigationHeaderMenu from "@/components/NavigationHeader";
-import SheetMobile from "./SheetMobile";
+import SheetMobile from "../_pages/components/SheetMobile";
 import NotificationBell from "@/components/NotificationBell";
-import SectionRecruiter from "./section-recruiter";
+import SectionRecruiter from "../_pages/components/section-recruiter";
 import { useAppStore } from "@/components/TanstackProvider";
 import AppHeaderSkeleton from "@/components/skeletons/AppHeader";
 import { getAccessTokenFromLocalStorage } from "@/lib/utils";

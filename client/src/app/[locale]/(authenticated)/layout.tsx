@@ -1,4 +1,4 @@
-import HeaderClient from "@/_pages/components/HeaderClient";
+import HeaderClient from "@/components/HeaderClient";
 import BreadcrumbSite from "@/components/site-breadcrumb";
 import Footer from "../(guest)/Footer";
 import BlockIssue from "@/components/BlockIssue";

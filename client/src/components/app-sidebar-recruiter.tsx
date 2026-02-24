@@ -24,7 +24,7 @@ import {
   SidebarMenuSubButton,
 } from "@/components/ui/sidebar";
 
-import PopoverAdmin from "@/_pages/components/popoverAdmin";
+import PopoverAdmin from "@/components/popoverAdmin";
 import {
   Collapsible,
   CollapsibleContent,

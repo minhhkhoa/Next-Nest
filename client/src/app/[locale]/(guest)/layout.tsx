@@ -1,6 +1,6 @@
 import Footer from "./Footer";
 import BreadcrumbSite from "@/components/site-breadcrumb";
-import HeaderClient from "@/_pages/components/HeaderClient";
+import HeaderClient from "@/components/HeaderClient";
 import BlockIssue from "@/components/BlockIssue";
 
 export default async function ClientLayout({
