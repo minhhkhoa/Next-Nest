@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import ClientLayout from "@/components/app-layout-client";
+import { useRouter } from "../../i18n/navigation";
 
 export default function NotFound() {
   const router = useRouter();
@@ -19,7 +19,9 @@ export default function NotFound() {
             Oops! Trang không tìm thấy.
           </h2>
           <p className="mt-4 text-muted-foreground text-sm sm:text-base md:text-lg max-w-[300px] sm:max-w-md mx-auto">
-            Rất tiếc, chúng tôi không thể tìm thấy trang bạn đang tìm kiếm. Có vẻ như nó đã bị xóa hoặc bạn đã nhập sai địa chỉ. Hãy kiểm tra lại URL hoặc quay lại trang chủ để tiếp tục khám phá!
+            Rất tiếc, chúng tôi không thể tìm thấy trang bạn đang tìm kiếm. Có
+            vẻ như nó đã bị xóa hoặc bạn đã nhập sai địa chỉ. Hãy kiểm tra lại
+            URL hoặc quay lại trang chủ để tiếp tục khám phá!
           </p>
           <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4 w-full max-w-xs sm:max-w-none mx-auto">
             <Button asChild size="lg" className="w-full sm:w-auto">

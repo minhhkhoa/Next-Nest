@@ -7,6 +7,10 @@ import { Toaster } from "@/components/ui/sonner";
 import { ColorThemeProvider } from "@/components/ColorThemeProvider";
 import BackToTop from "@/components/BackToTop";
 import BlockWrap from "./BlockWrap";
+import { hasLocale, NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
+import { routing } from "@/i18n/routing";
+import { notFound } from "next/navigation";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,13 +30,22 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
+type Props = {
   children: React.ReactNode;
-}>) {
+  params: Promise<{ locale: string }>;
+};
+
+export default async function RootLayout({ children, params }: Props) {
+  const { locale } = await params;
+
+  if (!hasLocale(routing.locales, locale)) {
+    notFound();
+  }
+
+  const messages = await getMessages();
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -67,7 +80,11 @@ export default function RootLayout({
           >
             <ColorThemeProvider>
               <BackToTop />
-              <BlockWrap>{children}</BlockWrap>
+              <BlockWrap>
+                <NextIntlClientProvider messages={messages}>
+                  {children}
+                </NextIntlClientProvider>
+              </BlockWrap>
               <Toaster position="top-right" richColors />
             </ColorThemeProvider>
           </ThemeProvider>

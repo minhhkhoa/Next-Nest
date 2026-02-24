@@ -8,14 +8,16 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { Link, usePathname } from "@/i18n/navigation";
 import { segmentNameMap } from "@/lib/constant";
 import { getSlugFromSlugUrl } from "@/lib/utils";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Fragment } from "react";
 
 export default function BreadcrumbSite() {
   const pathname = usePathname();
+  
+  const t = useTranslations("Header.NavigateHeader");
   const segments = pathname.split("/").filter(Boolean);
 
   return (
@@ -24,11 +26,11 @@ export default function BreadcrumbSite() {
         {/* Trang chủ luôn có */}
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
-            <Link href="/">Trang chủ</Link>
+            <Link href="/">{t("Home")}</Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
 
-        {segments.map((segment, index) => {
+        {segments.map((segment: string, index: number) => {
           const href = "/" + segments.slice(0, index + 1).join("/");
           const isLast = index === segments.length - 1;
 
@@ -42,10 +44,10 @@ export default function BreadcrumbSite() {
             (segment.includes("-i.")
               ? getSlugFromSlugUrl(segment)
                   .replace(/-/g, " ")
-                  .replace(/\b\w/g, (c) => c.toUpperCase())
+                  .replace(/\b\w/g, (c: string) => c.toUpperCase())
               : segment
                   .replace(/-/g, " ")
-                  .replace(/\b\w/g, (c) => c.toUpperCase()));
+                  .replace(/\b\w/g, (c: string) => c.toUpperCase()));
 
           return (
             <Fragment key={href}>

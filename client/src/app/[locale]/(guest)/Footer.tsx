@@ -11,6 +11,8 @@ import {
   Facebook,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { useTranslations } from "next-intl";
+
 
 interface FooterLink {
   title: string;
@@ -23,36 +25,49 @@ interface SocialLink {
   label: string;
 }
 
+
 export default function Footer() {
+  const t = useTranslations("Footer");
+
   const footerLinks: FooterLink[] = [
     {
-      title: "Tìm việc",
+      title: t("findJobs.title"),
       links: [
-        "Tất cả việc làm",
-        "Việc làm mới",
-        "Công ty hàng đầu",
-        "Danh mục việc",
+        t("findJobs.allJobs"),
+        t("findJobs.newJobs"),
+        t("findJobs.topCompanies"),
+        t("findJobs.categories"),
       ],
     },
     {
-      title: "Dành cho công ty",
-      links: ["Đăng tuyển", "Gói dịch vụ", "Tìm ứng viên", "Hướng dẫn"],
-    },
-    {
-      title: "Về chúng tôi",
-      links: ["Blog", "Sự kiện", "Cộng đồng", "Liên hệ"],
-    },
-    {
-      title: "Hỗ trợ",
+      title: t("forCompany.title"),
       links: [
-        "Trung tâm trợ giúp",
-        "Điều khoản",
-        "Chính sách riêng tư",
-        "Bảo mật",
+        t("forCompany.postJob"),
+        t("forCompany.services"),
+        t("forCompany.findCandidates"),
+        t("forCompany.guide"),
+      ],
+    },
+    {
+      title: t("aboutUs.title"),
+      links: [
+        t("aboutUs.blog"),
+        t("aboutUs.events"),
+        t("aboutUs.community"),
+        t("aboutUs.contact"),
+      ],
+    },
+    {
+      title: t("support.title"),
+      links: [
+        t("support.helpCenter"),
+        t("support.terms"),
+        t("support.privacy"),
+        t("support.security"),
       ],
     },
   ];
-
+  
   const socialLinks: SocialLink[] = [
     {
       icon: <Linkedin size={20} />,
@@ -83,10 +98,9 @@ export default function Footer() {
           {/* Brand section */}
           <div className="col-span-2 md:col-span-1">
             <div className="mb-4">
-              <h2 className="text-2xl font-bold text-primary">JobHub</h2>
+              <h2 className="text-2xl font-bold text-primary">{t("brand.title")}</h2>
               <p className="mt-2 text-sm ">
-                Nền tảng tuyển dụng hàng đầu kết nối ứng viên xuất sắc với những
-                cơ hội việc làm tốt nhất
+                {t("brand.description")}
               </p>
             </div>
 
@@ -139,10 +153,10 @@ export default function Footer() {
             <div className="flex items-center gap-2">
               <Mail size={18} className="text-primary" />
               <a
-                href="mailto:hello@jobhub.com"
+                href={`mailto:${t("contact.email")}`}
                 className="text-sm transition-colors duration-200 hover:text-primary"
               >
-                hello@jobhub.com
+                {t("contact.email")}
               </a>
             </div>
             <div className="flex items-center gap-2">
@@ -151,13 +165,13 @@ export default function Footer() {
                 href="tel:+84123456789"
                 className="text-sm transition-colors duration-200 hover:text-primary"
               >
-                +84 (0) 123 456 789
+                {t("contact.phone")}
               </a>
             </div>
             <div className="flex items-center gap-2">
               <MapPin size={18} className="text-primary" />
               <span className="text-sm">
-                123 Đường Tuyển Dụng, Hà Nội, Việt Nam
+                {t("contact.address")}
               </span>
             </div>
           </div>
@@ -180,7 +194,7 @@ export default function Footer() {
 
         {/* Copyright */}
         <div className="text-center text-sm py-5">
-          <b>&copy; 2025 JobHub. Tất cả quyền được bảo lưu.</b>
+          <b>{t("copyright")}</b>
         </div>
       </div>
     </footer>

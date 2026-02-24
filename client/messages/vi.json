@@ -1,0 +1,50 @@
+{
+  "Header": {
+    "NavigateHeader": {
+      "Home": "Trang chủ",
+      "Jobs": "Việc làm",
+      "CreateCv": "Tạo CV",
+      "Career": "Hành trang nghề nghiệp"
+    }
+  },
+  "Footer": {
+    "brand": {
+      "title": "JobHub",
+      "description": "Nền tảng tuyển dụng hàng đầu kết nối ứng viên xuất sắc với những cơ hội việc làm tốt nhất"
+    },
+    "findJobs": {
+      "title": "Tìm việc",
+      "allJobs": "Tất cả việc làm",
+      "newJobs": "Việc làm mới",
+      "topCompanies": "Công ty hàng đầu",
+      "categories": "Danh mục việc"
+    },
+    "forCompany": {
+      "title": "Dành cho công ty",
+      "postJob": "Đăng tuyển",
+      "services": "Gói dịch vụ",
+      "findCandidates": "Tìm ứng viên",
+      "guide": "Hướng dẫn"
+    },
+    "aboutUs": {
+      "title": "Về chúng tôi",
+      "blog": "Blog",
+      "events": "Sự kiện",
+      "community": "Cộng đồng",
+      "contact": "Liên hệ"
+    },
+    "support": {
+      "title": "Hỗ trợ",
+      "helpCenter": "Trung tâm trợ giúp",
+      "terms": "Điều khoản",
+      "privacy": "Chính sách riêng tư",
+      "security": "Bảo mật"
+    },
+    "contact": {
+      "email": "hello@jobhub.com",
+      "phone": "+84 (0) 123 456 789",
+      "address": "123 Đường Tuyển Dụng, Hà Nội, Việt Nam"
+    },
+    "copyright": "© 2025 JobHub. Tất cả quyền được bảo lưu."
+  }
+}

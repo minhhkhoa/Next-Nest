@@ -1,7 +1,7 @@
 import React from "react";
 import ChangePasswordForm from "../../auth/change-password/ChangePasswordForm";
 import ColorThemeSelector from "@/components/ColorThemeSelector";
-import DemoChartAreaGradient from "@/app/(authenticated)/settings/DemoChartChangeColor";
+import DemoChartAreaGradient from "@/app/[locale]/(authenticated)/settings/DemoChartChangeColor";
 import { UserResponseType } from "@/schemasvalidation/user";
 
 export default function BlockSettings({

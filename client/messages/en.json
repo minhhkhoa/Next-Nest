@@ -1,0 +1,50 @@
+{
+  "Header": {
+    "NavigateHeader": {
+      "Home": "Home",
+      "Jobs": "Jobs",
+      "CreateCv": "Create CV",
+      "Career": "Professional luggage"
+    }
+  },
+  "Footer": {
+    "brand": {
+      "title": "JobHub",
+      "description": "The leading recruitment platform connecting top candidates with the best job opportunities"
+    },
+    "findJobs": {
+      "title": "Find Jobs",
+      "allJobs": "All Jobs",
+      "newJobs": "New Jobs",
+      "topCompanies": "Top Companies",
+      "categories": "Job Categories"
+    },
+    "forCompany": {
+      "title": "For Company",
+      "postJob": "Post Job",
+      "services": "Services",
+      "findCandidates": "Find Candidates",
+      "guide": "Guide"
+    },
+    "aboutUs": {
+      "title": "About Us",
+      "blog": "Blog",
+      "events": "Events",
+      "community": "Community",
+      "contact": "Contact"
+    },
+    "support": {
+      "title": "Support",
+      "helpCenter": "Help Center",
+      "terms": "Terms",
+      "privacy": "Privacy Policy",
+      "security": "Security"
+    },
+    "contact": {
+      "email": "hello@jobhub.com",
+      "phone": "+84 (0) 123 456 789",
+      "address": "123 Recruitment Street, Hanoi, Vietnam"
+    },
+    "copyright": "© 2025 JobHub. All rights reserved."
+  }
+}

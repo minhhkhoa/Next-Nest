@@ -2,8 +2,12 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 import { envConfig } from "../config";
+import createMiddleware from "next-intl/middleware";
+import { routing } from "./i18n/routing";
 
 const SECRET_KEY = new TextEncoder().encode(envConfig.NEXT_PUBLIC_JWT_SECRET);
+
+const intlMiddleware = createMiddleware(routing);
 
 // 1. Cấu hình nhóm Route protected
 const protectedPaths = ["/profile", "/setting", "/change-password"];
@@ -27,6 +31,22 @@ const FORBIDDEN_PATH = "/unauthorized";
 export async function middleware(request: NextRequest) {
   const token = request.cookies.get("access_token")?.value;
   const path = request.nextUrl.pathname;
+
+  /**
+ *Xử lý i18n trước
+    - Nếu path không có locale, intlMiddleware sẽ redirect (ví dụ / -> /vi)
+    - Tuy nhiên, ta cần phối hợp với logic auth bên dưới.
+   - Cách đơn giản nhất là chạy intlMiddleware để lấy response,
+   - sau đó kiểm tra auth, nếu cần redirect auth thì override response,
+  - nếu không thì trả về response của intlMiddleware.
+ */
+
+  const intlResponse = intlMiddleware(request);
+
+  // Nếu intlMiddleware trả về redirect (ví dụ / -> /vi), ta return luôn để client redirect theo
+  if (intlResponse.headers.get("location")) {
+    return intlResponse;
+  }
 
   //- không cho hiển thị vào trang /unauthorized
   if (path === FORBIDDEN_PATH) {
@@ -79,7 +99,7 @@ export async function middleware(request: NextRequest) {
 
       //- bảo vệ các route protected
       // Nếu đã login và verify thành công thì luôn cho phép vào profile/setting
-      return NextResponse.next();
+      return intlResponse;
     } catch (error) {
       console.error("Middleware JWT Error:", error);
       const response = NextResponse.redirect(new URL("/login", request.url));
@@ -88,7 +108,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  return intlResponse;
 }
 
 export const config = {

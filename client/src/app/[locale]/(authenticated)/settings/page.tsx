@@ -1,6 +1,6 @@
 import React from "react";
 import { cookies } from "next/headers";
-import { envConfig } from "../../../../config";
+import { envConfig } from "../../../../../config";
 import { UserResponseType } from "@/schemasvalidation/user";
 import BlockSettings from "@/_pages/pages_authenticated/settings/BlockSettings";
 
