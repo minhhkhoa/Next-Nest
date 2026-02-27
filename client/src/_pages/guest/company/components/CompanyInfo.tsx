@@ -12,17 +12,21 @@ import {
   Map as MapIcon,
   ChevronDown,
   ChevronUp,
+  Flag, // Import icon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ADHorizontal, ADVertical } from "@/_pages/home/components/ad";
 import { useGetLang } from "@/hooks/use-get-lang";
+import { IssueDialogForm } from "@/_pages/admin/issue/components/issue-modal-form";
+import { useAppStore } from "@/components/TanstackProvider";
 
 interface CompanyInfoProps {
   company: CompanyResType;
 }
 
 export default function CompanyInfo({ company }: CompanyInfoProps) {
+  const { isLogin } = useAppStore();
   const { getLang } = useGetLang();
 
   const industries = Array.isArray(company.industryID)
@@ -30,19 +34,41 @@ export default function CompanyInfo({ company }: CompanyInfoProps) {
     : [];
 
   const [isExpanded, setIsExpanded] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false); // State modal
   const description = getLang(company.description) || "";
   const shouldTruncate = description.length > 500;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      {/* Report Modal */}
+      <IssueDialogForm
+        open={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        defaultValues={{
+          type: "REPORT_COMPANY",
+          targetId: company._id,
+          title: `Báo cáo công ty: ${company.name}`,
+        }}
+      />
       {/* Left Column: Description & Details */}
       <div className="lg:col-span-2 space-y-6">
         <Card className="shadow-sm border-none bg-background/50 backdrop-blur-sm">
-          <CardHeader className="!px-0">
+          <CardHeader className="!px-0 flex flex-row items-center justify-between">
             <CardTitle className="text-xl font-bold flex items-center gap-2">
               <Building2 className="text-primary" size={20} />
               Giới thiệu công ty
             </CardTitle>
+            {isLogin && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 border-dashed"
+                onClick={() => setReportModalOpen(true)}
+              >
+                <Flag className="w-4 h-4 mr-2" />
+                Báo cáo
+              </Button>
+            )}
           </CardHeader>
           <CardContent className="space-y-4 !p-0">
             <div className="relative">

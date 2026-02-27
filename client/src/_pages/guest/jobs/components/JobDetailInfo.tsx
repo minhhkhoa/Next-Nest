@@ -20,6 +20,10 @@ import Image from "next/image";
 import { generateSlugUrl } from "@/lib/utils";
 import { useGetLang } from "@/hooks/use-get-lang";
 
+import { IssueDialogForm } from "@/_pages/admin/issue/components/issue-modal-form";
+import { Flag } from "lucide-react";
+import { useAppStore } from "@/components/TanstackProvider";
+
 interface JobDetailInfoProps {
   job: JobResType;
 }
@@ -45,10 +49,21 @@ function InfoItem({
 }
 
 export default function JobDetailInfo({ job }: JobDetailInfoProps) {
+  const { isLogin } = useAppStore();
   const { getLang } = useGetLang();
+  const [reportModalOpen, setReportModalOpen] = React.useState(false);
 
   return (
     <div className="space-y-6">
+      <IssueDialogForm
+        open={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        defaultValues={{
+          type: "REPORT_JOB",
+          targetId: job._id,
+          title: `Báo cáo tin tuyển dụng: ${getLang(job.title)}`,
+        }}
+      />
       {/* Header Section */}
       <Card className="border-none shadow-sm bg-card">
         <CardContent className="p-6">
@@ -100,6 +115,17 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
                   Ứng tuyển ngay
                 </Button>
                 <Button variant="outline">Lưu tin</Button>
+                {isLogin && (
+                  <Button
+                    variant="ghost"
+                    className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => setReportModalOpen(true)}
+                    title="Báo cáo tin tuyển dụng này"
+                  >
+                    <Flag className="w-5 h-5 mr-2" />
+                    Báo cáo
+                  </Button>
+                )}
               </div>
             </div>
           </div>

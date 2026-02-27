@@ -13,7 +13,6 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useSetHotJob } from "@/queries/useJob";
 import { IssueResType } from "@/schemasvalidation/issue";
-import { JobResType } from "@/schemasvalidation/job";
 import { useGetJobDetail } from "@/queries/useJob";
 import { Loader2, Flame } from "lucide-react";
 import React, { useEffect, useState } from "react";

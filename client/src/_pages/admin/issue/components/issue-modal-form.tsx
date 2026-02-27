@@ -47,19 +47,24 @@ import ModeEditIssue from "./mode-edit";
 
 interface IssueDialogProps {
   onClose: () => void;
-  issue: IssueResType | undefined;
+  // issue prop is used for Admin handling existing issues
+  issue?: IssueResType;
   open: boolean;
+  // defaultValues logic for Guest creating new issues
+  defaultValues?: Partial<IssueCreateType>;
 }
 
-export function IssueDialogForm({ onClose, issue, open }: IssueDialogProps) {
+export function IssueDialogForm({
+  onClose,
+  issue,
+  open,
+  defaultValues,
+}: IssueDialogProps) {
   const isEditMode = !!issue;
   const [isUploading, setIsUploading] = useState(false);
-
-  //- Nếu có issue -> dùng schema admin update, ngược lại dùng schema create
-  const formSchema = isEditMode ? issueAdminUpdate : issueCreate;
-
-  const form = useForm<any>({
-    resolver: zodResolver(formSchema),
+  
+  const form = useForm({
+    resolver: zodResolver(isEditMode ? issueAdminUpdate : issueCreate),
     defaultValues: isEditMode
       ? {
           id: issue?._id || "",
@@ -67,11 +72,11 @@ export function IssueDialogForm({ onClose, issue, open }: IssueDialogProps) {
           adminReply: issue?.adminResponse?.content?.vi || "",
         }
       : {
-          title: "",
-          description: "",
-          type: "SUPPORT",
-          targetId: undefined,
-          attachments: [],
+          title: defaultValues?.title || "",
+          description: defaultValues?.description || "",
+          type: defaultValues?.type || "SUPPORT",
+          targetId: defaultValues?.targetId || "",
+          attachments: defaultValues?.attachments || [],
         },
   });
 
@@ -118,6 +123,43 @@ export function IssueDialogForm({ onClose, issue, open }: IssueDialogProps) {
     form.setValue("attachments", newAttachments);
   };
 
+  const handleSubmit = async (values: any) => {
+    setIsUploading(true);
+    try {
+      if (isEditMode && issue) {
+        // Admin update
+        const payload: IssueAdminUpdateType = {
+          id: issue._id,
+          status: values.status,
+          adminReply: values.adminReply,
+        };
+        await adminReplyMutation(payload);
+
+        SoftSuccessSonner("Cập nhật vấn đề thành công");
+        onClose();
+        setIsUploading(false);
+      } else {
+        // Create new issue
+        const payload: IssueCreateType = {
+          title: values.title,
+          description: values.description,
+          type: values.type,
+          targetId: values.targetId,
+          attachments: values.attachments,
+        };
+        await createIssueMutation(payload);
+        
+        SoftSuccessSonner("Gửi vấn đề thành công");
+        onClose();
+        setIsUploading(false);
+      }
+    } catch (error) {
+      console.error(error);
+      SoftDestructiveSonner("Có lỗi xảy ra");
+      setIsUploading(false);
+    }
+  };
+
   useEffect(() => {
     if (issue) {
       form.reset({
@@ -125,59 +167,17 @@ export function IssueDialogForm({ onClose, issue, open }: IssueDialogProps) {
         status: issue.status,
         adminReply: issue.adminResponse?.content?.vi || "",
       });
-    } else {
+    } else if (open) {
+      // When opening in create mode, use defaultValues if provided
       form.reset({
-        title: "",
-        description: "",
-        type: "SUPPORT",
-        targetId: "",
-        attachments: [],
+        title: defaultValues?.title || "",
+        description: defaultValues?.description || "",
+        type: defaultValues?.type || "SUPPORT",
+        targetId: defaultValues?.targetId || "",
+        attachments: defaultValues?.attachments || [],
       });
     }
-  }, [issue, form, open]);
-
-  const handleSubmit = async (values: any) => {
-    try {
-      if (isEditMode && issue) {
-        //- Admin reply
-        const payload: IssueAdminUpdateType = {
-          id: issue._id,
-          status: values.status,
-          adminReply: values.adminReply,
-        };
-
-        const res = await adminReplyMutation(payload);
-
-        if (res.isError) {
-          SoftDestructiveSonner("Có lỗi xảy ra khi phản hồi yêu cầu");
-          return;
-        }
-
-        SoftSuccessSonner("Phản hồi yêu cầu thành công");
-      } else {
-        //- Create new issue
-        const payload: IssueCreateType = {
-          title: values.title,
-          description: values.description,
-          type: values.type,
-          targetId: values.targetId === "" ? undefined : values.targetId,
-          attachments: values.attachments,
-        };
-
-        const res = await createIssueMutation(payload);
-
-        if (res.isError) {
-          SoftDestructiveSonner("Có lỗi xảy ra khi tạo yêu cầu");
-          return;
-        }
-        SoftSuccessSonner("Tạo yêu cầu mới thành công");
-      }
-      onClose();
-    } catch (error) {
-      SoftDestructiveSonner("Có lỗi xảy ra");
-      console.error("Error submitting issue form:", error);
-    }
-  };
+  }, [issue, open, defaultValues, form]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>

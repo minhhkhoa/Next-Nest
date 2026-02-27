@@ -20,7 +20,8 @@ export default function HeaderClient() {
   const token = React.useMemo(
     () =>
       typeof window !== "undefined" ? getAccessTokenFromLocalStorage() : null,
-    [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isLogin], //- khi logout thì isLogin sẽ đổi thành false, lúc này token cũng sẽ được lấy lại (lúc này sẽ là null) -> logic check hiện <AppHeaderSkeleton /> sẽ hoạt động chính xác
   );
 
   const [isClient, setIsClient] = React.useState(false);
