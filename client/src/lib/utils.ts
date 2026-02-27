@@ -183,6 +183,14 @@ export const handleNotificationNavigation = (
     case NotificationType.ISSUE_ADMIN_REPLY: //- User nhận: Admin đã phản hồi yêu cầu
       router.push(`/issue`);
       break;
+
+     case NotificationType.ISSUE_REQUEST_HOT: //- Admin nhận: Có yêu cầu hot job mới
+      router.push(`/admin/issue/?statusFilterIssue=PENDING`);
+      break;
+
+    case NotificationType.ISSUE_REQUEST_HOT_PROCESSED: //- RECRUITER nhận: Yêu cầu hot job được duyệt/từ chối
+      router.push(`/recruiter/manager/jobs?isHot=true`);
+      break;
     //- end for issue
 
     case NotificationType.RESUME_SUBMITTED:

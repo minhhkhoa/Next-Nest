@@ -16,5 +16,6 @@ import { MailModule } from '../mail/mail.module';
   ],
   controllers: [IssueController],
   providers: [IssueService],
+  exports: [IssueService],
 })
 export class IssueModule {}

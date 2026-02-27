@@ -11,7 +11,11 @@ import { DeleteConfirmModal } from "../NewsCategory/components/modals/delete-con
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import { IssueResType } from "@/schemasvalidation/issue";
-import { useDeleteIssue, useGetIssueFilter, useDeleteManyIssue } from "@/queries/useIssue";
+import {
+  useDeleteIssue,
+  useGetIssueFilter,
+  useDeleteManyIssue,
+} from "@/queries/useIssue";
 import TableIssue from "./tableIssue";
 import { IssueDialogForm } from "./components/issue-modal-form";
 import {
@@ -98,6 +102,9 @@ export default function PageIssueAdmin() {
     }
   };
 
+  const onRequestHot = (issue: IssueResType) => {
+    //- logic
+  };
 
   const handleOpenEditModal = (issue: IssueResType) => {
     setIssueModalState({ isOpen: true, data: issue });
@@ -114,7 +121,11 @@ export default function PageIssueAdmin() {
     }
   });
 
-  const columns = getIssueColumns(handleOpenEditModal, handleOpenDeleteModal);
+  const columns = getIssueColumns(
+    handleOpenEditModal,
+    handleOpenDeleteModal,
+    onRequestHot,
+  );
 
   return (
     <div className="min-h-screen bg-background">

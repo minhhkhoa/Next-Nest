@@ -15,6 +15,7 @@ import { IssueResType } from "@/schemasvalidation/issue";
 export const getIssueColumns = (
   onEdit: (issue: IssueResType) => void,
   onDelete: (issue: IssueResType) => void,
+  onRequestHot: (issue: IssueResType) => void,
 ): ColumnDef<IssueResType>[] => [
   {
     id: "select",
@@ -111,7 +112,9 @@ export const getIssueColumns = (
     id: "actions",
     header: "Thao tác",
     cell: ({ row }) => {
-      const permission = row.original;
+      const issue = row.original;
+      const isRequetsHot = issue.type === "REQUEST_HOT";
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -121,15 +124,24 @@ export const getIssueColumns = (
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onEdit(permission)}>
-              <div className="flex gap-3 items-center">
-                <Pen className="mr-2 h-4 w-4" />
-                Phản hồi
-              </div>
-            </DropdownMenuItem>
+            {isRequetsHot ? (
+              <DropdownMenuItem onClick={() => onRequestHot(issue)}>
+                <div className="flex gap-3 items-center">
+                  <Pen className="mr-2 h-4 w-4" />
+                  Xem yêu cầu Hot
+                </div>
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem onClick={() => onEdit(issue)}>
+                <div className="flex gap-3 items-center">
+                  <Pen className="mr-2 h-4 w-4" />
+                  Phản hồi
+                </div>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem
               className="hover:!bg-red-500 text-red-500"
-              onClick={() => onDelete(permission)}
+              onClick={() => onDelete(issue)}
             >
               <div className="flex gap-3 items-center ">
                 <Trash2 className="mr-2 h-4 w-4 hover:text-white" />
@@ -176,6 +188,14 @@ function generateTypeIssue(type: string) {
           Phản hồi
         </span>
       );
+
+    case "REQUEST_HOT":
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">
+          Yêu cầu Hot Job
+        </span>
+      );
+
     default:
       return (
         <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">

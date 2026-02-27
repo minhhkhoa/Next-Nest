@@ -4,6 +4,9 @@ export const ISSUE_TYPE_OPTIONS = [
   { value: 'REPORT_COMPANY', label: 'Report Company' },
   { value: 'SUPPORT', label: 'Support' },
   { value: 'FEEDBACK', label: 'Feedback' },
+
+  //- xin hot
+  { value: 'REQUEST_HOT', label: 'Request Hot' },
 ];
 
 export const ISSUE_STATUS_OPTIONS = [

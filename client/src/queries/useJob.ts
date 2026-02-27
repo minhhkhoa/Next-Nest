@@ -124,6 +124,13 @@ export function useRestoreJob() {
   });
 }
 
+//- Hook xin hot
+export const useRequestHotJob = () => {
+  return useMutation({
+    mutationFn: jobApiRequest.requestHot,
+  });
+};
+
 //- Hook lấy danh sách công việc liên quan
 export const useGetRelatedJobs = (id: string, page: number, limit: number) => {
   return useQuery({

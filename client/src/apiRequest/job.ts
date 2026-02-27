@@ -27,6 +27,9 @@ const jobApiRequest = {
   }) =>
     http.get<ApiResponse<TypeGetAllJobFilter>>(`${prefix}/filter`, { params }),
 
+  requestHot: (payload: { targetId: string; description: string }) =>
+    http.post<ApiResponse<any>>(`${prefix}/request-hot`, payload),
+
   findJobFilterPublic: (params: {
     currentPage: number;
     pageSize: number;

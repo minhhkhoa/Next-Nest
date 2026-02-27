@@ -16,7 +16,6 @@ import { UpdateJobDto } from './dto/update-job.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   Public,
-  PublicPermission,
   ResponseMessage,
   userDecorator,
 } from 'src/common/decorator/customize';
@@ -27,12 +26,23 @@ import {
 } from './dto/jobDto.dto';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { CompanyStatusGuard } from 'src/common/guard/company-status.guard';
+import { RequestHotJobDto } from './dto/request-hot.dto';
 
 @ApiTags('jobs')
 @Controller('jobs')
 @UseGuards(CompanyStatusGuard)
 export class JobsController {
   constructor(private readonly jobsService: JobsService) {}
+
+  @ResponseMessage('Tạo yêu cầu HOT job thành công')
+  @ApiOperation({ summary: 'Gửi yêu cầu làm nổi bật tin tuyển dụng' })
+  @Post('request-hot')
+  requestHot(
+    @Body() requestHotJobDto: RequestHotJobDto,
+    @userDecorator() user: UserDecoratorType,
+  ) {
+    return this.jobsService.requestHot(requestHotJobDto, user);
+  }
 
   @ResponseMessage('Tạo mới công việc thành công')
   @ApiOperation({ summary: 'Thêm mới công việc' })

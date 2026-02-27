@@ -7,8 +7,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import TinyEditor from "@/components/tinyCustomize";
 import { UseFormReturn } from "react-hook-form";
+import TinyEditor from "@/components/tinyCustomize";
 
 //- (Tiêu đề & Mô tả)
 

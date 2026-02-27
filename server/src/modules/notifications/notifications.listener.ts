@@ -111,4 +111,13 @@ export class NotificationsListener {
       NotificationType.ISSUE_ADMIN_REPLY,
     );
   }
+
+  //- xin hot job mới
+  @OnEvent(NotificationType.ISSUE_REQUEST_HOT)
+  handleIssueRequestHot(payload: CreateNotificationDto) {
+    return this.processNotification(
+      payload,
+      NotificationType.ISSUE_REQUEST_HOT,
+    );
+  }
 }

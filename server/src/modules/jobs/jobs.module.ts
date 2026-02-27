@@ -10,6 +10,8 @@ import { JobCronService } from 'src/common/service/job-cron.service';
 import { CompanyModule } from '../company/company.module';
 import { CompanyStatusGuard } from 'src/common/guard/company-status.guard';
 
+import { IssueModule } from '../issue/issue.module';
+
 @BusinessModule()
 @Module({
   imports: [
@@ -17,6 +19,7 @@ import { CompanyStatusGuard } from 'src/common/guard/company-status.guard';
     forwardRef(() => UserModule),
     MongooseModule.forFeature([{ name: Job.name, schema: JobSchema }]),
     forwardRef(() => CompanyModule),
+    IssueModule,
   ],
   controllers: [JobsController],
   providers: [JobsService, JobCronService, CompanyStatusGuard],

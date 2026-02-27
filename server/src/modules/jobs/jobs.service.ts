@@ -21,6 +21,9 @@ import { UserService } from '../user/user.service';
 import { NotificationType } from 'src/common/constants/notification-type.enum';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { IssueService } from '../issue/issue.service';
+import { RequestHotJobDto } from './dto/request-hot.dto';
+import { CreateIssueDto } from '../issue/dto/create-issue.dto';
 
 @Injectable()
 export class JobsService {
@@ -32,7 +35,89 @@ export class JobsService {
     @InjectModel(Job.name)
     private jobModel: SoftDeleteModel<JobDocument>,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly issueService: IssueService,
   ) {}
+
+  async requestHot(
+    requestHotJobDto: RequestHotJobDto,
+    user: UserDecoratorType,
+  ) {
+    try {
+      //- Check quyền Recruiter Admin
+      const roleRecruiterAdmin = this.configService.get<string>(
+        'role_recruiter_admin',
+      );
+      if (user.roleCodeName !== roleRecruiterAdmin) {
+        throw new ForbiddenException(
+          'Chỉ Recruiter Admin mới được gửi yêu cầu này.',
+        );
+      }
+
+      //- Validate Job tồn tại & thuộc về công ty user
+      const job = await this.jobModel.findOne({
+        _id: requestHotJobDto.targetId,
+        isDeleted: false,
+      });
+      if (!job) {
+        throw new BadRequestCustom('Công việc không tồn tại');
+      }
+
+      const userCompanyId = user.employerInfo?.companyID?.toString();
+
+      if (job.companyID.toString() !== userCompanyId) {
+        throw new ForbiddenException(
+          'Bạn không có quyền yêu cầu cho công việc này',
+        );
+      }
+
+      //- Tạo Issue
+      const issueDto: CreateIssueDto = {
+        title: `Yêu cầu Hot Job: ${job.title.vi || job.title.en}`,
+        description: requestHotJobDto.description,
+        type: 'REQUEST_HOT',
+        targetId: requestHotJobDto.targetId,
+        attachments: [],
+      };
+
+      const newIssue = await this.issueService.create(issueDto, user);
+
+      //- Ping Notificatio
+      try {
+        const textRoleSuperAdmin =
+          this.configService.get<string>('role_super_admin');
+        const superAdmin = await this.userService.getUserByRoleSuperAdmin(
+          textRoleSuperAdmin!,
+        );
+
+        if (superAdmin) {
+          this.eventEmitter.emit(NotificationType.ISSUE_REQUEST_HOT, {
+            receiverId: superAdmin._id,
+            senderId: user.id,
+            title: 'Yêu cầu Hot Job Mới',
+            content: `Recruiter [${user.name}] vừa gửi yêu cầu Hot cho công việc [${job.title.vi || job.title.en}].`,
+            type: NotificationType.ISSUE_REQUEST_HOT,
+            metadata: {
+              module: 'ISSUE',
+              resourceId: newIssue._id.toString(),
+              action: 'REQUEST_HOT_JOB',
+            },
+          });
+        }
+      } catch (notifError) {
+        console.error('Notification Error (requestHot):', notifError.message);
+      }
+
+      return newIssue;
+    } catch (error) {
+      if (
+        error instanceof ForbiddenException ||
+        error instanceof BadRequestCustom
+      ) {
+        throw error;
+      }
+      throw new BadRequestCustom(error.message);
+    }
+  }
 
   async create(createJobDto: CreateJobDto, user: UserDecoratorType) {
     try {

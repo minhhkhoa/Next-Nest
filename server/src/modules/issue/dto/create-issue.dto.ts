@@ -4,7 +4,6 @@ import {
   IsEnum,
   IsArray,
   IsString,
-  IsMongoId,
 } from 'class-validator';
 import { ISSUE_TYPE_OPTIONS } from 'src/common/constants/issue-const';
 
@@ -20,7 +19,7 @@ export class CreateIssueDto {
   @IsNotEmpty({ message: 'Loại yêu cầu không hợp lệ' })
   @IsEnum(ISSUE_TYPE_OPTIONS.map((opt) => opt.value), {
     message:
-      'Loại yêu cầu phải thuộc: REPORT_JOB, REPORT_COMPANY, SUPPORT, hoặc FEEDBACK',
+      'Loại yêu cầu phải thuộc: REPORT_JOB, REPORT_COMPANY, SUPPORT, FEEDBACK, hoặc REQUEST_HOT',
   })
   type: string;
 
