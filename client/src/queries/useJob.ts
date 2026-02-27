@@ -131,6 +131,19 @@ export const useRequestHotJob = () => {
   });
 };
 
+//- Hook set hot dành cho admin
+export const useSetHotJob = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: jobApiRequest.setHot,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["jobs-filter"] });
+      queryClient.invalidateQueries({ queryKey: ["job-detail"] });
+      queryClient.invalidateQueries({ queryKey: ["getIssue_filter"] });
+    },
+  });
+};
+
 //- Hook lấy danh sách công việc liên quan
 export const useGetRelatedJobs = (id: string, page: number, limit: number) => {
   return useQuery({

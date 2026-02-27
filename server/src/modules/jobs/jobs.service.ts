@@ -24,6 +24,7 @@ import { Cache } from 'cache-manager';
 import { IssueService } from '../issue/issue.service';
 import { RequestHotJobDto } from './dto/request-hot.dto';
 import { CreateIssueDto } from '../issue/dto/create-issue.dto';
+import { UpdateHotJobDto } from './dto/update-hot.dto';
 
 @Injectable()
 export class JobsService {
@@ -37,6 +38,89 @@ export class JobsService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly issueService: IssueService,
   ) {}
+
+  async setHot(updateHotJobDto: UpdateHotJobDto, user: UserDecoratorType) {
+    try {
+      //- Check quyền Super Admin
+      const roleSuperAdmin = this.configService.get<string>('role_super_admin');
+      if (user.roleCodeName !== roleSuperAdmin) {
+        throw new ForbiddenException('Chỉ Super Admin mới được duyệt Job Hot.');
+      }
+
+      //- Update Job
+      const { jobId, isHot, hotUntil, issueId } = updateHotJobDto;
+      const job = await this.jobModel.findById(jobId);
+      if (!job) {
+        throw new BadRequestCustom('Công việc không tồn tại');
+      }
+
+      job.isHot = {
+        isHotJob: isHot,
+        hotUntil: isHot && hotUntil ? new Date(hotUntil) : null,
+      };
+
+      const updatedJob = await job.save();
+
+      //- Nếu có issueId, cập nhật trạng thái Issue thành RESOLVED
+      if (issueId && isHot) {
+        try {
+          //- gọi service issue để cập nhật trạng thái status của issuw
+          await this.issueService.updateStatusBySystem(
+            issueId,
+            'RESOLVED',
+            user, // Admin user
+          );
+        } catch (issueError) {
+          console.error(
+            'Error updating issue status in setHot:',
+            issueError.message,
+          );
+          // Don't throw here to avoid blocking Job update, but log it
+        }
+      }
+
+      //- lấy ra issue để gửi notifi cho người xin hot
+      const issue = await this.issueService.findOne(issueId!);
+      
+      if (!issue) {
+        throw new BadRequestCustom('Issue không tồn tại');
+      }
+
+      const creatorId = issue.createdBy?._id;
+
+      //- PING
+      if (isHot) {
+        if (creatorId) {
+          this.eventEmitter.emit(NotificationType.ISSUE_REQUEST_HOT_PROCESSED, {
+            receiverId: creatorId,
+            senderId: user.id,
+            title: 'Tin tuyển dụng lên Hot',
+            content: `Tin tuyển dụng "${job.title.vi}" đã được Admin đánh dấu là Hot đến ${
+              job.isHot.hotUntil
+                ? new Date(job.isHot.hotUntil).toLocaleDateString('vi-VN')
+                : 'vô thời hạn'
+            }.`,
+            type: NotificationType.ISSUE_REQUEST_HOT_PROCESSED,
+            metadata: {
+              module: 'JOB',
+              resourceId: job._id.toString(),
+              action: 'JOB_HOT_APPROVED',
+            },
+          });
+        }
+      }
+
+      return updatedJob;
+    } catch (error) {
+      if (
+        error instanceof ForbiddenException ||
+        error instanceof BadRequestCustom
+      ) {
+        throw error;
+      }
+      throw new BadRequestCustom(error.message);
+    }
+  }
 
   async requestHot(
     requestHotJobDto: RequestHotJobDto,

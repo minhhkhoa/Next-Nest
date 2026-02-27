@@ -34,7 +34,7 @@ class OptionHotJob {
     default: null,
     index: true,
   })
-  hotUntil: Date;
+  hotUntil: Date | null;
 }
 
 @Schema({ timestamps: true })

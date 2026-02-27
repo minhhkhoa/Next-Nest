@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/select";
 import { ISSUE_STATUS_OPTIONS, ISSUE_TYPE_OPTIONS } from "@/lib/constant";
 import { useQueryFilter } from "@/hooks/useQueryFilter";
+import { RequestHotJobModal } from "./components/request-hot-modal";
 
 export default function PageIssueAdmin() {
   const [filters, setFilters] = useState<{
@@ -42,6 +43,11 @@ export default function PageIssueAdmin() {
   const [idDeleteMany, setIdDeleteMany] = useState<string[]>([]);
 
   const [issueModalState, setIssueModalState] = useState<{
+    isOpen: boolean;
+    data?: IssueResType;
+  }>({ isOpen: false });
+
+  const [requestHotModal, setRequestHotModal] = useState<{
     isOpen: boolean;
     data?: IssueResType;
   }>({ isOpen: false });
@@ -103,7 +109,7 @@ export default function PageIssueAdmin() {
   };
 
   const onRequestHot = (issue: IssueResType) => {
-    //- logic
+    setRequestHotModal({ isOpen: true, data: issue });
   };
 
   const handleOpenEditModal = (issue: IssueResType) => {
@@ -248,6 +254,16 @@ export default function PageIssueAdmin() {
           open={issueModalState.isOpen}
           onClose={() => setIssueModalState({ isOpen: false })}
           issue={issueModalState.data}
+        />
+      )}
+
+      {requestHotModal.isOpen && (
+        <RequestHotJobModal
+          open={requestHotModal.isOpen}
+          onOpenChange={(isOpen) =>
+            setRequestHotModal((prev) => ({ ...prev, isOpen }))
+          }
+          data={requestHotModal.data!}
         />
       )}
 

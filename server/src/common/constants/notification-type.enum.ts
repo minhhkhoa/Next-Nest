@@ -16,7 +16,7 @@ export enum NotificationType {
   ISSUE_CREATED = 'ISSUE_CREATED', // Admin nhận: Có yêu cầu/báo cáo mới từ user
   ISSUE_ADMIN_REPLY = 'ISSUE_ADMIN_REPLY', // User nhận: Admin đã phản hồi yêu cầu
   ISSUE_REQUEST_HOT = 'ISSUE_REQUEST_HOT', // Admin nhận: Có yêu cầu hot job mới
-  ISSUE_REQUEST_HOT_PROCESSED = 'ISSUE_REQUEST_HOT_PROCESSED', // RECRUITER nhận: Yêu cầu hot job được duyệt/từ chối
+  ISSUE_REQUEST_HOT_PROCESSED = 'ISSUE_REQUEST_HOT_PROCESSED', // RECRUITER nhận: Yêu cầu hot job được duyệt
 
   //- Module Resume
   RESUME_SUBMITTED = 'RESUME_SUBMITTED', // Recruiter nhận: Có CV mới

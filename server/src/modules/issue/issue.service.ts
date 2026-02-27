@@ -338,6 +338,26 @@ export class IssueService {
     }
   }
 
+  async updateStatusBySystem(
+    id: string,
+    status: string,
+    user: UserDecoratorType,
+  ) {
+    return await this.issueModel.findByIdAndUpdate(
+      id,
+      {
+        status,
+        updatedBy: {
+          _id: user.id,
+          name: user.name,
+          email: user.email,
+          avatar: user.avatar,
+        },
+      },
+      { new: true },
+    );
+  }
+
   /**
    * User cập nhật nội dung (Chỉ cho phép khi status là PENDING)
    */

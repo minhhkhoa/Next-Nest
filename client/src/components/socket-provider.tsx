@@ -56,9 +56,16 @@ export const SocketListener = () => {
             queryKey: ["getIssue", data.issueId],
           });
           queryClient.invalidateQueries({ queryKey: ["getIssue_filter"] });
+          queryClient.invalidateQueries({ queryKey: ["jobs-filter"] });
         }
 
         //- end issue
+
+        //- start job
+        if (data.metadata.module === "JOB") {
+          queryClient.invalidateQueries({ queryKey: ["jobs-filter"] });
+        }
+        //- end job
 
         //- Hiển thị Toast thông báo nhanh
         SoftSuccessSonner("Bạn có một thông báo mới!");

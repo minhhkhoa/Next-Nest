@@ -120,4 +120,13 @@ export class NotificationsListener {
       NotificationType.ISSUE_REQUEST_HOT,
     );
   }
+
+  //- xử lý yêu cầu xin hot job (duyệt/từ chối)
+  @OnEvent(NotificationType.ISSUE_REQUEST_HOT_PROCESSED)
+  handleIssueRequestHotProcessed(payload: CreateNotificationDto) {
+    return this.processNotification(
+      payload,
+      NotificationType.ISSUE_REQUEST_HOT_PROCESSED,
+    );
+  }
 }

@@ -30,6 +30,13 @@ const jobApiRequest = {
   requestHot: (payload: { targetId: string; description: string }) =>
     http.post<ApiResponse<any>>(`${prefix}/request-hot`, payload),
 
+  setHot: (payload: {
+    jobId: string;
+    isHot: boolean;
+    hotUntil?: string;
+    issueId?: string;
+  }) => http.post<ApiResponse<any>>(`${prefix}/set-hot`, payload),
+
   findJobFilterPublic: (params: {
     currentPage: number;
     pageSize: number;

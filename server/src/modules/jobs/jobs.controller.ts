@@ -20,13 +20,14 @@ import {
   userDecorator,
 } from 'src/common/decorator/customize';
 import {
-  DeleteManyJobDto,
-  FindJobQueryDto,
   RecruiteAdminApproveJobDto,
+  FindJobQueryDto,
+  DeleteManyJobDto,
 } from './dto/jobDto.dto';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { CompanyStatusGuard } from 'src/common/guard/company-status.guard';
 import { RequestHotJobDto } from './dto/request-hot.dto';
+import { UpdateHotJobDto } from './dto/update-hot.dto';
 
 @ApiTags('jobs')
 @Controller('jobs')
@@ -42,6 +43,16 @@ export class JobsController {
     @userDecorator() user: UserDecoratorType,
   ) {
     return this.jobsService.requestHot(requestHotJobDto, user);
+  }
+
+  @ResponseMessage('Cập nhật trạng thái HOT job thành công')
+  @ApiOperation({ summary: 'Duyệt/Set HOT job (Chỉ Super Admin)' })
+  @Post('set-hot')
+  setHot(
+    @Body() updateHotJobDto: UpdateHotJobDto,
+    @userDecorator() user: UserDecoratorType,
+  ) {
+    return this.jobsService.setHot(updateHotJobDto, user);
   }
 
   @ResponseMessage('Tạo mới công việc thành công')
