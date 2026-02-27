@@ -17,11 +17,10 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { useGetJobsFilter, useRequestHotJob } from "@/queries/useJob";
-import { JobCreateType, JobResType } from "@/schemasvalidation/job";
+import { JobResType } from "@/schemasvalidation/job";
 import { format } from "date-fns";
 import { Loader2, Flame, Send } from "lucide-react";
 import { useDebounce } from "use-debounce";

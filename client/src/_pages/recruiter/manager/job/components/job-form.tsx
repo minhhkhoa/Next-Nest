@@ -129,6 +129,7 @@ export default function JobForm({
   //- Hàm xử lý submit
   const onHandleSubmit = async (values: any) => {
     try {
+      /* eslint-disable @typescript-eslint/no-unused-vars */
       const { isHot, createdBy, updatedBy, slug, otherSkills, ...payload } =
         values;
 

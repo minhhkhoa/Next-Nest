@@ -8,6 +8,7 @@ interface StepIndicatorProps {
   totalSteps: number;
 }
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 export default function StepIndicator({
   currentStep,
   totalSteps,

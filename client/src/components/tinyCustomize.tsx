@@ -23,10 +23,11 @@ export default function TinyEditor({ field, placeholder }: TinyEditorProps) {
   const [loading, setLoading] = useState(false);
   const { theme } = useTheme();
 
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const handleFilePicker = (
     cb: (value: string, meta?: Record<string, any> | undefined) => void,
     _value: string,
-    _meta: Record<string, any>
+    _meta: Record<string, any>,
   ) => {
     const input = document.createElement("input");
     input.setAttribute("type", "file");
@@ -40,10 +41,10 @@ export default function TinyEditor({ field, placeholder }: TinyEditorProps) {
 
       // disable nút Save
       const buttons = document.querySelectorAll<HTMLButtonElement>(
-        ".tox-dialog__footer .tox-button"
+        ".tox-dialog__footer .tox-button",
       );
       const saveBtn = Array.from(buttons).find(
-        (btn) => btn.textContent?.trim() === "Save"
+        (btn) => btn.textContent?.trim() === "Save",
       );
       saveBtn?.setAttribute("disabled", "true");
 

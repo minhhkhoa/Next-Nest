@@ -122,6 +122,7 @@ export function NewsModal({ news, categories, onClose }: NewsModalProps) {
         SoftSuccessSonner(resUpdate.message);
       } else {
         //- ko gửi status về server
+        /* eslint-disable @typescript-eslint/no-unused-vars */
         const { status, ...rest } = values;
         const newPayload = { ...rest };
         const resCreate = await createNewsMutation(newPayload);

@@ -162,9 +162,9 @@ export default function ResetPasswordForm() {
         </Form>
 
         <div className="text-center mt-4">
-          <a href="/login" className="text-sm text-primary hover:underline">
+          <Link href="/login" className="text-sm text-primary hover:underline">
             Quay lại đăng nhập
-          </a>
+          </Link>
         </div>
       </CardContent>
     </Card>

@@ -1,6 +1,5 @@
 "use client";
 
-import { getIdFromSlugUrl } from "@/lib/utils";
 import { useGetJobDetail } from "@/queries/useJob";
 import React from "react";
 import JobDetailInfo from "./components/JobDetailInfo";

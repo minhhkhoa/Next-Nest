@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 const ColorThemeContext = createContext({
   colorTheme: "Default",
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   setColorTheme: (theme: string) => {},
 });
 
