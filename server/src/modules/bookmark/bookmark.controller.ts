@@ -1,34 +1,64 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { BookmarkService } from './bookmark.service';
 import { CreateBookmarkDto } from './dto/create-bookmark.dto';
-import { UpdateBookmarkDto } from './dto/update-bookmark.dto';
+import { FindBookmarkQueryDto } from './dto/bookmarkDto.dto';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { UserDecoratorType } from 'src/utils/typeSchemas';
+import {
+  PublicPermission,
+  ResponseMessage,
+} from 'src/common/decorator/customize';
 
-@Controller('bookmark')
+@ApiTags('Bookmark - Đánh dấu')
+@Controller('bookmarks')
 export class BookmarkController {
   constructor(private readonly bookmarkService: BookmarkService) {}
 
+  @PublicPermission()
+  @ResponseMessage('Tạo bookmark thành công')
+  @ApiOperation({ summary: 'Tạo bookmark mới' })
   @Post()
-  create(@Body() createBookmarkDto: CreateBookmarkDto) {
-    return this.bookmarkService.create(createBookmarkDto);
+  create(@Body() createBookmarkDto: CreateBookmarkDto, @Req() req: any) {
+    const user: UserDecoratorType = req.user;
+    return this.bookmarkService.create(createBookmarkDto, user);
   }
 
+  @PublicPermission()
+  @ResponseMessage('Lấy bookmark theo user thành công')
+  @ApiOperation({ summary: 'Lấy tất cả bookmark của user' })
   @Get()
-  findAll() {
-    return this.bookmarkService.findAll();
+  findAllByUser(@Query() query: FindBookmarkQueryDto, @Req() req: any) {
+    const user: UserDecoratorType = req.user;
+    return this.bookmarkService.findAllByUser(user, query);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.bookmarkService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBookmarkDto: UpdateBookmarkDto) {
-    return this.bookmarkService.update(+id, updateBookmarkDto);
-  }
-
+  @PublicPermission()
+  @ResponseMessage('Xóa bookmark thành công')
+  @ApiOperation({ summary: 'Xóa bookmark theo ID' })
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.bookmarkService.remove(+id);
+  remove(@Param('id') id: string, @Req() req: any) {
+    const user: UserDecoratorType = req.user;
+    return this.bookmarkService.remove(id, user);
+  }
+
+  // Xóa theo Item ID (Sử dụng khi toggle button trên UI Job Detail)
+  @PublicPermission()
+  @ResponseMessage('Xóa bookmark theo Item ID thành công')
+  @ApiOperation({
+    summary: 'Xóa bookmark theo Item ID (jobId, companyId, newsId)',
+  })
+  @Delete('item/:itemId')
+  removeByItemId(@Param('itemId') itemId: string, @Req() req: any) {
+    const user: UserDecoratorType = req.user;
+    return this.bookmarkService.removeByItemId(itemId, user);
   }
 }
