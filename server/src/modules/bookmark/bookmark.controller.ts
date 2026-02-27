@@ -33,6 +33,15 @@ export class BookmarkController {
   }
 
   @PublicPermission()
+  @ResponseMessage('Lấy danh sách ID đã bookmark thành công')
+  @ApiOperation({ summary: 'Lấy tất cả các ID item đã bookmark của user để check trạng thái' })
+  @Get('ids')
+  async getAllBookmarkedIds(@Req() req: any, @Query() query: FindBookmarkQueryDto) {
+    const user: UserDecoratorType = req.user;
+    return this.bookmarkService.getAllBookmarkedIds(user, query);
+  }
+
+  @PublicPermission()
   @ResponseMessage('Lấy bookmark theo user thành công')
   @ApiOperation({ summary: 'Lấy tất cả bookmark của user' })
   @Get()

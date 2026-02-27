@@ -13,6 +13,7 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
+import BookmarkJobButton from "@/components/BookmarkJobButton";
 
 interface JobCardProps {
   job: JobResType;
@@ -27,7 +28,10 @@ export default function JobCard({ job }: JobCardProps) {
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-300 border shadow-sm border-border bg-card h-full flex flex-col">
+    <Card className="hover:shadow-lg transition-shadow duration-300 border shadow-sm border-border bg-card h-full flex flex-col relative group">
+      <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+        <BookmarkJobButton jobId={job._id} />
+      </div>
       <CardHeader className="p-4 pb-2 flex flex-row gap-3 items-start space-y-0">
         <div className="w-16 h-16 relative flex-shrink-0 border border-border rounded-lg overflow-hidden bg-background">
           {job.company?.logo ? (

@@ -228,3 +228,9 @@ export const ISSUE_STATUS_OPTIONS = [
 ];
 
 //- end constant cho issue
+
+export const BOOKMARK_TYPE = [
+  { value: "job", label: "Job" },
+  { value: "news", label: "News" },
+  { value: "company", label: "Company" },
+];

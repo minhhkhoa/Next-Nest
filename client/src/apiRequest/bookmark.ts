@@ -14,6 +14,13 @@ const bookmarkApiRequest = {
   create: (body: BookmarkCreateType) =>
     http.post<ApiResponse<BookmarkResType>>(prefix, body),
 
+  //- Lấy tất cả ID bookmark của user (để check status)
+  getAllIds: (params?: { itemType?: string }) =>
+    http.get<ApiResponse<{ _id: string; itemId: string; itemType: string }[]>>(
+      `${prefix}/ids`,
+      { params },
+    ),
+
   //- Lấy danh sách bookmark của user
   findAll: (params: {
     currentPage: number;

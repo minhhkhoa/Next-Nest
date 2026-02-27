@@ -193,4 +193,25 @@ export class BookmarkService {
         throw new BadRequestCustom(error.message, !!error.message);
      }
   }
+
+  async getAllBookmarkedIds(user: UserDecoratorType, query: FindBookmarkQueryDto) {
+    try {
+      const { itemType } = query;
+      const filterConditions: any = {
+        userId: user.id,
+        isDeleted: false,
+      };
+
+      if (itemType) {
+        filterConditions.itemType = itemType;
+      }
+
+      // Chỉ lấy itemId để client check
+      const bookmarks = await this.bookmarkModel.find(filterConditions).select('itemId itemType').lean();
+      
+      return bookmarks;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
 }
