@@ -1,11 +1,13 @@
 import z from "zod";
 import { ActionBy } from "./NewsCategory";
+import { apiJobRes } from "./job";
 
 export const apiBookmarkRes = z.object({
   _id: z.string(),
   userId: z.string(),
   itemId: z.string(),
   itemType: z.string(),
+  job: apiJobRes.optional(),
   isDeleted: z.boolean(),
   createdAt: z.date(),
   updatedAt: z.date(),

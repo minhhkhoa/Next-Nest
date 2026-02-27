@@ -90,6 +90,7 @@ export const segmentNameMap: Record<string, string> = {
   jobs: "Việc làm",
   company: "Công ty",
   issue: "Vấn đề của tôi",
+  "saved-jobs": "Việc làm đã lưu",
   // - end page public
 };
 

@@ -100,7 +100,9 @@ export default function JobCard({ job }: JobCardProps) {
         </div>
 
         <div className="flex flex-wrap gap-1">
-          <i className="text-xs text-muted-foreground">Kỹ năng yêu cầu:</i>
+          <i className="text-xs text-muted-foreground block w-full">
+            Kỹ năng yêu cầu:
+          </i>
           {job.skills &&
             job.skills.slice(0, 3).map((skill: any, index) => (
               <Badge

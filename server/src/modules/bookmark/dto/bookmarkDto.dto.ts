@@ -10,7 +10,7 @@ export class FindBookmarkQueryDto {
   @IsOptional()
   pageSize: number;
 
-  @ApiPropertyOptional({ example: 'JOB' })
+  @ApiPropertyOptional({ example: 'job' })
   @IsOptional()
   @IsString()
   itemType?: string;
