@@ -10,7 +10,15 @@ const SECRET_KEY = new TextEncoder().encode(envConfig.NEXT_PUBLIC_JWT_SECRET);
 const intlMiddleware = createMiddleware(routing);
 
 // 1. Cấu hình nhóm Route protected
-const protectedPaths = ["/profile", "/setting", "/change-password"];
+const protectedPaths = [
+  "/cv-templates",
+  "/issue",
+  "/my-cv",
+  "/profile",
+  "/saved-jobs",
+  "/settings",
+  "/change-password",
+];
 
 // 2. Cấu hình nhóm Role
 const SYSTEM_ADMIN_ROLES = [
@@ -30,16 +38,7 @@ const FORBIDDEN_PATH = "/unauthorized";
 
 export async function middleware(request: NextRequest) {
   const token = request.cookies.get("access_token")?.value;
-  const path = request.nextUrl.pathname;
-
-  /**
- *Xử lý i18n trước
-    - Nếu path không có locale, intlMiddleware sẽ redirect (ví dụ / -> /vi)
-    - Tuy nhiên, ta cần phối hợp với logic auth bên dưới.
-   - Cách đơn giản nhất là chạy intlMiddleware để lấy response,
-   - sau đó kiểm tra auth, nếu cần redirect auth thì override response,
-  - nếu không thì trả về response của intlMiddleware.
- */
+  const { pathname } = request.nextUrl;
 
   const intlResponse = intlMiddleware(request);
 
@@ -48,37 +47,47 @@ export async function middleware(request: NextRequest) {
     return intlResponse;
   }
 
+  // Xử lý loại bỏ locale khỏi path để check logic auth
+  // Ví dụ: /vi/admin -> /admin
+  const pathWithoutLocale = pathname.replace(/^\/(vi|en)(\/|$)/, "/") || "/";
+
   //- không cho hiển thị vào trang /unauthorized
-  if (path === FORBIDDEN_PATH) {
+  if (pathWithoutLocale === FORBIDDEN_PATH) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
   //- chặn về trang login khi đã login thành công
-  if (token && path === "/login") {
+  if (token && pathWithoutLocale === "/login") {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  const isAdminRoute = path.startsWith("/admin");
-  const isRecruiterRoute = path.startsWith("/recruiter");
-  const isProtectedRoute = protectedPaths.some((p) => path.startsWith(p));
+  const isAdminRoute = pathWithoutLocale.startsWith("/admin");
+  const isRecruiterRoute = pathWithoutLocale.startsWith("/recruiter");
+  const isProtectedRoute = protectedPaths.some((p) =>
+    pathWithoutLocale.startsWith(p),
+  );
 
   //- xử lý các route cần bảo vệ
   if (isAdminRoute || isRecruiterRoute || isProtectedRoute) {
     //- không có token (chưa đăng nhập) đá về login
     if (!token) {
-      const loginUrl = new URL("/login", request.url);
-      loginUrl.searchParams.set("callbackUrl", path);
+      const locale = pathname.match(/^\/(vi|en)/)?.[1] || routing.defaultLocale;
+      const loginUrl = new URL(`/${locale}/login`, request.url);
+      loginUrl.searchParams.set("callbackUrl", pathWithoutLocale);
       return NextResponse.redirect(loginUrl);
     }
 
     try {
       //- tới đây thì đã login rồi
+
+      //- decode
       const { payload } = await jwtVerify(token, SECRET_KEY);
-      const role = payload.roleCodeName as string;
+      const role = payload.roleCodeName as string; // hoặc roleName tùy payload
 
       //- cho phép nhà tuyển dụng vào trang welcome dù chưa có role
-      if (RECRUITER_BYPASS_PATHS.includes(path)) {
-        return NextResponse.next();
+      // Check pathWithoutLocale thay vì path
+      if (RECRUITER_BYPASS_PATHS.includes(pathWithoutLocale)) {
+        return intlResponse;
       }
 
       //- bảo vệ route /admin
@@ -98,7 +107,7 @@ export async function middleware(request: NextRequest) {
       }
 
       //- bảo vệ các route protected
-      // Nếu đã login và verify thành công thì luôn cho phép vào profile/setting
+      // Nếu đã login và verify thành công thì luôn cho phép vào protectedPaths
       return intlResponse;
     } catch (error) {
       console.error("Middleware JWT Error:", error);
