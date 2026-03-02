@@ -8,6 +8,7 @@ import Image from "next/image";
 import DataTablePagination from "@/components/DataTablePagination";
 import ListJobSkeleton from "@/components/skeletons/list-job";
 import { generateSlugUrl } from "@/lib/utils";
+import JobHoverCard from "@/components/JobHoverCard";
 
 interface RelatedJobsProps {
   jobId: string;
@@ -59,12 +60,14 @@ export default function RelatedJobs({ jobId }: RelatedJobsProps) {
               <CardHeader className="py-2">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
-                    <CardTitle
-                      className="text-base font-semibold line-clamp-2 text-foreground group-hover:text-primary transition-colors pt-2"
-                      title={job.title.vi}
-                    >
-                      {job.title.vi}
-                    </CardTitle>
+                    <JobHoverCard job={job}>
+                      <CardTitle
+                        className="text-base font-semibold line-clamp-2 text-foreground group-hover:text-primary transition-colors pt-2"
+                        title={job.title.vi}
+                      >
+                        {job.title.vi}
+                      </CardTitle>
+                    </JobHoverCard>
                     <p className="text-sm text-muted-foreground line-clamp-1 mt-1">
                       {job.company?.name || "Công ty ẩn danh"}
                     </p>
@@ -97,10 +100,7 @@ export default function RelatedJobs({ jobId }: RelatedJobsProps) {
                   </div>
                   <div className="flex items-center gap-1">
                     <MapPin className="w-4 h-4" />
-                    <span
-                      className="line-clamp-1"
-                      title={job.location}
-                    >
+                    <span className="line-clamp-1" title={job.location}>
                       {job.location}
                     </span>
                   </div>

@@ -15,6 +15,7 @@ import ListJobSkeleton from "@/components/skeletons/list-job";
 import { generateSlugUrl } from "@/lib/utils";
 import { useGetLang } from "@/hooks/use-get-lang";
 import BookmarkJobButton from "@/components/BookmarkJobButton";
+import JobHoverCard from "@/components/JobHoverCard";
 
 interface CompanyJobsProps {
   companyId: string;
@@ -72,9 +73,11 @@ export default function CompanyJobs({ companyId }: CompanyJobsProps) {
 
                     <div className="flex-1 flex flex-col md:flex-row justify-between gap-4">
                       <div className="flex-1 space-y-2">
-                        <h3 className="text-xl font-bold group-hover:text-primary transition-colors line-clamp-1">
-                          {getLang(job.title)}
-                        </h3>
+                        <JobHoverCard job={job}>
+                          <h3 className="text-xl font-bold group-hover:text-primary transition-colors line-clamp-1">
+                            {getLang(job.title)}
+                          </h3>
+                        </JobHoverCard>
 
                         <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                           <div className="flex items-center gap-1">

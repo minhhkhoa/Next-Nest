@@ -14,6 +14,7 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import BookmarkJobButton from "@/components/BookmarkJobButton";
+import JobHoverCard from "@/components/JobHoverCard";
 
 interface JobCardProps {
   job: JobResType;
@@ -48,20 +49,22 @@ export default function JobCard({ job }: JobCardProps) {
           )}
         </div>
         <div className="flex-1 overflow-hidden">
-          <Link
-            href={`/jobs/${generateSlugUrl({
-              name: getLang(job.slug) || getLang(job.title),
-              id: job._id,
-            })}`}
-            className="hover:text-primary transition-colors block mb-1"
-          >
-            <h3
-              className="font-bold text-base leading-tight line-clamp-2"
-              title={getLang(job.title)}
+          <JobHoverCard job={job}>
+            <Link
+              href={`/jobs/${generateSlugUrl({
+                name: getLang(job.slug) || getLang(job.title),
+                id: job._id,
+              })}`}
+              className="hover:text-primary transition-colors block mb-1"
             >
-              {getLang(job.title)}
-            </h3>
-          </Link>
+              <h3
+                className="font-bold text-base leading-tight line-clamp-2"
+                title={getLang(job.title)}
+              >
+                {getLang(job.title)}
+              </h3>
+            </Link>
+          </JobHoverCard>
           <p
             className="text-xs text-muted-foreground truncate"
             title={job.company?.name}
