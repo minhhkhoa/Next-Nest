@@ -1,19 +1,84 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { CompanyResType } from "@/schemasvalidation/company";
 import { Button } from "@/components/ui/button";
 import { Globe, Users, Plus } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useAppStore } from "@/components/TanstackProvider";
+import {
+  useCreateBookmark,
+  useDeleteBookmarkByItemId,
+} from "@/queries/useBookmark";
+import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
+import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface CompanyHeaderProps {
   company: CompanyResType;
 }
 
 export default function CompanyHeader({ company }: CompanyHeaderProps) {
-  const { isLogin } = useAppStore();
+  const { isLogin, user } = useAppStore();
+
+  const queryClient = useQueryClient();
+
+  const [isBookmarked, setIsBookmarked] = useState(false);
+
+  const createBookmarkMutation = useCreateBookmark();
+  const deleteBookmarkMutation = useDeleteBookmarkByItemId();
+
+  const handleToggleBookmark = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    //- Nếu đã bookmark, gọi mutation xóa bookmark
+    if (isBookmarked) {
+      deleteBookmarkMutation.mutate(company._id, {
+        onSuccess: () => {
+          setIsBookmarked(false);
+          SoftSuccessSonner("Đã bỏ theo dõi công ty");
+          queryClient.invalidateQueries({
+            queryKey: ["company-detail", company._id],
+          });
+        },
+        onError: (error: any) => {
+          SoftDestructiveSonner(error?.message || "Có lỗi xảy ra");
+        },
+      });
+    } else {
+      //- Nếu chưa bookmark, gọi mutation tạo bookmark
+      createBookmarkMutation.mutate(
+        {
+          itemId: company._id,
+          itemType: "company",
+        },
+        {
+          onSuccess: () => {
+            setIsBookmarked(true);
+            SoftSuccessSonner("Đã lưu công ty");
+            queryClient.invalidateQueries({
+              queryKey: ["company-detail", company._id],
+            });
+          },
+          onError: (error: any) => {
+            SoftDestructiveSonner(error?.message || "Có lỗi xảy ra");
+          },
+        },
+      );
+    }
+  };
+
+  useEffect(() => {
+    if (company.userFollow && user?._id) {
+      const checkFollow = company.userFollow.includes(user._id);
+      setIsBookmarked(checkFollow);
+    } else {
+      setIsBookmarked(false);
+    }
+  }, [company.userFollow, user?._id]);
+
   return (
     <div className="relative w-full mb-20 md:mb-24">
       {/* Banner */}
@@ -71,8 +136,11 @@ export default function CompanyHeader({ company }: CompanyHeaderProps) {
           {/* Action Buttons (Desktop) */}
           {isLogin && (
             <div className="hidden md:flex pb-4 gap-3">
-              <Button className="gap-2 bg-primary hover:bg-primary/90 text-white min-w-[140px] shadow-lg">
-                <Plus size={18} /> Theo dõi
+              <Button
+                className="gap-2 bg-primary hover:bg-primary/90 text-white min-w-[140px] shadow-lg"
+                onClick={handleToggleBookmark}
+              >
+                <Plus size={18} /> {isBookmarked ? "Bỏ theo dõi" : "Theo dõi"}
               </Button>
             </div>
           )}
@@ -82,8 +150,12 @@ export default function CompanyHeader({ company }: CompanyHeaderProps) {
       {/* Mobile Action Buttons (Below Header) */}
       {isLogin && (
         <div className="md:hidden mt-20 px-4">
-          <Button className="w-full gap-2 bg-primary hover:bg-primary/90 text-white shadow-sm">
-            <Plus size={18} /> Theo dõi
+          <Button
+            className="w-full gap-2 bg-primary hover:bg-primary/90 text-white shadow-sm"
+            onClick={handleToggleBookmark}
+          >
+            <Plus size={18} />{" "}
+            {isBookmarked ? "Bỏ theo dõi" : "Theo dõi công ty"}
           </Button>
         </div>
       )}

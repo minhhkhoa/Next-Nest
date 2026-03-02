@@ -47,6 +47,27 @@ export class CompanyService {
     private companyModel: SoftDeleteModel<CompanyDocument>,
   ) {}
 
+  //- cập nhật userFollow
+  async updateUserFollow(companyId: string, userId: string, isFollow: boolean) {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(companyId)) {
+        throw new BadRequestCustom('ID công ty không hợp lệ', true);
+      }
+
+      if (isFollow) {
+        await this.companyModel.findByIdAndUpdate(companyId, {
+          $addToSet: { userFollow: new mongoose.Types.ObjectId(userId) },
+        });
+      } else {
+        await this.companyModel.findByIdAndUpdate(companyId, {
+          $pull: { userFollow: new mongoose.Types.ObjectId(userId) },
+        });
+      }
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
   async create(createCompanyDto: CreateCompanyDto, user: UserDecoratorType) {
     const checkTax = await this.checkTaxCodeExist(createCompanyDto.taxCode);
 

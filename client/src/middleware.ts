@@ -82,7 +82,7 @@ export async function middleware(request: NextRequest) {
 
       //- decode
       const { payload } = await jwtVerify(token, SECRET_KEY);
-      const role = payload.roleCodeName as string; // hoặc roleName tùy payload
+      const role = payload.roleCodeName as string;
 
       //- cho phép nhà tuyển dụng vào trang welcome dù chưa có role
       // Check pathWithoutLocale thay vì path
@@ -123,6 +123,6 @@ export async function middleware(request: NextRequest) {
 export const config = {
   // Matcher ignoring `/_next/` and `/api/`
   matcher: [
-    "/((?!api|trpc|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|pdf|txt|xml|json|js|css)).*)",
+    "/((?!api|trpc|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|pdf|txt|xml|json|js|css|mp4)).*)",
   ],
 };

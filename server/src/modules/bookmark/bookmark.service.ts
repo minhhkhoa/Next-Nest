@@ -7,12 +7,14 @@ import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 import mongoose from 'mongoose';
 import { FindBookmarkQueryDto } from './dto/bookmarkDto.dto';
+import { CompanyService } from '../company/company.service';
 
 @Injectable()
 export class BookmarkService {
   constructor(
     @InjectModel(Bookmark.name)
     private bookmarkModel: SoftDeleteModel<BookmarkDocument>,
+    private readonly companyService: CompanyService,
   ) {}
 
   async create(createBookmarkDto: CreateBookmarkDto, user: UserDecoratorType) {
@@ -46,6 +48,11 @@ export class BookmarkService {
           avatar: user.avatar,
         },
       });
+
+      //- Nếu là company thì update userFollow
+      if (itemType === 'company') {
+        await this.companyService.updateUserFollow(itemId, user.id, true);
+      }
 
       return newBookmark;
     } catch (error) {
@@ -190,7 +197,14 @@ export class BookmarkService {
       }
 
       //- xóa luôn
-      return await this.bookmarkModel.deleteOne({ _id: id });
+      const result = await this.bookmarkModel.deleteOne({ _id: id });
+
+      if (bookmark.itemType === 'company') {
+        const itemIdStr = bookmark.itemId.toString();
+        await this.companyService.updateUserFollow(itemIdStr, user.id, false);
+      }
+
+      return result;
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }
@@ -199,14 +213,25 @@ export class BookmarkService {
   //- Xóa theo itemId (Ví dụ nút bookmark toggle trên UI Job Detail)
   async removeByItemId(itemId: string, user: UserDecoratorType) {
     try {
-      //- xóa luôn
-      const result = await this.bookmarkModel.deleteOne({
-        userId: user.id,
-        itemId: itemId,
+      const bookmark = await this.bookmarkModel.findOne({
+        userId: new mongoose.Types.ObjectId(user.id),
+        itemId: new mongoose.Types.ObjectId(itemId),
+        isDeleted: false,
       });
 
-      if (result.deletedCount === 0) {
+      if (!bookmark) {
         throw new BadRequestCustom('Không tìm thấy bookmark để xóa', true);
+      }
+
+      //- xóa luôn
+      const result = await this.bookmarkModel.deleteOne({
+        userId: new mongoose.Types.ObjectId(user.id),
+        itemId: new mongoose.Types.ObjectId(itemId),
+      });
+
+      if (bookmark.itemType === 'company') {
+        const itemIdStr = bookmark.itemId.toString();
+        await this.companyService.updateUserFollow(itemIdStr, user.id, false);
       }
 
       return result;

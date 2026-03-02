@@ -1,12 +1,13 @@
 import z from "zod";
 import { ActionBy } from "./NewsCategory";
 import { apiJobRes } from "./job";
+import { BOOKMARK_TYPE } from "@/lib/constant";
 
 export const apiBookmarkRes = z.object({
   _id: z.string(),
   userId: z.string(),
   itemId: z.string(),
-  itemType: z.string(),
+  itemType: z.enum(BOOKMARK_TYPE.map((opt) => opt.value)),
   job: apiJobRes.optional(),
   isDeleted: z.boolean(),
   createdAt: z.date(),
@@ -34,7 +35,7 @@ export const apiGetAllBookmarkRes = z.object({
 //- create
 export const bookmarkCreate = z.object({
   itemId: z.string(),
-  itemType: z.string(),
+  itemType: z.enum(BOOKMARK_TYPE.map((opt) => opt.value)),
 });
 
 export type BookmarkCreateType = z.infer<typeof bookmarkCreate>;
