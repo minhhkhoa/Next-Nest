@@ -38,6 +38,7 @@
         "Title": "Setting",
         "AccountSetting": "Account Setting"
       },
+      "DifferentAccount": "Login different account",
       "Logout": "Logout"
     },
 

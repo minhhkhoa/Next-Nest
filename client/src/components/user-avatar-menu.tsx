@@ -1,6 +1,13 @@
 "use client";
 
-import { Settings, LogOut, LayoutDashboard, User, Folder } from "lucide-react";
+import {
+  Settings,
+  LogOut,
+  LayoutDashboard,
+  User,
+  Folder,
+  UserPlus,
+} from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -42,6 +49,18 @@ export function UserAvatarMenu() {
     setLogin(false);
     SoftSuccessSonner("Đăng xuất thành công!");
     router.push("/");
+    router.refresh();
+  };
+
+  const handleLoginOtherAccount = async () => {
+    try {
+      await mutationLogout();
+    } catch (error) {
+      console.log(error);
+    }
+    removeTokensFromLocalStorage();
+    setLogin(false);
+    router.push("/login");
     router.refresh();
   };
 
@@ -120,13 +139,22 @@ export function UserAvatarMenu() {
 
         {/* Phần Đăng xuất */}
         {isLogin && (
-          <DropdownMenuItem
-            onClick={handleLogout}
-            className="cursor-pointer text-destructive focus:text-destructive"
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            <span>{t("Logout")}</span>
-          </DropdownMenuItem>
+          <>
+            <DropdownMenuItem
+              onClick={handleLoginOtherAccount}
+              className="cursor-pointer"
+            >
+              <UserPlus className="mr-2 h-4 w-4" />
+              <span>{t("DifferentAccount")}</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={handleLogout}
+              className="cursor-pointer text-destructive focus:text-destructive"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>{t("Logout")}</span>
+            </DropdownMenuItem>
+          </>
         )}
       </DropdownMenuContent>
     </DropdownMenu>

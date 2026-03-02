@@ -18,6 +18,7 @@ import { useGetListCategories } from "@/queries/useNewsCategory";
 import { generateSlugUrl } from "@/lib/utils";
 import { useAppStore } from "./TanstackProvider";
 import { useTranslations } from "next-intl";
+import { useGetLang } from "@/hooks/use-get-lang";
 
 const components: { title: string; href: string; description: string }[] = [
   {
@@ -58,10 +59,10 @@ const components: { title: string; href: string; description: string }[] = [
 ];
 
 export default function NavigationHeaderMenu() {
-
   const t = useTranslations("Header.NavigateHeader");
   const isMobile = useIsMobile();
   const { isLogin } = useAppStore();
+  const { getLang } = useGetLang();
 
   const { data: listCateNews } = useGetListCategories();
 
@@ -105,7 +106,9 @@ export default function NavigationHeaderMenu() {
                   <li>
                     <NavigationMenuLink asChild>
                       <Link href="/cv-templates">
-                        <div className="font-medium">{t("CreateCv.Item1.Title")}</div>
+                        <div className="font-medium">
+                          {t("CreateCv.Item1.Title")}
+                        </div>
                         <div className="text-muted-foreground">
                           {t("CreateCv.Item1.Description")}
                         </div>
@@ -113,7 +116,9 @@ export default function NavigationHeaderMenu() {
                     </NavigationMenuLink>
                     <NavigationMenuLink asChild>
                       <Link href="/cv-templates">
-                        <div className="font-medium">{t("CreateCv.Item2.Title")}</div>
+                        <div className="font-medium">
+                          {t("CreateCv.Item2.Title")}
+                        </div>
                         <div className="text-muted-foreground">
                           {t("CreateCv.Item2.Description")}
                         </div>
@@ -121,7 +126,9 @@ export default function NavigationHeaderMenu() {
                     </NavigationMenuLink>
                     <NavigationMenuLink asChild>
                       <Link href="/cv-templates">
-                        <div className="font-medium">{t("CreateCv.Item3.Title")}</div>
+                        <div className="font-medium">
+                          {t("CreateCv.Item3.Title")}
+                        </div>
                         <div className="text-muted-foreground">
                           {t("CreateCv.Item3.Description")}
                         </div>
@@ -145,12 +152,12 @@ export default function NavigationHeaderMenu() {
                       <Link
                         className="max-w-[200px]"
                         href={`/cate-news/${generateSlugUrl({
-                          name: item.slug.vi,
+                          name: getLang(item.slug),
                           id: item._id,
                         })}`}
                       >
                         <div className="font-medium !whitespace-nowrap truncate">
-                          {item.name.vi}
+                          {getLang(item.name)}
                         </div>
                       </Link>
                     </NavigationMenuLink>

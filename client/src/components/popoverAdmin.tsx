@@ -11,7 +11,7 @@ import { useSidebar } from "@/components/ui/sidebar";
 import { handleInitName, removeTokensFromLocalStorage } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { LogOut, Settings, User } from "lucide-react";
+import { LogOut, Settings, User, UserPlus } from "lucide-react";
 import { useLogoutMutation } from "@/queries/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQueryClient } from "@tanstack/react-query";
@@ -42,6 +42,19 @@ export default function PopoverAdmin() {
 
     SoftSuccessSonner("Đăng xuất thành công!");
     router.push("/");
+    router.refresh();
+  };
+
+  const handleLoginOtherAccount = async () => {
+    try {
+      await mutationLogout();
+    } catch (error) {
+      console.log(error);
+    }
+    removeTokensFromLocalStorage();
+    setLogin(false);
+    queryClient.removeQueries({ queryKey: ["profile"] });
+    router.push("/login");
     router.refresh();
   };
 
@@ -112,6 +125,15 @@ export default function PopoverAdmin() {
             <Settings className="mr-2 h-4 w-4" />
             <span>Cài đặt tài khoản</span>
           </Link>
+
+          {/* Login other account */}
+          <div
+            className="flex items-center gap-2 mt-2 pl-3 rounded-xl cursor-pointer h-8 hover:bg-accent/50"
+            onClick={handleLoginOtherAccount}
+          >
+            <UserPlus className="mr-2 h-4 w-4" />
+            <span className="line-clamp-1">Đăng nhập tài khoản khác</span>
+          </div>
 
           {/* logout */}
           {isLogin && (

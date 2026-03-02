@@ -39,6 +39,7 @@
         "Title": "Cài đặt",
         "AccountSetting": "Cài đặt tài khoản"
       },
+      "DifferentAccount": "Đăng nhập tài khoản khác",
       "Logout": "Đăng xuất"
     },
 
@@ -116,7 +117,7 @@
       "NoJobsFound": "Không tìm thấy công việc nổi bật nào."
     },
 
-    "JobsWithFilterSection":{
+    "JobsWithFilterSection": {
       "Title": "Việc làm mới nhất",
       "Description": "Cập nhật liên tục các cơ hội nghề nghiệp mới nhất",
       "PlaceholderSearch": "Tìm kiếm công việc ...",

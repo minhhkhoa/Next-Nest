@@ -127,9 +127,15 @@ export default function CategoryNewsPage({
       <div className="my-10">
         <BlockNewsWithPagination
           listNews={listNews?.data?.result || []}
-          current={current}
+          meta={
+            listNews?.data?.meta || {
+              current: 1,
+              pageSize: 6,
+              totalPages: 1,
+              totalItems: 0,
+            }
+          }
           isLoadingListNews={isLoadingListNews}
-          totalPages={totalPages}
           onPageChange={onPageChange}
           textTitle="Danh sách bài viết"
         />

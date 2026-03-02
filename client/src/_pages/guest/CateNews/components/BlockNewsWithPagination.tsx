@@ -1,24 +1,20 @@
 import React from "react";
 import { formatDateInput, generateSlugUrl } from "@/lib/utils";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import { NewsResFilterType } from "@/schemasvalidation/NewsCategory";
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { PenIcon } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
+import DataTablePagination from "@/components/DataTablePagination";
 
 export interface BlockNewsWithPaginationProps {
   listNews: NewsResFilterType[];
-  current: number;
-  totalPages: number;
+  meta: {
+    current: number;
+    pageSize: number;
+    totalPages: number;
+    totalItems: number;
+  };
   isLoadingListNews: boolean;
   onPageChange: (page: number) => void;
   textTitle?: string;
@@ -26,8 +22,7 @@ export interface BlockNewsWithPaginationProps {
 
 export default function BlockNewsWithPagination({
   listNews,
-  current,
-  totalPages,
+  meta,
   isLoadingListNews,
   onPageChange,
   textTitle,
@@ -81,86 +76,7 @@ export default function BlockNewsWithPagination({
         </div>
       )}
 
-      {/* Pagination */}
-      <div className="mt-8">
-        <Pagination className="flex justify-center">
-          <PaginationContent>
-            {/* Nút Trước */}
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => onPageChange(current - 1)}
-                aria-disabled={current === 1}
-                className={
-                  current === 1 ? "pointer-events-none opacity-50" : ""
-                }
-              />
-            </PaginationItem>
-
-            {/* Các trang */}
-            {!isLoadingListNews &&
-              Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (page) => {
-                  // Nếu tổng số trang lớn, hiển thị rút gọn với Ellipsis
-                  if (totalPages > 5) {
-                    const firstPage = page === 1;
-                    const lastPage = page === totalPages;
-                    const nearCurrent = Math.abs(current - page) <= 1;
-
-                    if (firstPage || lastPage || nearCurrent) {
-                      return (
-                        <PaginationItem key={page}>
-                          <PaginationLink
-                            isActive={current === page}
-                            onClick={() => onPageChange(page)}
-                          >
-                            {page}
-                          </PaginationLink>
-                        </PaginationItem>
-                      );
-                    }
-
-                    // Dấu "..." giữa các khoảng
-                    if (
-                      (page === 2 && current > 3) ||
-                      (page === totalPages - 1 && current < totalPages - 2)
-                    ) {
-                      return (
-                        <PaginationItem key={page}>
-                          <PaginationEllipsis />
-                        </PaginationItem>
-                      );
-                    }
-
-                    return null;
-                  }
-
-                  // Trường hợp ít trang
-                  return (
-                    <PaginationItem key={page}>
-                      <PaginationLink
-                        isActive={current === page}
-                        onClick={() => onPageChange(page)}
-                      >
-                        {page}
-                      </PaginationLink>
-                    </PaginationItem>
-                  );
-                }
-              )}
-
-            {/* Nút Sau */}
-            <PaginationItem>
-              <PaginationNext
-                onClick={() => onPageChange(current + 1)}
-                aria-disabled={current === totalPages}
-                className={
-                  current === totalPages ? "pointer-events-none opacity-50" : ""
-                }
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div>
+      <DataTablePagination meta={meta} onPageChange={onPageChange} />
     </div>
   );
 }
