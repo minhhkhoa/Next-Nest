@@ -177,4 +177,22 @@ export class UserResumeService {
       throw new BadRequestCustom(error.message, !!error.message);
     }
   }
+
+  async validateResumeForApplication(resumeId: string, userId: string) {
+    if (!mongoose.Types.ObjectId.isValid(resumeId)) {
+      throw new BadRequestCustom('ID CV không hợp lệ');
+    }
+    const resume = await this.resumeModel.findOne({
+      _id: resumeId,
+      userID: userId,
+      isDeleted: false,
+    });
+    if (!resume) {
+      throw new BadRequestCustom(
+        'CV không tồn tại hoặc không thuộc quyền sở hữu của bạn',
+      );
+    }
+    return resume;
+  }
 }
+

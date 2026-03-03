@@ -111,6 +111,22 @@ export class UserService {
     );
   }
 
+  //- Lấy danh sách Recruiter của 1 công ty (dùng cho module Application)
+  async findRecruitersByCompany(companyId: string) {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(companyId)) {
+        throw new BadRequestException('ID công ty không hợp lệ');
+      }
+      return await this.userModel
+        .find({
+          'employerInfo.companyID': companyId,
+        })
+        .select('name email avatar');
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
   async createUserWithProviderSocial(userData: UserResponse, provider: string) {
     try {
       //- bỏ id đi

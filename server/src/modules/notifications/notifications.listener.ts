@@ -129,4 +129,22 @@ export class NotificationsListener {
       NotificationType.ISSUE_REQUEST_HOT_PROCESSED,
     );
   }
+
+  //- tạo mới đơn ứng tuyển
+  @OnEvent(NotificationType.APPLICATION_SUBMITTED)
+  handleApplicationCreated(payload: CreateNotificationDto) {
+    return this.processNotification(
+      payload,
+      NotificationType.APPLICATION_SUBMITTED,
+    );
+  }
+
+  //- thay đổi trạng thái đơn ứng tuyển
+  @OnEvent(NotificationType.APPLICATION_STATUS_CHANGED)
+  handleApplicationStatusChanged(payload: CreateNotificationDto) {
+    return this.processNotification(
+      payload,
+      NotificationType.APPLICATION_STATUS_CHANGED,
+    );
+  }
 }

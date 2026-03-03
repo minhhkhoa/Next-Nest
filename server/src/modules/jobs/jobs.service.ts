@@ -81,7 +81,7 @@ export class JobsService {
 
       //- lấy ra issue để gửi notifi cho người xin hot
       const issue = await this.issueService.findOne(issueId!);
-      
+
       if (!issue) {
         throw new BadRequestCustom('Issue không tồn tại');
       }
@@ -1161,6 +1161,30 @@ export class JobsService {
         },
         result,
       };
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
+  async validateJobForApplication(jobId: string) {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(jobId)) {
+        throw new BadRequestCustom('ID công việc không hợp lệ');
+      }
+      const job = await this.jobModel.findOne({
+        _id: jobId,
+        isDeleted: false,
+        isActive: true, //- Chỉ cho phép ứng tuyển job đã duyệt
+        status: 'active', //- Chỉ cho phép ứng tuyển job đang mở
+      });
+
+      if (!job) {
+        throw new BadRequestCustom('Công việc không tồn tại hoặc đã đóng');
+      }
+      if (job.endDate && new Date(job.endDate) < new Date()) {
+        throw new BadRequestCustom('Công việc đã hết hạn ứng tuyển');
+      }
+      return job;
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }

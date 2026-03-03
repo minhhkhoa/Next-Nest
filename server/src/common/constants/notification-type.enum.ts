@@ -18,9 +18,9 @@ export enum NotificationType {
   ISSUE_REQUEST_HOT = 'ISSUE_REQUEST_HOT', // Admin nhận: Có yêu cầu hot job mới
   ISSUE_REQUEST_HOT_PROCESSED = 'ISSUE_REQUEST_HOT_PROCESSED', // RECRUITER nhận: Yêu cầu hot job được duyệt
 
-  //- Module Resume
-  RESUME_SUBMITTED = 'RESUME_SUBMITTED', // Recruiter nhận: Có CV mới
-  RESUME_STATUS_CHANGED = 'RESUME_STATUS_CHANGED', // Candidate nhận: Trạng thái CV thay đổi
+  //- Module application
+  APPLICATION_SUBMITTED = 'APPLICATION_SUBMITTED', // Recruiter nhận: Có CV mới
+  APPLICATION_STATUS_CHANGED = 'APPLICATION_STATUS_CHANGED', // ứng viên nhận: Trạng thái CV thay đổi
 
   //- Module News
   NEWS_CREATED = 'NEWS_CREATED', // Admin nhận: Có tin mới

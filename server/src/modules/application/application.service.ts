@@ -1,26 +1,443 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  forwardRef,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Types } from 'mongoose';
+import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { UpdateApplicationDto } from './dto/update-application.dto';
+import { Application, ApplicationDocument } from './schemas/application.schema';
+import { FindApplicationQueryDto } from './dto/applicationDto.dto';
+import { JobsService } from '../jobs/jobs.service';
+import { UserResumeService } from '../user-resume/user-resume.service';
+import { UserService } from '../user/user.service';
+import { UserDecoratorType } from 'src/utils/typeSchemas';
+import { NotificationType } from 'src/common/constants/notification-type.enum';
+import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
+import { TranslationService } from 'src/common/translation/translation.service';
 
 @Injectable()
 export class ApplicationService {
-  create(createApplicationDto: CreateApplicationDto) {
-    return 'This action adds a new application';
+  constructor(
+    @InjectModel(Application.name)
+    private applicationModel: SoftDeleteModel<ApplicationDocument>,
+    private jobsService: JobsService,
+   private readonly translationService: TranslationService,
+    private userResumeService: UserResumeService,
+    @Inject(forwardRef(() => UserService)) private userService: UserService,
+    private eventEmitter: EventEmitter2,
+  ) {}
+
+  async create(
+    createApplicationDto: CreateApplicationDto,
+    user: UserDecoratorType,
+  ) {
+    try {
+      //- dịch đã
+       const dataLang = await this.translationService.translateModuleData(
+         'application',
+         createApplicationDto,
+       );
+      const { jobId, resumeType, systemCvData, cvUrl } = dataLang;
+
+      //- Validate Job
+      const job = await this.jobsService.validateJobForApplication(jobId);
+
+      //- Validate Resume
+      if (resumeType === 'SYSTEM_CV') {
+        if (!systemCvData || !systemCvData.userResumeId) {
+          throw new BadRequestCustom('Vui lòng chọn CV hệ thống');
+        }
+        //- Kiểm tra CV có thuộc về ứng viên và hợp lệ để ứng tuyển không
+        await this.userResumeService.validateResumeForApplication(
+          systemCvData.userResumeId,
+          user.id,
+        );
+      } else {
+        if (!cvUrl) throw new BadRequestCustom('Vui lòng tải lên file CV');
+      }
+
+      //- Check existing application cho cùng job và user (chỉ cho phép 1 đơn ứng tuyển mỗi job)
+      const existApp = await this.applicationModel.findOne({
+        jobId,
+        userId: user.id,
+        isDeleted: false,
+      });
+
+      if (existApp) {
+        throw new BadRequestCustom('Bạn đã ứng tuyển công việc này rồi.');
+      }
+
+      //- Create Application
+      const newApplication = await this.applicationModel.create({
+        ...dataLang,
+        userId: user.id,
+        companyId: job.companyID,
+        jobId: job._id,
+        history: [
+          {
+            status: 'PENDING',
+            note: 'Ứng viên nộp hồ sơ',
+            updatedAt: new Date(),
+            updatedBy: {
+              _id: new Types.ObjectId(user.id),
+              email: user.email,
+              name: user.name,
+              avatar: user.avatar,
+            },
+          },
+        ],
+        createdBy: {
+          _id: new Types.ObjectId(user.id),
+          email: user.email,
+          name: user.name,
+          avatar: user.avatar,
+        },
+      });
+
+      //- ping noti
+      try {
+        const recruiters = await this.userService.findRecruitersByCompany(
+          job.companyID.toString(),
+        );
+
+        recruiters.forEach((recruiter) => {
+          this.eventEmitter.emit(NotificationType.APPLICATION_SUBMITTED, {
+            receiverId: recruiter._id.toString(),
+            senderId: user.id,
+            title: 'Hồ sơ ứng tuyển mới',
+            content: `Ứng viên ${user.name} đã ứng tuyển vào công việc ${job.title['vi'] || job.title['en'] || 'Job'}`,
+            type: NotificationType.APPLICATION_SUBMITTED,
+            metadata: {
+              applicationId: newApplication._id.toString(),
+              jobId: job._id.toString(),
+              companyId: job.companyID.toString(),
+              module: 'APPLICATION',
+            },
+          });
+        });
+      } catch (notifError) {
+        console.error('Notification Error:', notifError);
+      }
+
+      return newApplication;
+    } catch (error) {
+      if (
+        error instanceof BadRequestCustom ||
+        error instanceof ForbiddenException ||
+        error instanceof NotFoundException
+      ) {
+        throw error;
+      }
+      throw new BadRequestCustom(error.message);
+    }
   }
 
-  findAll() {
-    return `This action returns all application`;
+  async findAll(query: FindApplicationQueryDto, user: UserDecoratorType) {
+    try {
+      const {
+        currentPage,
+        pageSize,
+        status,
+        jobId,
+        isViewed,
+        keyword,
+        minRating,
+        isDeleted,
+      } = query;
+
+      const filter: any = {};
+
+      //- check quyền: Chỉ recruiter của công ty mới xem được tất cả đơn ứng tuyển của công ty mình
+      if (user.employerInfo?.companyID) {
+        filter.companyId = new Types.ObjectId(user.employerInfo.companyID);
+      } else {
+        throw new ForbiddenException(
+          'Không có quyền truy cập. Chỉ dành cho nhà tuyển dụng.',
+        );
+      }
+
+      //- Các filter
+      if (status) filter.status = status;
+
+      if (jobId) filter.jobId = new Types.ObjectId(jobId);
+      
+      if (isViewed !== undefined && isViewed !== '')
+        filter.isViewed = isViewed === 'true';
+
+      if (minRating) filter.rating = { $gte: minRating };
+
+      //- Lọc theo đã xóa hay chưa
+      if (isDeleted === 'true') {
+        filter.isDeleted = true;
+      } else {
+        filter.isDeleted = false;
+      }
+
+      //- Tìm kiếm theo từ khóa (email, tên ứng viên, thư giới thiệu...)
+      if (keyword) {
+        filter.$or = [
+          { coverLetter: { $regex: keyword, $options: 'i' } },
+          { 'userId.name': { $regex: keyword, $options: 'i' } },
+          { 'userId.email': { $regex: keyword, $options: 'i' } },
+        ];
+      }
+
+      //- Pagination
+      const limit = pageSize ? +pageSize : 10;
+      const offset = currentPage ? (+currentPage - 1) * limit : 0;
+
+      const [result, totalItems] = await Promise.all([
+        this.applicationModel
+          .find(filter)
+          .populate('jobId', 'title slug salaryRange')
+          .populate('userId', 'name email avatar')
+          .populate('systemCvData.userResumeId', 'resumeName url')
+          .skip(offset)
+          .limit(limit)
+          .sort({ createdAt: -1 })
+          .exec(),
+        this.applicationModel.countDocuments(filter),
+      ]);
+
+      return {
+        meta: {
+          current: currentPage || 1,
+          pageSize: limit,
+          pages: Math.ceil(totalItems / limit),
+          total: totalItems,
+        },
+        result,
+      };
+    } catch (error) {
+      if (error instanceof ForbiddenException) throw error;
+      throw new BadRequestCustom(error.message);
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} application`;
+  //- Ứng viên xem lại tất cả đơn đã nộp của mình
+  async findMyApplications(
+    query: FindApplicationQueryDto,
+    user: UserDecoratorType,
+  ) {
+    try {
+      const { currentPage, pageSize, status, keyword } = query;
+
+      const filter: any = {
+        userId: new Types.ObjectId(user.id),
+        isDeleted: false,
+      };
+
+      if (status) filter.status = status;
+
+      if (keyword) {
+        filter.coverLetter = { $regex: keyword, $options: 'i' };
+      }
+
+      const limit = pageSize ? +pageSize : 10;
+      const offset = currentPage ? (+currentPage - 1) * limit : 0;
+
+      const [result, totalItems] = await Promise.all([
+        this.applicationModel
+          .find(filter)
+          .populate('companyId', 'name logo')
+          .populate('jobId', 'title slug salaryRange')
+          .skip(offset)
+          .limit(limit)
+          .sort({ createdAt: -1 })
+          .exec(),
+        this.applicationModel.countDocuments(filter),
+      ]);
+
+      return {
+        meta: {
+          current: currentPage || 1,
+          pageSize: limit,
+          pages: Math.ceil(totalItems / limit),
+          total: totalItems,
+        },
+        result,
+      };
+    } catch (error) {
+      throw new BadRequestCustom(error.message);
+    }
   }
 
-  update(id: number, updateApplicationDto: UpdateApplicationDto) {
-    return `This action updates a #${id} application`;
+  async findOne(id: string, user: UserDecoratorType) {
+    try {
+      if (!Types.ObjectId.isValid(id))
+        throw new BadRequestCustom('ID không hợp lệ');
+
+      const application = await this.applicationModel
+        .findById(id)
+        .populate('jobId', 'title salaryRange slug')
+        .populate('userId', '-password')
+        .populate('companyId', 'name logo')
+        .populate('systemCvData.userResumeId');
+
+      if (!application)
+        throw new NotFoundException(`Không tìm thấy đơn ứng tuyển #${id}`);
+
+      //- check quyền
+      const isOwner = application.userId._id.toString() === user.id;
+      const isCompanyRecruiter =
+        user.employerInfo?.companyID &&
+        application.companyId._id.toString() === user.employerInfo.companyID;
+
+      if (!isOwner && !isCompanyRecruiter) {
+        throw new ForbiddenException('Bạn không có quyền xem đơn này');
+      }
+
+      //- Nếu recruiter xem chi tiết đơn mà chưa xem trước đó thì đánh dấu đã xem
+      if (isCompanyRecruiter && !application.isViewed) {
+        application.isViewed = true;
+        await application.save();
+      }
+
+      return application;
+    } catch (error) {
+      if (
+        error instanceof ForbiddenException ||
+        error instanceof NotFoundException ||
+        error instanceof BadRequestCustom
+      )
+        throw error;
+      throw new BadRequestCustom(error.message);
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} application`;
+  async update(
+    id: string,
+    updateApplicationDto: UpdateApplicationDto,
+    user: UserDecoratorType,
+  ) {
+    try {
+      if (!Types.ObjectId.isValid(id))
+        throw new BadRequestCustom('ID không hợp lệ');
+
+      //- dịch đã
+      const dataLang = await this.translationService.translateModuleData(
+        'application',
+        updateApplicationDto,
+      );
+
+      const application = await this.applicationModel
+        .findById(id)
+        .populate('jobId', 'title')
+        .populate('userId', 'email name');
+
+      if (!application) throw new NotFoundException(`Application not found`);
+
+      //- check quyền cho cập nhật: Chỉ Recruiter của công ty mới được cập nhật
+      if (
+        !user.employerInfo?.companyID ||
+        application.companyId.toString() !== user.employerInfo.companyID
+      ) {
+        throw new ForbiddenException(
+          'Chỉ nhà tuyển dụng của công ty này mới được cập nhật',
+        );
+      }
+
+      //- Nếu cập nhật trạng thái, thêm lịch sử trạng thái
+      if (
+        dataLang.status &&
+        dataLang.status !== application.status
+      ) {
+        const oldStatus = application.status;
+        const newStatus = dataLang.status;
+
+        application.history.push({
+          status: newStatus,
+          note:
+            dataLang.recruiterNote ||
+            `Cập nhật trạng thái từ ${oldStatus} sang ${newStatus}`,
+          updatedAt: new Date(),
+          updatedBy: {
+            _id: new Types.ObjectId(user.id),
+            email: user.email,
+            name: user.name,
+            avatar: user.avatar,
+          },
+        });
+
+        //- ping noti
+        try {
+          const jobTitle =
+            (application.jobId as any)?.title?.vi ||
+            (application.jobId as any)?.title?.en ||
+            'Job';
+          this.eventEmitter.emit(NotificationType.APPLICATION_STATUS_CHANGED, {
+            receiverId: application.userId._id.toString(),
+            senderId: user.id,
+            title: 'Cập nhật trạng thái hồ sơ',
+            content: `Hồ sơ ứng tuyển vào công việc ${jobTitle} của bạn đã chuyển sang trạng thái ${newStatus}`,
+            type: NotificationType.APPLICATION_STATUS_CHANGED,
+            metadata: {
+              applicationId: application._id.toString(),
+              jobId: application.jobId._id.toString(),
+              status: newStatus,
+              module: 'APPLICATION',
+            },
+          });
+        } catch (notifError) {
+          console.error('Notification Error:', notifError);
+        }
+      }
+
+      //- Cập nhật các trường còn lại (gộp lại)
+      Object.assign(application, dataLang);
+
+      application.updatedBy = {
+        _id: new Types.ObjectId(user.id),
+        email: user.email,
+        name: user.name,
+        avatar: user.avatar,
+      };
+
+      return await application.save();
+    } catch (error) {
+      if (
+        error instanceof ForbiddenException ||
+        error instanceof NotFoundException ||
+        error instanceof BadRequestCustom
+      )
+        throw error;
+      throw new BadRequestCustom(error.message);
+    }
+  }
+
+  async remove(id: string, user: UserDecoratorType) {
+    try {
+      if (!Types.ObjectId.isValid(id))
+        throw new BadRequestCustom('ID không hợp lệ');
+
+      const application = await this.applicationModel.findById(id);
+      if (!application) throw new NotFoundException(`Application không tìm thấy`);
+
+      //- check quyền
+      const isOwner = application.userId.toString() === user.id;
+      const isCompanyRecruiter =
+        user.employerInfo?.companyID &&
+        application.companyId.toString() === user.employerInfo.companyID;
+
+      if (!isOwner && !isCompanyRecruiter) {
+        throw new ForbiddenException('Bạn không có quyền xóa đơn này');
+      }
+
+      return this.applicationModel.softDelete({ _id: id });
+    } catch (error) {
+      if (
+        error instanceof ForbiddenException ||
+        error instanceof NotFoundException ||
+        error instanceof BadRequestCustom
+      )
+        throw error;
+      throw new BadRequestCustom(error.message);
+    }
   }
 }
