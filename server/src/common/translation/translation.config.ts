@@ -10,6 +10,7 @@ export const translationConfig = {
   Notification: ['title', 'content'],
   job: ['title', 'description'],
   issue: ['title', 'description', 'adminReply'],
+  application: ['coverLetter', 'recruiterNote', 'rejectionReason'],
 };
 
 export type allModules = keyof typeof translationConfig;
