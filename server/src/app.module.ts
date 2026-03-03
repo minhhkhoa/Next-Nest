@@ -27,6 +27,7 @@ import { redisStore } from 'cache-manager-redis-yet';
 import { IssueModule } from './modules/issue/issue.module';
 import { UserResumeModule } from './modules/user-resume/user-resume.module';
 import { BookmarkModule } from './modules/bookmark/bookmark.module';
+import { ApplicationModule } from './modules/application/application.module';
 
 @Module({
   imports: [
@@ -95,6 +96,7 @@ import { BookmarkModule } from './modules/bookmark/bookmark.module';
     IssueModule,
     UserResumeModule,
     BookmarkModule,
+    ApplicationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -21,6 +21,10 @@
       "Career": "Professional luggage",
       "SheetButton": "Post a job"
     },
+
+    "Login": "Login",
+    "Register": "Register",
+
     "Bell": {
       "Title": "Notifications",
       "MarkAllAsRead": "Mark all as read",
@@ -96,6 +100,7 @@
       "BlockFilter": {
         "Search": "Search ...",
         "Industry": "Industry",
+        "SearchIndustry": "Search industry...",
         "Location": "Location",
         "SearchButton": "Search",
         "NoData": "No data",

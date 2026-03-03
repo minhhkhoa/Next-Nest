@@ -21,6 +21,10 @@
       "Career": "Hành trang nghề nghiệp",
       "SheetButton": "Đăng tin tuyển dụng"
     },
+
+    "Login": "Đăng nhập",
+    "Register": "Đăng ký",
+
     "Bell": {
       "Title": "Thông báo",
       "MarkAllAsRead": "Đánh dấu tất cả là đã đọc",
@@ -97,6 +101,7 @@
       "BlockFilter": {
         "Search": "Tìm kiếm ...",
         "Industry": "Ngành nghề",
+        "SearchIndustry": "Tìm ngành nghề...",
         "Location": "Địa điểm",
         "SearchButton": "Tìm kiếm",
         "NoData": "Không có dữ liệu",

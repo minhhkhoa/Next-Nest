@@ -16,6 +16,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { useGetLang } from "@/hooks/use-get-lang";
+import { useTranslations } from "next-intl";
 
 interface Industry {
   _id: string;
@@ -116,6 +118,8 @@ const IndustryItem = ({
   selectedValue?: string;
   onSelect: (id: string) => void;
 }) => {
+  const { getLang, locale } = useGetLang();
+
   const hasChildren = industry.children && industry.children.length > 0;
   const isSelected = selectedValue === industry._id;
 
@@ -129,7 +133,7 @@ const IndustryItem = ({
           )}
         >
           <span className="truncate mr-2 font-medium">
-            {industry.name.vi || industry.name.en}
+            {getLang(industry.name)}
           </span>
         </DropdownMenuSubTrigger>
         <DropdownMenuPortal>
@@ -146,7 +150,7 @@ const IndustryItem = ({
               onClick={() => onSelect(industry._id)}
             >
               <span className="truncate">
-                Tất cả {industry.name.vi || industry.name.en}
+                {locale === "vi" ? "Tất cả " : "All "} {getLang(industry.name)}
               </span>
               {isSelected && <Check className="ml-auto h-4 w-4" />}
             </DropdownMenuItem>
@@ -169,7 +173,7 @@ const IndustryItem = ({
       className={cn("cursor-pointer", isSelected && "bg-accent")}
       onClick={() => onSelect(industry._id)}
     >
-      <span className="truncate">{industry.name.vi || industry.name.en}</span>
+      <span className="truncate">{getLang(industry.name)}</span>
       {isSelected && <Check className="ml-auto h-4 w-4" />}
     </DropdownMenuItem>
   );
@@ -182,6 +186,9 @@ export default function IndustrySelector({
   placeholder = "Ngành nghề",
   className,
 }: IndustrySelectorProps) {
+  const { getLang } = useGetLang();
+  const t = useTranslations("PageHome.SearchSection.BlockFilter");
+
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -190,7 +197,7 @@ export default function IndustrySelector({
     id: string,
   ): string | undefined => {
     for (const item of items) {
-      if (item._id === id) return item.name.vi || item.name.en;
+      if (item._id === id) return getLang(item.name);
       if (item.children) {
         const found = findIndustryName(item.children, id);
         if (found) return found;
@@ -228,11 +235,11 @@ export default function IndustrySelector({
     const searchLower = normalize(searchTerm);
 
     return allIndustries.filter((item) => {
-      const nameVi = normalize(item.name.vi || "");
-      const nameEn = normalize(item.name.en || "");
+      const nameVi = normalize(getLang(item.name) || "");
+      const nameEn = normalize(getLang(item.name) || "");
       return nameVi.includes(searchLower) || nameEn.includes(searchLower);
     });
-  }, [allIndustries, searchTerm]);
+  }, [allIndustries, searchTerm, getLang]);
 
   return (
     <DropdownMenu
@@ -267,7 +274,7 @@ export default function IndustrySelector({
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Tìm ngành nghề..."
+              placeholder={t("SearchIndustry")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-8 pr-8 h-9 text-base md:text-sm"
@@ -311,9 +318,7 @@ export default function IndustrySelector({
                       setOpen(false);
                     }}
                   >
-                    <span className="truncate">
-                      {industry.name.vi || industry.name.en}
-                    </span>
+                    <span className="truncate">{getLang(industry.name)}</span>
                     {value === industry._id && (
                       <Check className="ml-auto h-4 w-4" />
                     )}
