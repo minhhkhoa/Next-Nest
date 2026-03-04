@@ -68,7 +68,7 @@ export async function uploadToCloudinary(
 
     // --- Gọi BE để lấy chữ ký Cloudinary ---
     const sigRes = await http.get<ApiResponse<CloudinarySignatureResponse>>(
-      `${envConfig.NEXT_PUBLIC_API_URL_SERVER}/cloudinary/signature`,
+      `${envConfig.NEXT_PUBLIC_API_URL_SERVER}/cloudinary/signature?folder=${folderSave || ""}`,
     );
     if (!sigRes.isOk) {
       throw new Error("Failed to get Cloudinary signature");
@@ -83,12 +83,7 @@ export async function uploadToCloudinary(
     formData.append("api_key", apiKey);
     formData.append("timestamp", timestamp.toString());
     formData.append("signature", signature);
-
-    if (folderSave) {
-      formData.append("folder", folderSave);
-    } else {
-      formData.append("folder", folder);
-    }
+    formData.append("folder", folder);
 
     // --- Gửi trực tiếp lên Cloudinary bằng axios mới, không qua interceptor ---
     const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;

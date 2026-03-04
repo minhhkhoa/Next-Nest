@@ -129,7 +129,14 @@ export default function JobHoverCard({ job, children }: JobHoverCardProps) {
               className="flex-1 h-8 text-xs bg-primary hover:bg-primary/90"
               asChild
             >
-              <Link href={`/jobs/${job._id}`}>Ứng tuyển</Link>
+              <Link
+                href={`/jobs/${generateSlugUrl({
+                  name: getLang(job.slug) || getLang(job.title),
+                  id: job._id,
+                })}`}
+              >
+                Ứng tuyển
+              </Link>
             </Button>
             <Button
               variant="outline"

@@ -9,7 +9,6 @@ import { Plus, Trash2, Upload, Save } from "lucide-react";
 import { cn, formatDateForTemplate, uploadToCloudinary } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 import { useRef, useState } from "react";
-import { toast } from "sonner";
 import {
   useCreateUserResumeMutate,
   useUpdateUserResumeMutate,
@@ -17,6 +16,8 @@ import {
 import { SaveResumeDialog } from "../SaveResumeDialog";
 import { CVFormValues, TemplateProps } from "@/types/apiResponse";
 import { CV_TEMPLATES } from "@/lib/constant";
+import SoftSuccessSonner from "../shadcn-studio/sonner/SoftSuccessSonner";
+import SoftDestructiveSonner from "../shadcn-studio/sonner/SoftDestructiveSonner";
 
 export default function ImpressiveTemplate({
   data,
@@ -39,10 +40,10 @@ export default function ImpressiveTemplate({
       },
       {
         onSuccess: () => {
-          toast.success("Cập nhật CV thành công!");
+          SoftSuccessSonner("Cập nhật CV thành công!");
         },
         onError: () => {
-          toast.error("Cập nhật CV thất bại. Vui lòng thử lại.");
+          SoftDestructiveSonner("Cập nhật CV thất bại. Vui lòng thử lại.");
         },
       },
     );
@@ -65,6 +66,7 @@ export default function ImpressiveTemplate({
       data?.skills && data.skills.length > 0
         ? data.skills.map((s: any) => ({
             value:
+              (s as any).value ||
               (s as any).name?.vi ||
               (s as any).name ||
               (typeof s === "string" ? s : ""),
@@ -143,10 +145,10 @@ export default function ImpressiveTemplate({
       {
         onSuccess: () => {
           setIsSaveDialogOpen(false);
-          toast.success("Đã lưu CV thành công!");
+          SoftSuccessSonner("Đã lưu CV thành công!");
         },
         onError: () => {
-          toast.error("Lưu CV thất bại. Vui lòng thử lại.");
+          SoftDestructiveSonner("Lưu CV thất bại. Vui lòng thử lại.");
         },
       },
     );
@@ -163,10 +165,10 @@ export default function ImpressiveTemplate({
     },
     onSuccess: (url) => {
       form.setValue("personalInfo.avatar", url);
-      toast.success("Tải ảnh lên thành công!");
+      SoftSuccessSonner("Tải ảnh lên thành công!");
     },
     onError: () => {
-      toast.error("Tải ảnh lên thất bại. Vui lòng thử lại.");
+      SoftDestructiveSonner("Tải ảnh lên thất bại. Vui lòng thử lại.");
     },
   });
 
@@ -174,7 +176,7 @@ export default function ImpressiveTemplate({
     const file = event.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("Dung lượng ảnh không được quá 5MB");
+        SoftDestructiveSonner("Dung lượng ảnh không được quá 5MB");
         return;
       }
       uploadImageMutation.mutate(file);
@@ -680,7 +682,7 @@ export default function ImpressiveTemplate({
           </div>
 
           {isEdit && (
-            <div className="fixed bottom-10 right-10 z-50">
+            <div className="flex justify-end mt-2">
               <Button
                 className="shadow-xl"
                 size="lg"

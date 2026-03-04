@@ -12,10 +12,11 @@ export const useCreateUserResumeMutate = () => {
   });
 };
 
-export const useGetUserResumes = () => {
+export const useGetUserResumes = (enable?: boolean) => {
   return useQuery({
     queryKey: ["user-resumes"],
     queryFn: userResumeApiRequest.findAll,
+    enabled: enable !== undefined ? enable : true,
   });
 };
 

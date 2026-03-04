@@ -4,6 +4,7 @@ import {
   UseInterceptors,
   UploadedFile,
   Get,
+  Query,
 } from '@nestjs/common';
 import { CloudinaryService } from './cloudinary.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -57,10 +58,12 @@ export class CloudinaryController {
 
   @PublicPermission()
   @Get('signature')
-  getSignature() {
+  getSignature(@Query('folder') folderFromClient?: string) {
     const timestamp = Math.floor(Date.now() / 1000);
+    const folder = folderFromClient || 'do_an';
+
     const signature = cloudinary.utils.api_sign_request(
-      { timestamp, folder: 'do_an' },
+      { timestamp, folder },
       this.config.get<string>('CLOUDINARY_API_SECRET') as string,
     );
 
@@ -69,7 +72,7 @@ export class CloudinaryController {
       signature,
       apiKey: this.config.get<string>('CLOUDINARY_API_KEY'),
       cloudName: this.config.get<string>('CLOUDINARY_NAME'),
-      folder: 'do_an',
+      folder,
     };
   }
 }

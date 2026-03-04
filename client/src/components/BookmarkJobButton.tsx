@@ -12,14 +12,17 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "./TanstackProvider";
 
-interface BookmarkButtonProps {
+interface BookmarkButtonProps extends React.ComponentProps<typeof Button> {
   jobId: string;
-  className?: string;
 }
 
 export default function BookmarkJobButton({
   jobId,
   className,
+  children,
+  variant = "ghost",
+  size = "icon",
+  ...props
 }: BookmarkButtonProps) {
   const { isLogin } = useAppStore();
   const [isBookmarked, setIsBookmarked] = useState(false);
@@ -89,17 +92,21 @@ export default function BookmarkJobButton({
 
   return (
     <Button
-      variant="ghost"
-      size="icon"
+      {...props}
+      variant={variant}
+      size={size}
       className={cn(
         "hover:bg-transparent hover:text-primary transition-colors",
         isBookmarked && "text-primary fill-current",
         className,
       )}
       onClick={handleToggleBookmark}
-      disabled={isLoading}
+      disabled={isLoading || props.disabled}
     >
-      <Bookmark className={cn("w-5 h-5", isBookmarked ? "fill-current" : "")} />
+      <Bookmark
+        className={cn("w-5 h-5", isBookmarked ? "fill-current" : "")}
+      />
+      {children}
       <span className="sr-only">Bookmark</span>
     </Button>
   );

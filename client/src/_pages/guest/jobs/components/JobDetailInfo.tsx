@@ -23,6 +23,8 @@ import { useGetLang } from "@/hooks/use-get-lang";
 import { IssueDialogForm } from "@/_pages/admin/issue/components/issue-modal-form";
 import { Flag } from "lucide-react";
 import { useAppStore } from "@/components/TanstackProvider";
+import { ApplicationModal } from "@/components/ApplicationModal";
+import BookmarkJobButton from "@/components/BookmarkJobButton";
 
 interface JobDetailInfoProps {
   job: JobResType;
@@ -111,10 +113,25 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
               </div>
 
               <div className="pt-2 flex flex-wrap gap-2">
-                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                  Ứng tuyển ngay
-                </Button>
-                <Button variant="outline">Lưu tin</Button>
+                <ApplicationModal
+                  jobId={job._id}
+                  jobTitle={getLang(job.title)}
+                  companyName={job.company?.name || ""}
+                  trigger={
+                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                      Ứng tuyển ngay
+                    </Button>
+                  }
+                />
+                <BookmarkJobButton
+                  jobId={job._id}
+                  variant="outline"
+                  size="default"
+                  className="gap-2"
+                >
+                  Lưu tin
+                </BookmarkJobButton>
+
                 {isLogin && (
                   <Button
                     variant="ghost"

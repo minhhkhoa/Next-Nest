@@ -74,8 +74,10 @@ export const createApplicationSchema = z
   .object({
     jobId: z.string().min(1, "Job ID không được để trống"),
     email: z.string().email("Email không hợp lệ"),
-    resumeType: z.enum(RESUME_TYPE.map((type) => type.value)).default("UPLOAD_CV"),
-    cvUrl: z.string().url("Link CV không hợp lệ").optional(),
+    resumeType: z
+      .enum(RESUME_TYPE.map((type) => type.value) as [string, ...string[]])
+      .default("UPLOAD_CV"),
+    cvUrl: z.string().url("Link CV không hợp lệ").optional().or(z.literal("")),
     systemCvData: z
       .object({
         userResumeId: z.string().min(1, "Vui lòng chọn CV"),
