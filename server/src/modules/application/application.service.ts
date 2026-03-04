@@ -27,7 +27,7 @@ export class ApplicationService {
     @InjectModel(Application.name)
     private applicationModel: SoftDeleteModel<ApplicationDocument>,
     private jobsService: JobsService,
-   private readonly translationService: TranslationService,
+    private readonly translationService: TranslationService,
     private userResumeService: UserResumeService,
     @Inject(forwardRef(() => UserService)) private userService: UserService,
     private eventEmitter: EventEmitter2,
@@ -39,10 +39,10 @@ export class ApplicationService {
   ) {
     try {
       //- dịch đã
-       const dataLang = await this.translationService.translateModuleData(
-         'application',
-         createApplicationDto,
-       );
+      const dataLang = await this.translationService.translateModuleData(
+        'application',
+        createApplicationDto,
+      );
       const { jobId, resumeType, systemCvData, cvUrl } = dataLang;
 
       //- Validate Job
@@ -166,7 +166,7 @@ export class ApplicationService {
       if (status) filter.status = status;
 
       if (jobId) filter.jobId = new Types.ObjectId(jobId);
-      
+
       if (isViewed !== undefined && isViewed !== '')
         filter.isViewed = isViewed === 'true';
 
@@ -209,8 +209,8 @@ export class ApplicationService {
         meta: {
           current: currentPage || 1,
           pageSize: limit,
-          pages: Math.ceil(totalItems / limit),
-          total: totalItems,
+          totalPages: Math.ceil(totalItems / limit),
+          totalItems: totalItems,
         },
         result,
       };
@@ -258,8 +258,8 @@ export class ApplicationService {
         meta: {
           current: currentPage || 1,
           pageSize: limit,
-          pages: Math.ceil(totalItems / limit),
-          total: totalItems,
+          totalPages: Math.ceil(totalItems / limit),
+          totalItems: totalItems,
         },
         result,
       };
@@ -344,10 +344,7 @@ export class ApplicationService {
       }
 
       //- Nếu cập nhật trạng thái, thêm lịch sử trạng thái
-      if (
-        dataLang.status &&
-        dataLang.status !== application.status
-      ) {
+      if (dataLang.status && dataLang.status !== application.status) {
         const oldStatus = application.status;
         const newStatus = dataLang.status;
 
@@ -417,7 +414,8 @@ export class ApplicationService {
         throw new BadRequestCustom('ID không hợp lệ');
 
       const application = await this.applicationModel.findById(id);
-      if (!application) throw new NotFoundException(`Application không tìm thấy`);
+      if (!application)
+        throw new NotFoundException(`Application không tìm thấy`);
 
       //- check quyền
       const isOwner = application.userId.toString() === user.id;

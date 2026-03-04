@@ -242,3 +242,8 @@ export const APPLICATION_STATUS = [
   { value: "APPROVED", label: "Chấp nhận" },
   { value: "REJECTED", label: "Từ chối" },
 ];
+
+export const RESUME_TYPE = [
+  { value: "UPLOAD_CV", label: "CV tải lên" },
+  { value: "SYSTEM_CV", label: "CV hệ thống" },
+];

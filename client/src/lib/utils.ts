@@ -61,6 +61,7 @@ export const handleInitName = (name: string) => {
  */
 export async function uploadToCloudinary(
   file: File,
+  folderSave?: string, //- cv tự tải lên thì truyền folderSave = "urlCv", còn lại thì lưu vào folder mặc định của BE trả về.
 ): Promise<string | undefined> {
   try {
     if (!file) throw new Error("No file provided");
@@ -82,7 +83,12 @@ export async function uploadToCloudinary(
     formData.append("api_key", apiKey);
     formData.append("timestamp", timestamp.toString());
     formData.append("signature", signature);
-    if (folder) formData.append("folder", folder);
+
+    if (folderSave) {
+      formData.append("folder", folderSave);
+    } else {
+      formData.append("folder", folder);
+    }
 
     // --- Gửi trực tiếp lên Cloudinary bằng axios mới, không qua interceptor ---
     const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
@@ -184,7 +190,7 @@ export const handleNotificationNavigation = (
       router.push(`/issue`);
       break;
 
-     case NotificationType.ISSUE_REQUEST_HOT: //- Admin nhận: Có yêu cầu hot job mới
+    case NotificationType.ISSUE_REQUEST_HOT: //- Admin nhận: Có yêu cầu hot job mới
       router.push(`/admin/issue/?statusFilterIssue=PENDING`);
       break;
 
@@ -193,11 +199,11 @@ export const handleNotificationNavigation = (
       break;
     //- end for issue
 
-    case NotificationType.RESUME_SUBMITTED:
+    case NotificationType.APPLICATION_SUBMITTED:
       router.push(`/recruiter/resumes`);
       break;
 
-    case NotificationType.RESUME_STATUS_CHANGED:
+    case NotificationType.APPLICATION_STATUS_CHANGED:
       router.push(`/my-jobs/applied`);
       break;
 

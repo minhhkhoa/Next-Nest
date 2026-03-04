@@ -51,7 +51,7 @@ export type JobResType = z.infer<typeof apiJobRes>;
 
 //- create
 //- Định nghĩa sub-object cho Salary (khớp với SalaryRangeDto)
-const salaryRangeSchema = z
+export const salaryRangeSchema = z
   .object({
     min: z.number({ error: "Lương phải là số" }).min(1, "Lương phải lớn hơn 0"),
 
