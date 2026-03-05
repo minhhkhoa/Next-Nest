@@ -12,7 +12,7 @@ import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import DataTablePagination from "@/components/DataTablePagination";
 import ListJobSkeleton from "@/components/skeletons/list-job";
-import { generateSlugUrl } from "@/lib/utils";
+import { generateSlugUrl, getSalaryText } from "@/lib/utils";
 import { useGetLang } from "@/hooks/use-get-lang";
 import BookmarkJobButton from "@/components/BookmarkJobButton";
 import JobHoverCard from "@/components/JobHoverCard";
@@ -86,8 +86,11 @@ export default function CompanyJobs({ companyId }: CompanyJobsProps) {
                               className="text-green-600 shrink-0"
                             />
                             <span className="font-medium text-green-700 dark:text-green-400">
-                              {job.salary?.min} - {job.salary?.max}{" "}
-                              {job.salary?.currency}
+                              {getSalaryText(
+                                job.salary.min,
+                                job.salary.max,
+                                job.salary.currency,
+                              )}
                             </span>
                           </div>
                           <div className="flex items-center gap-1 ">

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { CompanyResType } from "@/schemasvalidation/company";
 import { Button } from "@/components/ui/button";
-import { Globe, Users, Plus } from "lucide-react";
+import { Globe, Users, Plus, X } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useAppStore } from "@/components/TanstackProvider";
 import {
@@ -140,7 +140,8 @@ export default function CompanyHeader({ company }: CompanyHeaderProps) {
                 className="gap-2 bg-primary hover:bg-primary/90 text-white min-w-[140px] shadow-lg"
                 onClick={handleToggleBookmark}
               >
-                <Plus size={18} /> {isBookmarked ? "Bỏ theo dõi" : "Theo dõi"}
+                {isBookmarked ? <X size={18} /> : <Plus size={18} />}{" "}
+                {isBookmarked ? "Bỏ theo dõi" : "Theo dõi công ty"}
               </Button>
             </div>
           )}
@@ -154,7 +155,7 @@ export default function CompanyHeader({ company }: CompanyHeaderProps) {
             className="w-full gap-2 bg-primary hover:bg-primary/90 text-white shadow-sm"
             onClick={handleToggleBookmark}
           >
-            <Plus size={18} />{" "}
+            {isBookmarked ? <X size={18} /> : <Plus size={18} />}{" "}
             {isBookmarked ? "Bỏ theo dõi" : "Theo dõi công ty"}
           </Button>
         </div>

@@ -33,7 +33,7 @@ import {
 import { useCreateApplication } from "@/queries/useApplication";
 import { useGetUserResumes } from "@/queries/useUserResume";
 import Link from "next/link";
-import { Loader2, UploadCloud, X, FileText, Trash2 } from "lucide-react";
+import { Loader2, UploadCloud, FileText, Trash2 } from "lucide-react";
 import { uploadToCloudinary } from "@/lib/utils";
 import { useAppStore } from "./TanstackProvider";
 import SoftSuccessSonner from "./shadcn-studio/sonner/SoftSuccessSonner";

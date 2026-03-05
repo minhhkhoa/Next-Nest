@@ -266,3 +266,9 @@ export const isValidObjectId = (id: string): boolean => {
   // Trả về true nếu khớp, ngược lại false
   return objectIdRegex.test(id);
 };
+
+//- hàm lấy text hiển thị cho mức lương có dấu phân cách
+export const getSalaryText = (min: number, max: number, currency: string) => {
+  if (min === 0 && max === 0) return "Thỏa thuận";
+  return `${min.toLocaleString()} - ${max.toLocaleString()} ${currency}`;
+};

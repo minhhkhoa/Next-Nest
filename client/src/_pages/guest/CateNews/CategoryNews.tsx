@@ -72,8 +72,7 @@ export default function CategoryNewsPage({
       </div>
     );
   }
-  const totalPages = listNews?.data?.meta?.totalPages || 1;
-  const current = listNews?.data?.meta?.current || 1;
+  
   const restCategories = data?.data?.filter((item) => item._id !== idCateNews);
   const listNewsHot = listNews2?.data?.result.slice(0, 4);
 

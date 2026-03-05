@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import HotJobsSection from "./components/HotJobsSection";
 import JobsWithFilterSection from "./components/JobsWithFilterSection";

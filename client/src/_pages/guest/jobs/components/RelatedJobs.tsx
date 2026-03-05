@@ -7,7 +7,7 @@ import { MapPin, DollarSign } from "lucide-react";
 import Image from "next/image";
 import DataTablePagination from "@/components/DataTablePagination";
 import ListJobSkeleton from "@/components/skeletons/list-job";
-import { generateSlugUrl } from "@/lib/utils";
+import { generateSlugUrl, getSalaryText } from "@/lib/utils";
 import JobHoverCard from "@/components/JobHoverCard";
 
 interface RelatedJobsProps {
@@ -56,7 +56,7 @@ export default function RelatedJobs({ jobId }: RelatedJobsProps) {
             key={job._id}
             className="block h-full group"
           >
-            <Card className="h-full hover:shadow-md transition-shadow cursor-pointer flex flex-col justify-between bg-card text-card-foreground border-border group-hover:border-primary/50">
+            <Card className="h-full hover:shadow-md transition-shadow cursor-pointer flex flex-col justify-between bg-card text-card-foreground border-border group-hover:border-primary/50 !gap-2 py-2">
               <CardHeader className="py-2">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
@@ -68,7 +68,7 @@ export default function RelatedJobs({ jobId }: RelatedJobsProps) {
                         {job.title.vi}
                       </CardTitle>
                     </JobHoverCard>
-                    <p className="text-sm text-muted-foreground line-clamp-1 mt-1">
+                    <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
                       {job.company?.name || "Công ty ẩn danh"}
                     </p>
                   </div>
@@ -94,8 +94,11 @@ export default function RelatedJobs({ jobId }: RelatedJobsProps) {
                   <div className="flex items-center gap-1">
                     <DollarSign className="w-4 h-4 text-primary" />
                     <span className="font-medium text-primary">
-                      {job.salary.min.toLocaleString()} -{" "}
-                      {job.salary.max.toLocaleString()} {job.salary.currency}
+                      {getSalaryText(
+                        job.salary.min,
+                        job.salary.max,
+                        job.salary.currency,
+                      )}
                     </span>
                   </div>
                   <div className="flex items-center gap-1">

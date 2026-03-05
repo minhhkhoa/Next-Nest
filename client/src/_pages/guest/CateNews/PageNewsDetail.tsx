@@ -1,8 +1,6 @@
 "use client";
 
-import {
-  formatDateInput,
-} from "@/lib/utils";
+import { formatDateInput } from "@/lib/utils";
 import {
   useGetListCategories,
   useGetListNewsFilter,
@@ -55,8 +53,6 @@ export default function PageNewsDetail({ idNews }: { idNews: string }) {
     );
   }
 
-  const totalPages = listNews?.data?.meta?.totalPages || 1;
-  const current = listNews?.data?.meta?.current || 1;
   const onPageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -103,9 +99,15 @@ export default function PageNewsDetail({ idNews }: { idNews: string }) {
       <div>
         <BlockNewsWithPagination
           listNews={listNews?.data?.result || []}
-          current={current}
+          meta={
+            listNews?.data?.meta || {
+              current: 1,
+              pageSize: 6,
+              totalPages: 1,
+              totalItems: 0,
+            }
+          }
           isLoadingListNews={isLoadingListNews}
-          totalPages={totalPages}
           onPageChange={onPageChange}
           textTitle="Bài viết liên quan"
         />

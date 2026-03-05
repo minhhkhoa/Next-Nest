@@ -4,7 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { format, differenceInDays } from "date-fns";
 import { MapPin, DollarSign, Clock } from "lucide-react";
 import { JobResType } from "@/schemasvalidation/job";
-import { generateSlugUrl } from "@/lib/utils";
+import { generateSlugUrl, getSalaryText } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { useGetLang } from "@/hooks/use-get-lang";
 import {
@@ -22,11 +22,6 @@ interface JobCardProps {
 
 export default function JobCard({ job }: JobCardProps) {
   const { getLang } = useGetLang();
-
-  const getSalaryText = (min: number, max: number, currency: string) => {
-    if (min === 0 && max === 0) return "Thỏa thuận";
-    return `${min.toLocaleString()} - ${max.toLocaleString()} ${currency}`;
-  };
 
   return (
     <Card className="hover:shadow-lg transition-shadow duration-300 border shadow-sm border-border bg-card h-full flex flex-col relative group">

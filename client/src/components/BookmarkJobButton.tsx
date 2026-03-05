@@ -7,11 +7,12 @@ import {
   useCreateBookmark,
   useDeleteBookmarkByItemId,
 } from "@/queries/useBookmark";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "./TanstackProvider";
 import { JobResType } from "@/schemasvalidation/job";
 import { usePathname } from "@/i18n/navigation";
+import SoftSuccessSonner from "./shadcn-studio/sonner/SoftSuccessSonner";
+import SoftDestructiveSonner from "./shadcn-studio/sonner/SoftDestructiveSonner";
 
 interface BookmarkButtonProps extends React.ComponentProps<typeof Button> {
   job: JobResType;
@@ -55,10 +56,10 @@ export default function BookmarkJobButton({
       deleteBookmarkMutation.mutate(job._id, {
         onSuccess: () => {
           setIsBookmarked(false);
-          toast.success("Đã bỏ lưu công việc");
+          SoftSuccessSonner("Đã bỏ lưu công việc");
         },
         onError: (error: any) => {
-          toast.error(error?.message || "Có lỗi xảy ra");
+          SoftDestructiveSonner(error?.message || "Có lỗi xảy ra");
         },
       });
     } else {
@@ -71,10 +72,10 @@ export default function BookmarkJobButton({
         {
           onSuccess: () => {
             setIsBookmarked(true);
-            toast.success("Đã lưu công việc");
+            SoftSuccessSonner("Đã lưu công việc");
           },
           onError: (error: any) => {
-            toast.error(error?.message || "Có lỗi xảy ra");
+            SoftDestructiveSonner(error?.message || "Có lỗi xảy ra");
           },
         },
       );
