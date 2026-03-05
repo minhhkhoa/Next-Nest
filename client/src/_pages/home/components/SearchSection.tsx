@@ -42,8 +42,12 @@ export default function SearchSection() {
   const [location, setLocation] = useState(searchParams.get("location") || "");
   const [openLocation, setOpenLocation] = useState(false);
   const [industry, setIndustry] = useState(searchParams.get("industry") || "");
+  const [hasFetchedIndustry, setHasFetchedIndustry] = useState(false);
 
-  const { data: industryData } = useGetTreeIndustry({});
+  //- Chỉ gọi API khi biến hasFetchedIndustry = true (lần đầu người dùng mở dropdown)
+  //- Và sau đó giữ nguyên trạng thái enabled = true để React Query tự quản lý cache
+  const { data: industryData, isLoading: isLoadingIndustry } =
+    useGetTreeIndustry({}, hasFetchedIndustry);
 
   const industries = industryData?.data || [];
 
@@ -127,10 +131,15 @@ export default function SearchSection() {
             <IndustrySelector
               industries={industries}
               value={industry}
-              onSelect={(id) => {
-                setIndustry(id);
+              onSelect={(id) => setIndustry(id)}
+              onOpenChange={(val) => {
+                //- Nếu dropdown mở ra (val = true) và chưa từng fetch -> setHasFetchedIndustry(true)
+                if (val && !hasFetchedIndustry) {
+                  setHasFetchedIndustry(true);
+                }
               }}
               placeholder={t("BlockFilter.Industry")}
+              isLoading={isLoadingIndustry}
             />
             {industry && (
               <X

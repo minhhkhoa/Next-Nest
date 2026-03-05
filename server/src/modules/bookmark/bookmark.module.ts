@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { BookmarkService } from './bookmark.service';
 import { BookmarkController } from './bookmark.controller';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -10,9 +10,10 @@ import { CompanyModule } from '../company/company.module';
     MongooseModule.forFeature([
       { name: Bookmark.name, schema: BookmarkSchema },
     ]),
-    CompanyModule,
+    forwardRef(() => CompanyModule),
   ],
   controllers: [BookmarkController],
   providers: [BookmarkService],
+  exports: [BookmarkService],
 })
 export class BookmarkModule {}

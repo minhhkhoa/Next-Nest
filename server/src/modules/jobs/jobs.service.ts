@@ -26,6 +26,9 @@ import { RequestHotJobDto } from './dto/request-hot.dto';
 import { CreateIssueDto } from '../issue/dto/create-issue.dto';
 import { UpdateHotJobDto } from './dto/update-hot.dto';
 import { ApplicationService } from '../application/application.service';
+import { BookmarkService } from '../bookmark/bookmark.service';
+import { BookmarkModule } from '../bookmark/bookmark.module';
+import { Bookmark } from '../bookmark/schemas/bookmark.schema';
 
 @Injectable()
 export class JobsService {
@@ -38,7 +41,10 @@ export class JobsService {
     private jobModel: SoftDeleteModel<JobDocument>,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly issueService: IssueService,
-    @Inject(forwardRef(() => ApplicationService)) private readonly applicationService: ApplicationService,
+    @Inject(forwardRef(() => ApplicationService))
+    private readonly applicationService: ApplicationService,
+    @Inject(forwardRef(() => BookmarkService))
+    private readonly bookmarkService: BookmarkService,
   ) {}
 
   async setHot(updateHotJobDto: UpdateHotJobDto, user: UserDecoratorType) {
@@ -398,7 +404,7 @@ export class JobsService {
   }
 
   //- API Public cho trang chủ (Không cần login, chỉ lấy job active)
-  async findJobFilterPublic(query: FindJobQueryDto) {
+  async findJobFilterPublic(query: FindJobQueryDto, user: UserDecoratorType) {
     try {
       const {
         currentPage,
@@ -416,6 +422,16 @@ export class JobsService {
         status: 'active',
         isDeleted: false,
       };
+
+      //- check xem người dùng này đã bookmark công việc nào chưa để ưu tiên hiển thị (nếu có login)
+      let hasBookmarked;
+      if (user) {
+        hasBookmarked = await this.bookmarkService.findAllByUser(user, {
+          currentPage: 1,
+          pageSize: 100, //- giả sử mỗi người dùng không bookmark quá 100 công việc, có thể điều chỉnh nếu cần
+          itemType: 'job',
+        });
+      }
 
       //- Lọc theo Title (MultiLang)
       if (title && title !== null && title !== '') {
@@ -534,6 +550,17 @@ export class JobsService {
       ]);
 
       const totalItems = countResult.length > 0 ? countResult[0].total : 0;
+
+      //- Gắn thông tin đã bookmark vào kết quả (nếu có login)
+      if(hasBookmarked && hasBookmarked.result.length > 0) {
+        const bookmarkedJobIds = hasBookmarked.result.map(
+          (bookmark: Bookmark) => bookmark.itemId.toString(),
+        );
+
+        result.forEach((job) => {
+          job.hasBookmarked = bookmarkedJobIds.includes(job._id.toString());
+        });
+      }
 
       return {
         meta: {
@@ -669,10 +696,7 @@ export class JobsService {
     //- check xem job này đã được người dùng ứng tuyển chưa để trả về thông tin đã ứng tuyển hay chưa
     let application;
     if (user) {
-      application = await this.applicationService.checkApplication(
-        id,
-        user.id,
-      );
+      application = await this.applicationService.checkApplication(id, user.id);
     }
 
     //- tắt đi, nếu bật lên thì làm sao vào được trang này để bật isActive

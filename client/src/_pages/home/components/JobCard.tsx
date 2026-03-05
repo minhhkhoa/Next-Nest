@@ -31,7 +31,7 @@ export default function JobCard({ job }: JobCardProps) {
   return (
     <Card className="hover:shadow-lg transition-shadow duration-300 border shadow-sm border-border bg-card h-full flex flex-col relative group">
       <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-        <BookmarkJobButton jobId={job._id} />
+        <BookmarkJobButton job={job} />
       </div>
       <CardHeader className="p-4 pb-2 flex flex-row gap-3 items-start space-y-0">
         <div className="w-16 h-16 relative flex-shrink-0 border border-border rounded-lg overflow-hidden bg-background">
@@ -75,7 +75,7 @@ export default function JobCard({ job }: JobCardProps) {
       </CardHeader>
 
       <CardContent className="p-4 py-2 flex-1">
-        <div className="flex flex-wrap gap-2 text-sm text-muted-foreground mb-3">
+        <div className="flex flex-col gap-2 text-sm text-muted-foreground mb-3">
           <div className="flex items-center gap-1 w-full text-xs">
             <span>Cấp bậc từ </span>
             <span className="font-semibold text-foreground bg-secondary px-2 py-0.5 rounded-sm capitalize">
@@ -84,7 +84,7 @@ export default function JobCard({ job }: JobCardProps) {
           </div>
 
           <div className="flex items-center gap-1 px-0 py-1 rounded">
-            <DollarSign className="w-4 h-4 text-primary" />
+            <DollarSign className="w-4 h-4 text-primary shrink-0" />
             <span className="font-medium text-primary">
               {getSalaryText(
                 job.salary.min,
@@ -95,9 +95,9 @@ export default function JobCard({ job }: JobCardProps) {
           </div>
 
           <div className="flex items-center gap-1 px-0 py-1 rounded">
-            <MapPin className="w-4 h-4 text-muted-foreground" />
-            <span className="" title={job.location}>
-              {job.location.split(",")[0]}
+            <MapPin className="w-4 h-4 text-muted-foreground shrink-0" />
+            <span className="line-clamp-1" title={job.location}>
+              {job.location}
             </span>
           </div>
         </div>
@@ -129,7 +129,7 @@ export default function JobCard({ job }: JobCardProps) {
 
       <CardFooter className="p-4 pt-2 border-t border-border flex justify-between items-center bg-muted/30 rounded-b-lg">
         <span className="text-xs text-muted-foreground flex items-center gap-1">
-          <Clock className="w-3 h-3" />
+          <Clock className="w-3 h-3 shrink-0" />
           {job.endDate ? (
             <>
               Hạn nộp: {format(new Date(job.endDate), "dd/MM/yyyy")}

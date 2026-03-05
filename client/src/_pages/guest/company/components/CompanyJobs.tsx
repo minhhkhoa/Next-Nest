@@ -71,28 +71,31 @@ export default function CompanyJobs({ companyId }: CompanyJobsProps) {
                       />
                     </div>
 
-                    <div className="flex-1 flex flex-col md:flex-row justify-between gap-4">
+                    <div className="flex-1 flex flex-col justify-between gap-4">
                       <div className="flex-1 space-y-2">
                         <JobHoverCard job={job}>
-                          <h3 className="text-xl font-bold group-hover:text-primary transition-colors line-clamp-1">
+                          <h3 className="text-xl font-bold group-hover:text-primary transition-colors">
                             {getLang(job.title)}
                           </h3>
                         </JobHoverCard>
 
                         <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                           <div className="flex items-center gap-1">
-                            <DollarSign size={16} className="text-green-600" />
+                            <DollarSign
+                              size={16}
+                              className="text-green-600 shrink-0"
+                            />
                             <span className="font-medium text-green-700 dark:text-green-400">
                               {job.salary?.min} - {job.salary?.max}{" "}
                               {job.salary?.currency}
                             </span>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <MapPin size={16} />
+                          <div className="flex items-center gap-1 ">
+                            <MapPin className="shrink-0" size={16} />
                             <span>{job.location}</span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <Clock size={16} />
+                            <Clock className="shrink-0" size={16} />
                             <span>
                               {job.endDate
                                 ? format(new Date(job.endDate), "dd/MM/yyyy", {
@@ -123,7 +126,7 @@ export default function CompanyJobs({ companyId }: CompanyJobsProps) {
               </Card>
             </Link>
             <div className="absolute top-2 right-2 z-20">
-              <BookmarkJobButton jobId={job._id} />
+              <BookmarkJobButton job={job} />
             </div>
           </div>
         ))}

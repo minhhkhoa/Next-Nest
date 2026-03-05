@@ -64,7 +64,9 @@ export default function NavigationHeaderMenu() {
   const { isLogin } = useAppStore();
   const { getLang } = useGetLang();
 
-  const { data: listCateNews } = useGetListCategories();
+  const [hasHoveredCareer, setHasHoveredCareer] = React.useState(false);
+  const { data: listCateNews, isLoading } =
+    useGetListCategories(hasHoveredCareer);
 
   return (
     !isMobile && (
@@ -140,30 +142,41 @@ export default function NavigationHeaderMenu() {
             </NavigationMenuItem>
           )}
 
-          <NavigationMenuItem>
+          <NavigationMenuItem
+            onMouseEnter={() => {
+              //- Chỉ gọi API khi hover vào Career lần đầu tiên
+              if (!hasHoveredCareer) setHasHoveredCareer(true);
+            }}
+          >
             <NavigationMenuTrigger>
               <Link href="/cate-news">{t("Career")}</Link>
             </NavigationMenuTrigger>
             <NavigationMenuContent>
-              <ul className="grid w-[200px]">
-                {listCateNews?.data?.map((item) => (
-                  <li key={item._id}>
-                    <NavigationMenuLink asChild>
-                      <Link
-                        className="max-w-[200px]"
-                        href={`/cate-news/${generateSlugUrl({
-                          name: getLang(item.slug),
-                          id: item._id,
-                        })}`}
-                      >
-                        <div className="font-medium !whitespace-nowrap truncate">
-                          {getLang(item.name)}
-                        </div>
-                      </Link>
-                    </NavigationMenuLink>
-                    <Separator className="" />
-                  </li>
-                ))}
+              <ul className="grid w-[200px] min-h-[100px]">
+                {isLoading ? (
+                  <div className="flex w-full h-full items-center justify-center p-4">
+                    <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                ) : (
+                  listCateNews?.data?.map((item) => (
+                    <li key={item._id}>
+                      <NavigationMenuLink asChild>
+                        <Link
+                          className="max-w-[200px]"
+                          href={`/cate-news/${generateSlugUrl({
+                            name: getLang(item.slug),
+                            id: item._id,
+                          })}`}
+                        >
+                          <div className="font-medium !whitespace-nowrap truncate">
+                            {getLang(item.name)}
+                          </div>
+                        </Link>
+                      </NavigationMenuLink>
+                      <Separator className="" />
+                    </li>
+                  ))
+                )}
               </ul>
             </NavigationMenuContent>
           </NavigationMenuItem>

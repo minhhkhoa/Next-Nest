@@ -124,7 +124,7 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
                   }
                 />
                 <BookmarkJobButton
-                  jobId={job._id}
+                  job={job}
                   variant="outline"
                   size="default"
                   className="gap-2"

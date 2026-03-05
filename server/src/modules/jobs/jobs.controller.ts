@@ -79,8 +79,8 @@ export class JobsController {
   @ResponseMessage('Tìm công việc Công Khai cho Trang Chủ')
   @ApiOperation({ summary: 'get all by filter public for HomePage' })
   @Get('filter-public')
-  findJobFilterPublic(@Query() query: FindJobQueryDto) {
-    return this.jobsService.findJobFilterPublic(query);
+  findJobFilterPublic(@Query() query: FindJobQueryDto, @userDecorator() user: UserDecoratorType) {
+    return this.jobsService.findJobFilterPublic(query, user);
   }
 
   @ResponseMessage('Tìm tất cả công việc thành công')

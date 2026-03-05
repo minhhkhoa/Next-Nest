@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { CreateBookmarkDto } from './dto/create-bookmark.dto';
@@ -14,7 +14,7 @@ export class BookmarkService {
   constructor(
     @InjectModel(Bookmark.name)
     private bookmarkModel: SoftDeleteModel<BookmarkDocument>,
-    private readonly companyService: CompanyService,
+    @Inject(forwardRef(() => CompanyService)) private readonly companyService: CompanyService,
   ) {}
 
   async create(createBookmarkDto: CreateBookmarkDto, user: UserDecoratorType) {
@@ -76,7 +76,7 @@ export class BookmarkService {
       const defaultPage = +currentPage > 0 ? +currentPage : 1;
       const defaultLimit = +pageSize > 0 ? +pageSize : 10;
       const skip = (defaultPage - 1) * defaultLimit;
-      
+
       const totalItems =
         await this.bookmarkModel.countDocuments(filterConditions);
       const totalPages = Math.ceil(totalItems / defaultLimit);
@@ -101,65 +101,71 @@ export class BookmarkService {
 
         pipeline.push({
           $unwind: {
-             path: '$job',
-             preserveNullAndEmptyArrays: true
-          }
+            path: '$job',
+            preserveNullAndEmptyArrays: true,
+          },
         });
 
         pipeline.push({
-           $lookup: {
-              from: 'companies',
-              localField: 'job.companyID',
-              foreignField: '_id',
-              as: 'companyInfo'
-           }
+          $lookup: {
+            from: 'companies',
+            localField: 'job.companyID',
+            foreignField: '_id',
+            as: 'companyInfo',
+          },
         });
 
         pipeline.push({
-           $unwind: {
-              path: '$companyInfo',
-              preserveNullAndEmptyArrays: true
-           }
+          $unwind: {
+            path: '$companyInfo',
+            preserveNullAndEmptyArrays: true,
+          },
         });
 
         // 5. Lookup skills
         pipeline.push({
-           $lookup: {
-              from: 'skills',
-              localField: 'job.skills',
-              foreignField: '_id',
-              as: 'skillList'
-           }
+          $lookup: {
+            from: 'skills',
+            localField: 'job.skills',
+            foreignField: '_id',
+            as: 'skillList',
+          },
         });
 
         // 6. Set job.company and job.skills
         pipeline.push({
-            $addFields: {
-               'job.company': { $ifNull: ['$companyInfo', null] },
-               'job.skills': { $cond: { if: { $isArray: '$skillList' }, then: '$skillList', else: '$job.skills' } }
-            }
+          $addFields: {
+            'job.company': { $ifNull: ['$companyInfo', null] },
+            'job.skills': {
+              $cond: {
+                if: { $isArray: '$skillList' },
+                then: '$skillList',
+                else: '$job.skills',
+              },
+            },
+          },
         });
 
-         // 7. Remove temp fields
-         pipeline.push({
-            $project: {
-               companyInfo: 0,
-               skillList: 0
-            }
-         });
+        // 7. Remove temp fields
+        pipeline.push({
+          $project: {
+            companyInfo: 0,
+            skillList: 0,
+          },
+        });
       }
 
       //- join company
       if (itemType === 'company' || !itemType) {
         pipeline.push({
-           $lookup: {
-              from: 'companies',
-              localField: 'itemId',
-              foreignField: '_id',
-              as: 'companyDetail'
-           }
+          $lookup: {
+            from: 'companies',
+            localField: 'itemId',
+            foreignField: '_id',
+            as: 'companyDetail',
+          },
         });
-     }
+      }
 
       const result = await this.bookmarkModel.aggregate(pipeline);
 

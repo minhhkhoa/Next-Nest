@@ -6,43 +6,42 @@ import { Bookmark } from "lucide-react";
 import {
   useCreateBookmark,
   useDeleteBookmarkByItemId,
-  useGetBookmarkedIds,
 } from "@/queries/useBookmark";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "./TanstackProvider";
+import { JobResType } from "@/schemasvalidation/job";
+import { usePathname } from "@/i18n/navigation";
 
 interface BookmarkButtonProps extends React.ComponentProps<typeof Button> {
-  jobId: string;
+  job: JobResType;
 }
 
 export default function BookmarkJobButton({
-  jobId,
+  job,
   className,
   children,
   variant = "ghost",
   size = "icon",
   ...props
 }: BookmarkButtonProps) {
+  const pathName = usePathname();
+
   const { isLogin } = useAppStore();
   const [isBookmarked, setIsBookmarked] = useState(false);
 
-  const { data: bookmarkResponse, isSuccess } = useGetBookmarkedIds(
-    "job",
-    isLogin,
-  );
+  useEffect(() => {
+    if (job.hasBookmarked !== undefined) {
+      setIsBookmarked(job.hasBookmarked);
+    }
+  }, [job.hasBookmarked, pathName]);
 
   useEffect(() => {
-    const apiResponse = bookmarkResponse?.data;
-
-    if (isSuccess && apiResponse) {
-      if (Array.isArray(apiResponse)) {
-        const found = apiResponse.some((b) => b.itemId === jobId);
-        setIsBookmarked(found);
-        return;
-      }
+    //- Nếu đang ở trang Saved Jobs thì mặc định tất cả đều là bookmarked
+    if (pathName === "/saved-jobs") {
+      setIsBookmarked(true);
     }
-  }, [bookmarkResponse, isSuccess, jobId]);
+  }, [pathName]);
 
   const createBookmarkMutation = useCreateBookmark();
   const deleteBookmarkMutation = useDeleteBookmarkByItemId();
@@ -53,7 +52,7 @@ export default function BookmarkJobButton({
 
     //- Nếu đã bookmark, gọi mutation xóa bookmark
     if (isBookmarked) {
-      deleteBookmarkMutation.mutate(jobId, {
+      deleteBookmarkMutation.mutate(job._id, {
         onSuccess: () => {
           setIsBookmarked(false);
           toast.success("Đã bỏ lưu công việc");
@@ -66,7 +65,7 @@ export default function BookmarkJobButton({
       //- Nếu chưa bookmark, gọi mutation tạo bookmark
       createBookmarkMutation.mutate(
         {
-          itemId: jobId,
+          itemId: job._id,
           itemType: "job",
         },
         {
@@ -103,9 +102,7 @@ export default function BookmarkJobButton({
       onClick={handleToggleBookmark}
       disabled={isLoading || props.disabled}
     >
-      <Bookmark
-        className={cn("w-5 h-5", isBookmarked ? "fill-current" : "")}
-      />
+      <Bookmark className={cn("w-5 h-5", isBookmarked ? "fill-current" : "")} />
       {children}
       <span className="sr-only">Bookmark</span>
     </Button>

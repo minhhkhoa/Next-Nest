@@ -153,7 +153,7 @@ export default function JobHoverCard({ job, children }: JobHoverCardProps) {
               </Link>
             </Button>
             <div className="flex-none">
-              <BookmarkJobButton jobId={job._id} />
+              <BookmarkJobButton job={job} />
             </div>
           </div>
         </div>

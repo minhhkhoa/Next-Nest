@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { ChevronRight, Check, ChevronLeft, Search, X } from "lucide-react";
+import {
+  ChevronRight,
+  Check,
+  ChevronLeft,
+  Search,
+  X,
+  Loader2,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +42,8 @@ interface IndustrySelectorProps {
   onSelect: (id: string) => void;
   placeholder?: string;
   className?: string;
+  onOpenChange?: (open: boolean) => void;
+  isLoading?: boolean;
 }
 
 const ITEMS_PER_PAGE = 5;
@@ -185,6 +194,8 @@ export default function IndustrySelector({
   onSelect,
   placeholder = "Ngành nghề",
   className,
+  onOpenChange,
+  isLoading,
 }: IndustrySelectorProps) {
   const { getLang } = useGetLang();
   const t = useTranslations("PageHome.SearchSection.BlockFilter");
@@ -246,6 +257,7 @@ export default function IndustrySelector({
       open={open}
       onOpenChange={(val) => {
         setOpen(val);
+        if (onOpenChange) onOpenChange(val);
         if (!val) setSearchTerm("");
       }}
     >
@@ -290,7 +302,11 @@ export default function IndustrySelector({
         </div>
 
         <div className="p-1">
-          {!searchTerm ? (
+          {isLoading ? (
+            <div className="flex h-[300px] w-full items-center justify-center">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            </div>
+          ) : !searchTerm ? (
             <PaginatedIndustryList
               items={industries}
               selectedValue={value}

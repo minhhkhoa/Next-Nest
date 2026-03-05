@@ -7,6 +7,7 @@ import { DetailProfileModule } from 'src/modules/detail-profile/detail-profile.m
 import { BusinessModule } from 'src/common/decorator/customize';
 import { RolesModule } from '../roles/roles.module';
 import { CompanyModule } from '../company/company.module';
+import { JobsModule } from '../jobs/jobs.module';
 
 @BusinessModule()
 @Module({
@@ -14,6 +15,7 @@ import { CompanyModule } from '../company/company.module';
     RolesModule,
     forwardRef(() => CompanyModule),
     DetailProfileModule,
+    forwardRef(() => JobsModule),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
   controllers: [UserController],

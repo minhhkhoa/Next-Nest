@@ -9,10 +9,12 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 //- category News
-export const useGetListCategories = () => {
+export const useGetListCategories = (enabled: boolean = true) => {
   return useQuery({
     queryKey: ["getListCategories"],
     queryFn: CategoryNewsApiRequest.getListCategories,
+    enabled,
+    staleTime: 1000 * 60 * 60, // 1 hour - Danh mục tin tức ít thay đổi
   });
 };
 

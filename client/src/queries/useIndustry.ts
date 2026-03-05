@@ -9,10 +9,15 @@ export const useGetDetaiIndustry = () => {
   });
 };
 
-export const useGetTreeIndustry = ({ name }: { name?: string }) => {
+export const useGetTreeIndustry = (
+  { name }: { name?: string },
+  enabled: boolean = true,
+) => {
   return useQuery({
     queryKey: ["getTreeIndustry", name],
     queryFn: () => industryApiRequest.getTreeIndustry(name),
+    enabled,
+    staleTime: 1000 * 60 * 60, // 1 hour - Data ngành nghề ít thay đổi
   });
 };
 

@@ -35,6 +35,7 @@ export const apiJobRes = z.object({
     hotUntil: z.date().nullable(),
   }),
   hasApplication: z.boolean().optional(), //- thông tin này để biết user đã ứng tuyển chưa khi xem chi tiết job
+  hasBookmarked: z.boolean().optional(), //- thông tin này để biết user đã bookmark chưa khi xem chi tiết job
   startDate: z.string(),
   endDate: z.string(),
   totalViews: z.number(),
