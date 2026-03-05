@@ -79,9 +79,7 @@ export class JobsController {
   @ResponseMessage('Tìm công việc Công Khai cho Trang Chủ')
   @ApiOperation({ summary: 'get all by filter public for HomePage' })
   @Get('filter-public')
-  findJobFilterPublic(
-    @Query() query: FindJobQueryDto,
-  ) {
+  findJobFilterPublic(@Query() query: FindJobQueryDto) {
     return this.jobsService.findJobFilterPublic(query);
   }
 
@@ -118,9 +116,13 @@ export class JobsController {
   @ResponseMessage('Tìm công việc theo ID thành công')
   @ApiOperation({ summary: 'Tìm công việc theo ID' })
   @Get(':id')
-  findOne(@Param('id') id: string, @Ip() ip: string) {
+  findOne(
+    @Param('id') id: string,
+    @Ip() ip: string,
+    @userDecorator() user: UserDecoratorType,
+  ) {
     //- lấy ip của người xem để xử lý tính view
-    return this.jobsService.findOne(id, ip);
+    return this.jobsService.findOne(id, ip, user);
   }
 
   @ResponseMessage('Cập nhật công việc thành công')

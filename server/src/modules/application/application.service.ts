@@ -26,7 +26,7 @@ export class ApplicationService {
   constructor(
     @InjectModel(Application.name)
     private applicationModel: SoftDeleteModel<ApplicationDocument>,
-    private jobsService: JobsService,
+    @Inject(forwardRef(() => JobsService)) private jobsService: JobsService,
     private readonly translationService: TranslationService,
     private userResumeService: UserResumeService,
     @Inject(forwardRef(() => UserService)) private userService: UserService,
@@ -135,6 +135,25 @@ export class ApplicationService {
         throw error;
       }
       throw new BadRequestCustom(error.message);
+    }
+  }
+
+  async checkApplication(jobId: string, userId: string) {
+    try {
+      const filter = {
+        jobId: new Types.ObjectId(jobId),
+        userId: new Types.ObjectId(userId),
+        isDeleted: false,
+      };
+      const application = await this.applicationModel.findOne(filter);
+      
+      if (!application) {
+        return null; // Chưa ứng tuyển
+      }
+
+      return application; // Đã ứng tuyển, trả về thông tin đơn ứng tuyển
+    } catch (error) {
+      
     }
   }
 

@@ -118,8 +118,8 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
                   jobTitle={getLang(job.title)}
                   companyName={job.company?.name || ""}
                   trigger={
-                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                      Ứng tuyển ngay
+                    <Button disabled={job.hasApplication} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                      {job.hasApplication ? "Đã ứng tuyển" : "Ứng tuyển ngay"}
                     </Button>
                   }
                 />

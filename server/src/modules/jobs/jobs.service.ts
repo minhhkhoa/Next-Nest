@@ -25,6 +25,7 @@ import { IssueService } from '../issue/issue.service';
 import { RequestHotJobDto } from './dto/request-hot.dto';
 import { CreateIssueDto } from '../issue/dto/create-issue.dto';
 import { UpdateHotJobDto } from './dto/update-hot.dto';
+import { ApplicationService } from '../application/application.service';
 
 @Injectable()
 export class JobsService {
@@ -37,6 +38,7 @@ export class JobsService {
     private jobModel: SoftDeleteModel<JobDocument>,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly issueService: IssueService,
+    @Inject(forwardRef(() => ApplicationService)) private readonly applicationService: ApplicationService,
   ) {}
 
   async setHot(updateHotJobDto: UpdateHotJobDto, user: UserDecoratorType) {
@@ -642,7 +644,7 @@ export class JobsService {
     }
   }
 
-  async findOne(id: string, ip: string) {
+  async findOne(id: string, ip: string, user: UserDecoratorType) {
     //- Ép kiểu để dùng được get/set của cache-manager v5
     const cache: any = this.cacheManager;
 
@@ -662,6 +664,15 @@ export class JobsService {
 
     if (!job) {
       throw new BadRequestCustom('Không tìm thấy công việc', true);
+    }
+
+    //- check xem job này đã được người dùng ứng tuyển chưa để trả về thông tin đã ứng tuyển hay chưa
+    let application;
+    if (user) {
+      application = await this.applicationService.checkApplication(
+        id,
+        user.id,
+      );
     }
 
     //- tắt đi, nếu bật lên thì làm sao vào được trang này để bật isActive
@@ -711,6 +722,7 @@ export class JobsService {
       return {
         ...jobObject,
         totalViews: (jobObject.totalViews || 0) + currentAdditional,
+        hasApplication: !!application,
       };
     } catch (redisError) {
       //- Fail-safe: Redis lỗi thì vẫn cho xem Job, chỉ là không tăng view
@@ -730,7 +742,11 @@ export class JobsService {
         (jobObject as any).company = company;
       }
 
-      return jobObject;
+      //- trả về thêm application info nếu có
+      return {
+        ...jobObject,
+        hasApplication: application ? true : false,
+      };
     }
   }
 

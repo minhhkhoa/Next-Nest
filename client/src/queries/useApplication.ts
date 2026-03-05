@@ -14,6 +14,7 @@ export function useCreateApplication() {
       applicationApiRequest.create(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-applications"] });
+      queryClient.invalidateQueries({ queryKey: ["job-detail"] });
     },
   });
 }
@@ -59,6 +60,7 @@ export function useUpdateApplication() {
         queryKey: ["application-detail", variables.id],
       });
       queryClient.invalidateQueries({ queryKey: ["all-applications"] });
+      queryClient.invalidateQueries({ queryKey: ["job-detail"] });
     },
   });
 }

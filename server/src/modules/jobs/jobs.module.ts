@@ -11,6 +11,7 @@ import { CompanyModule } from '../company/company.module';
 import { CompanyStatusGuard } from 'src/common/guard/company-status.guard';
 
 import { IssueModule } from '../issue/issue.module';
+import { ApplicationModule } from '../application/application.module';
 
 @BusinessModule()
 @Module({
@@ -20,6 +21,7 @@ import { IssueModule } from '../issue/issue.module';
     MongooseModule.forFeature([{ name: Job.name, schema: JobSchema }]),
     forwardRef(() => CompanyModule),
     IssueModule,
+    forwardRef(() => ApplicationModule),
   ],
   controllers: [JobsController],
   providers: [JobsService, JobCronService, CompanyStatusGuard],
