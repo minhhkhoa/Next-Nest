@@ -2,6 +2,7 @@ import z from "zod";
 import { ActionBy } from "./NewsCategory";
 import { apiJobRes } from "./job";
 import { BOOKMARK_TYPE } from "@/lib/constant";
+import { apiCompanyRes } from "./company";
 
 export const apiBookmarkRes = z.object({
   _id: z.string(),
@@ -9,6 +10,7 @@ export const apiBookmarkRes = z.object({
   itemId: z.string(),
   itemType: z.enum(BOOKMARK_TYPE.map((opt) => opt.value)),
   job: apiJobRes.optional(),
+  companyDetail: apiCompanyRes.optional(),
   isDeleted: z.boolean(),
   createdAt: z.date(),
   updatedAt: z.date(),

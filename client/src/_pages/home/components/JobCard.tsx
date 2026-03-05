@@ -82,9 +82,9 @@ export default function JobCard({ job }: JobCardProps) {
             <DollarSign className="w-4 h-4 text-primary shrink-0" />
             <span className="font-medium text-primary">
               {getSalaryText(
-                job.salary.min,
-                job.salary.max,
-                job.salary.currency,
+                job?.salary?.min || 0,
+                job?.salary?.max || 0,
+                job?.salary?.currency,
               )}
             </span>
           </div>

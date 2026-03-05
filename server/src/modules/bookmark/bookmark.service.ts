@@ -8,6 +8,7 @@ import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 import mongoose from 'mongoose';
 import { FindBookmarkQueryDto } from './dto/bookmarkDto.dto';
 import { CompanyService } from '../company/company.service';
+import { generateMultiLangSlug } from 'src/utils/generate-slug';
 
 @Injectable()
 export class BookmarkService {
@@ -165,9 +166,28 @@ export class BookmarkService {
             as: 'companyDetail',
           },
         });
+
+        pipeline.push({
+          $unwind: {
+            path: '$companyDetail',
+            preserveNullAndEmptyArrays: true,
+          },
+        });
       }
 
       const result = await this.bookmarkModel.aggregate(pipeline);
+
+      //- Thêm slug cho companyDetail nếu có
+      if (itemType === 'company' || !itemType) {
+        result.forEach((item) => {
+          if (item.companyDetail && item.companyDetail.name) {
+            item.companyDetail.slug = generateMultiLangSlug({
+              vi: item.companyDetail.name,
+              en: item.companyDetail.name,
+            }).vi;
+          }
+        });
+      }
 
       return {
         meta: {

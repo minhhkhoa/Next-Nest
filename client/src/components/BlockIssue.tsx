@@ -17,7 +17,6 @@ import {
   MessageCircleQuestion,
   PlusCircle,
   ListChecks,
-  BookMarked,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppStore } from "./TanstackProvider";
@@ -33,29 +32,9 @@ export default function BlockIssue() {
   if (!isLogin) return null;
 
   return (
-    <div className="fixed bottom-20 right-4 z-50 flex flex-col items-end gap-3 sm:right-5">
+    <div className="flex flex-col items-end gap-3 sm:right-5">
       {/* Container cho các nút chức năng mở rộng sau này */}
       <TooltipProvider delayDuration={300}>
-        {/* việc làm đã lưu, làm sau */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              asChild
-              variant="secondary"
-              size="icon"
-              className="h-11 w-11 rounded-full shadow-lg transition-transform hover:scale-110"
-            >
-              <Link href="/saved-jobs">
-                <BookMarked className="h-6 w-6" />
-                <span className="sr-only">Việc làm đã lưu</span>
-              </Link>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="left">
-            <p>Việc làm đã lưu</p>
-          </TooltipContent>
-        </Tooltip>
-
         {/* Nút Hỗ trợ chính */}
         <Popover>
           <Tooltip>

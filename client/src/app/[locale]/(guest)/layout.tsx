@@ -1,14 +1,13 @@
 import Footer from "./Footer";
 import BreadcrumbSite from "@/components/site-breadcrumb";
 import HeaderClient from "@/components/HeaderClient";
-import BlockIssue from "@/components/BlockIssue";
+import { FloatButton } from "@/components/FloatButton";
 
 export default async function ClientLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   return (
     <div className="md:px-26">
       <HeaderClient />
@@ -19,7 +18,7 @@ export default async function ClientLayout({
       </div>
       {children}
 
-      <BlockIssue />
+      <FloatButton />
 
       {/* footer */}
       <div className="md:-mx-30">

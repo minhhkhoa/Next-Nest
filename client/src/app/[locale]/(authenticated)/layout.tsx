@@ -1,7 +1,7 @@
 import HeaderClient from "@/components/HeaderClient";
 import BreadcrumbSite from "@/components/site-breadcrumb";
 import Footer from "../(guest)/Footer";
-import BlockIssue from "@/components/BlockIssue";
+import { FloatButton } from "@/components/FloatButton";
 
 export default async function AuthenticatedLayout({
   children,
@@ -18,7 +18,7 @@ export default async function AuthenticatedLayout({
       </div>
       {children}
 
-      <BlockIssue />
+      <FloatButton />
 
       {/* Có thể giữ hoặc bỏ Footer tùy UX Khoa muốn */}
       <div className="md:-mx-30 mt-auto">
