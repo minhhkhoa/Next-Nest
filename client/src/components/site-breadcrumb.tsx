@@ -8,15 +8,19 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { useGetLang } from "@/hooks/use-get-lang";
 import { Link, usePathname } from "@/i18n/navigation";
-import { segmentNameMap } from "@/lib/constant";
+import { BreadcrumbNameMap } from "@/lib/constant";
 import { getSlugFromSlugUrl } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { Fragment } from "react";
 
 export default function BreadcrumbSite() {
   const pathname = usePathname();
-  
+  const { locale } = useGetLang();
+
+  const segmentNameMap: Record<string, string> = BreadcrumbNameMap(locale);
+
   const t = useTranslations("Header.NavigateHeader");
   const segments = pathname.split("/").filter(Boolean);
 

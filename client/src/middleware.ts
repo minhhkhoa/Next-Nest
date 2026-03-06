@@ -18,6 +18,7 @@ const protectedPaths = [
   "/saved-jobs",
   "/settings",
   "/change-password",
+  "/my-application",
 ];
 
 // 2. Cấu hình nhóm Role

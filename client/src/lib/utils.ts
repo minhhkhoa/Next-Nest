@@ -11,6 +11,7 @@ import axios, { isAxiosError } from "axios";
 import { NotificationType } from "./constant";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { NotificationResType } from "@/schemasvalidation/notification";
+import { useLocale } from "next-intl";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

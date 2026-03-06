@@ -81,18 +81,23 @@ export const ADDRESS_OPTIONS = [
 
 export const HTTP_METHODS = ["GET", "POST", "PUT", "DELETE", "PATCH"];
 
-export const segmentNameMap: Record<string, string> = {
+export const BreadcrumbNameMap = (
+  locales: string,
+) => ({
   // -start page public
-  "cate-news": "Hành trang nghề nghiệp",
-  news: "Tin tức",
-  profile: "Trang cá nhân",
-  settings: "Cài đặt",
-  jobs: "Việc làm",
-  company: "Công ty",
-  issue: "Vấn đề của tôi",
-  "saved-jobs": "Việc làm đã lưu",
+  "cate-news": locales === "vi" ? "Hành trang nghề nghiệp" : "Career Path",
+  news: locales === "vi" ? "Tin tức" : "News",
+  profile: locales === "vi" ? "Trang cá nhân" : "Profile",
+  settings: locales === "vi" ? "Cài đặt" : "Settings",
+  jobs: locales === "vi" ? "Việc làm" : "Jobs",
+  company: locales === "vi" ? "Công ty" : "Company",
+  issue: locales === "vi" ? "Vấn đề của tôi" : "My Issues",
+  "saved-jobs": locales === "vi" ? "Việc làm đã lưu" : "Saved Jobs",
+  "my-cv": locales === "vi" ? "CV của tôi" : "My CV",
+  "my-application":
+    locales === "vi" ? "Lịch sử ứng tuyển" : "Application History",
   // - end page public
-};
+});
 
 //- start enum notification
 export enum NotificationType {

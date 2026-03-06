@@ -129,7 +129,9 @@ export default function JobCard({ job }: JobCardProps) {
             <>
               Hạn nộp: {format(new Date(job.endDate), "dd/MM/yyyy")}
               <span className="text-yellow-500 ml-1">
-                (còn {differenceInDays(new Date(job.endDate), new Date())} ngày)
+                {differenceInDays(new Date(job.endDate), new Date()) > 0
+                  ? `(còn ${differenceInDays(new Date(job.endDate), new Date())} ngày)`
+                  : "Job đã hết hạn"}{" "}
               </span>
             </>
           ) : (

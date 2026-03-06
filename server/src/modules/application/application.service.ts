@@ -20,6 +20,7 @@ import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { NotificationType } from 'src/common/constants/notification-type.enum';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 import { TranslationService } from 'src/common/translation/translation.service';
+import { slugify } from 'src/utils/generate-slug';
 
 @Injectable()
 export class ApplicationService {
@@ -247,31 +248,122 @@ export class ApplicationService {
     try {
       const { currentPage, pageSize, status, keyword } = query;
 
-      const filter: any = {
+      const limit = pageSize ? +pageSize : 10;
+      const offset = currentPage ? (+currentPage - 1) * limit : 0;
+
+      // 1. Điều kiện Match ban đầu (Cơ bản)
+      const matchStage: any = {
         userId: new Types.ObjectId(user.id),
         isDeleted: false,
       };
 
-      if (status) filter.status = status;
+      if (status) matchStage.status = status;
 
+      // Xây dựng Pipeline
+      const pipeline: any[] = [
+        { $match: matchStage },
+
+        // 2. Lookup Job để lấy Title
+        {
+          $lookup: {
+            from: 'jobs', // Tên collection thực tế trong DB
+            localField: 'jobId',
+            foreignField: '_id',
+            as: 'jobPopulated',
+          },
+        },
+        {
+          $unwind: {
+            path: '$jobPopulated',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+
+        // 3. Lookup Company để lấy Name
+        {
+          $lookup: {
+            from: 'companies', // Tên collection
+            localField: 'companyId',
+            foreignField: '_id',
+            as: 'companyPopulated',
+          },
+        },
+        {
+          $unwind: {
+            path: '$companyPopulated',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+      ];
+
+      // 4. Nếu có keyword, áp dụng bộ lọc $match OR
       if (keyword) {
-        filter.coverLetter = { $regex: keyword, $options: 'i' };
+        pipeline.push({
+          $match: {
+            $or: [
+              { coverLetter: { $regex: keyword, $options: 'i' } },
+              { 'jobPopulated.title.vi': { $regex: keyword, $options: 'i' } },
+              { 'jobPopulated.title.en': { $regex: keyword, $options: 'i' } },
+              { 'companyPopulated.name': { $regex: keyword, $options: 'i' } },
+            ],
+          },
+        });
       }
 
-      const limit = pageSize ? +pageSize : 10;
-      const offset = currentPage ? (+currentPage - 1) * limit : 0;
-
-      const [result, totalItems] = await Promise.all([
+      // 5. Query data (Pagination + Sort) & Count total
+      const [dataResult, countResult] = await Promise.all([
         this.applicationModel
-          .find(filter)
-          .populate('companyId', 'name logo')
-          .populate('jobId', 'title slug salaryRange')
-          .skip(offset)
-          .limit(limit)
-          .sort({ createdAt: -1 })
+          .aggregate([
+            ...pipeline,
+            { $sort: { createdAt: -1 } },
+            { $skip: offset },
+            { $limit: limit },
+            {
+              // Project lại data giống với find() .populate() truyền thống
+              $project: {
+                _id: 1,
+                jobId: {
+                  _id: '$jobPopulated._id',
+                  title: '$jobPopulated.title',
+                  slug: '$jobPopulated.slug',
+                  salary: '$jobPopulated.salary',
+                },
+                companyId: {
+                  _id: '$companyPopulated._id',
+                  name: '$companyPopulated.name',
+                  logo: '$companyPopulated.logo',
+                  slug: '$companyPopulated.slug',
+                },
+                userId: 1,
+                email: 1,
+                resumeType: 1,
+                cvUrl: 1,
+                systemCvData: 1,
+                coverLetter: 1,
+                status: 1,
+                isViewed: 1,
+                createdAt: 1,
+                updatedAt: 1,
+              },
+            },
+          ])
           .exec(),
-        this.applicationModel.countDocuments(filter),
+        this.applicationModel
+          .aggregate([...pipeline, { $count: 'total' }])
+          .exec(),
       ]);
+
+      const totalItems = countResult.length > 0 ? countResult[0].total : 0;
+
+      const formattedResult = dataResult.map((app) => ({
+        ...app,
+        companyId: app.companyId
+          ? {
+              ...app.companyId,
+              slug: app.companyId.name ? slugify(app.companyId.name) : undefined,
+            }
+          : undefined,
+      }));
 
       return {
         meta: {
@@ -280,8 +372,8 @@ export class ApplicationService {
           totalPages: Math.ceil(totalItems / limit),
           totalItems: totalItems,
         },
-        result,
-      };
+        result: formattedResult,
+      }; 
     } catch (error) {
       throw new BadRequestCustom(error.message);
     }
@@ -294,8 +386,8 @@ export class ApplicationService {
 
       const application = await this.applicationModel
         .findById(id)
-        .populate('jobId', 'title salaryRange slug')
-        .populate('userId', '-password')
+        .populate('jobId', 'title salary slug')
+        .populate('userId', '-password -refresh_token')
         .populate('companyId', 'name logo')
         .populate('systemCvData.userResumeId');
 
@@ -318,7 +410,12 @@ export class ApplicationService {
         await application.save();
       }
 
-      return application;
+      const appObject: any = application.toObject();
+      if (appObject.companyId && appObject.companyId.name) {
+        appObject.companyId.slug = slugify(appObject.companyId.name);
+      }
+
+      return appObject;
     } catch (error) {
       if (
         error instanceof ForbiddenException ||
@@ -444,6 +541,11 @@ export class ApplicationService {
 
       if (!isOwner && !isCompanyRecruiter) {
         throw new ForbiddenException('Bạn không có quyền xóa đơn này');
+      }
+
+      //- Luật: Ứng viên chỉ được rút đơn khi trạng thái là PENDING
+      if (isOwner && application.status !== 'PENDING') {
+        throw new BadRequestCustom('Bạn chỉ có thể rút lại đơn ứng tuyển khi hồ sơ đang ở trạng thái chờ xử lý (PENDING)');
       }
 
       return this.applicationModel.softDelete({ _id: id });

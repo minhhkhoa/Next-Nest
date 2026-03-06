@@ -3,6 +3,7 @@ import { ActionBy, MetaFilter } from "./NewsCategory";
 import { APPLICATION_STATUS, RESUME_TYPE } from "@/lib/constant";
 import { MultiLang } from "./trans";
 import { salaryRangeSchema } from "./job";
+import { CVFormValues } from "@/types/apiResponse";
 
 //- dữ liệu cv hệ thống
 export const SystemCvData = z.object({
@@ -16,7 +17,7 @@ export const SystemCvData = z.object({
     ]),
   ), // Can be ID or Populated Object
   templateId: z.string(),
-  resumeContent: z.any(),
+  resumeContent: z.custom<CVFormValues>(), //- đây là cú pháp để chấp nhận bất kỳ object nào
 });
 
 export const ApplicationHistory = z.object({
@@ -44,6 +45,7 @@ export const apiApplicationRes = z.object({
       _id: z.string(),
       name: z.string(),
       logo: z.string().optional(),
+      slug: z.string().optional(),
     }),
   ]),
   email: z.string(),
