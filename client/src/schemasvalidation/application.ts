@@ -21,9 +21,9 @@ export const SystemCvData = z.object({
 });
 
 export const ApplicationHistory = z.object({
-  status: z.enum(APPLICATION_STATUS.map((status) => status.value)),
-  note: z.string(),
-  updatedAt: z.date(),
+  status: z.enum(APPLICATION_STATUS.map((status) => status.value) as [string, ...string[]]),
+  note: z.union([z.string(), MultiLang]),
+  updatedAt: z.union([z.string(), z.date()]),
   updatedBy: ActionBy.optional(),
 });
 
@@ -36,7 +36,7 @@ export const apiApplicationRes = z.object({
       _id: z.string(),
       title: MultiLang,
       slug: MultiLang,
-      salary: salaryRangeSchema,
+      salary: salaryRangeSchema.optional(),
     }),
   ]),
   companyId: z.union([
@@ -47,18 +47,18 @@ export const apiApplicationRes = z.object({
       logo: z.string().optional(),
       slug: z.string().optional(),
     }),
-  ]),
+  ]).optional(),
   email: z.string(),
-  resumeType: z.enum(RESUME_TYPE.map((type) => type.value)),
+  resumeType: z.enum(RESUME_TYPE.map((type) => type.value) as [string, ...string[]]),
   cvUrl: z.string().optional(),
   systemCvData: SystemCvData.optional(),
-  coverLetter: z.string().optional(),
-  status: z.enum(APPLICATION_STATUS.map((status) => status.value)),
+  coverLetter: z.union([z.string(), MultiLang]).optional(),
+  status: z.enum(APPLICATION_STATUS.map((status) => status.value) as [string, ...string[]]),
   isViewed: z.boolean(),
-  rating: z.number().min(0).max(5),
-  recruiterNote: z.string().optional(),
+  rating: z.number().min(0).max(5).optional(),
+  recruiterNote: z.union([z.string(), MultiLang]).optional(),
   interviewTime: z.date().or(z.string()).optional(),
-  rejectionReason: z.string().optional(),
+  rejectionReason: z.union([z.string(), MultiLang]).optional(),
   history: z.array(ApplicationHistory).optional(),
   isDeleted: z.boolean(),
   createdBy: ActionBy.optional(),

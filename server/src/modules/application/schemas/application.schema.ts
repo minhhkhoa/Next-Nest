@@ -4,7 +4,7 @@ import { APPLICATION_STATUS } from 'src/common/constants';
 import { Company } from 'src/modules/company/schemas/company.schema';
 import { Job } from 'src/modules/jobs/schemas/job.schema';
 import { User } from 'src/modules/user/schemas/user.schema';
-import { UserAudit } from 'src/utils/typeSchemas';
+import { UserAudit, MultiLang } from 'src/utils/typeSchemas';
 
 @Schema()
 export class ApplicationHistory {
@@ -14,8 +14,8 @@ export class ApplicationHistory {
   })
   status: string;
 
-  @Prop()
-  note: string;
+  @Prop({ type: MultiLang })
+  note: MultiLang;
 
   @Prop({ default: Date.now })
   updatedAt: Date;
@@ -82,8 +82,8 @@ export class Application {
   systemCvData?: SystemCvData;
 
   //- Thư giới thiệu bản thân. Có thể để trống nếu ứng viên không muốn cung cấp.
-  @Prop()
-  coverLetter: string;
+  @Prop({ type: MultiLang })
+  coverLetter: MultiLang;
 
   @Prop({
     type: String,
@@ -104,16 +104,16 @@ export class Application {
   rating: number;
 
   //- Ghi chú riêng tư của HR
-  @Prop()
-  recruiterNote: string;
+  @Prop({ type: MultiLang })
+  recruiterNote: MultiLang;
 
   //- Lưu lịch phỏng vấn.
   @Prop()
   interviewTime: Date;
 
   //- Lưu lý do từ chối
-  @Prop()
-  rejectionReason: string;
+  @Prop({ type: MultiLang })
+  rejectionReason: MultiLang;
 
   @Prop({ type: [ApplicationHistory], default: [] })
   history: ApplicationHistory[];

@@ -40,6 +40,7 @@ export type CVFormValues = {
 export type TemplateProps = {
   data?: any;
   isEdit?: boolean;
+  isView?: boolean;
   resumeId?: string;
 };
 

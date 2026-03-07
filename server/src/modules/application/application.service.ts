@@ -83,7 +83,10 @@ export class ApplicationService {
         history: [
           {
             status: 'PENDING',
-            note: 'Ứng viên nộp hồ sơ',
+            note: {
+              vi: 'Ứng viên nộp hồ sơ',
+              en: 'Candidate submitted application'
+            },
             updatedAt: new Date(),
             updatedBy: {
               _id: new Types.ObjectId(user.id),
@@ -147,15 +150,13 @@ export class ApplicationService {
         isDeleted: false,
       };
       const application = await this.applicationModel.findOne(filter);
-      
+
       if (!application) {
         return null; // Chưa ứng tuyển
       }
 
       return application; // Đã ứng tuyển, trả về thông tin đơn ứng tuyển
-    } catch (error) {
-      
-    }
+    } catch (error) {}
   }
 
   async findAll(query: FindApplicationQueryDto, user: UserDecoratorType) {
@@ -199,31 +200,126 @@ export class ApplicationService {
         filter.isDeleted = false;
       }
 
-      //- Tìm kiếm theo từ khóa (email, tên ứng viên, thư giới thiệu...)
-      if (keyword) {
-        filter.$or = [
-          { coverLetter: { $regex: keyword, $options: 'i' } },
-          { 'userId.name': { $regex: keyword, $options: 'i' } },
-          { 'userId.email': { $regex: keyword, $options: 'i' } },
-        ];
-      }
-
       //- Pagination
       const limit = pageSize ? +pageSize : 10;
       const offset = currentPage ? (+currentPage - 1) * limit : 0;
 
-      const [result, totalItems] = await Promise.all([
+      const pipeline: any[] = [
+        { $match: filter },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'userId',
+            foreignField: '_id',
+            as: 'userPopulated',
+          },
+        },
+        {
+          $unwind: {
+            path: '$userPopulated',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: 'jobs',
+            localField: 'jobId',
+            foreignField: '_id',
+            as: 'jobPopulated',
+          },
+        },
+        {
+          $unwind: {
+            path: '$jobPopulated',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: 'userresumes',
+            localField: 'systemCvData.userResumeId',
+            foreignField: '_id',
+            as: 'resumePopulated',
+          },
+        },
+        {
+          $unwind: {
+            path: '$resumePopulated',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+      ];
+
+      //- Tìm kiếm theo từ khóa (email, tên ứng viên, thư giới thiệu, tên job...) sau khi lookup xong
+      if (keyword) {
+        pipeline.push({
+          $match: {
+            $or: [
+              { coverLetter: { $regex: keyword, $options: 'i' } },
+              { 'userPopulated.name': { $regex: keyword, $options: 'i' } },
+              { 'userPopulated.email': { $regex: keyword, $options: 'i' } },
+              { 'jobPopulated.title.vi': { $regex: keyword, $options: 'i' } },
+              { 'jobPopulated.title.en': { $regex: keyword, $options: 'i' } },
+            ],
+          },
+        });
+      }
+
+      const [dataResult, countResult] = await Promise.all([
         this.applicationModel
-          .find(filter)
-          .populate('jobId', 'title slug salaryRange')
-          .populate('userId', 'name email avatar')
-          .populate('systemCvData.userResumeId', 'resumeName url')
-          .skip(offset)
-          .limit(limit)
-          .sort({ createdAt: -1 })
+          .aggregate([
+            ...pipeline,
+            { $sort: { createdAt: -1 } },
+            { $skip: offset },
+            { $limit: limit },
+            {
+              $project: {
+                _id: 1,
+                jobId: {
+                  _id: '$jobPopulated._id',
+                  title: '$jobPopulated.title',
+                  slug: '$jobPopulated.slug',
+                  salaryRange: '$jobPopulated.salaryRange',
+                },
+                userId: {
+                  _id: '$userPopulated._id',
+                  name: '$userPopulated.name',
+                  email: '$userPopulated.email',
+                  avatar: '$userPopulated.avatar',
+                },
+                companyId: 1,
+                email: 1,
+                resumeType: 1,
+                cvUrl: 1,
+                systemCvData: {
+                  userResumeId: {
+                    _id: '$resumePopulated._id',
+                    resumeName: '$resumePopulated.resumeName',
+                    url: '$resumePopulated.url',
+                  },
+                  templateId: '$systemCvData.templateId',
+                  resumeContent: '$systemCvData.resumeContent',
+                },
+                coverLetter: 1,
+                status: 1,
+                isViewed: 1,
+                rating: 1,
+                recruiterNote: 1,
+                interviewTime: 1,
+                rejectionReason: 1,
+                history: 1,
+                createdAt: 1,
+                updatedAt: 1,
+              },
+            },
+          ])
           .exec(),
-        this.applicationModel.countDocuments(filter),
+        this.applicationModel
+          .aggregate([...pipeline, { $count: 'total' }])
+          .exec(),
       ]);
+
+      const totalItems = countResult.length > 0 ? countResult[0].total : 0;
 
       return {
         meta: {
@@ -232,7 +328,7 @@ export class ApplicationService {
           totalPages: Math.ceil(totalItems / limit),
           totalItems: totalItems,
         },
-        result,
+        result: dataResult,
       };
     } catch (error) {
       if (error instanceof ForbiddenException) throw error;
@@ -360,7 +456,9 @@ export class ApplicationService {
         companyId: app.companyId
           ? {
               ...app.companyId,
-              slug: app.companyId.name ? slugify(app.companyId.name) : undefined,
+              slug: app.companyId.name
+                ? slugify(app.companyId.name)
+                : undefined,
             }
           : undefined,
       }));
@@ -373,7 +471,7 @@ export class ApplicationService {
           totalItems: totalItems,
         },
         result: formattedResult,
-      }; 
+      };
     } catch (error) {
       throw new BadRequestCustom(error.message);
     }
@@ -466,9 +564,10 @@ export class ApplicationService {
 
         application.history.push({
           status: newStatus,
-          note:
-            dataLang.recruiterNote ||
-            `Cập nhật trạng thái từ ${oldStatus} sang ${newStatus}`,
+          note: (dataLang as any).recruiterNote || {
+            vi: `Cập nhật trạng thái từ ${oldStatus} sang ${newStatus}`,
+            en: `Updated status from ${oldStatus} to ${newStatus}`,
+          },
           updatedAt: new Date(),
           updatedBy: {
             _id: new Types.ObjectId(user.id),
@@ -545,7 +644,9 @@ export class ApplicationService {
 
       //- Luật: Ứng viên chỉ được rút đơn khi trạng thái là PENDING
       if (isOwner && application.status !== 'PENDING') {
-        throw new BadRequestCustom('Bạn chỉ có thể rút lại đơn ứng tuyển khi hồ sơ đang ở trạng thái chờ xử lý (PENDING)');
+        throw new BadRequestCustom(
+          'Bạn chỉ có thể rút lại đơn ứng tuyển khi hồ sơ đang ở trạng thái chờ xử lý (PENDING)',
+        );
       }
 
       return this.applicationModel.softDelete({ _id: id });

@@ -23,6 +23,7 @@ import SoftDestructiveSonner from "../shadcn-studio/sonner/SoftDestructiveSonner
 export default function ModernTemplate({
   data,
   isEdit,
+  isView,
   resumeId,
 }: TemplateProps) {
   const { mutate: updateResume, isPending: isUpdating } =
@@ -245,7 +246,10 @@ export default function ModernTemplate({
       <Form {...form}>
         <form
           onSubmit={handleSubmit((d) => console.log(d))}
-          className="w-full max-w-[210mm] mx-auto min-h-screen pb-2"
+          className={cn(
+            "w-full max-w-[210mm] mx-auto min-h-screen pb-2 bg-white",
+            isView && "pointer-events-none select-none",
+          )}
         >
           {/* Container chính: dùng bg-card để lấy màu nền theo theme (trắng/đen) */}
           <div className="border border-border shadow-xl rounded-lg bg-card overflow-hidden text-card-foreground">
@@ -790,7 +794,7 @@ export default function ModernTemplate({
         </form>
       </Form>
 
-      {!isEdit && (
+      {!isEdit && !isView && (
         <SaveResumeDialog
           open={isSaveDialogOpen}
           onOpenChange={setIsSaveDialogOpen}

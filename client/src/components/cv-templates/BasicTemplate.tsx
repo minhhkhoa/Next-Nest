@@ -32,6 +32,7 @@ import SoftDestructiveSonner from "../shadcn-studio/sonner/SoftDestructiveSonner
 export default function BasicTemplate({
   data,
   isEdit,
+  isView,
   resumeId,
 }: TemplateProps) {
   const { mutate: updateResume, isPending: isUpdating } =
@@ -262,7 +263,10 @@ export default function BasicTemplate({
       <Form {...form}>
         <form
           onSubmit={handleSubmit((d) => console.log(d))}
-          className="w-full max-w-[210mm] mx-auto min-h-screen pb-2"
+          className={cn(
+            "w-full max-w-[210mm] mx-auto min-h-screen pb-2",
+            isView && "pointer-events-none select-none",
+          )}
         >
           {/* Main Card */}
           <div className="border border-border shadow-xl rounded-lg bg-card overflow-hidden text-card-foreground">
@@ -801,7 +805,7 @@ export default function BasicTemplate({
         </form>
       </Form>
 
-      {!isEdit && (
+      {!isEdit && !isView && (
         <SaveResumeDialog
           open={isSaveDialogOpen}
           onOpenChange={setIsSaveDialogOpen}

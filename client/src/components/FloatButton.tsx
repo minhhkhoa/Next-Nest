@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Button } from "./ui/button";
 import { Link } from "@/i18n/navigation";
-import { BookMarked, Settings2, X } from "lucide-react";
+import { BookMarked, BriefcaseBusiness, Settings2, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import BlockIssue from "./BlockIssue";
 import { useAppStore } from "./TanstackProvider";
@@ -39,6 +39,31 @@ export function BookmarkNavigationButton() {
   );
 }
 
+export function MyApplicationNavigationButton() {
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            asChild
+            variant="outline"
+            size="icon"
+            className="h-12 w-12 rounded-full shadow-lg border border-border bg-background hover:bg-accent hover:text-accent-foreground backdrop-blur flex items-center justify-center transition-colors"
+          >
+            <Link href="/my-application">
+              <BriefcaseBusiness className="h-5 w-5" />
+              <span className="sr-only">Theo dõi đơn ứng tuyển</span>
+            </Link>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="left">
+          <p>Theo dõi đơn ứng tuyển</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
 const AllButtons = [
   {
     id: "bookmark",
@@ -47,6 +72,10 @@ const AllButtons = [
   {
     id: "support",
     component: <BlockIssue />,
+  },
+  {
+    id: "my-application",
+    component: <MyApplicationNavigationButton />,
   },
 ];
 

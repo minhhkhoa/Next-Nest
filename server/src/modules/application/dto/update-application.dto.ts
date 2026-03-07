@@ -7,7 +7,7 @@ import {
   IsNumber,
   Min,
   Max,
-  IsDateString,
+  IsDate,
   IsIn,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
@@ -50,7 +50,7 @@ export class UpdateApplicationDto extends PartialType(CreateApplicationDto) {
 
   @ApiProperty({ description: 'Thời gian phỏng vấn', required: false })
   @IsOptional()
-  @IsDateString()
+  @IsDate()
   interviewTime?: Date;
 
   @ApiProperty({ description: 'Lý do từ chối', required: false })

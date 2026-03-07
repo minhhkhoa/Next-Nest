@@ -22,6 +22,7 @@ import SoftDestructiveSonner from "../shadcn-studio/sonner/SoftDestructiveSonner
 export default function ImpressiveTemplate({
   data,
   isEdit,
+  isView,
   resumeId,
 }: TemplateProps) {
   const { mutate: updateResume, isPending: isUpdating } =
@@ -232,7 +233,7 @@ export default function ImpressiveTemplate({
   return (
     <>
       <Form {...form}>
-        <form className="w-full max-w-[210mm] mx-auto min-h-screen pb-2 bg-background text-foreground">
+        <form className={cn("w-full max-w-[210mm] mx-auto min-h-screen pb-2 bg-background text-foreground", isView && "pointer-events-none select-none")}>
           <div className="container mx-auto py-8">
             <div className="grid grid-cols-4 sm:grid-cols-12 gap-6">
               {/* Sidebar */}
@@ -701,7 +702,7 @@ export default function ImpressiveTemplate({
         </form>
       </Form>
 
-      {!isEdit && (
+      {!isEdit && !isView && (
         <SaveResumeDialog
           open={isSaveDialogOpen}
           onOpenChange={setIsSaveDialogOpen}
@@ -714,3 +715,4 @@ export default function ImpressiveTemplate({
     </>
   );
 }
+

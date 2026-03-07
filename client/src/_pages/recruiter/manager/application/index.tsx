@@ -6,20 +6,19 @@ import { Spinner } from "@/components/ui/spinner";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import { DeleteConfirmModal } from "@/_pages/admin/NewsCategory/components/modals/delete-confirm-modal";
-import {
-  FilterSelect,
-  isActiveFilters,
-} from "@/_pages/admin/jobs/components/blockFiltersJob";
+import { FilterSelect } from "@/_pages/admin/jobs/components/blockFiltersJob";
 import { SearchBar } from "@/_pages/admin/NewsCategory/components/search-bar";
 import {
   useDeleteApplication,
   useFindAllApplications,
-  useGetApplicationDetail,
 } from "@/queries/useApplication";
 import { ApplicationResType } from "@/schemasvalidation/application";
 import TableApplication from "./application-tableJob";
 import { getApplicationColumns } from "./application-jobColumn";
 import { APPLICATION_STATUS } from "@/lib/constant";
+import { EditApplicationDialog } from "./components/EditApplicationDialog";
+import { ViewApplicationSheet } from "./components/ViewApplicationSheet";
+import { RatingSlider } from "./components/RatingSlider";
 
 export default function RecruiterApplicationPage() {
   const [filtersApplication, setFiltersApplication] = useState<{
@@ -39,6 +38,16 @@ export default function RecruiterApplicationPage() {
     isOpen: boolean;
     id: string;
   }>({ isOpen: false, id: "" });
+
+  const [editModal, setEditModal] = useState<{
+    isOpen: boolean;
+    application: ApplicationResType | null;
+  }>({ isOpen: false, application: null });
+
+  const [viewSheet, setViewSheet] = useState<{
+    isOpen: boolean;
+    applicationId: string | null;
+  }>({ isOpen: false, applicationId: null });
 
   const [debouncedSearchTitle] = useDebounce(filtersApplication?.keyword, 500);
   const [debouncedSearchStatus] = useDebounce(filtersApplication?.status, 500);
@@ -61,7 +70,6 @@ export default function RecruiterApplicationPage() {
     isPending: isDeleteApplication,
   } = useDeleteApplication();
 
-  //- chi cho recruiter_admin
   const handleConfirmDelete = async () => {
     try {
       const res = await deleteApplicationMutation(deleteModal.id);
@@ -76,18 +84,16 @@ export default function RecruiterApplicationPage() {
     }
   };
 
-  const handleOpenEdit = (job: ApplicationResType) => {
-    //- hiển thị modal
+  const handleOpenEdit = (application: ApplicationResType) => {
+    setEditModal({ isOpen: true, application });
   };
 
-  const handleOpenDeleteModal = (job: ApplicationResType) => {
-    setDeleteModal({ isOpen: true, id: job._id });
+  const handleOpenDeleteModal = (application: ApplicationResType) => {
+    setDeleteModal({ isOpen: true, id: application._id });
   };
 
   const handleViewApplication = async (application: ApplicationResType) => {
-    //- lấy id đã
-    const idApplication = application._id;
-    //- hiển thị modal chi tiết ứng tuyển
+    setViewSheet({ isOpen: true, applicationId: application._id });
   };
 
   const columns = getApplicationColumns(
@@ -117,40 +123,44 @@ export default function RecruiterApplicationPage() {
       {/* Main Content */}
       <div className="mx-auto max-w-7xl px-6">
         {/* khối lọc */}
-        <div>
-          <div className="flex flex-col md:flex-row gap-3">
-            <div className="flex-1">
-              <SearchBar
-                value={
-                  filtersApplication.keyword === undefined
-                    ? ""
-                    : filtersApplication.keyword
-                }
-                onChange={(value) =>
-                  setFiltersApplication((prev) => ({ ...prev, keyword: value }))
-                }
-                placeholder="Tìm theo tên ứng viên"
-              />
-            </div>
-
-            <div className="flex-1">
-              <FilterSelect
-                label="Lọc theo trạng thái:"
-                value={
-                  filtersApplication.status === undefined
-                    ? ""
-                    : filtersApplication.status
-                }
-                options={APPLICATION_STATUS}
-                onChange={(value) =>
-                  setFiltersApplication((prev) => ({ ...prev, status: value }))
-                }
-              />
-            </div>
+        <div className="flex flex-col md:flex-row gap-4 items-center mb-3">
+          {/* Search */}
+          <div className="w-full md:w-1/3">
+            <SearchBar
+              value={
+                filtersApplication.keyword === undefined
+                  ? ""
+                  : filtersApplication.keyword
+              }
+              onChange={(value) =>
+                setFiltersApplication((prev) => ({ ...prev, keyword: value }))
+              }
+              placeholder="Tìm theo tên ứng viên, thư..."
+            />
           </div>
 
-          <div className="flex flex-col md:flex-row md:gap-10 gap-3 py-3">
-            {/* Filter minRating dạng slide chọn start */}
+          {/* Độ tiềm năng - Slider custom */}
+          <RatingSlider
+            value={filtersApplication.minRating || 0}
+            onChange={(val) =>
+              setFiltersApplication((prev) => ({ ...prev, minRating: val }))
+            }
+          />
+
+          {/* Trạng thái */}
+          <div className="w-full md:w-1/4">
+            <FilterSelect
+              label="Trạng thái"
+              value={
+                filtersApplication.status === undefined
+                  ? ""
+                  : filtersApplication.status
+              }
+              options={APPLICATION_STATUS}
+              onChange={(value) =>
+                setFiltersApplication((prev) => ({ ...prev, status: value }))
+              }
+            />
           </div>
         </div>
 
@@ -179,12 +189,32 @@ export default function RecruiterApplicationPage() {
       {/* modal confirm delete */}
       {deleteModal.isOpen && (
         <DeleteConfirmModal
-          title="Xóa vai trò"
+          title="Xóa đơn ứng tuyển"
           isDeleting={isDeleteApplication}
           onConfirm={handleConfirmDelete}
           onCancel={() => setDeleteModal({ isOpen: false, id: "" })}
         />
       )}
+
+      {/* modal edit application */}
+      {editModal.isOpen && (
+        <EditApplicationDialog
+          open={editModal.isOpen}
+          onOpenChange={(open) =>
+            setEditModal((prev) => ({ ...prev, isOpen: open }))
+          }
+          application={editModal.application}
+        />
+      )}
+
+      {/* sheet view application CV */}
+      <ViewApplicationSheet
+        open={viewSheet.isOpen}
+        onOpenChange={(open) =>
+          setViewSheet((prev) => ({ ...prev, isOpen: open }))
+        }
+        applicationId={viewSheet.applicationId}
+      />
     </div>
   );
 }

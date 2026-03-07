@@ -52,7 +52,8 @@ export const getApplicationColumns = (
       const user = row.original.userId;
       const name =
         typeof user === "string" ? "Người dùng đã bị xóa" : user.name;
-      const avatar = typeof user === "string" ? null : user.avatar || undefined;
+      const avatar =
+        typeof user === "string" ? null : user.avatar || "/avatar-default.webp";
       const email =
         typeof user === "string" ? "Email không xác định" : user.email;
 
@@ -112,7 +113,7 @@ export const getApplicationColumns = (
     id: "rating",
     header: "Mức độ tiềm năng",
     cell: ({ row }) => {
-      const rating = row.original.rating;
+      const rating = row.original.rating!;
       return rating > 1 ? (
         generateStarRating(rating)
       ) : (
@@ -147,7 +148,7 @@ export const getApplicationColumns = (
               <DropdownMenuItem onClick={() => onEdit && onEdit(application)}>
                 <div className="flex gap-3 items-center">
                   <Pen className="mr-2 h-4 w-4" />
-                  Chỉnh sửa
+                  Phản hồi
                 </div>
               </DropdownMenuItem>
             )}

@@ -58,9 +58,9 @@ export default function ApplicationCard({
 
   const jobTitle = job?.title?.vi || job?.title?.en || "Vị trí bảo mật";
   const salaryString = getSalaryText(
-    job?.salary.min || 0,
-    job?.salary.max || 0,
-    job?.salary.currency || "VND",
+    job?.salary!.min || 0,
+    job?.salary!.max || 0,
+    job?.salary!.currency || "VND",
   );
 
   const statusInfo = getStatusDetails(application.status);
