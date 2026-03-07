@@ -36,11 +36,11 @@ export function useFindMyApplications(params: FindApplicationFilterType) {
 }
 
 //- hook xem chi tiết đơn ứng tuyển (Ứng viên hoặc Recruiter)
-export function useGetApplicationDetail(id: string) {
+export function useGetApplicationDetail(id: string, enabled = true) {
   return useQuery({
     queryKey: ["application-detail", id],
     queryFn: () => applicationApiRequest.findOne(id),
-    enabled: !!id,
+    enabled: !!id && enabled,
   });
 }
 

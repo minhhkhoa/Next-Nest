@@ -76,6 +76,7 @@ export class ApplicationController {
     return this.applicationService.update(id, updateApplicationDto, user);
   }
 
+  @PublicPermission()
   @ResponseMessage('Xóa đơn ứng tuyển thành công')
   @ApiOperation({ summary: 'Xóa đơn ứng tuyển' })
   @Delete(':id')

@@ -49,7 +49,7 @@ const items = [
   // },
   {
     title: "Hồ sơ ứng viên",
-    url: "/recruiter/manager/resumes",
+    url: "/recruiter/manager/application",
     icon: FileUser,
     isAdmin: false,
   },

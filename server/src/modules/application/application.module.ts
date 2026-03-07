@@ -8,7 +8,9 @@ import { Application, ApplicationSchema } from './schemas/application.schema';
 import { JobsModule } from '../jobs/jobs.module';
 import { UserResumeModule } from '../user-resume/user-resume.module';
 import { UserModule } from '../user/user.module';
+import { BusinessModule } from 'src/common/decorator/customize';
 
+@BusinessModule()
 @Module({
   imports: [
     TranslationModule,
