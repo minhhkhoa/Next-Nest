@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { ApplicationResType } from "@/schemasvalidation/application";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, FileText, CalendarClock, Info, XCircle, Loader2 } from "lucide-react";
+import { ExternalLink, FileText, CalendarClock, XCircle } from "lucide-react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { generateSlugUrl } from "@/lib/utils";
@@ -68,27 +68,48 @@ export default function ApplicationDetailDialog({
 
           <div className="space-y-6 mt-4">
             {/* Trạng thái đơn và thông báo từ nhà tuyển dụng */}
-            {application.status === "INTERVIEW" && application.interviewTime && (
-              <div className="flex gap-3 items-start text-sm bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-900/50 p-4 rounded-lg">
-                <CalendarClock className="w-5 h-5 shrink-0 mt-0.5 text-blue-600 dark:text-blue-400" />
-                <div>
-                  <p className="font-semibold text-base mb-1">Nhà tuyển dụng mời bạn phỏng vấn!</p>
-                  <p>Thời gian dự kiến: <span className="font-medium">{format(new Date(application.interviewTime), "dd/MM/yyyy HH:mm", { locale: vi })}</span></p>
-                  <p className="text-muted-foreground mt-1 text-xs">Vui lòng kiểm tra email của bạn để biết thêm chi tiết mốc thời gian hoặc đường dẫn tham gia.</p>
+            {application.status === "INTERVIEW" &&
+              application.interviewTime && (
+                <div className="flex gap-3 items-start text-sm bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-900/50 p-4 rounded-lg">
+                  <CalendarClock className="w-5 h-5 shrink-0 mt-0.5 text-blue-600 dark:text-blue-400" />
+                  <div>
+                    <p className="font-semibold text-base mb-1">
+                      Nhà tuyển dụng mời bạn phỏng vấn!
+                    </p>
+                    <p>
+                      Thời gian dự kiến:{" "}
+                      <span className="font-medium">
+                        {format(
+                          new Date(application.interviewTime),
+                          "dd/MM/yyyy HH:mm",
+                          { locale: vi },
+                        )}
+                      </span>
+                    </p>
+                    <p className="text-muted-foreground mt-1 text-xs">
+                      Vui lòng kiểm tra email của bạn để biết thêm chi tiết mốc
+                      thời gian hoặc đường dẫn tham gia.
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {application.status === "REJECTED" && (
               <div className="flex gap-3 items-start text-sm bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-900/50 p-4 rounded-lg">
                 <XCircle className="w-5 h-5 shrink-0 mt-0.5 text-red-600 dark:text-red-400" />
                 <div className="w-full">
-                  <p className="font-semibold text-base mb-1">Cảm ơn bạn đã ứng tuyển</p>
+                  <p className="font-semibold text-base mb-1">
+                    Cảm ơn bạn đã ứng tuyển
+                  </p>
                   <p>Rất tiếc hồ sơ của bạn chưa phù hợp với vị trí này.</p>
                   {application.rejectionReason && (
                     <div className="mt-2 p-3 bg-white/50 dark:bg-background/50 rounded border border-red-100 dark:border-red-900/30 whitespace-pre-wrap text-sm">
-                      <p className="font-medium text-xs uppercase opacity-70 mb-1">Phản hồi từ nhà tuyển dụng:</p>
-                      {typeof application.rejectionReason === "object" ? application.rejectionReason.vi : application.rejectionReason}
+                      <p className="font-medium text-xs uppercase opacity-70 mb-1">
+                        Phản hồi từ nhà tuyển dụng:
+                      </p>
+                      {typeof application.rejectionReason === "object"
+                        ? application.rejectionReason.vi
+                        : application.rejectionReason}
                     </div>
                   )}
                 </div>

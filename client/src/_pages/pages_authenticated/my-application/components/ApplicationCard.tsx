@@ -5,7 +5,15 @@ import { ApplicationResType } from "@/schemasvalidation/application";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DollarSign, Calendar, Eye, Trash2, Building } from "lucide-react";
+import {
+  DollarSign,
+  Calendar,
+  Eye,
+  Trash2,
+  Building,
+  CheckCheck,
+  EyeOff,
+} from "lucide-react";
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -64,6 +72,8 @@ export default function ApplicationCard({
   );
 
   const statusInfo = getStatusDetails(application.status);
+
+  console.log("application: ", application);
 
   return (
     <>
@@ -127,6 +137,18 @@ export default function ApplicationCard({
                   locale: vi,
                 })}
               </span>
+              {application.status === "PENDING" && (
+                <span
+                  className={`flex items-center gap-1.5 ${application.isViewed ? "text-blue-500" : "text-muted-foreground"}`}
+                >
+                  {application.isViewed ? (
+                    <CheckCheck className="w-4 h-4" />
+                  ) : (
+                    <EyeOff className="w-4 h-4" />
+                  )}
+                  {application.isViewed ? "NTD đã xem" : "NTD chưa xem"}
+                </span>
+              )}
             </div>
           </div>
 
