@@ -257,13 +257,14 @@ export function IssueDialogForm({
                     control={form.control}
                     name="targetId"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="">
                         <FormLabel>ID đối tượng (Tuỳ chọn)</FormLabel>
                         <FormControl>
                           <Input
                             placeholder="ID Job, Company, User..."
                             {...field}
                             value={field.value || ""}
+                            readOnly
                           />
                         </FormControl>
                         <FormMessage />

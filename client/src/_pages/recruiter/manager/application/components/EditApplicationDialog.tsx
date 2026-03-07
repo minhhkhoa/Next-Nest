@@ -107,6 +107,7 @@ export function EditApplicationDialog({
       onOpenChange(false);
     } catch (error) {
       SoftDestructiveSonner("Có lỗi xảy ra khi cập nhật");
+      console.log("error: ", error);
     }
   };
 
