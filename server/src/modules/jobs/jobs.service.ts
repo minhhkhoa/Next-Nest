@@ -27,7 +27,6 @@ import { CreateIssueDto } from '../issue/dto/create-issue.dto';
 import { UpdateHotJobDto } from './dto/update-hot.dto';
 import { ApplicationService } from '../application/application.service';
 import { BookmarkService } from '../bookmark/bookmark.service';
-import { BookmarkModule } from '../bookmark/bookmark.module';
 import { Bookmark } from '../bookmark/schemas/bookmark.schema';
 
 @Injectable()
@@ -482,8 +481,8 @@ export class JobsService {
           },
         },
         { $unwind: '$company' },
-        //- Chỉ hiển thị Job của công ty đã được duyệt và chưa bị xóa
         {
+          //- Chỉ hiển thị Job của công ty đã được duyệt và chưa bị xóa
           $match: {
             'company.isDeleted': false,
             'company.status': 'ACCEPT',

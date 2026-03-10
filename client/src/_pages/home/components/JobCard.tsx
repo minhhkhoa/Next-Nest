@@ -106,7 +106,7 @@ export default function JobCard({ job }: JobCardProps) {
               <Badge
                 key={index}
                 variant="secondary"
-                className="font-normal text-xs bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                className="font-normal text-xs bg-secondary text-secondary-foreground hover:!bg-primary/30 truncate"
               >
                 {getLang(skill.name)}
               </Badge>
@@ -114,7 +114,7 @@ export default function JobCard({ job }: JobCardProps) {
           {job.skills && job.skills.length > 3 && (
             <Badge
               variant="secondary"
-              className="font-normal text-xs bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              className="font-normal text-xs bg-secondary text-secondary-foreground hover:!bg-primary/80"
             >
               +{job.skills.length - 3}
             </Badge>

@@ -21,12 +21,14 @@ import { NotificationType } from 'src/common/constants/notification-type.enum';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 import { TranslationService } from 'src/common/translation/translation.service';
 import { slugify } from 'src/utils/generate-slug';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ApplicationService {
   constructor(
     @InjectModel(Application.name)
     private applicationModel: SoftDeleteModel<ApplicationDocument>,
+    private configService: ConfigService,
     @Inject(forwardRef(() => JobsService)) private jobsService: JobsService,
     private readonly translationService: TranslationService,
     private userResumeService: UserResumeService,
@@ -85,7 +87,7 @@ export class ApplicationService {
             status: 'PENDING',
             note: {
               vi: 'Ứng viên nộp hồ sơ',
-              en: 'Candidate submitted application'
+              en: 'Candidate submitted application',
             },
             updatedAt: new Date(),
             updatedBy: {
@@ -174,9 +176,15 @@ export class ApplicationService {
 
       const filter: any = {};
 
+      const userRole = user.roleCodeName;
+      const textRoleSuperAdmin =
+        this.configService.get<string>('role_super_admin');
+
       //- check quyền: Chỉ recruiter của công ty mới xem được tất cả đơn ứng tuyển của công ty mình
       if (user.employerInfo?.companyID) {
         filter.companyId = new Types.ObjectId(user.employerInfo.companyID);
+      } else if (userRole === textRoleSuperAdmin) {
+        //- supper admin có thể xem tất cả đơn ứng tuyển, sau không cần thì xóa đi, nay test thì mình bật lên.
       } else {
         throw new ForbiddenException(
           'Không có quyền truy cập. Chỉ dành cho nhà tuyển dụng.',
@@ -229,6 +237,7 @@ export class ApplicationService {
           },
         },
         {
+          //- $unwind giúp biến mảng jobPopulated thành object (vì mỗi đơn ứng tuyển chỉ ứng tuyển vào 1 job nên chỉ có 1 phần tử trong mảng sau lookup) -> dễ dàng truy cập các trường của job như title, slug trong pipeline sau đó
           $unwind: {
             path: '$jobPopulated',
             preserveNullAndEmptyArrays: true,
@@ -252,13 +261,15 @@ export class ApplicationService {
 
       //- Tìm kiếm theo từ khóa (email, tên ứng viên, thư giới thiệu, tên job...) sau khi lookup xong
       if (keyword) {
+        //- Trong MongoDB Aggregation, dữ liệu chảy qua Pipeline theo thứ tự.
+        //- và đây là lần match thứ 2, nên lúc này chúng ta đã có dữ liệu userPopulated (sau lookup users) và jobPopulated (sau lookup jobs) để có thể tìm kiếm theo tên ứng viên, email ứng viên, tên job, thư giới thiệu...
         pipeline.push({
           $match: {
             $or: [
               { coverLetter: { $regex: keyword, $options: 'i' } },
               { 'userPopulated.name': { $regex: keyword, $options: 'i' } },
               { 'userPopulated.email': { $regex: keyword, $options: 'i' } },
-              { 'jobPopulated.title.vi': { $regex: keyword, $options: 'i' } },
+              { 'jobPopulated.title.vi': { $regex: keyword, $options: 'i' } }, //- $unwind ở trên đã biến jobPopulated từ mảng thành object nên có thể truy cập trực tiếp vào jobPopulated.title.vi để tìm kiếm
               { 'jobPopulated.title.en': { $regex: keyword, $options: 'i' } },
             ],
           },
@@ -269,17 +280,17 @@ export class ApplicationService {
         this.applicationModel
           .aggregate([
             ...pipeline,
-            { $sort: { createdAt: -1 } },
+            { $sort: { createdAt: -1 } }, //- Sắp xếp theo ngày tạo mới nhất
             { $skip: offset },
             { $limit: limit },
             {
-              $project: {
-                _id: 1,
+              $project: { //- $project để chọn trường nào cần lấy ra
+                _id: 1, //- 1 tức là lấy, 0 là không lấy
                 jobId: {
                   _id: '$jobPopulated._id',
                   title: '$jobPopulated.title',
                   slug: '$jobPopulated.slug',
-                  salaryRange: '$jobPopulated.salaryRange',
+                  salary: '$jobPopulated.salary',
                 },
                 userId: {
                   _id: '$userPopulated._id',
@@ -347,7 +358,7 @@ export class ApplicationService {
       const limit = pageSize ? +pageSize : 10;
       const offset = currentPage ? (+currentPage - 1) * limit : 0;
 
-      // 1. Điều kiện Match ban đầu (Cơ bản)
+      //- Điều kiện Match ban đầu (Cơ bản)
       const matchStage: any = {
         userId: new Types.ObjectId(user.id),
         isDeleted: false,
@@ -359,12 +370,12 @@ export class ApplicationService {
       const pipeline: any[] = [
         { $match: matchStage },
 
-        // 2. Lookup Job để lấy Title
+        //- Lookup Job để lấy Title
         {
           $lookup: {
-            from: 'jobs', // Tên collection thực tế trong DB
-            localField: 'jobId',
-            foreignField: '_id',
+            from: 'jobs', //- Tên collection thực tế trong DB
+            localField: 'jobId', //- trường jobId trong Application
+            foreignField: '_id', //- trường _id trong Job
             as: 'jobPopulated',
           },
         },
@@ -375,10 +386,10 @@ export class ApplicationService {
           },
         },
 
-        // 3. Lookup Company để lấy Name
+        //- Lookup Company để lấy Name
         {
           $lookup: {
-            from: 'companies', // Tên collection
+            from: 'companies', //- Tên collection thực tế trong DB
             localField: 'companyId',
             foreignField: '_id',
             as: 'companyPopulated',
@@ -392,7 +403,7 @@ export class ApplicationService {
         },
       ];
 
-      // 4. Nếu có keyword, áp dụng bộ lọc $match OR
+      //- Nếu có keyword, áp dụng bộ lọc $match OR
       if (keyword) {
         pipeline.push({
           $match: {
@@ -406,7 +417,7 @@ export class ApplicationService {
         });
       }
 
-      // 5. Query data (Pagination + Sort) & Count total
+      //- Query data (Pagination + Sort) & Count total
       const [dataResult, countResult] = await Promise.all([
         this.applicationModel
           .aggregate([
@@ -415,7 +426,7 @@ export class ApplicationService {
             { $skip: offset },
             { $limit: limit },
             {
-              // Project lại data giống với find() .populate() truyền thống
+              //- Project lại data giống với find() .populate() truyền thống
               $project: {
                 _id: 1,
                 jobId: {

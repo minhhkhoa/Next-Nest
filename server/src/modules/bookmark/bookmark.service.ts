@@ -15,7 +15,8 @@ export class BookmarkService {
   constructor(
     @InjectModel(Bookmark.name)
     private bookmarkModel: SoftDeleteModel<BookmarkDocument>,
-    @Inject(forwardRef(() => CompanyService)) private readonly companyService: CompanyService,
+    @Inject(forwardRef(() => CompanyService))
+    private readonly companyService: CompanyService,
   ) {}
 
   async create(createBookmarkDto: CreateBookmarkDto, user: UserDecoratorType) {
@@ -123,7 +124,7 @@ export class BookmarkService {
           },
         });
 
-        // 5. Lookup skills
+        //- Lookup skills
         pipeline.push({
           $lookup: {
             from: 'skills',
@@ -133,21 +134,22 @@ export class BookmarkService {
           },
         });
 
-        // 6. Set job.company and job.skills
+        //- Set job.company and job.skills
         pipeline.push({
           $addFields: {
             'job.company': { $ifNull: ['$companyInfo', null] },
             'job.skills': {
               $cond: {
+                //- condition - điều kiện kiểm tra nếu skillList là mảng hay không
                 if: { $isArray: '$skillList' },
-                then: '$skillList',
-                else: '$job.skills',
+                then: '$skillList', //- Nếu skillList là mảng thì dùng skillList đã lookup
+                else: '$job.skills', //- Nếu không phải mảng (ví dụ null) thì giữ nguyên job.skills (có thể là mảng ObjectId hoặc null)
               },
             },
           },
         });
 
-        // 7. Remove temp fields
+        //- Remove temp fields tạm đi, 2 field đó chỉ dùng để lookup và set lại job.company và job.skills thôi, không cần trả về client
         pipeline.push({
           $project: {
             companyInfo: 0,

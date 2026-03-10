@@ -88,15 +88,15 @@ export class DetailProfileService {
         },
       },
 
-      // --- XỬ LÝ TRƯỜDNG HỢP USER BỊ XÓA HOẶC BỊ ẨN ---
-      // Nếu Khoa dùng Soft Delete cho User, hãy lọc thêm ở đây
+      //- XỬ LÝ TRƯỜDNG HỢP USER BỊ XÓA HOẶC BỊ ẨN
+      //- Nếu dùng Soft Delete cho User, lọc thêm ở đây
       {
         $match: {
-          user: { $ne: null }, // Loại bỏ các Profile mà không tìm thấy User tương ứng
+          user: { $ne: null }, //- Loại bỏ các Profile mà không tìm thấy User tương ứng
         },
       },
 
-      // Lookup lấy Role từ trong User vừa tìm được
+      //- Lookup lấy Role từ trong User vừa tìm được
       {
         $lookup: {
           from: 'roles',
@@ -112,7 +112,6 @@ export class DetailProfileService {
         },
       },
 
-      // >>> NEW: Chuyển companyID trong employerInfo sang ObjectId
       {
         $addFields: {
           'user.employerInfo.companyObjectId': {
@@ -140,9 +139,7 @@ export class DetailProfileService {
           },
         },
       },
-      // <<< END NEW
 
-      // >>> NEW: Lookup lấy Company từ trong User
       {
         $lookup: {
           from: 'companies',
@@ -157,12 +154,11 @@ export class DetailProfileService {
           preserveNullAndEmptyArrays: true,
         },
       },
-      // <<< END NEW
 
-      // Lọc theo name/email/company của User (nếu có truyền query)
+      //- Lọc theo name/email/company của User (nếu có truyền query)
       Object.keys(userMatch).length ? { $match: userMatch } : null,
 
-      // Gom nhóm lại để đưa company vào đúng cấu trúc
+      //- Gom nhóm lại để đưa company vào đúng cấu trúc
       {
         $group: {
           _id: '$_id',

@@ -224,42 +224,46 @@ export class CompanyService {
       // Build aggregation pipeline
       const pipeline: any[] = [
         { $match: filterConditions },
-        { 
-             $lookup: {
-                from: 'jobs',
-                let: { companyId: '$_id' },
-                pipeline: [
-                     { $match: { 
-                         $expr: {
-                             $and: [
-                                 { $eq: ['$companyID', '$$companyId'] },
-                                 //- chỉ tính job active
-                                 { $eq: ['$isActive', true] },
-                                 { $eq: ['$status', 'active'] }, 
-                                 { $eq: ['$isDeleted', false] }
-                             ]
-                         }
-                     }},
-                     { $count: 'totalJob' }
-                ],
-                as: 'jobsCount'
-             }
+        {
+          $lookup: {
+            from: 'jobs',
+            let: { companyId: '$_id' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ['$companyID', '$$companyId'] },
+                      //- chỉ tính job active
+                      { $eq: ['$isActive', true] },
+                      { $eq: ['$status', 'active'] },
+                      { $eq: ['$isDeleted', false] },
+                    ],
+                  },
+                },
+              },
+              { $count: 'totalJob' },
+            ],
+            as: 'jobsCount',
+          },
         },
-        { 
-            $addFields: {
-                totalJob: { $ifNull: [ { $arrayElemAt: ['$jobsCount.totalJob', 0] }, 0 ] }
-            }
+        {
+          $addFields: {
+            totalJob: {
+              $ifNull: [{ $arrayElemAt: ['$jobsCount.totalJob', 0] }, 0],
+            },
+          },
         },
-        { $project: { jobsCount: 0 } }, 
+        { $project: { jobsCount: 0 } },
         { $sort: { createdAt: -1 } },
         { $skip: offset },
-        { $limit: defaultLimit }
+        { $limit: defaultLimit },
       ];
 
       // Execute queries
       const [totalItems, result] = await Promise.all([
-          this.companyModel.countDocuments(filterConditions),
-          this.companyModel.aggregate(pipeline).exec()
+        this.companyModel.countDocuments(filterConditions),
+        this.companyModel.aggregate(pipeline).exec(),
       ]);
 
       const totalPages = Math.ceil(totalItems / defaultLimit);
@@ -267,9 +271,9 @@ export class CompanyService {
       const data = result.map((item) => {
         return {
           ...item,
-          slug: slugify(item.name)
-        }
-      })
+          slug: slugify(item.name),
+        };
+      });
 
       return {
         meta: {
@@ -358,10 +362,7 @@ export class CompanyService {
 
   //- dùng khi bên user service cần gọi trong transaction
   async findOneForInternal(id: string, session: mongoose.ClientSession) {
-    return await this.companyModel
-      .findById(id)
-      .session(session)
-      .lean();
+    return await this.companyModel.findById(id).session(session).lean();
   }
 
   async restore(id: string, user: UserDecoratorType) {

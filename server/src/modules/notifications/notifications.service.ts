@@ -173,6 +173,7 @@ export class NotificationsService {
 
     //- điều kiện gì đó 
     pipeline.push({
+      //- facet cho phép chạy nhiều Pipeline song song trên cùng một tập dữ liệu đầu vào
       $facet: {
         meta: [{ $count: 'totalItems' }],
         data: [
