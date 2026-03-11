@@ -4,6 +4,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UserResponse } from 'src/modules/user/schemas/user.schema';
 import { UserService } from 'src/modules/user/user.service';
+import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -33,6 +34,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       );
     }
 
+    //- CASE: Admin khóa tài khoản của user mà user đó chưa logout, thì nó sẽ bị chặn ngay ở bước decode token này luôn vì sau khi admin khóa thì nó sẽ xóa luôn access_token ở cookie đi nên khi decode token nó sẽ báo lỗi ngay.
+    if (user.isDeleted) {
+      throw new BadRequestCustom('Tài khoản của bạn đã bị khóa', true, 424);
+    }
+
     const permissions = (user.roleID as any)?.permissions ?? [];
 
     return {
@@ -41,7 +47,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       email: payload.email,
       roleID: payload.roleID,
       roleCodeName: payload.roleCodeName,
-      permissions: permissions, // Mảng permissions chi tiết
+      permissions: permissions, //- Mảng permissions chi tiết
       avatar: payload.avatar,
       employerInfo: user.employerInfo,
     }; //- no gan vao req.user

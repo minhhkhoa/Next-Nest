@@ -164,7 +164,17 @@ instance.interceptors.response.use(
     //- Xử lý lỗi dựa trên status code
     switch (status) {
       case 423: //- khi refesh_token hết hạn ở cookie
-        SoftDestructiveSonner("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
+        SoftDestructiveSonner(
+          "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.",
+        );
+        setTimeout(() => (window.location.href = "/login"), 1000);
+      case 424: //- khi admin khóa tài khoản mà user chưa logout
+        SoftDestructiveSonner(
+          "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.",
+        );
+        //- không cần gọi api xóa token ở cookie đâu chỉ cần xóa localStorage thôi là đủ
+        //- vì sau đó nó sẽ bị chặn ngay tại "CASE 1: Không có token" ở bên trên.
+        removeTokensFromLocalStorage();
         setTimeout(() => (window.location.href = "/login"), 1000);
       case 400:
         SoftDestructiveSonner(message);

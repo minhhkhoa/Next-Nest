@@ -805,7 +805,7 @@ export class JobsService {
       const userCompanyId = user.employerInfo?.companyID?.toString();
       const jobCompanyId = currentJob.companyID.toString();
 
-      //- lấy ra roletừ config
+      //- lấy ra role từ config
       const textRoleSuperAdmin =
         this.configService.get<string>('role_super_admin');
       const textRoleRecruiterAdmin = this.configService.get<string>(
