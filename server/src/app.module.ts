@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -28,6 +28,7 @@ import { IssueModule } from './modules/issue/issue.module';
 import { UserResumeModule } from './modules/user-resume/user-resume.module';
 import { BookmarkModule } from './modules/bookmark/bookmark.module';
 import { ApplicationModule } from './modules/application/application.module';
+import { TraceMiddleware } from './common/middleware/trace.middleware';
 
 @Module({
   imports: [
@@ -101,4 +102,9 @@ import { ApplicationModule } from './modules/application/application.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    //- áp dụng TraceMiddleware cho TẤT CẢ các routes (*)
+    consumer.apply(TraceMiddleware).forRoutes('*');
+  }
+}
