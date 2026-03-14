@@ -29,6 +29,8 @@ import { UserResumeModule } from './modules/user-resume/user-resume.module';
 import { BookmarkModule } from './modules/bookmark/bookmark.module';
 import { ApplicationModule } from './modules/application/application.module';
 import { TraceMiddleware } from './common/middleware/trace.middleware';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { LoggingInterceptor } from './common/interceptor/logging.interceptor';
 
 @Module({
   imports: [
@@ -100,7 +102,15 @@ import { TraceMiddleware } from './common/middleware/trace.middleware';
     ApplicationModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+
+    //- global interceptor để log thời gian xử lý ở controller, giúp theo dõi hiệu năng của từng endpoint
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

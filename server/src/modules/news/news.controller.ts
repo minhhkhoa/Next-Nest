@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Query,
+  Request,
 } from '@nestjs/common';
 import { NewsService } from './news.service';
 import { CreateNewsDto } from './dto/create-news.dto';
@@ -46,8 +47,9 @@ export class NewsController {
   @ResponseMessage('get all public news thành công')
   @ApiOperation({ summary: 'get all public news' })
   @Get('news-dashboard')
-  findAllNewsDashboard() {
-    return this.newsService.findAllNewsDashboard();
+  findAllNewsDashboard(@Request() req) {
+    const traceId = req.headers['x-trace-id'] || 'no-id';
+    return this.newsService.findAllNewsDashboard(traceId);
   }
 
   @Public()

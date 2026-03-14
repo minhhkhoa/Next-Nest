@@ -109,10 +109,13 @@ export class NewsService {
     }
   }
 
-  async findAllNewsDashboard() {
+  async findAllNewsDashboard(traceId: string) {
     try {
       //- 1. Lấy bài viết nổi bật lấy bài viết mới nhất của 5 danh mục
-      const listCateNews = (await this.cateNewsService.findAll()).slice(0, 4); //- trong fillAll da them slug cho cateNews roi
+      const listCateNews = (await this.cateNewsService.findAll(traceId)).slice(
+        0,
+        4,
+      ); //- trong fillAll da them slug cho cateNews roi
       const listCateNewsIDs = listCateNews.map((cate) => cate._id);
 
       const listNews = await this.newsModel

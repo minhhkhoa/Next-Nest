@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
-import { TransformInterceptor } from './common/core/transform.interceptor';
+import { TransformInterceptor } from './common/interceptor/transform.interceptor';
 import { JwtAuthGuard } from './modules/auth/passport-guard/jwt-auth.guard';
 import * as cookieParser from 'cookie-parser';
 import { PermissionGuard } from './common/guard/permission.guard';

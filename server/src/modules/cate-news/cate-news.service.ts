@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CreateCateNewsDto } from './dto/create-cate-new.dto';
 import { UpdateCateNewsDto } from './dto/update-cate-new.dto';
 import { TranslationService } from 'src/common/translation/translation.service';
@@ -12,6 +12,8 @@ import slugify from 'slugify';
 
 @Injectable()
 export class CateNewsService {
+  private readonly logger = new Logger(CateNewsService.name);
+
   constructor(
     private readonly translationService: TranslationService,
     @InjectModel(CateNews.name)
@@ -45,9 +47,13 @@ export class CateNewsService {
     }
   }
 
-  async findAll() {
+  async findAll(traceId: string) {
+    const startDB = Date.now();
     try {
       const list = await this.cateNewsModel.find({ isDeleted: false }).lean(); //- lean để chuyển về obj thường
+
+      const dbDuration = Date.now() - startDB;
+      this.logger.log(`[${traceId}] MongoDB quét mất: ${dbDuration}ms`);
 
       return list.map((item) => ({
         ...item,

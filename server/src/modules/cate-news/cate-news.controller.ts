@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Request,
 } from '@nestjs/common';
 import { CateNewsService } from './cate-news.service';
 import { CreateCateNewsDto } from './dto/create-cate-new.dto';
@@ -37,8 +38,9 @@ export class CateNewsController {
   @ResponseMessage('Lấy danh sách danh mục tin tức thành công')
   @ApiOperation({ summary: 'getAll' })
   @Get()
-  findAll() {
-    return this.cateNewsService.findAll();
+  findAll(@Request() req) {
+    const traceId = req.headers['x-trace-id'] || 'no-id'; //- lấy ID từ middleware
+    return this.cateNewsService.findAll(traceId);
   }
 
   @Public()

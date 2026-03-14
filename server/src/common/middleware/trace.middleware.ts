@@ -12,6 +12,7 @@ export class TraceMiddleware implements NestMiddleware {
     const traceId = uuidv4();
 
     //- gắn ID này vào Header để dùng nó ở controller hoặc các middleware khác nếu cần
+    req.headers['x-trace-id'] = traceId;
     res.setHeader('x-trace-id', traceId); //- key - value
 
     //- ghi lại thời điểm bắt đầu request
