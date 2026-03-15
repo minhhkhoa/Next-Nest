@@ -12,7 +12,7 @@ import { JobsModule } from '../jobs/jobs.module';
 @BusinessModule()
 @Module({
   imports: [
-    RolesModule,
+    forwardRef(() => RolesModule),
     forwardRef(() => CompanyModule),
     DetailProfileModule,
     forwardRef(() => JobsModule),

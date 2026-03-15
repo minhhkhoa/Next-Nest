@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { FindRoleQueryDto } from './dto/roleDto.dto';
@@ -10,6 +10,10 @@ import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import aqp from 'api-query-params';
 import mongoose from 'mongoose';
+import { User, UserDocument } from '../user/schemas/user.schema';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+
 
 @Injectable()
 export class RolesService {
@@ -17,6 +21,9 @@ export class RolesService {
     private readonly translationService: TranslationService,
     @InjectModel(Role.name)
     private roleModel: SoftDeleteModel<RoleDocument>,
+    @InjectModel(User.name)
+    private userModel: SoftDeleteModel<UserDocument>,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async create(createRoleDto: CreateRoleDto, user: UserDecoratorType) {
@@ -178,6 +185,17 @@ export class RolesService {
       const result = await this.roleModel.updateOne(filter, update);
 
       if (!result) throw new BadRequestCustom('Lỗi sửa vai trò', !!id);
+
+      //- xứ lý các user đang được cache ở Redis có roleID là id này, thì xóa cache của họ đi để lần sau họ login lại sẽ lấy thông tin role mới nhất
+      const users = await this.userModel
+        .find({ roleID: new mongoose.Types.ObjectId(id) })
+        .select('_id');
+
+      //- xóa cache của tất cả user có roleID là id này
+      const clearCachePromises = users.map((user) =>
+        this.cacheManager.del(`user_cache:${user._id}`),
+      );
+      await Promise.all(clearCachePromises);
 
       return result;
     } catch (error) {

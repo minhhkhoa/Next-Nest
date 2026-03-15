@@ -513,6 +513,12 @@ export class UserService {
         .lean();
 
       if (!user) throw new BadRequestCustom('ID user không tìm thấy', !!id);
+
+      //- CASE: Admin khóa tài khoản của user mà user đó chưa logout, thì nó sẽ bị chặn ngay ở bước decode token này luôn vì sau khi admin khóa thì nó sẽ xóa luôn access_token ở cookie đi nên khi decode token nó sẽ báo lỗi ngay.
+      if (user.isDeleted) {
+        throw new BadRequestCustom('Tài khoản của bạn đã bị khóa', true, 424);
+      }
+
       return user;
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);

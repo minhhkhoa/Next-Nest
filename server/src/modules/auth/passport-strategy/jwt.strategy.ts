@@ -1,16 +1,18 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UserResponse } from 'src/modules/user/schemas/user.schema';
 import { UserService } from 'src/modules/user/user.service';
-import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly configService: ConfigService,
     private readonly usersService: UserService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     //- decode access_token
     super({
@@ -24,19 +26,25 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   //- payload là tham số nó tự truyền vào sau khi giải mã song hàm super bên trên, và nó tự động chạy hàm validate này
   async validate(payload: UserResponse) {
-    // Lấy data "tươi" từ DB mỗi khi request tới, nếu admin thu hồi quyền thì ng dùng đó sẽ bị chặn đứng ở request tiếp theo không cần phải login lại mới có hiệu lực.
-    //- nhưng mà mỗi lần reload trang đều query khá tốn nếu traffic dầy.
-    const user = await this.usersService.findOneWithRole(payload.id);
+    const cacheKey = `user_cache:${payload.id}`;
+
+    //- Thử lấy user từ Redis
+    let user = await this.cacheManager.get<any>(cacheKey);
+
+    if (!user) {
+      //- Nếu Cache Miss (không có), mới query DB
+      user = await this.usersService.findOneWithRole(payload.id);
+
+      if (user) {
+        //- Lưu vào Redis (TTL 1 tiếng)
+        await this.cacheManager.set(cacheKey, user, 3600 * 1000);
+      }
+    }
 
     if (!user) {
       throw new UnauthorizedException(
         'Người dùng không tồn tại hoặc đã bị khóa',
       );
-    }
-
-    //- CASE: Admin khóa tài khoản của user mà user đó chưa logout, thì nó sẽ bị chặn ngay ở bước decode token này luôn vì sau khi admin khóa thì nó sẽ xóa luôn access_token ở cookie đi nên khi decode token nó sẽ báo lỗi ngay.
-    if (user.isDeleted) {
-      throw new BadRequestCustom('Tài khoản của bạn đã bị khóa', true, 424);
     }
 
     const permissions = (user.roleID as any)?.permissions ?? [];
@@ -47,7 +55,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       email: payload.email,
       roleID: payload.roleID,
       roleCodeName: payload.roleCodeName,
-      permissions: permissions, //- Mảng permissions chi tiết
+      permissions: permissions,
       avatar: payload.avatar,
       employerInfo: user.employerInfo,
     }; //- no gan vao req.user
