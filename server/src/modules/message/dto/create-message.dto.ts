@@ -1,4 +1,11 @@
-import { IsEnum, IsMongoId, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
+import {
+  IsEnum,
+  IsMongoId,
+  IsNotEmpty,
+  IsObject,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { MESSAGE_TYPE_OPTIONS } from '../schemas/message.schema';
 
 export class CreateMessageDto {
@@ -18,4 +25,3 @@ export class CreateMessageDto {
   @IsOptional()
   metadata?: Record<string, any>;
 }
-

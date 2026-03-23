@@ -1,34 +1,42 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
 import { MessageService } from './message.service';
 import { CreateMessageDto } from './dto/create-message.dto';
-import { UpdateMessageDto } from './dto/update-message.dto';
+import {
+  PublicPermission,
+  ResponseMessage,
+  userDecorator,
+} from 'src/common/decorator/customize';
+import { UserDecoratorType } from 'src/utils/typeSchemas';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
-@Controller('message')
+@PublicPermission()
+@ApiTags('message')
+@Controller('messages')
 export class MessageController {
   constructor(private readonly messageService: MessageService) {}
 
   @Post()
-  create(@Body() createMessageDto: CreateMessageDto) {
-    return this.messageService.create(createMessageDto);
+  @ResponseMessage('Gửi tin nhắn thành công')
+  @ApiOperation({ summary: 'Gửi tin nhắn' })
+  create(
+    @Body() createMessageDto: CreateMessageDto,
+    @userDecorator() user: UserDecoratorType,
+  ) {
+    return this.messageService.create(createMessageDto, user);
   }
 
-  @Get()
-  findAll() {
-    return this.messageService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.messageService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMessageDto: UpdateMessageDto) {
-    return this.messageService.update(+id, updateMessageDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.messageService.remove(+id);
+  @Get('conversation/:conversationId')
+  @ResponseMessage('Lấy tin nhắn theo conversationId thành công')
+  @ApiOperation({ summary: 'Lấy tin nhắn theo conversationId' })
+  findByConversation(
+    @Param('conversationId') conversationId: string,
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '50',
+  ) {
+    return this.messageService.findByConversation(
+      conversationId,
+      +page,
+      +limit,
+    );
   }
 }
