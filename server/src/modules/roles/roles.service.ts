@@ -14,7 +14,6 @@ import { User, UserDocument } from '../user/schemas/user.schema';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 
-
 @Injectable()
 export class RolesService {
   constructor(
@@ -195,7 +194,11 @@ export class RolesService {
       const clearCachePromises = users.map((user) =>
         this.cacheManager.del(`user_cache:${user._id}`),
       );
-      await Promise.all(clearCachePromises);
+
+      //- không cần await ở đây vì không cần chờ xóa cache xong mới trả kết quả
+      Promise.all(clearCachePromises).catch((err) =>
+        console.log('error clear cache: ', err),
+      );
 
       return result;
     } catch (error) {

@@ -61,7 +61,8 @@ export const handleInitName = (name: string) => {
  */
 export async function uploadToCloudinary(
   file: File,
-  folderSave?: string, //- cv tự tải lên thì truyền folderSave = "urlCv", còn lại thì lưu vào folder mặc định của BE trả về.
+  folderSave?: string, //- cv tự tải lên thì truyền folderSave = "urlCv", đối với tính năng chat gửi ảnh/file thì folderSave= "Chat"
+  // còn lại thì lưu vào folder mặc định của BE trả về.
 ): Promise<string | undefined> {
   try {
     if (!file) throw new Error("No file provided");

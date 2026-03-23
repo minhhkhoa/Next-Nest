@@ -31,6 +31,8 @@ import { ApplicationModule } from './modules/application/application.module';
 import { TraceMiddleware } from './common/middleware/trace.middleware';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { LoggingInterceptor } from './common/interceptor/logging.interceptor';
+import { ConversationModule } from './modules/conversation/conversation.module';
+import { MessageModule } from './modules/message/message.module';
 
 @Module({
   imports: [
@@ -100,6 +102,8 @@ import { LoggingInterceptor } from './common/interceptor/logging.interceptor';
     UserResumeModule,
     BookmarkModule,
     ApplicationModule,
+    ConversationModule,
+    MessageModule,
   ],
   controllers: [AppController],
   providers: [

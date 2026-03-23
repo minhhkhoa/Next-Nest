@@ -28,7 +28,7 @@ export const useGetLang = () => {
     (data?: MultiLang | null) => {
       return getLang(data, locale);
     },
-    [locale]
+    [locale],
   );
 
   return { getLang: getLangWrapped, locale };

@@ -12,11 +12,7 @@ import { PermissionsService } from './permissions.service';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import {
-  Public,
-  ResponseMessage,
-  userDecorator,
-} from 'src/common/decorator/customize';
+import { ResponseMessage, userDecorator } from 'src/common/decorator/customize';
 import {
   DeleteManyPermissionsDto,
   FindPermissionQueryDto,
