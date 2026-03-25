@@ -6,6 +6,7 @@ import { Model, Types } from 'mongoose';
 import { ConversationService } from '../conversation/conversation.service';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { ConfigService } from '@nestjs/config';
+import { ChatGateway } from './chat.gateway';
 
 @Injectable()
 export class MessageService {
@@ -14,6 +15,7 @@ export class MessageService {
     private messageModel: Model<MessageDocument>,
     private conversationService: ConversationService,
     private configService: ConfigService,
+    private chatGateway: ChatGateway, // Inject ChatGateway
   ) {}
 
   async create(createMessageDto: CreateMessageDto, user: UserDecoratorType) {
@@ -39,6 +41,9 @@ export class MessageService {
         },
       });
 
+      // Cần populate thông tin người gửi để Frontend có thể hiển thị ảnh đại diện và tên ngay trong tin nhắn mới
+      await newMessage.populate('senderId', 'name avatar email');
+
       //- Tạo text tóm tắt lastMessage tuỳ theo type
       let lastMsgText = 'Đã gửi một tin nhắn mới';
       if (newMessage.type === 'TEXT') {
@@ -61,8 +66,11 @@ export class MessageService {
         user.roleCodeName,
       );
 
-      // TODO: Socket.io - emit tới conversationId để frontend nhận realtime.
-      // Chúng ta có thể tạo ChatGateway sau.
+      //- Phát sự kiện realtime gửi xuống cho các Client đang trong room conversationId
+      this.chatGateway.emitMessageToConversation(
+        createMessageDto.conversationId,
+        newMessage,
+      );
 
       return newMessage;
     } catch (error) {
@@ -99,3 +107,4 @@ export class MessageService {
     };
   }
 }
+
