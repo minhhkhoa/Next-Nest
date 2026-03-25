@@ -19,6 +19,7 @@ const protectedPaths = [
   "/settings",
   "/change-password",
   "/my-application",
+  "/chat",
 ];
 
 // 2. Cấu hình nhóm Role

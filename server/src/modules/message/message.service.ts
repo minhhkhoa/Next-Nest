@@ -97,7 +97,7 @@ export class MessageService {
     });
 
     return {
-      data: messages.reverse(), // Đảo lại mảng để messages cũ ở trên, mới ở dưới phù hợp giao diện khung chat
+      messages: messages.reverse(), // Đảo lại mảng để messages cũ ở trên, mới ở dưới phù hợp giao diện khung chat
       meta: {
         current: Number(page),
         pageSize: Number(limit),
@@ -107,4 +107,3 @@ export class MessageService {
     };
   }
 }
-

@@ -14,6 +14,8 @@ import {
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import { useQueryClient } from "@tanstack/react-query";
+import StartChatButton from "@/components/StartChatButton";
+import { envConfig } from "../../../../../config";
 
 interface CompanyHeaderProps {
   company: CompanyResType;
@@ -136,6 +138,14 @@ export default function CompanyHeader({ company }: CompanyHeaderProps) {
           {/* Action Buttons (Desktop) */}
           {isLogin && (
             <div className="hidden md:flex pb-4 gap-3">
+              {user?.roleCodeName === envConfig.NEXT_PUBLIC_ROLE_CANDIDATE && (
+                <StartChatButton
+                  receiverId={company._id}
+                  label="Nhắn tin"
+                  className="gap-2 shadow-lg"
+                  variant="outline"
+                />
+              )}
               <Button
                 className="gap-2 bg-primary hover:bg-primary/90 text-white min-w-[140px] shadow-lg"
                 onClick={handleToggleBookmark}

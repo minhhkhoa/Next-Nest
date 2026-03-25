@@ -78,7 +78,9 @@ export class ChatGateway implements OnGatewayConnection {
 
   /**
    * Phương thức được gọi từ MessageService sau khi có tin nhắn vào DB.
-   * Chức năng: Phát sóng thông tin 'receive_message' tới phòng (conversationId)
+   * Chức năng: Phát sóng thông tin 'receive_message' tới phòng (conversationId) để các Client đang mở khung chat đó nhận được tin nhắn mới realtime.
+   * @param conversationId ID của phòng chat (conversation)
+   * @param messagePayload Dữ liệu tin nhắn mới vừa được tạo (sau khi đã lưu vào DB)
    */
   emitMessageToConversation(conversationId: string, messagePayload: any) {
     this.server.to(conversationId).emit('receive_message', messagePayload);

@@ -25,6 +25,7 @@ import { Flag } from "lucide-react";
 import { useAppStore } from "@/components/TanstackProvider";
 import { ApplicationModal } from "@/components/ApplicationModal";
 import BookmarkJobButton from "@/components/BookmarkJobButton";
+import StartChatButton from "@/components/StartChatButton";
 
 interface JobDetailInfoProps {
   job: JobResType;
@@ -176,9 +177,18 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
           {job.company && (
             <Card className="border-none shadow-sm bg-card">
               <CardContent className="p-6 space-y-4">
-                <h2 className="text-xl font-bold pl-3 border-l-4 border-primary mb-4 text-foreground">
-                  Thông tin công ty
-                </h2>
+                <div className="flex items-center justify-between pl-3 border-l-4 border-primary mb-4">
+                  <h2 className="text-xl font-bold text-foreground">
+                    Thông tin công ty
+                  </h2>
+                  <StartChatButton
+                    receiverId={job.company._id}
+                    jobReferenceId={job._id}
+                    label="Nhắn tin"
+                    variant="outline"
+                    className="h-8 py-0 px-3 text-sm"
+                  />
+                </div>
                 <div className="flex gap-4 items-start">
                   <div className="w-16 h-16 border-2 rounded border-primary flex items-center justify-center flex-shrink-0">
                     {job.company.logo ? (
