@@ -27,15 +27,14 @@ export default function ChatPageModule() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // 1. Lấy dữ liệu
-  const { data: conversationsData, refetch: refetchConversations } =
-    useGetConversations();
+  const { data: conversationsData } = useGetConversations();
 
   const conversations: Conversation[] = useMemo(() => {
     return conversationsData?.data || [];
   }, [conversationsData]);
 
   const { data: messagesData } = useGetMessages(activeConversationId);
-  
+
   const messages: ChatMessage[] = useMemo(() => {
     return messagesData?.data?.messages || [];
   }, [messagesData]);
@@ -66,6 +65,7 @@ export default function ChatPageModule() {
       });
     } catch (error) {
       SoftDestructiveSonner("Không thể gửi tin nhắn. Vui lòng thử lại");
+      console.log("error send message: ", error);
     }
   };
 

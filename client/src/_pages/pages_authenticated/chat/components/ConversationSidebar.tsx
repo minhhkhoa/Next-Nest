@@ -1,7 +1,7 @@
 import React from "react";
 import { Conversation } from "@/schemasvalidation/chat";
 import { cn } from "@/lib/utils";
-import { User as UserIcon, Plus } from "lucide-react";
+import { User as UserIcon } from "lucide-react";
 import { envConfig } from "../../../../../config";
 
 interface ConversationSidebarProps {

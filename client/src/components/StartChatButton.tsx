@@ -76,6 +76,7 @@ export default function StartChatButton({
       }
     } catch (error) {
       SoftDestructiveSonner("Có lỗi xảy ra khi tạo cuộc trò chuyện");
+      console.log("error create conversation: ", error);
     }
   };
 
