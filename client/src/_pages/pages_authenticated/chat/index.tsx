@@ -8,35 +8,41 @@ import {
   useGetConversations,
   useGetMessages,
   useSendMessageMutation,
-  useCreateConversationMutation,
 } from "@/queries/useChat";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import ConversationSidebar from "./components/ConversationSidebar";
 import ChatWindow from "./components/ChatWindow";
+import { useSearchParams } from "next/navigation";
 
 export default function ChatPageModule() {
   const { user } = useAppStore();
+  const searchParams = useSearchParams();
+  const defaultConversationId = searchParams.get("conversationId");
+
   const [activeConversationId, setActiveConversationId] = useState<
     string | null
-  >(null);
+  >(defaultConversationId || null);
+
   const [inputText, setInputText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // 1. Lấy dữ liệu
   const { data: conversationsData, refetch: refetchConversations } =
     useGetConversations();
+
   const conversations: Conversation[] = useMemo(() => {
     return conversationsData?.data || [];
   }, [conversationsData]);
 
   const { data: messagesData } = useGetMessages(activeConversationId);
+  
   const messages: ChatMessage[] = useMemo(() => {
     return messagesData?.data?.messages || [];
   }, [messagesData]);
 
   const { isConnected, realtimeMessages } = useChatSocket(activeConversationId);
   const sendMessageMutation = useSendMessageMutation();
-  const createConversationMutation = useCreateConversationMutation();
+  // const createConversationMutation = useCreateConversationMutation();
 
   // Scroll bottom
   useEffect(() => {
@@ -63,28 +69,28 @@ export default function ChatPageModule() {
     }
   };
 
-  const handleCreateNewChat = async () => {
-    // Tùy theo logic thực tế, user có thể tạo mới 1 cuộc Chat
-    // Nếu user là ứng viên => tạo dummy tới cty, là Cty rỗng => cần chọn ứng viên (ở đây demo tạo rỗng)
-    try {
-      const payload: any = {};
-      if (user?.roleCodeName === "CANDIDATE") {
-        // Cần id của company để test (ví dụ)
-        SoftDestructiveSonner(
-          "Ứng viên cần ứng tuyển vào 1 công việc để có thể chat với HR!",
-        );
-        return;
-      } else {
-        // Cần id ứng viên để test
-        SoftDestructiveSonner(
-          "HR cần chọn ứng viên từ danh sách CV để bắt đầu chat!",
-        );
-        return;
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  // const handleCreateNewChat = async () => {
+  //   // Tùy theo logic thực tế, user có thể tạo mới 1 cuộc Chat
+  //   // Nếu user là ứng viên => tạo dummy tới cty, là Cty rỗng => cần chọn ứng viên (ở đây demo tạo rỗng)
+  //   try {
+  //     const payload: any = {};
+  //     if (user?.roleCodeName === "CANDIDATE") {
+  //       // Cần id của company để test (ví dụ)
+  //       SoftDestructiveSonner(
+  //         "Ứng viên cần ứng tuyển vào 1 công việc để có thể chat với HR!",
+  //       );
+  //       return;
+  //     } else {
+  //       // Cần id ứng viên để test
+  //       SoftDestructiveSonner(
+  //         "HR cần chọn ứng viên từ danh sách CV để bắt đầu chat!",
+  //       );
+  //       return;
+  //     }
+  //   } catch (e) {
+  //     console.error(e);
+  //   }
+  // };
 
   return (
     <div className="flex h-[calc(100vh-100px)] w-full bg-white dark:bg-slate-900 border rounded-xl overflow-hidden shadow-sm">
@@ -94,7 +100,7 @@ export default function ChatPageModule() {
         onSelectConversation={setActiveConversationId}
         userRole={user?.roleCodeName}
         isConnected={isConnected}
-        onCreateNewChat={handleCreateNewChat}
+        // onCreateNewChat={handleCreateNewChat}
       />
 
       <ChatWindow

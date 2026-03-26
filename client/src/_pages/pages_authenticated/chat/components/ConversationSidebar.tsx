@@ -2,6 +2,7 @@ import React from "react";
 import { Conversation } from "@/schemasvalidation/chat";
 import { cn } from "@/lib/utils";
 import { User as UserIcon, Plus } from "lucide-react";
+import { envConfig } from "../../../../../config";
 
 interface ConversationSidebarProps {
   conversations: Conversation[];
@@ -31,7 +32,7 @@ export default function ConversationSidebar({
             <span className="w-2 h-2 rounded-full bg-red-500 block"></span>
           )}
         </h2>
-        {onCreateNewChat && (
+        {/* {onCreateNewChat && (
           <button
             onClick={onCreateNewChat}
             title="Tạo cuộc trò chuyện mới"
@@ -39,7 +40,7 @@ export default function ConversationSidebar({
           >
             <Plus className="w-5 h-5" />
           </button>
-        )}
+        )} */}
       </div>
       <div className="flex-1 overflow-y-auto">
         {conversations.length === 0 ? (
@@ -58,7 +59,9 @@ export default function ConversationSidebar({
         ) : (
           conversations.map((conv) => {
             const displayInfo =
-              userRole === "CANDIDATE" ? conv.companyId : conv.candidateId;
+              userRole === envConfig.NEXT_PUBLIC_ROLE_CANDIDATE
+                ? conv.companyId
+                : conv.candidateId;
 
             return (
               <div
