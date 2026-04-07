@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   CreateConversationPayload,
   CreateMessagePayload,
@@ -50,5 +50,16 @@ export const useCreateConversationMutation = () => {
   return useMutation({
     mutationFn: (payload: CreateConversationPayload) =>
       chatApiRequest.createConversation(payload),
+  });
+};
+
+//- mark as read
+export const useMarkAsReadMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => chatApiRequest.markAsRead(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+    },
   });
 };

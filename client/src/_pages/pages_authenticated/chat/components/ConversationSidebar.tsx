@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Conversation } from "@/schemasvalidation/chat";
-import { cn } from "@/lib/utils";
+import { cn, getRoleCodeName } from "@/lib/utils";
 import { User as UserIcon } from "lucide-react";
 import { envConfig } from "../../../../../config";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ConversationSidebarProps {
   conversations: Conversation[];
@@ -13,7 +14,8 @@ interface ConversationSidebarProps {
   onCreateNewChat?: () => void;
 }
 
-export default function ConversationSidebar({
+//- Nội dung danh sách conversation - dùng chung cho desktop & mobile
+export function ConversationList({
   conversations,
   activeConversationId,
   onSelectConversation,
@@ -21,9 +23,15 @@ export default function ConversationSidebar({
   isConnected,
   onCreateNewChat,
 }: ConversationSidebarProps) {
+  const isCandidate =
+    getRoleCodeName() === envConfig.NEXT_PUBLIC_ROLE_CANDIDATE;
+
+  useEffect(() => {
+    // console.log("conversations::", conversations);
+  }, [conversations]);
   return (
-    <div className="w-1/3 border-r flex flex-col border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-      <div className="p-4 border-b border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-950 flex justify-between items-center">
+    <>
+      <div className="p-4 border-b border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-950 flex justify-between items-center shrink-0">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           Đoạn chat{" "}
           {isConnected ? (
@@ -32,17 +40,8 @@ export default function ConversationSidebar({
             <span className="w-2 h-2 rounded-full bg-red-500 block"></span>
           )}
         </h2>
-        {/* {onCreateNewChat && (
-          <button
-            onClick={onCreateNewChat}
-            title="Tạo cuộc trò chuyện mới"
-            className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center hover:bg-blue-200 transition"
-          >
-            <Plus className="w-5 h-5" />
-          </button>
-        )} */}
       </div>
-      <div className="flex-1 overflow-y-auto">
+      <ScrollArea className="flex-1">
         {conversations.length === 0 ? (
           <div className="p-8 text-center flex flex-col items-center justify-center text-gray-400">
             <UserIcon className="w-12 h-12 mb-3 text-gray-300" />
@@ -78,7 +77,9 @@ export default function ConversationSidebar({
                     {displayInfo?.name || "Người dùng"}
                   </span>
                   {(conv.unreadCandidate > 0 || conv.unreadCompany > 0) && (
-                    <span className="w-3 h-3 bg-red-500 rounded-full flex-shrink-0"></span>
+                    <span className="w-3 h-3 bg-red-500 rounded-full flex-shrink-0">
+                      {isCandidate ? conv.unreadCandidate : conv.unreadCompany}
+                    </span>
                   )}
                 </div>
                 <span className="text-sm text-gray-500 truncate">
@@ -88,7 +89,16 @@ export default function ConversationSidebar({
             );
           })
         )}
-      </div>
+      </ScrollArea>
+    </>
+  );
+}
+
+//- Desktop sidebar - ẩn trên mobile
+export default function ConversationSidebar(props: ConversationSidebarProps) {
+  return (
+    <div className="hidden md:flex w-1/3 lg:w-1/4 border-r flex-col border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+      <ConversationList {...props} />
     </div>
   );
 }

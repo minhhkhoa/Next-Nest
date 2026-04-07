@@ -4,8 +4,10 @@ import { useAppStore } from "@/components/TanstackProvider";
 import { envConfig } from "../../config";
 import { getAccessTokenFromLocalStorage } from "@/lib/utils";
 import { ChatMessage } from "@/schemasvalidation/chat";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const useChatSocket = (activeConversationId: string | null) => {
+  const queryClient = useQueryClient();
   const { isLogin, user } = useAppStore();
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -46,6 +48,8 @@ export const useChatSocket = (activeConversationId: string | null) => {
     socketInstance.on("receive_message", (message: ChatMessage) => {
       console.log("Receive new chat message:", message);
       setRealtimeMessages((prev) => [...prev, message]);
+
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
     });
 
     setSocket(socketInstance);
@@ -53,7 +57,7 @@ export const useChatSocket = (activeConversationId: string | null) => {
     return () => {
       socketInstance.disconnect();
     };
-  }, [isLogin, user?._id, activeConversationId]);
+  }, [isLogin, user?._id, activeConversationId, queryClient]);
 
   //- Khi activeConversationId thay đổi (người dùng chuyển sang mở khung chat khác), thì emit sự kiện join_conversation với conversationId mới, đồng thời có thể emit leave_conversation với conversationId cũ nếu muốn. Cũng có thể reset realtimeMessages để tránh hiển thị tin nhắn của phòng chat cũ khi chuyển sang phòng mới.
   useEffect(() => {

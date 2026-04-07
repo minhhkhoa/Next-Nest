@@ -11,6 +11,7 @@ import axios, { isAxiosError } from "axios";
 import { NotificationType } from "./constant";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { NotificationResType } from "@/schemasvalidation/notification";
+import { jwtDecode } from "jwt-decode";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -238,6 +239,11 @@ export const calculateRemainingDays = (
   const remainingDays = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
 
   return remainingDays;
+};
+
+export const getRoleCodeName = () => {
+  return (isBrowser && (jwtDecode(getAccessTokenFromLocalStorage()!) as any))
+    .roleCodeName;
 };
 
 export const getRoleSuperAdmin = () => {

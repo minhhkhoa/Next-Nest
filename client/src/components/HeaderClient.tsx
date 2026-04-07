@@ -13,6 +13,8 @@ import { useAppStore } from "@/components/TanstackProvider";
 import AppHeaderSkeleton from "@/components/skeletons/AppHeader";
 import { getAccessTokenFromLocalStorage } from "@/lib/utils";
 import SheetMobile from "./SheetMobile";
+import { Link } from "@/i18n/navigation";
+import { MessageCircleMoreIcon } from "lucide-react";
 
 export default function HeaderClient() {
   const { isLogin } = useAppStore();
@@ -55,6 +57,11 @@ export default function HeaderClient() {
 
         <div className="flex items-center gap-2 mr-3 md:mr-10">
           {isLogin && <NotificationBell />}
+          {isLogin && (
+            <Link href="/chat">
+              <MessageCircleMoreIcon className="w-5 h-5 cursor-pointer" />
+            </Link>
+          )}
           {!isLogin && <UserSection />}
           {isLogin && <UserAvatarMenu />}
 

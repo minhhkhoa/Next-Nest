@@ -7,12 +7,21 @@ import { useAppStore } from "@/components/TanstackProvider";
 import {
   useGetConversations,
   useGetMessages,
+  useMarkAsReadMutation,
   useSendMessageMutation,
 } from "@/queries/useChat";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
-import ConversationSidebar from "./components/ConversationSidebar";
+import ConversationSidebar, {
+  ConversationList,
+} from "./components/ConversationSidebar";
 import ChatWindow from "./components/ChatWindow";
 import { useSearchParams } from "next/navigation";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 export default function ChatPageModule() {
   const { user } = useAppStore();
@@ -24,9 +33,9 @@ export default function ChatPageModule() {
   >(defaultConversationId || null);
 
   const [inputText, setInputText] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-  // 1. Lấy dữ liệu
+  //- Lấy dữ liệu
   const { data: conversationsData } = useGetConversations();
 
   const conversations: Conversation[] = useMemo(() => {
@@ -41,14 +50,24 @@ export default function ChatPageModule() {
 
   const { isConnected, realtimeMessages } = useChatSocket(activeConversationId);
   const sendMessageMutation = useSendMessageMutation();
-  // const createConversationMutation = useCreateConversationMutation();
 
-  // Scroll bottom
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, realtimeMessages]);
+  //- Scroll bottom
+  // useEffect(() => {
+  //   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // }, [messages, realtimeMessages]);
 
   const displayMessages = [...messages, ...realtimeMessages];
+
+  const markAsReadMutation = useMarkAsReadMutation();
+
+  //- Chọn conversation trên mobile -> đóng sidebar
+  const handleSelectConversation = (id: string) => {
+    setActiveConversationId(id);
+    setIsMobileSidebarOpen(false);
+
+    //- đánh dấu đã đọc
+    markAsReadMutation.mutate(id);
+  };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,49 +88,45 @@ export default function ChatPageModule() {
     }
   };
 
-  // const handleCreateNewChat = async () => {
-  //   // Tùy theo logic thực tế, user có thể tạo mới 1 cuộc Chat
-  //   // Nếu user là ứng viên => tạo dummy tới cty, là Cty rỗng => cần chọn ứng viên (ở đây demo tạo rỗng)
-  //   try {
-  //     const payload: any = {};
-  //     if (user?.roleCodeName === "CANDIDATE") {
-  //       // Cần id của company để test (ví dụ)
-  //       SoftDestructiveSonner(
-  //         "Ứng viên cần ứng tuyển vào 1 công việc để có thể chat với HR!",
-  //       );
-  //       return;
-  //     } else {
-  //       // Cần id ứng viên để test
-  //       SoftDestructiveSonner(
-  //         "HR cần chọn ứng viên từ danh sách CV để bắt đầu chat!",
-  //       );
-  //       return;
-  //     }
-  //   } catch (e) {
-  //     console.error(e);
-  //   }
-  // };
-
   return (
     <div className="flex h-[calc(100vh-100px)] w-full bg-white dark:bg-slate-900 border rounded-xl overflow-hidden shadow-sm">
+      {/* Desktop Sidebar - ẩn trên mobile */}
       <ConversationSidebar
         conversations={conversations}
         activeConversationId={activeConversationId}
-        onSelectConversation={setActiveConversationId}
+        onSelectConversation={handleSelectConversation}
         userRole={user?.roleCodeName}
         isConnected={isConnected}
-        // onCreateNewChat={handleCreateNewChat}
       />
 
+      {/* Mobile Sidebar - dùng Sheet slide-in */}
+      <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
+        <SheetContent
+          side="left"
+          className="w-[85vw] sm:w-[350px] p-0 flex flex-col"
+        >
+          <SheetHeader className="sr-only">
+            <SheetTitle>Danh sách đoạn chat</SheetTitle>
+          </SheetHeader>
+          <ConversationList
+            conversations={conversations}
+            activeConversationId={activeConversationId}
+            onSelectConversation={handleSelectConversation}
+            userRole={user?.roleCodeName}
+            isConnected={isConnected}
+          />
+        </SheetContent>
+      </Sheet>
+
+      {/* Chat Window - full width trên mobile */}
       <ChatWindow
         messages={displayMessages}
-        currentUserId={user?._id}
         activeConversationId={activeConversationId}
         inputText={inputText}
         onInputChange={setInputText}
         onSendMessage={handleSendMessage}
         isSending={sendMessageMutation.isPending}
-        messagesEndRef={messagesEndRef}
+        onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
       />
     </div>
   );

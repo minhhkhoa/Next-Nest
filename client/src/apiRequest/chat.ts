@@ -21,6 +21,10 @@ const chatApiRequest = {
   createConversation: (payload: CreateConversationPayload) =>
     http.post<ApiResponse<Conversation>>(conversationPrefix, payload),
 
+  //- mark read
+  markAsRead: (id: string) =>
+    http.patch<ApiResponse<Conversation>>(`${conversationPrefix}/${id}/read`),
+
   //--- MESSAGE API ---
   getMessages: (conversationId: string, page: number = 1, limit: number = 50) =>
     http.get<
