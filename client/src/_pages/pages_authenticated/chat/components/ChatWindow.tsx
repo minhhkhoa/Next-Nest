@@ -77,14 +77,22 @@ export default function ChatWindow({
   //- sẽ mượt hơn hẳn.
   const messageItems = useMemo(
     () =>
-      messages.map((msg) => {
+      messages.map((msg, index) => {
         const isMe = msg.senderType === currentUserSenderType;
         const isLastOwnMessage = isMe && msg._id === lastOwnMessageId;
 
+        const nextMessage = messages[index + 1];
+        const isSameSenderAsNext =
+          !!nextMessage &&
+          nextMessage.senderType === msg.senderType &&
+          nextMessage.senderId?._id === msg.senderId?._id;
+        const shouldShowAvatar = !isSameSenderAsNext;
+
         const avatarSrc =
-          msg.senderType === envConfig.NEXT_PUBLIC_ROLE_CANDIDATE
+          msg.senderId?.avatar ||
+          (msg.senderType === envConfig.NEXT_PUBLIC_ROLE_CANDIDATE
             ? candidateData?.avatar
-            : hrData?.avatar;
+            : hrData?.avatar);
 
         return (
           <div
@@ -94,12 +102,16 @@ export default function ChatWindow({
               isMe ? "flex-row-reverse self-end " : "flex-row self-start",
             )}
           >
-            <div>
-              <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
-                <AvatarImage src={avatarSrc} />
-                <AvatarFallback>CN</AvatarFallback>
-              </Avatar>
-            </div>
+            {shouldShowAvatar ? (
+              <div className="h-8 w-8 sm:h-10 sm:w-10 shrink-0">
+                <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
+                  <AvatarImage src={avatarSrc} />
+                  <AvatarFallback>CN</AvatarFallback>
+                </Avatar>
+              </div>
+            ) : (
+              <div className="h-8 w-8 sm:h-10 sm:w-10 shrink-0" />
+            )}
             <div>
               <div
                 className={cn(
@@ -119,16 +131,18 @@ export default function ChatWindow({
                   </p>
                 )}
               </div>
-              <span className="text-[11px] text-gray-400 mt-1">
-                {new Date(msg.createdAt).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </span>
               {isLastOwnMessage ? (
-                <span className="text-[11px] text-gray-400 ml-2">
-                  {msg.isRead ? "Đã xem" : "Đã gửi"}
-                </span>
+                <>
+                  <span className="text-[11px] text-gray-400 mt-1">
+                    {new Date(msg.createdAt).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                  <span className="text-[11px] text-gray-400 ml-2">
+                    {msg.isRead ? "Đã xem" : "Đã gửi"}
+                  </span>
+                </>
               ) : null}
             </div>
           </div>
@@ -204,7 +218,7 @@ export default function ChatWindow({
 
       {/* Messages body */}
       <ScrollArea ref={scrollAreaRef} className="flex-1 h-50">
-        <div className="p-3 sm:p-4 flex flex-col gap-3 sm:gap-4">
+        <div className="p-3 sm:p-4 flex flex-col gap-2">
           {messages.length === 0 ? (
             <div className="flex-1 flex items-center justify-center text-gray-400 text-sm py-20">
               Chưa có tin nhắn nào. Hãy gửi lời chào!
