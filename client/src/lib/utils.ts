@@ -241,9 +241,10 @@ export const calculateRemainingDays = (
   return remainingDays;
 };
 
-export const getRoleCodeName = () => {
-  return (isBrowser && (jwtDecode(getAccessTokenFromLocalStorage()!) as any))
-    .roleCodeName;
+export const getRoleCodeName = (): string => {
+  const token = getAccessTokenFromLocalStorage();
+  if (!token) return "";
+  return (isBrowser && (jwtDecode(token) as any)).roleCodeName;
 };
 
 export const getRoleSuperAdmin = () => {

@@ -1,6 +1,11 @@
 import React, { useEffect, useRef } from "react";
 import { ChatMessage } from "@/schemasvalidation/chat";
-import { cn, getRoleCodeName } from "@/lib/utils";
+import {
+  cn,
+  getRoleCandidate,
+  getRoleCodeName,
+  getRoleRecruiter,
+} from "@/lib/utils";
 import { User as UserIcon, Send, Menu } from "lucide-react";
 import { envConfig } from "../../../../../config";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -123,7 +128,16 @@ export default function ChatWindow({
           ) : (
             messages.map((msg, index) => {
               //- logic la cu la candidate thi o 1 ben con lai phia cty se o 1 ben
-              const isMe = msg.senderType === getRoleCodeName();
+              const isRoleCandidate =
+                getRoleCodeName() === envConfig.NEXT_PUBLIC_ROLE_CANDIDATE
+                  ? getRoleCandidate()
+                  : getRoleRecruiter();
+
+              console.log("check fungetRoleName: ", getRoleCodeName());
+              console.log("check isRoleCandidate: ", isRoleCandidate);
+              const isMe = msg.senderType === isRoleCandidate ? true : false;
+
+              console.log("isMe: ", isMe);
               const avatarSrc =
                 msg.senderType === envConfig.NEXT_PUBLIC_ROLE_CANDIDATE
                   ? candidateData?.avatar

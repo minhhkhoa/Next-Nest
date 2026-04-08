@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { Conversation, ChatMessage } from "@/schemasvalidation/chat";
 import { useChatSocket } from "@/hooks/use-chat-socket";
 import { useAppStore } from "@/components/TanstackProvider";
