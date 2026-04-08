@@ -58,8 +58,29 @@ export const useMarkAsReadMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => chatApiRequest.markAsRead(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+    onSuccess: (response, id) => {
+      const updatedConversation = response.data;
+      if (!updatedConversation) return;
+
+      queryClient.setQueryData(["conversations"], (oldData: any) => {
+        if (!oldData?.data || !Array.isArray(oldData.data)) {
+          return oldData;
+        }
+
+        return {
+          ...oldData,
+          data: oldData.data.map((conversation: any) =>
+            conversation._id === id
+              ? {
+                  ...conversation,
+                  unreadCandidate: updatedConversation.unreadCandidate,
+                  unreadCompany: updatedConversation.unreadCompany,
+                  updatedAt: updatedConversation.updatedAt,
+                }
+              : conversation,
+          ),
+        };
+      });
     },
   });
 };

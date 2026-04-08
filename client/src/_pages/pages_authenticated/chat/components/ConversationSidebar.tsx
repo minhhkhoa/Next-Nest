@@ -1,9 +1,10 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Conversation } from "@/schemasvalidation/chat";
-import { cn, getRoleCodeName } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { User as UserIcon } from "lucide-react";
 import { envConfig } from "../../../../../config";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { UserResponseType } from "@/schemasvalidation/user";
 
 interface ConversationSidebarProps {
   conversations: Conversation[];
@@ -12,6 +13,7 @@ interface ConversationSidebarProps {
   userRole: string | undefined;
   isConnected: boolean;
   onCreateNewChat?: () => void;
+  user: UserResponseType;
 }
 
 //- Nội dung danh sách conversation - dùng chung cho desktop & mobile
@@ -22,13 +24,9 @@ export function ConversationList({
   userRole,
   isConnected,
   onCreateNewChat,
+  user,
 }: ConversationSidebarProps) {
-  const isCandidate =
-    getRoleCodeName() === envConfig.NEXT_PUBLIC_ROLE_CANDIDATE;
 
-  useEffect(() => {
-    // console.log("conversations::", conversations);
-  }, [conversations]);
   return (
     <>
       <div className="p-4 border-b border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-950 flex justify-between items-center shrink-0">
@@ -57,10 +55,14 @@ export function ConversationList({
           </div>
         ) : (
           conversations.map((conv) => {
+            const isCandidate = conv.candidateId._id === user._id;
             const displayInfo =
               userRole === envConfig.NEXT_PUBLIC_ROLE_CANDIDATE
                 ? conv.companyId
                 : conv.candidateId;
+            const unreadCount = isCandidate
+              ? conv.unreadCandidate
+              : conv.unreadCompany;
 
             return (
               <div
@@ -76,11 +78,12 @@ export function ConversationList({
                   <span className="font-semibold text-[15px] truncate">
                     {displayInfo?.name || "Người dùng"}
                   </span>
-                  {(conv.unreadCandidate > 0 || conv.unreadCompany > 0) && (
-                    <span className="w-3 h-3 bg-red-500 rounded-full flex-shrink-0">
-                      {isCandidate ? conv.unreadCandidate : conv.unreadCompany}
+
+                  {unreadCount > 0 ? (
+                    <span className="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
+                      {unreadCount}
                     </span>
-                  )}
+                  ) : null}
                 </div>
                 <span className="text-sm text-gray-500 truncate">
                   {conv.lastMessage || "Chưa có tin nhắn"}

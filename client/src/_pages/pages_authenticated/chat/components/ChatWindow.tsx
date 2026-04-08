@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { ChatMessage } from "@/schemasvalidation/chat";
 import {
   cn,
@@ -44,15 +44,6 @@ export default function ChatWindow({
     }
   };
 
-  //- Cuộn xuống cuối khi load tin nhắn hoặc có tin nhắn mới
-  useEffect(() => {
-    //- Dùng setTimeout nhỏ để đợi DOM render xong
-    const timer = setTimeout(() => {
-      scrollToBottom("instant");
-    }, 50);
-    return () => clearTimeout(timer);
-  }, [messages, activeConversationId]);
-
   const isCandidate =
     getRoleCodeName() === envConfig.NEXT_PUBLIC_ROLE_CANDIDATE;
 
@@ -67,6 +58,99 @@ export default function ChatWindow({
       (envConfig.NEXT_PUBLIC_ROLE_RECRUITER ||
         envConfig.NEXT_PUBLIC_ROLE_RECRUITER_ADMIN),
   )?.senderId;
+
+  const currentUserSenderType =
+    getRoleCodeName() === envConfig.NEXT_PUBLIC_ROLE_CANDIDATE
+      ? getRoleCandidate()
+      : getRoleRecruiter();
+
+  const lastOwnMessageId = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i -= 1) {
+      if (messages[i].senderType === currentUserSenderType) {
+        return messages[i]._id;
+      }
+    }
+    return null;
+  }, [messages, currentUserSenderType]);
+
+  //- sử dụng useMemo để tránh tính toán render lại toàn bộ không gian chat khi chỉ có một tin nhắn mới
+  //- sẽ mượt hơn hẳn.
+  const messageItems = useMemo(
+    () =>
+      messages.map((msg) => {
+        const isMe = msg.senderType === currentUserSenderType;
+        const isLastOwnMessage = isMe && msg._id === lastOwnMessageId;
+
+        const avatarSrc =
+          msg.senderType === envConfig.NEXT_PUBLIC_ROLE_CANDIDATE
+            ? candidateData?.avatar
+            : hrData?.avatar;
+
+        return (
+          <div
+            key={msg._id}
+            className={cn(
+              "flex flex-col max-w-[85%] sm:max-w-[70%] gap-2 items-start",
+              isMe ? "flex-row-reverse self-end " : "flex-row self-start",
+            )}
+          >
+            <div>
+              <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
+                <AvatarImage src={avatarSrc} />
+                <AvatarFallback>CN</AvatarFallback>
+              </Avatar>
+            </div>
+            <div>
+              <div
+                className={cn(
+                  "px-3 py-2 sm:px-4 rounded-2xl text-sm sm:text-base",
+                  isMe
+                    ? "bg-blue-500 text-white rounded-br-none"
+                    : "bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-bl-none",
+                )}
+              >
+                {msg.type === "TEXT" ? (
+                  <p className="whitespace-pre-wrap break-words">
+                    {msg.content}
+                  </p>
+                ) : (
+                  <p className="italic text-gray-300">
+                    [Loại tin nhắn chưa hỗ trợ: {msg.type}]
+                  </p>
+                )}
+              </div>
+              <span className="text-[11px] text-gray-400 mt-1">
+                {new Date(msg.createdAt).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
+              {isLastOwnMessage ? (
+                <span className="text-[11px] text-gray-400 ml-2">
+                  {msg.isRead ? "Đã xem" : "Đã gửi"}
+                </span>
+              ) : null}
+            </div>
+          </div>
+        );
+      }),
+    [
+      messages,
+      currentUserSenderType,
+      lastOwnMessageId,
+      candidateData?.avatar,
+      hrData?.avatar,
+    ],
+  );
+
+  //- Cuộn xuống cuối khi load tin nhắn hoặc có tin nhắn mới
+  useEffect(() => {
+    //- Dùng setTimeout nhỏ để đợi DOM render xong
+    const timer = setTimeout(() => {
+      scrollToBottom("instant");
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [messages, activeConversationId]);
 
   if (!activeConversationId) {
     return (
@@ -126,66 +210,7 @@ export default function ChatWindow({
               Chưa có tin nhắn nào. Hãy gửi lời chào!
             </div>
           ) : (
-            messages.map((msg, index) => {
-              //- logic la cu la candidate thi o 1 ben con lai phia cty se o 1 ben
-              const isRoleCandidate =
-                getRoleCodeName() === envConfig.NEXT_PUBLIC_ROLE_CANDIDATE
-                  ? getRoleCandidate()
-                  : getRoleRecruiter();
-
-              console.log("check fungetRoleName: ", getRoleCodeName());
-              console.log("check isRoleCandidate: ", isRoleCandidate);
-              const isMe = msg.senderType === isRoleCandidate ? true : false;
-
-              console.log("isMe: ", isMe);
-              const avatarSrc =
-                msg.senderType === envConfig.NEXT_PUBLIC_ROLE_CANDIDATE
-                  ? candidateData?.avatar
-                  : hrData?.avatar;
-
-              return (
-                <div
-                  key={msg._id || index}
-                  className={cn(
-                    "flex flex-col max-w-[85%] sm:max-w-[70%] gap-2 items-start",
-                    isMe ? "flex-row-reverse self-end " : "flex-row self-start",
-                  )}
-                >
-                  <div>
-                    <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
-                      <AvatarImage src={avatarSrc} />
-                      <AvatarFallback>CN</AvatarFallback>
-                    </Avatar>
-                  </div>
-                  <div>
-                    <div
-                      className={cn(
-                        "px-3 py-2 sm:px-4 rounded-2xl text-sm sm:text-base",
-                        isMe
-                          ? "bg-blue-500 text-white rounded-br-none"
-                          : "bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-bl-none",
-                      )}
-                    >
-                      {msg.type === "TEXT" ? (
-                        <p className="whitespace-pre-wrap break-words">
-                          {msg.content}
-                        </p>
-                      ) : (
-                        <p className="italic text-gray-300">
-                          [Loại tin nhắn chưa hỗ trợ: {msg.type}]
-                        </p>
-                      )}
-                    </div>
-                    <span className="text-[11px] text-gray-400 mt-1">
-                      {new Date(msg.createdAt).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  </div>
-                </div>
-              );
-            })
+            messageItems
           )}
         </div>
       </ScrollArea>

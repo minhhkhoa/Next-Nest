@@ -90,6 +90,12 @@ export class Message {
   @Prop({ type: Object, default: {} })
   metadata: MetadataMessage;
 
+  @Prop({ type: Boolean, default: false })
+  isRead: boolean;
+
+  @Prop({ type: Date, default: null })
+  readAt: Date | null;
+
   @Prop({ default: false })
   isDeleted: boolean;
 

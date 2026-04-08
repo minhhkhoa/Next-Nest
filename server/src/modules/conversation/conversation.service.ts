@@ -8,6 +8,7 @@ import {
   Conversation,
   ConversationDocument,
 } from './schemas/conversation.schema';
+import { Message, MessageDocument } from '../message/schemas/message.schema';
 import { Model, Types } from 'mongoose';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { ConfigService } from '@nestjs/config';
@@ -17,6 +18,8 @@ export class ConversationService {
   constructor(
     @InjectModel(Conversation.name)
     private conversationModel: Model<ConversationDocument>,
+    @InjectModel(Message.name)
+    private messageModel: Model<MessageDocument>,
     private configService: ConfigService,
   ) {}
 
@@ -159,15 +162,37 @@ export class ConversationService {
   async markAsRead(id: string, user: UserDecoratorType) {
     let updateData = {};
     const candidateText = this.configService.get<string>('role_candidate');
+    const readAt = new Date();
+    const conversationObjectId = new Types.ObjectId(id);
+    const readerObjectId = new Types.ObjectId(user.id);
 
     if (user.roleCodeName === candidateText) {
       updateData = { unreadCandidate: 0 };
     } else {
       updateData = { unreadCompany: 0 };
     }
-    return await this.conversationModel.findByIdAndUpdate(id, updateData, {
-      new: true,
-    });
+
+    const [updatedConversation] = await Promise.all([
+      this.conversationModel.findByIdAndUpdate(id, updateData, {
+        new: true,
+      }),
+      this.messageModel.updateMany(
+        {
+          conversationId: conversationObjectId,
+          senderId: { $ne: readerObjectId },
+          isDeleted: false,
+          $or: [{ isRead: { $exists: false } }, { isRead: false }],
+        },
+        {
+          $set: {
+            isRead: true,
+            readAt,
+          },
+        },
+      ),
+    ]);
+
+    return updatedConversation;
   }
 
   async updateLastMessage(

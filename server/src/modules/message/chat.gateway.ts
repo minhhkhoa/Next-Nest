@@ -15,7 +15,7 @@ import { WsJwtGuard } from 'src/common/guard/ws-jwt.guard';
 //- Chạy trên namespace '/chat' để không đụng chạm với thông báo đang để '/' ở NotificationsGateway
 @WebSocketGateway({ namespace: '/chat', cors: { origin: '*' } })
 export class ChatGateway implements OnGatewayConnection {
-  @WebSocketServer() server: Server;
+  @WebSocketServer() server!: Server;
 
   private logger: Logger = new Logger('MessageGateway');
 
@@ -74,6 +74,28 @@ export class ChatGateway implements OnGatewayConnection {
     this.logger.log(
       `[Chat] Client ${client.id} left conversation: ${conversationId}`,
     );
+  }
+
+  @UseGuards(WsJwtGuard)
+  @SubscribeMessage('conversation_read')
+  handleConversationRead(
+    @ConnectedSocket() client: Socket,
+    @MessageBody()
+    payload: {
+      conversationId: string;
+      readAt?: string;
+    },
+  ) {
+    if (!payload?.conversationId) return;
+
+    const readerId = client.data?.user?.id;
+    const readAt = payload.readAt || new Date().toISOString();
+
+    this.server.to(payload.conversationId).emit('messages_read', {
+      conversationId: payload.conversationId,
+      readerId,
+      readAt,
+    });
   }
 
   /**

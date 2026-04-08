@@ -24,6 +24,7 @@ export const ChatMessageSchema = z.object({
   content: z.string().optional(),
   metadata: z.any().optional(),
   isRead: z.boolean().default(false),
+  readAt: z.string().optional().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
