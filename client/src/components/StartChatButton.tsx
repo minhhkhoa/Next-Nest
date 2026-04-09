@@ -58,7 +58,7 @@ export default function StartChatButton({
       }
 
       if (jobReferenceId) {
-        payload.jobReferenceId = jobReferenceId;
+        payload.jobId = jobReferenceId;
       }
 
       // Gọi API tạo mới hoặc lấy cuộc trò chuyện đã có

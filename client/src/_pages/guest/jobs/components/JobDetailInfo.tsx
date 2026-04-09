@@ -26,6 +26,8 @@ import { useAppStore } from "@/components/TanstackProvider";
 import { ApplicationModal } from "@/components/ApplicationModal";
 import BookmarkJobButton from "@/components/BookmarkJobButton";
 import StartChatButton from "@/components/StartChatButton";
+import AskMoreJobButton from "@/components/AskMoreJobButton";
+import { envConfig } from "../../../../../config";
 
 interface JobDetailInfoProps {
   job: JobResType;
@@ -52,7 +54,7 @@ function InfoItem({
 }
 
 export default function JobDetailInfo({ job }: JobDetailInfoProps) {
-  const { isLogin } = useAppStore();
+  const { user, isLogin } = useAppStore();
   const { getLang } = useGetLang();
   const [reportModalOpen, setReportModalOpen] = React.useState(false);
 
@@ -119,7 +121,10 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
                   jobTitle={getLang(job.title)}
                   companyName={job.company?.name || ""}
                   trigger={
-                    <Button disabled={job.hasApplication} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                    <Button
+                      disabled={job.hasApplication}
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                    >
                       {job.hasApplication ? "Đã ứng tuyển" : "Ứng tuyển ngay"}
                     </Button>
                   }
@@ -132,6 +137,22 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
                 >
                   Lưu tin
                 </BookmarkJobButton>
+
+                {isLogin &&
+                  user?.roleCodeName ===
+                    envConfig.NEXT_PUBLIC_ROLE_CANDIDATE && (
+                    <AskMoreJobButton
+                      job={job}
+                      jobTitle={getLang(job.title)}
+                      jobSlug={getLang(job.slug) || getLang(job.title)}
+                      variant="outline"
+                      size="default"
+                      className="gap-2"
+                      label="Hỏi thêm"
+                    />
+                  )}
+
+                
 
                 {isLogin && (
                   <Button
@@ -181,13 +202,17 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
                   <h2 className="text-xl font-bold text-foreground">
                     Thông tin công ty
                   </h2>
-                  <StartChatButton
-                    receiverId={job.company._id}
-                    jobReferenceId={job._id}
-                    label="Nhắn tin"
-                    variant="outline"
-                    className="h-8 py-0 px-3 text-sm"
-                  />
+                  {isLogin &&
+                    user?.roleCodeName ===
+                      envConfig.NEXT_PUBLIC_ROLE_CANDIDATE && (
+                      <StartChatButton
+                        receiverId={job.company._id}
+                        jobReferenceId={job._id}
+                        label="Nhắn tin"
+                        variant="outline"
+                        className="h-8 py-0 px-3 text-sm"
+                      />
+                    )}
                 </div>
                 <div className="flex gap-4 items-start">
                   <div className="w-16 h-16 border-2 rounded border-primary flex items-center justify-center flex-shrink-0">

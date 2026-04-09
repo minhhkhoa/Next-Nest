@@ -15,6 +15,7 @@ import ConversationSidebar, {
   ConversationList,
 } from "./components/ConversationSidebar";
 import ChatWindow from "./components/ChatWindow";
+import { CHAT_JOB_REFERENCE_DRAFT_STORAGE_KEY } from "@/components/AskMoreJobButton";
 import { useSearchParams } from "next/navigation";
 import {
   Sheet,
@@ -36,6 +37,18 @@ export default function ChatPageModule() {
   >(defaultConversationId || null);
 
   const [inputText, setInputText] = useState("");
+  const [pendingJobReference, setPendingJobReference] = useState<
+    | {
+        jobId?: string;
+        jobTitle?: string;
+        jobSlug?: string;
+        salary?: string;
+        jobImage?: string;
+        companyName?: string;
+        location?: string;
+      }
+    | null
+  >(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   //- Lấy dữ liệu
@@ -88,16 +101,39 @@ export default function ChatPageModule() {
     //- Nếu chọn phòng khác, xóa tin nhắn realtime cũ
     if (id !== activeConversationId) {
       clearRealtimeMessages();
+      setPendingJobReference(null);
     }
     setActiveConversationId(id);
     setIsMobileSidebarOpen(false);
   };
+
+  useEffect(() => {
+    if (!activeConversationId || typeof window === "undefined") return;
+
+    const rawDraft = sessionStorage.getItem(CHAT_JOB_REFERENCE_DRAFT_STORAGE_KEY);
+    if (!rawDraft) return;
+
+    try {
+      const parsedDraft = JSON.parse(rawDraft);
+      if (parsedDraft?.conversationId !== activeConversationId) return;
+
+      setInputText(
+        parsedDraft?.inputText || "Tôi muốn biết thêm thông tin về job này",
+      );
+      setPendingJobReference(parsedDraft?.metadata || null);
+      sessionStorage.removeItem(CHAT_JOB_REFERENCE_DRAFT_STORAGE_KEY);
+    } catch {
+      sessionStorage.removeItem(CHAT_JOB_REFERENCE_DRAFT_STORAGE_KEY);
+    }
+  }, [activeConversationId]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim() || !activeConversationId) return;
 
     const textToSend = inputText.trim();
+    const sendingJobReference = !!pendingJobReference;
+    const messageType = sendingJobReference ? "JOB_REFERENCE" : "TEXT";
     setInputText("");
 
     //- Tạo tin nhắn tạm (optimistic) để hiển thị ngay lập tức
@@ -111,8 +147,9 @@ export default function ChatPageModule() {
         email: user?.email || "",
       },
       senderType: user?.roleCodeName as "CANDIDATE" | "RECRUITER",
-      type: "TEXT",
+      type: messageType,
       content: textToSend,
+      metadata: sendingJobReference ? pendingJobReference : undefined,
       isRead: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -137,9 +174,14 @@ export default function ChatPageModule() {
     try {
       await sendMessageMutation.mutateAsync({
         conversationId: activeConversationId,
-        type: "TEXT",
+        type: messageType,
         content: textToSend,
+        metadata: sendingJobReference ? pendingJobReference : undefined,
       });
+
+      if (sendingJobReference) {
+        setPendingJobReference(null);
+      }
 
       //- Khi API thành công, invalidate để lấy dữ liệu thật thay thế tin nhắn tạm
       queryClient.invalidateQueries({
@@ -148,6 +190,7 @@ export default function ChatPageModule() {
     } catch (error) {
       //- Rollback cache về trạng thái cũ nếu gửi thất bại
       queryClient.setQueryData(queryKey, previousData);
+      setInputText(textToSend);
       SoftDestructiveSonner("Không thể gửi tin nhắn. Vui lòng thử lại");
       console.log("error send message: ", error);
     }
@@ -226,6 +269,8 @@ export default function ChatPageModule() {
         onInputChange={setInputText}
         onSendMessage={handleSendMessage}
         isSending={sendMessageMutation.isPending}
+        pendingJobReference={pendingJobReference}
+        onClearPendingJobReference={() => setPendingJobReference(null)}
         onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
       />
     </div>

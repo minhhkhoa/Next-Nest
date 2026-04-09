@@ -48,7 +48,7 @@ import { MessageModule } from './modules/message/message.module';
           url: configService.get<string>('REDIS_URL'),
           ttl: 600000, //- time to live: 10 phút
           socket: {
-            connectTimeout: 5000, //- Tăng timeout lên 30s để tránh lỗi kết nối chậm trên Docker Windows
+            connectTimeout: 10000, //- Tăng timeout lên 30s để tránh lỗi kết nối chậm trên Docker Windows
           },
         }),
       }),

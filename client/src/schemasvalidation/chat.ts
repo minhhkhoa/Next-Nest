@@ -95,6 +95,7 @@ export type CreateMessagePayload = z.infer<typeof CreateMessagePayloadSchema>;
 export const CreateConversationPayloadSchema = z.object({
   companyId: z.string().optional(),
   candidateId: z.string().optional(),
+  jobId: z.string().optional(),
   jobReferenceId: z.string().optional(),
 });
 

@@ -36,7 +36,13 @@ class MetadataMessage {
   jobId?: string;
 
   @Prop()
+  jobImage?: string;
+
+  @Prop()
   jobTitle?: string;
+
+  @Prop()
+  jobSlug?: string;
 
   @Prop()
   salary?: string;

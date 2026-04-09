@@ -6,18 +6,31 @@ import {
   getRoleCodeName,
   getRoleRecruiter,
 } from "@/lib/utils";
-import { User as UserIcon, Send, Menu } from "lucide-react";
+import { User as UserIcon, Send, Menu, X } from "lucide-react";
 import { envConfig } from "../../../../../config";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import Image from "next/image";
+import { Link } from "@/i18n/navigation";
+import { generateSlugUrl } from "@/lib/utils";
 
 interface ChatWindowProps {
   messages: ChatMessage[];
   activeConversationId: string | null;
   inputText: string;
+  pendingJobReference?: {
+    jobId?: string;
+    jobTitle?: string;
+    jobSlug?: string;
+    salary?: string;
+    jobImage?: string;
+    companyName?: string;
+    location?: string;
+  } | null;
   onInputChange: (val: string) => void;
   onSendMessage: (e: React.FormEvent) => void;
+  onClearPendingJobReference?: () => void;
   isSending: boolean;
   onOpenMobileSidebar?: () => void;
 }
@@ -26,8 +39,10 @@ export default function ChatWindow({
   messages,
   activeConversationId,
   inputText,
+  pendingJobReference,
   onInputChange,
   onSendMessage,
+  onClearPendingJobReference,
   isSending,
   onOpenMobileSidebar,
 }: ChatWindowProps) {
@@ -93,6 +108,14 @@ export default function ChatWindow({
           (msg.senderType === envConfig.NEXT_PUBLIC_ROLE_CANDIDATE
             ? candidateData?.avatar
             : hrData?.avatar);
+        const jobReferenceSlug =
+          msg.metadata?.jobSlug || msg.metadata?.jobTitle || "chi-tiet-job";
+        const jobReferenceLink = msg.metadata?.jobId
+          ? `/jobs/${generateSlugUrl({
+              name: jobReferenceSlug,
+              id: msg.metadata.jobId,
+            })}`
+          : null;
 
         return (
           <div
@@ -125,6 +148,88 @@ export default function ChatWindow({
                   <p className="whitespace-pre-wrap break-words">
                     {msg.content}
                   </p>
+                ) : msg.type === "JOB_REFERENCE" ? (
+                  <div className="space-y-2">
+                    {msg.content ? (
+                      <p className="whitespace-pre-wrap break-words">
+                        {msg.content}
+                      </p>
+                    ) : null}
+
+                    {jobReferenceLink ? (
+                      <Link
+                        href={jobReferenceLink}
+                        className="block"
+                        aria-label="Mở chi tiết công việc"
+                      >
+                        <div
+                          className={cn(
+                            "rounded-xl border p-2 sm:p-3 transition hover:opacity-90",
+                            isMe
+                              ? "border-blue-200 bg-blue-400/20"
+                              : "border-gray-200 bg-gray-50 dark:bg-slate-900 dark:border-slate-700",
+                          )}
+                        >
+                          <div className="flex items-center gap-3">
+                            {(msg.metadata?.jobImage ||
+                              msg.metadata?.thumbnail) && (
+                              <Image
+                                src={
+                                  msg.metadata?.jobImage ||
+                                  msg.metadata?.thumbnail
+                                }
+                                alt={msg.metadata?.jobTitle || "Job image"}
+                                width={40}
+                                height={40}
+                                className="h-10 w-10 rounded-md object-cover shrink-0"
+                              />
+                            )}
+                            <div className="min-w-0">
+                              <p className="font-semibold truncate underline-offset-2 hover:underline">
+                                {msg.metadata?.jobTitle || "Công việc tham chiếu"}
+                              </p>
+                              {msg.metadata?.salary ? (
+                                <p className="text-xs opacity-80 truncate">
+                                  {msg.metadata.salary}
+                                </p>
+                              ) : null}
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    ) : (
+                      <div
+                        className={cn(
+                          "rounded-xl border p-2 sm:p-3",
+                          isMe
+                            ? "border-blue-200 bg-blue-400/20"
+                            : "border-gray-200 bg-gray-50 dark:bg-slate-900 dark:border-slate-700",
+                        )}
+                      >
+                        <div className="flex items-center gap-3">
+                          {(msg.metadata?.jobImage || msg.metadata?.thumbnail) && (
+                            <Image
+                              src={msg.metadata?.jobImage || msg.metadata?.thumbnail}
+                              alt={msg.metadata?.jobTitle || "Job image"}
+                              width={40}
+                              height={40}
+                              className="h-10 w-10 rounded-md object-cover shrink-0"
+                            />
+                          )}
+                          <div className="min-w-0">
+                            <p className="font-semibold truncate">
+                              {msg.metadata?.jobTitle || "Công việc tham chiếu"}
+                            </p>
+                            {msg.metadata?.salary ? (
+                              <p className="text-xs opacity-80 truncate">
+                                {msg.metadata.salary}
+                              </p>
+                            ) : null}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <p className="italic text-gray-300">
                     [Loại tin nhắn chưa hỗ trợ: {msg.type}]
@@ -231,6 +336,41 @@ export default function ChatWindow({
 
       {/* Input Box */}
       <div className="p-2 sm:p-4 bg-white dark:bg-slate-950 border-t border-gray-200 dark:border-slate-800 shrink-0">
+        {pendingJobReference && (
+          <div className="mb-2 rounded-lg border border-blue-200 bg-blue-50 dark:bg-slate-900 dark:border-slate-700 px-3 py-2">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-3 min-w-0">
+                {pendingJobReference.jobImage ? (
+                  <Image
+                    src={pendingJobReference.jobImage}
+                    alt={pendingJobReference.jobTitle || "Job image"}
+                    width={36}
+                    height={36}
+                    className="h-9 w-9 rounded-md object-cover shrink-0"
+                  />
+                ) : null}
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-500">Đang đính kèm job</p>
+                  <p className="text-sm font-medium truncate">
+                    {pendingJobReference.jobTitle || "Thông tin công việc"}
+                  </p>
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                onClick={onClearPendingJobReference}
+                className="shrink-0"
+                aria-label="Xóa job đính kèm"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+
         <form onSubmit={onSendMessage} className="flex gap-2 items-center">
           <input
             type="text"
