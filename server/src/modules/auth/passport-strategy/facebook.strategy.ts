@@ -36,7 +36,7 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
     const { name, emails, photos, id } = profile;
 
     //- gán quyền là người dùng bình thường
-    const nameRole = this.configService.get<string>('role_gest') as string;
+    const nameRole = this.configService.get<string>('role_candidate') as string;
     const idRole = await this.roleService.getRoleByName(nameRole);
 
     if (!idRole) throw new BadRequestException('Role không tồn tại');

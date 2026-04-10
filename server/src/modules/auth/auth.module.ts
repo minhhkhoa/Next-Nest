@@ -7,7 +7,7 @@ import { LocalStrategy } from './passport-strategy/local.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './passport-strategy/jwt.strategy';
-import * as ms from 'ms';
+import ms = require('ms');
 import { FacebookStrategy } from './passport-strategy/facebook.strategy';
 import { GoogleStrategy } from './passport-strategy/google.strategy';
 import { MailModule } from 'src/modules/mail/mail.module';

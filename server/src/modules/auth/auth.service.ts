@@ -9,7 +9,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
-import * as ms from 'ms';
+import ms = require('ms');
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 import { MailService } from 'src/modules/mail/mail.service';
 import { RegisterDto } from 'src/modules/user/dto/create-user.dto';
