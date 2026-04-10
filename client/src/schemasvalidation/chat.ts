@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ActionBy } from "./NewsCategory";
 
 export const chatMessageTypeEnum = z.enum([
   "TEXT",
@@ -13,12 +14,7 @@ export const senderTypeEnum = z.enum(["CANDIDATE", "RECRUITER"]);
 export const ChatMessageSchema = z.object({
   _id: z.string(),
   conversationId: z.string(),
-  senderId: z.object({
-    _id: z.string(),
-    name: z.string(),
-    avatar: z.string().optional(),
-    email: z.string(),
-  }),
+  senderId: ActionBy,
   senderType: senderTypeEnum,
   type: chatMessageTypeEnum,
   content: z.string().optional(),
@@ -34,12 +30,7 @@ export type ChatMessage = z.infer<typeof ChatMessageSchema>;
 //- Schema cho một phòng chat (Conversation)
 export const ConversationSchema = z.object({
   _id: z.string(),
-  candidateId: z.object({
-    _id: z.string(),
-    name: z.string(),
-    avatar: z.string().optional(),
-    email: z.string(),
-  }),
+  candidateId: ActionBy,
   companyId: z.object({
     _id: z.string(),
     name: z.string(),
@@ -96,7 +87,7 @@ export const CreateConversationPayloadSchema = z.object({
   companyId: z.string().optional(),
   candidateId: z.string().optional(),
   jobId: z.string().optional(),
-  jobReferenceId: z.string().optional(),
+  // jobReferenceId: z.string().optional(),
 });
 
 export type CreateConversationPayload = z.infer<

@@ -26,7 +26,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   //- payload là tham số nó tự truyền vào sau khi giải mã song hàm super bên trên, và nó tự động chạy hàm validate này
   async validate(payload: UserResponse) {
-    const cacheKey = `user_cache:${payload.id}`;
+    const cacheKey = `user_cache:${payload.id}_${payload.roleID}_${payload.roleCodeName}_${payload.employerInfo?.companyID}`;
 
     //- Thử lấy user từ Redis
     let user = await this.cacheManager.get<any>(cacheKey);
@@ -48,6 +48,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     const permissions = (user.roleID as any)?.permissions ?? [];
+    const employerInfo = payload?.employerInfo || user?.employerInfo;
 
     return {
       id: payload.id,
@@ -57,7 +58,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       roleCodeName: payload.roleCodeName,
       permissions: permissions,
       avatar: payload.avatar,
-      employerInfo: user.employerInfo,
+      employerInfo,
     }; //- no gan vao req.user
   }
 }

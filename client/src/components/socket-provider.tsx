@@ -6,14 +6,39 @@ import { useAppStore } from "./TanstackProvider";
 import { useQueryClient } from "@tanstack/react-query";
 import SoftSuccessSonner from "./shadcn-studio/sonner/SoftSuccessSonner";
 import { envConfig } from "../../config";
-import { getAccessTokenFromLocalStorage } from "@/lib/utils";
+import {
+  getAccessTokenFromLocalStorage,
+  removeTokensFromLocalStorage,
+} from "@/lib/utils";
+import { useLogoutMutation } from "@/queries/useAuth";
+import { NotificationType } from "@/lib/constant";
+import { useRouter } from "next/navigation";
 
 //- Biến instance bên ngoài để tránh khởi tạo lại khi re-render
 let socket: Socket | null = null;
 
 export const SocketListener = () => {
-  const { isLogin, user, setSocket } = useAppStore();
+  const { isLogin, user, setSocket, setLogin } = useAppStore();
   const queryClient = useQueryClient();
+  const { mutateAsync: mutationLogout } = useLogoutMutation();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      const res = await mutationLogout();
+      if (res.isError) return;
+
+      removeTokensFromLocalStorage();
+      setLogin(false);
+
+      queryClient.removeQueries({ queryKey: ["profile"] });
+
+      router.push("/login");
+      router.refresh();
+    } catch (error) {
+      console.log("error logout: ", error);
+    }
+  };
 
   useEffect(() => {
     //- 1. Chỉ kết nối khi đã login và có thông tin user
@@ -67,8 +92,25 @@ export const SocketListener = () => {
         }
         //- end job
 
+        //- start company
+        if (data.metadata.module === "COMPANY") {
+          if (
+            data.type === NotificationType.COMPANY_ADMIN_REQUEST_PROCESSED ||
+            data.type === NotificationType.COMPANY_JOIN_REQUEST_PROCESSED
+          ) {
+            //- cho login lai de lay token moi (da cap nhat role moi)
+            SoftSuccessSonner(
+              "Thông tin công ty đã được cập nhật, bạn sẽ được đăng xuất để cập nhật quyền mới!",
+            );
+            handleLogout();
+          }
+        }
+
+        if (data.metadata.module !== "COMPANY") {
+          SoftSuccessSonner("Bạn có một thông báo mới!");
+        }
+
         //- Hiển thị Toast thông báo nhanh
-        SoftSuccessSonner("Bạn có một thông báo mới!");
 
         //- Làm mới danh sách thông báo
         queryClient.invalidateQueries({ queryKey: ["notifications-filter"] });

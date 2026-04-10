@@ -8,6 +8,8 @@ export const ActionBy = z.object({
   avatar: z.string().optional(),
 });
 
+export type TypeActionBy = z.infer<typeof ActionBy>;
+
 export const MetaFilter = z.object({
   current: z.number(),
   pageSize: z.number(),

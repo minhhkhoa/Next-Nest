@@ -29,6 +29,7 @@ import {
   generateStarRating,
   generateStatusOptions,
 } from "../application-jobColumn";
+import StartChatButton from "@/components/StartChatButton";
 
 const TEMPLATE_COMPONENTS: Record<string, React.ElementType> = {
   [CV_TEMPLATES.basicTemplate]: BasicTemplate,
@@ -150,6 +151,22 @@ export function ViewApplicationSheet({
                     <span className="truncate">{application.email}</span>
                   </div>
                 </div>
+
+                <StartChatButton
+                  receiverId={
+                    typeof qData?.data?.userId === "object"
+                      ? qData?.data?.userId?._id || ""
+                      : ""
+                  } // Truyền ID của ứng viên để bắt đầu chat
+                  jobReferenceId={
+                    typeof qData?.data?.jobId === "object"
+                      ? qData?.data?.jobId?._id || ""
+                      : ""
+                  }
+                  label="Trao đổi"
+                  variant="outline"
+                  className="h-8 py-0 px-3 text-sm"
+                />
               </div>
 
               {/* Status & Rating */}
