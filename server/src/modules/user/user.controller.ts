@@ -120,6 +120,7 @@ export class UserController {
     return this.userService.restoreUserAndProfile(id, admin);
   }
 
+  @PublicPermission()
   @ResponseMessage('Cập nhật thông tin người dùng thành công')
   @ApiOperation({ summary: 'update user' })
   @Patch(':id')

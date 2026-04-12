@@ -12,6 +12,15 @@ class MetadataMessage {
   imageUrl?: string;
 
   @Prop()
+  mimeType?: string;
+
+  @Prop()
+  fileSize?: number;
+
+  @Prop()
+  fileExt?: string;
+
+  @Prop()
   width?: number;
 
   @Prop()
@@ -23,6 +32,24 @@ class MetadataMessage {
 
   @Prop()
   cvName?: string;
+
+  @Prop()
+  templateID?: string;
+
+  @Prop()
+  templateId?: string;
+
+  @Prop({ type: Object })
+  resumeContent?: any;
+
+  @Prop()
+  isDefault?: boolean;
+
+  @Prop()
+  previewImage?: string;
+
+  @Prop()
+  updatedAt?: string;
 
   //- CV dạng link bên ngoài gửi
   @Prop()

@@ -48,7 +48,7 @@ const items = [
   //   isAdmin: false,
   // },
   {
-    title: "Hồ sơ ứng viên",
+    title: "Hồ sơ ứng tuyển",
     url: "/recruiter/manager/application",
     icon: FileUser,
     isAdmin: false,

@@ -10,6 +10,33 @@ export const chatMessageTypeEnum = z.enum([
 ]);
 export const senderTypeEnum = z.enum(["CANDIDATE", "RECRUITER"]);
 
+export const chatMessageMetadataSchema = z
+  .object({
+    imageUrl: z.string().optional(),
+    width: z.number().optional(),
+    height: z.number().optional(),
+    cvId: z.string().optional(),
+    cvName: z.string().optional(),
+    link: z.string().optional(),
+    fileName: z.string().optional(),
+    mimeType: z.string().optional(),
+    fileSize: z.number().optional(),
+    fileExt: z.string().optional(),
+    templateID: z.string().optional(),
+    templateId: z.string().optional(),
+    resumeContent: z.any().optional(),
+    isDefault: z.boolean().optional(),
+    previewImage: z.string().optional(),
+    updatedAt: z.string().optional(),
+    jobId: z.string().optional(),
+    jobImage: z.string().optional(),
+    jobTitle: z.string().optional(),
+    jobSlug: z.string().optional(),
+    salary: z.string().optional(),
+    thumbnail: z.string().optional(),
+  })
+  .optional();
+
 //- Schema cho một tin nhắn
 export const ChatMessageSchema = z.object({
   _id: z.string(),
@@ -18,7 +45,7 @@ export const ChatMessageSchema = z.object({
   senderType: senderTypeEnum,
   type: chatMessageTypeEnum,
   content: z.string().optional(),
-  metadata: z.any().optional(),
+  metadata: chatMessageMetadataSchema,
   isRead: z.boolean().default(false),
   readAt: z.string().optional().nullable(),
   createdAt: z.string(),

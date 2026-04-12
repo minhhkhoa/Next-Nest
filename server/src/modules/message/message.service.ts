@@ -50,13 +50,12 @@ export class MessageService {
         lastMsgText = newMessage.content;
       } else if (newMessage.type === 'IMAGE') {
         lastMsgText = '[Hình ảnh]';
+      } else if (newMessage.type === 'CV_LINK') {
+        lastMsgText = '[Tệp đính kèm]';
+      } else if (newMessage.type === 'CV_SYSTEM') {
+        lastMsgText = '[CV hệ thống]';
       } else if (newMessage.type === 'JOB_REFERENCE') {
         lastMsgText = '[Đính kèm công việc]';
-      } else if (
-        newMessage.type === 'CV_SYSTEM' ||
-        newMessage.type === 'CV_LINK'
-      ) {
-        lastMsgText = '[Đính kèm CV]';
       }
 
       //- Cập nhật last message và unread count cho phòng chat

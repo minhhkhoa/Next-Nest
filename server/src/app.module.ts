@@ -48,7 +48,7 @@ import { MessageModule } from './modules/message/message.module';
           url: configService.get<string>('REDIS_URL'),
           ttl: 600000, //- time to live: 10 phút
           socket: {
-            connectTimeout: 10000, //- Tăng timeout lên 30s để tránh lỗi kết nối chậm trên Docker Windows
+            connectTimeout: 7000, //- Tăng timeout lên 30s để tránh lỗi kết nối chậm trên Docker Windows
           },
         }),
       }),
@@ -59,7 +59,7 @@ import { MessageModule } from './modules/message/message.module';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         uri: configService.get<string>('MONGO_URL'),
-        maxPoolSize: 10, //- Số lượng kết nối tối đa
+        maxPoolSize: 5, //- Số lượng kết nối tối đa
         serverSelectionTimeoutMS: 5000, //- Chờ server phản hồi bao lâu?
         socketTimeoutMS: 10000, //- Chờ kết quả query bao lâu?
         connectionFactory: (connection: Connection) => {

@@ -31,7 +31,7 @@ import {
 } from "../application-jobColumn";
 import StartChatButton from "@/components/StartChatButton";
 
-const TEMPLATE_COMPONENTS: Record<string, React.ElementType> = {
+export const TEMPLATE_COMPONENTS: Record<string, React.ElementType> = {
   [CV_TEMPLATES.basicTemplate]: BasicTemplate,
   [CV_TEMPLATES.impressiveTemplate]: ImpressiveTemplate,
   [CV_TEMPLATES.modernTemplate]: ModernTemplate,
