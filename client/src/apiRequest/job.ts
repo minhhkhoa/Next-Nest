@@ -46,7 +46,58 @@ const jobApiRequest = {
     level?: string;
     address?: string;
   }) =>
-    http.get<ApiResponse<TypeGetAllJobFilter>>(`${prefix}/filter-public`, { params }),
+    http.get<ApiResponse<TypeGetAllJobFilter>>(`${prefix}/filter-public`, {
+      params,
+    }),
+
+  searchJobsPublicAdvanced: (params: {
+    currentPage: number;
+    pageSize: number;
+    title?: string;
+    fieldCompany?: string;
+    address?: string;
+    level?: string;
+    employeeType?: string;
+    experience?: string;
+    isHot?: string;
+    minSalary?: number;
+    maxSalary?: number;
+    currency?: string;
+    industryIDs?: string[];
+    skillIDs?: string[];
+  }) => {
+    const searchParams = new URLSearchParams();
+    searchParams.append("currentPage", params.currentPage.toString());
+    searchParams.append("pageSize", params.pageSize.toString());
+
+    if (params.title) searchParams.append("title", params.title);
+    if (params.fieldCompany)
+      searchParams.append("fieldCompany", params.fieldCompany);
+    if (params.address) searchParams.append("address", params.address);
+    if (params.level) searchParams.append("level", params.level);
+    if (params.employeeType)
+      searchParams.append("employeeType", params.employeeType);
+    if (params.experience)
+      searchParams.append("experience", params.experience);
+    if (params.isHot) searchParams.append("isHot", params.isHot);
+    if (params.minSalary !== undefined)
+      searchParams.append("minSalary", params.minSalary.toString());
+    if (params.maxSalary !== undefined)
+      searchParams.append("maxSalary", params.maxSalary.toString());
+    if (params.currency) searchParams.append("currency", params.currency);
+
+    if (params.industryIDs?.length) {
+      params.industryIDs.forEach((id) => searchParams.append("industryIDs", id));
+    }
+
+    if (params.skillIDs?.length) {
+      params.skillIDs.forEach((id) => searchParams.append("skillIDs", id));
+    }
+
+    return http.get<ApiResponse<TypeGetAllJobFilter>>(
+      `${prefix}/search-public?${searchParams.toString()}`,
+    );
+  },
 
   //- Tìm tất cả công việc (Không lọc)
   findAll: () => http.get<ApiResponse<JobResType[]>>(prefix),

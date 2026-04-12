@@ -23,6 +23,7 @@ import {
   RecruiteAdminApproveJobDto,
   FindJobQueryDto,
   DeleteManyJobDto,
+  FindJobAdvancedPublicQueryDto,
 } from './dto/jobDto.dto';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { CompanyStatusGuard } from 'src/common/guard/company-status.guard';
@@ -81,6 +82,17 @@ export class JobsController {
   @Get('filter-public')
   findJobFilterPublic(@Query() query: FindJobQueryDto, @userDecorator() user: UserDecoratorType) {
     return this.jobsService.findJobFilterPublic(query, user);
+  }
+
+  @Public()
+  @ResponseMessage('Tìm công việc công khai với bộ lọc nâng cao')
+  @ApiOperation({ summary: 'search jobs public by advanced flexible filters' })
+  @Get('search-public')
+  searchJobsPublicAdvanced(
+    @Query() query: FindJobAdvancedPublicQueryDto,
+    @userDecorator() user: UserDecoratorType,
+  ) {
+    return this.jobsService.searchJobsPublicAdvanced(query, user);
   }
 
   @ResponseMessage('Tìm tất cả công việc thành công')

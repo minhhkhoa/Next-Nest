@@ -8,7 +8,11 @@ import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
-import { FindJobQueryDto, RecruiteAdminApproveJobDto } from './dto/jobDto.dto';
+import {
+  FindJobAdvancedPublicQueryDto,
+  FindJobQueryDto,
+  RecruiteAdminApproveJobDto,
+} from './dto/jobDto.dto';
 import mongoose from 'mongoose';
 import { TranslationService } from 'src/common/translation/translation.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -28,6 +32,8 @@ import { UpdateHotJobDto } from './dto/update-hot.dto';
 import { ApplicationService } from '../application/application.service';
 import { BookmarkService } from '../bookmark/bookmark.service';
 import { Bookmark } from '../bookmark/schemas/bookmark.schema';
+import { IndustryService } from '../industry/industry.service';
+import { LEVEL_OPTIONS } from 'src/common/constants/company-const';
 
 @Injectable()
 export class JobsService {
@@ -44,7 +50,24 @@ export class JobsService {
     private readonly applicationService: ApplicationService,
     @Inject(forwardRef(() => BookmarkService))
     private readonly bookmarkService: BookmarkService,
+    private readonly industryService: IndustryService,
   ) {}
+
+  private buildLocationRegexPattern(address: string) {
+    if (address.includes('Hồ Chí Minh') || address.includes('HCM')) {
+      return 'Hồ Chí Minh|HCM|TPHCM';
+    }
+
+    if (address.includes('Hà Nội')) {
+      return 'Hà Nội|HN|Ha Noi|HaNoi';
+    }
+
+    if (address.includes('Đà Nẵng')) {
+      return 'Đà Nẵng|Da Nang|DaNang';
+    }
+
+    return address;
+  }
 
   async setHot(updateHotJobDto: UpdateHotJobDto, user: UserDecoratorType) {
     try {
@@ -573,6 +596,377 @@ export class JobsService {
     } catch (error) {
       throw new BadRequestCustom(
         'Lỗi truy vấn Job Public: ' + error.message,
+        true,
+      );
+    }
+  }
+
+  async searchJobsPublicAdvanced(
+    query: FindJobAdvancedPublicQueryDto,
+    user: UserDecoratorType,
+  ) {
+    try {
+      const {
+        currentPage,
+        pageSize,
+        title,
+        fieldCompany,
+        address,
+        level,
+        employeeType,
+        experience,
+        isHot,
+        minSalary,
+        maxSalary,
+        currency,
+        industryIDs,
+        skillIDs,
+      } = query;
+
+      const defaultPage = currentPage && currentPage > 0 ? +currentPage : 1;
+      const defaultLimit = pageSize && pageSize > 0 ? +pageSize : 12;
+      const skip = (defaultPage - 1) * defaultLimit;
+
+      const titleText = title?.trim() || '';
+      const companyText = fieldCompany?.trim() || '';
+      const addressText = address?.trim() || '';
+
+      const titleRegex = titleText ? new RegExp(titleText, 'i') : null;
+      const companyRegex = companyText ? new RegExp(companyText, 'i') : null;
+      const addressRegex = addressText
+        ? new RegExp(this.buildLocationRegexPattern(addressText), 'i')
+        : null;
+
+      const normalizedIndustryIDs = (industryIDs || []).filter((id) =>
+        mongoose.Types.ObjectId.isValid(id),
+      );
+      const normalizedSkillIDs = (skillIDs || []).filter((id) =>
+        mongoose.Types.ObjectId.isValid(id),
+      );
+
+      const industryObjectIds = normalizedIndustryIDs.length
+        ? await this.industryService.getAllChildIndustryIds(
+            normalizedIndustryIDs,
+          )
+        : [];
+      const skillObjectIds = normalizedSkillIDs.map(
+        (id) => new mongoose.Types.ObjectId(id),
+      );
+
+      let hasBookmarked;
+      if (user) {
+        hasBookmarked = await this.bookmarkService.findAllByUser(user, {
+          currentPage: 1,
+          pageSize: 300,
+          itemType: 'job',
+        });
+      }
+
+      const pipeline: any[] = [
+        {
+          $match: {
+            isActive: true,
+            status: 'active',
+            isDeleted: false,
+          },
+        },
+        {
+          $lookup: {
+            from: 'companies',
+            localField: 'companyID',
+            foreignField: '_id',
+            as: 'company',
+          },
+        },
+        { $unwind: '$company' },
+        {
+          $match: {
+            'company.isDeleted': false,
+            'company.status': 'ACCEPT',
+          },
+        },
+        {
+          $lookup: {
+            from: 'industries',
+            localField: 'industryID',
+            foreignField: '_id',
+            as: 'industryID',
+          },
+        },
+        {
+          $lookup: {
+            from: 'skills',
+            localField: 'skills',
+            foreignField: '_id',
+            as: 'skills',
+          },
+        },
+      ];
+
+      const levelHierarchy = LEVEL_OPTIONS.map((option) => option.value);
+      const selectedLevelIndex = level ? levelHierarchy.indexOf(level) : -1;
+      const compatibleLevels =
+        selectedLevelIndex >= 0
+          ? levelHierarchy.slice(0, selectedLevelIndex + 1)
+          : [];
+
+      //- Khi user chọn level, giữ các job cùng level hoặc thấp hơn.
+      if (compatibleLevels.length > 0) {
+        pipeline.push({
+          $match: {
+            level: { $in: compatibleLevels },
+          },
+        });
+      }
+
+      const primaryScoreConditions: any[] = [];
+      const secondaryScoreConditions: any[] = [];
+
+      //- Weight strategy:
+      //- title: 30 (highest)
+      //- industry: 20
+      //- skill: 20 (same priority as industry)
+      //- other filters: low priority
+
+      if (titleRegex) {
+        primaryScoreConditions.push({
+          $cond: [
+            {
+              $or: [
+                {
+                  $regexMatch: {
+                    input: { $ifNull: ['$title.vi', ''] },
+                    regex: titleRegex,
+                  },
+                },
+                {
+                  $regexMatch: {
+                    input: { $ifNull: ['$title.en', ''] },
+                    regex: titleRegex,
+                  },
+                },
+              ],
+            },
+            30,
+            0,
+          ],
+        });
+      }
+
+      if (companyRegex) {
+        const companyOrConditions: any[] = [
+          {
+            $regexMatch: {
+              input: { $ifNull: ['$company.name', ''] },
+              regex: companyRegex,
+            },
+          },
+          {
+            $regexMatch: {
+              input: { $ifNull: ['$company.taxCode', ''] },
+              regex: companyRegex,
+            },
+          },
+        ];
+
+        if (mongoose.Types.ObjectId.isValid(companyText)) {
+          companyOrConditions.push({
+            $eq: ['$company._id', new mongoose.Types.ObjectId(companyText)],
+          });
+        }
+
+        secondaryScoreConditions.push({
+          $cond: [{ $or: companyOrConditions }, 1, 0],
+        });
+      }
+
+      if (addressRegex) {
+        secondaryScoreConditions.push({
+          $cond: [
+            {
+              $regexMatch: {
+                input: { $ifNull: ['$location', ''] },
+                regex: addressRegex,
+              },
+            },
+            1,
+            0,
+          ],
+        });
+      }
+
+      if (compatibleLevels.length > 0) {
+        secondaryScoreConditions.push({
+          $cond: [{ $eq: ['$level', level] }, 2, 1],
+        });
+      }
+
+      if (employeeType) {
+        secondaryScoreConditions.push({
+          $cond: [{ $eq: ['$employeeType', employeeType] }, 1, 0],
+        });
+      }
+
+      if (experience) {
+        secondaryScoreConditions.push({
+          $cond: [{ $eq: ['$experience', experience] }, 1, 0],
+        });
+      }
+
+      if (isHot === 'true') {
+        secondaryScoreConditions.push({
+          $cond: [{ $eq: ['$isHot.isHotJob', true] }, 1, 0],
+        });
+      }
+
+      if (currency) {
+        secondaryScoreConditions.push({
+          $cond: [{ $eq: ['$salary.currency', currency] }, 1, 0],
+        });
+      }
+
+      const hasSalaryFilter =
+        (minSalary !== undefined && minSalary !== null) ||
+        (maxSalary !== undefined && maxSalary !== null);
+
+      const minSalaryBoundary =
+        minSalary !== undefined && minSalary !== null ? minSalary : 0;
+      const maxSalaryBoundary =
+        maxSalary !== undefined && maxSalary !== null
+          ? maxSalary
+          : Number.MAX_SAFE_INTEGER;
+
+      if (hasSalaryFilter) {
+        secondaryScoreConditions.push({
+          $cond: [
+            {
+              $and: [
+                { $gte: ['$salary.max', minSalaryBoundary] },
+                { $lte: ['$salary.min', maxSalaryBoundary] },
+              ],
+            },
+            1,
+            0,
+          ],
+        });
+      }
+
+      if (industryObjectIds.length > 0) {
+        primaryScoreConditions.push({
+          $cond: [
+            {
+              $gt: [
+                {
+                  $size: {
+                    $setIntersection: ['$industryID._id', industryObjectIds],
+                  },
+                },
+                0,
+              ],
+            },
+            20,
+            0,
+          ],
+        });
+      }
+
+      if (skillObjectIds.length > 0) {
+        secondaryScoreConditions.push({
+          $cond: [
+            {
+              $gt: [
+                {
+                  $size: {
+                    $setIntersection: ['$skills._id', skillObjectIds],
+                  },
+                },
+                0,
+              ],
+            },
+            20,
+            0,
+          ],
+        });
+      }
+
+      const hasPrimaryScoreConditions = primaryScoreConditions.length > 0;
+      const hasSecondaryScoreConditions = secondaryScoreConditions.length > 0;
+      const hasAnyOptionalFilter =
+        hasPrimaryScoreConditions || hasSecondaryScoreConditions;
+
+      pipeline.push({
+        $addFields: {
+          primaryScore: hasPrimaryScoreConditions
+            ? { $add: primaryScoreConditions }
+            : 0,
+          secondaryScore: hasSecondaryScoreConditions
+            ? { $add: secondaryScoreConditions }
+            : 0,
+        },
+      });
+
+      pipeline.push({
+        $addFields: {
+          matchScore: {
+            $add: ['$primaryScore', '$secondaryScore'],
+          },
+        },
+      });
+
+      if (hasAnyOptionalFilter) {
+        //- Flexible mode: chỉ cần khớp >= 1 tiêu chí là được giữ lại.
+        pipeline.push({
+          $match: {
+            matchScore: { $gt: 0 },
+          },
+        });
+      }
+
+      const countPipeline = [...pipeline, { $count: 'total' }];
+
+      pipeline.push(
+        {
+          $sort: {
+            primaryScore: -1,
+            secondaryScore: -1,
+            matchScore: -1,
+            'isHot.isHotJob': -1,
+            createdAt: -1,
+          },
+        },
+        { $skip: skip },
+        { $limit: defaultLimit },
+      );
+
+      const [countResult, result] = await Promise.all([
+        this.jobModel.aggregate(countPipeline).exec(),
+        this.jobModel.aggregate(pipeline).exec(),
+      ]);
+
+      const totalItems = countResult.length > 0 ? countResult[0].total : 0;
+
+      if (hasBookmarked && hasBookmarked.result.length > 0) {
+        const bookmarkedJobIds = hasBookmarked.result.map(
+          (bookmark: Bookmark) => bookmark.itemId.toString(),
+        );
+
+        result.forEach((job) => {
+          job.hasBookmarked = bookmarkedJobIds.includes(job._id.toString());
+        });
+      }
+
+      return {
+        meta: {
+          current: defaultPage,
+          pageSize: defaultLimit,
+          totalPages: Math.ceil(totalItems / defaultLimit),
+          totalItems,
+        },
+        result,
+      };
+    } catch (error) {
+      throw new BadRequestCustom(
+        'Lỗi truy vấn Job Public nâng cao: ' + error.message,
         true,
       );
     }

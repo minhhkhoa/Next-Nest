@@ -90,6 +90,7 @@ export const BreadcrumbNameMap = (
   profile: locales === "vi" ? "Trang cá nhân" : "Profile",
   settings: locales === "vi" ? "Cài đặt" : "Settings",
   jobs: locales === "vi" ? "Việc làm" : "Jobs",
+  "find-jobs": locales === "vi" ? "Tìm việc" : "Find Jobs",
   company: locales === "vi" ? "Công ty" : "Company",
   issue: locales === "vi" ? "Vấn đề của tôi" : "My Issues",
   "saved-jobs": locales === "vi" ? "Việc làm đã lưu" : "Saved Jobs",

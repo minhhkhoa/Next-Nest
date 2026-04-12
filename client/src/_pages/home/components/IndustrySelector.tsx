@@ -21,7 +21,6 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useGetLang } from "@/hooks/use-get-lang";
 import { useTranslations } from "next-intl";
@@ -134,46 +133,35 @@ const IndustryItem = ({
 
   if (hasChildren) {
     return (
-      <DropdownMenuSub>
-        <DropdownMenuSubTrigger
-          className={cn(
-            "flex items-center w-full cursor-pointer py-2.5",
-            isSelected && "bg-accent",
-          )}
+      <>
+        <DropdownMenuItem
+          className={cn("cursor-pointer font-medium", isSelected && "bg-accent")}
+          onClick={() => onSelect(industry._id)}
         >
-          <span className="truncate mr-2 font-medium">
-            {getLang(industry.name)}
-          </span>
-        </DropdownMenuSubTrigger>
-        <DropdownMenuPortal>
-          <DropdownMenuSubContent
-            className="w-[280px] z-50 p-1"
-            sideOffset={12}
-            alignOffset={-5}
-          >
-            <DropdownMenuItem
-              className={cn(
-                "cursor-pointer font-semibold text-primary mb-1 pl-4",
-                isSelected && "bg-accent",
-              )}
-              onClick={() => onSelect(industry._id)}
+          <span className="truncate">{getLang(industry.name)}</span>
+          {isSelected && <Check className="ml-auto h-4 w-4" />}
+        </DropdownMenuItem>
+
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger className="py-2 pl-8 text-xs text-muted-foreground">
+            {locale === "vi" ? "Chọn ngành con" : "Choose sub-category"}
+            <span className="ml-1 truncate text-foreground">{getLang(industry.name)}</span>
+          </DropdownMenuSubTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuSubContent
+              className="w-[280px] z-50 p-1"
+              sideOffset={12}
+              alignOffset={-5}
             >
-              <span className="truncate">
-                {locale === "vi" ? "Tất cả " : "All "} {getLang(industry.name)}
-              </span>
-              {isSelected && <Check className="ml-auto h-4 w-4" />}
-            </DropdownMenuItem>
-
-            <DropdownMenuSeparator className="my-1 bg-border/50" />
-
-            <PaginatedIndustryList
-              items={industry.children!}
-              selectedValue={selectedValue}
-              onSelect={onSelect}
-            />
-          </DropdownMenuSubContent>
-        </DropdownMenuPortal>
-      </DropdownMenuSub>
+              <PaginatedIndustryList
+                items={industry.children!}
+                selectedValue={selectedValue}
+                onSelect={onSelect}
+              />
+            </DropdownMenuSubContent>
+          </DropdownMenuPortal>
+        </DropdownMenuSub>
+      </>
     );
   }
 

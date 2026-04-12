@@ -13,6 +13,7 @@ import { CompanyStatusGuard } from 'src/common/guard/company-status.guard';
 import { IssueModule } from '../issue/issue.module';
 import { ApplicationModule } from '../application/application.module';
 import { BookmarkModule } from '../bookmark/bookmark.module';
+import { IndustryModule } from '../industry/industry.module';
 
 @BusinessModule()
 @Module({
@@ -24,6 +25,7 @@ import { BookmarkModule } from '../bookmark/bookmark.module';
     IssueModule,
     forwardRef(() => ApplicationModule),
     forwardRef(() => BookmarkModule),
+    IndustryModule,
   ],
   controllers: [JobsController],
   providers: [JobsService, JobCronService, CompanyStatusGuard],

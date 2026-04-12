@@ -75,7 +75,7 @@ export default function SearchSection() {
     if (currentIndustry) params.set("industry", currentIndustry);
 
     const queryString = params.toString();
-    router.push(`/jobs${queryString ? `?${queryString}` : ""}`);
+    router.push(`/find-jobs${queryString ? `?${queryString}` : ""}`);
   };
 
   return (

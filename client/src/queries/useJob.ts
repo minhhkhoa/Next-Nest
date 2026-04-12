@@ -57,6 +57,28 @@ export const useGetJobsFilterPublic = (params: {
   });
 };
 
+export const useSearchJobsPublicAdvanced = (params: {
+  currentPage: number;
+  pageSize: number;
+  title?: string;
+  fieldCompany?: string;
+  address?: string;
+  level?: string;
+  employeeType?: string;
+  experience?: string;
+  isHot?: string;
+  minSalary?: number;
+  maxSalary?: number;
+  currency?: string;
+  industryIDs?: string[];
+  skillIDs?: string[];
+}) => {
+  return useQuery({
+    queryKey: ["jobs-search-public-advanced", params],
+    queryFn: () => jobApiRequest.searchJobsPublicAdvanced(params),
+  });
+};
+
 //- Hook lấy toàn bộ công việc (không lọc)
 export const useGetAllJobs = () => {
   return useQuery({
