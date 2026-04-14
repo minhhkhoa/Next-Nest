@@ -49,11 +49,11 @@ cleanup_runner_storage:
   allow_failure: true
 
   script:
-    - echo "Disk usage before cleanup"
-    - df -h
-    - USAGE=$(df -P "$CI_PROJECT_DIR" | awk 'NR==2 {gsub("%","",$5); print $5}')
-    - echo "Current disk usage: ${USAGE}%"
     - |
+      echo "Disk usage before cleanup"
+      df -h
+      USAGE=$(df -P "$CI_PROJECT_DIR" | awk 'NR==2 {gsub("%","",$5); print $5}')
+      echo "Current disk usage: ${USAGE}%"
       if [ "$USAGE" -ge 85 ]; then
         echo "Usage >= 85%, running aggressive docker cleanup..."
         docker system df || true
@@ -64,8 +64,8 @@ cleanup_runner_storage:
       else
         echo "Usage < 85%, skip aggressive cleanup."
       fi
-    - echo "Disk usage after cleanup"
-    - df -h
+      echo "Disk usage after cleanup"
+      df -h
 
 # ================================================
 # JOB: Build Backend (NestJS)
