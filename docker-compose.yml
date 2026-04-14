@@ -1,0 +1,44 @@
+services:
+  backend:
+    container_name: jobhub-backend
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ./server/.env
+    environment:
+      PORT: "2302"
+      FRONTEND_URL: "http://jobhubabc.duckdns.org:3002"
+    ports:
+      - "2302:2302"
+    networks:
+      - jobhub-network
+
+  frontend:
+    container_name: jobhub-frontend
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: "http://jobhubabc.duckdns.org:2302"
+        NEXT_PUBLIC_API_URL_SERVER: "http://jobhubabc.duckdns.org:2302/api"
+        NEXT_PUBLIC_API_URL_SERVER_BASE: "http://jobhubabc.duckdns.org:2302"
+        NEXT_PUBLIC_API_URL_CLIENT: "http://jobhubabc.duckdns.org:3002"
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: "http://jobhubabc.duckdns.org:2302"
+      NEXT_PUBLIC_API_URL_SERVER: "http://jobhubabc.duckdns.org:2302/api"
+      NEXT_PUBLIC_API_URL_SERVER_BASE: "http://jobhubabc.duckdns.org:2302"
+      NEXT_PUBLIC_API_URL_CLIENT: "http://jobhubabc.duckdns.org:3002"
+    ports:
+      - "3002:3000"
+    depends_on:
+      - backend
+    networks:
+      - jobhub-network
+
+networks:
+  jobhub-network:
+    driver: bridge

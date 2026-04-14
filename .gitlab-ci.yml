@@ -1,0 +1,166 @@
+# ================================================
+# GitLab CI/CD - JobHub Monorepo (Next.js + NestJS)
+# Runner: Shell Executor on EC2
+# Runner name: runner-jobhub
+# Runner tag: doan_jobhub
+# Runner description: aws-server-jobhub
+# ================================================
+
+stages:
+  - build
+  - deploy
+
+variables:
+  DOCKER_BUILDKIT: "1"
+  COMPOSE_DOCKER_CLI_BUILD: "1"
+
+# ================================================
+# Cấu hình Cache toàn cục
+# ================================================
+cache:
+  key:
+    files:
+      - client/package-lock.json
+      - server/package-lock.json
+  paths:
+    - .npm/
+    - client/node_modules/
+    - server/node_modules/
+
+# ================================================
+# JOB: Build Backend (NestJS)
+# ================================================
+build_backend:
+  stage: build
+
+  tags:
+    - doan_jobhub
+
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - server/**/*
+        - docker-compose.yml
+        - .gitlab-ci.yml
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+      changes:
+        - server/**/*
+        - docker-compose.yml
+        - .gitlab-ci.yml
+    - when: never
+
+  script:
+    - cd server
+    - npm ci --cache "$CI_PROJECT_DIR/.npm" --prefer-offline
+    - npm run lint
+    - npm run build
+    - echo "Backend build completed! Output in server/dist/"
+
+  artifacts:
+    name: 'backend-build-$CI_COMMIT_SHORT_SHA'
+    expire_in: 1 day
+    paths:
+      - server/dist/
+
+# ================================================
+# JOB: Build Frontend (Next.js)
+# ================================================
+build_frontend:
+  stage: build
+
+  tags:
+    - doan_jobhub
+
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - client/**/*
+        - docker-compose.yml
+        - .gitlab-ci.yml
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+      changes:
+        - client/**/*
+        - docker-compose.yml
+        - .gitlab-ci.yml
+    - when: never
+
+  variables:
+    NEXT_PUBLIC_API_URL: "http://jobhubabc.duckdns.org:2302"
+    NEXT_PUBLIC_API_URL_SERVER: "http://jobhubabc.duckdns.org:2302/api"
+    NEXT_PUBLIC_API_URL_SERVER_TUNNEL: "http://jobhubabc.duckdns.org:2302/api"
+    NEXT_PUBLIC_API_URL_SERVER_BASE: "http://jobhubabc.duckdns.org:2302"
+    NEXT_PUBLIC_API_URL_CLIENT: "http://jobhubabc.duckdns.org:3002"
+    NEXT_PUBLIC_TOKEN_TEST: "ci_build_token"
+    NEXT_PUBLIC_CLOUD_API: "https://api.cloudinary.com/v1_1"
+    NEXT_PUBLIC_PAGE_SIZE: "10"
+    NEXT_PUBLIC_ROOT_PARENT_INDUSTRY_ID: "000-00-000"
+    NEXT_PUBLIC_JWT_SECRET: "ci_build_secret"
+    NEXT_PUBLIC_ROLE_SUPER_ADMIN: "SUPER_ADMIN"
+    NEXT_PUBLIC_ROLE_RECRUITER: "RECRUITER"
+    NEXT_PUBLIC_ROLE_RECRUITER_ADMIN: "RECRUITER_ADMIN"
+    NEXT_PUBLIC_ROLE_CANDIDATE: "CANDIDATE"
+    NEXT_PUBLIC_ROLE_GUEST: "GUEST"
+    NEXT_PUBLIC_ROLE_CONTENT_MANAGER: "CONTENT_MANAGER"
+
+  script:
+    - cd client
+    - npm ci --cache "$CI_PROJECT_DIR/.npm" --prefer-offline
+    - npm run lint
+    - npm run build
+    - echo "Frontend build completed!"
+
+# ================================================
+# JOB: Deploy Backend to Production Server
+# Chỉ chạy khi main có thay đổi liên quan backend
+# ================================================
+deploy_backend_production:
+  stage: deploy
+
+  tags:
+    - doan_jobhub
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - server/**/*
+        - docker-compose.yml
+        - .gitlab-ci.yml
+    - when: never
+
+  needs:
+    - job: build_backend
+
+  script:
+    - echo "Deploying backend service to Production Server..."
+    - docker compose -f docker-compose.yml up -d --build backend --remove-orphans
+    - echo "Backend deploy completed successfully!"
+
+  when: on_success
+
+# ================================================
+# JOB: Deploy Frontend to Production Server
+# Chỉ chạy khi main có thay đổi liên quan frontend
+# ================================================
+deploy_frontend_production:
+  stage: deploy
+
+  tags:
+    - doan_jobhub
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - client/**/*
+        - docker-compose.yml
+        - .gitlab-ci.yml
+    - when: never
+
+  needs:
+    - job: build_frontend
+
+  script:
+    - echo "Deploying frontend service to Production Server..."
+    - docker compose -f docker-compose.yml up -d --build frontend --remove-orphans
+    - echo "Frontend deploy completed successfully!"
+
+  when: on_success
