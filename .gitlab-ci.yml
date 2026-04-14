@@ -50,10 +50,7 @@ build_backend:
     - when: never
 
   script:
-    - cd server
-    - npm ci --cache "$CI_PROJECT_DIR/.npm" --prefer-offline
-    - npm run lint
-    - npm run build
+    - docker run --rm --user "$(id -u):$(id -g)" -v "$CI_PROJECT_DIR":/workspace -w /workspace/server node:20-alpine sh -lc "npm ci --cache /workspace/.npm --prefer-offline && npm run lint && npm run build"
     - echo "Backend build completed! Output in server/dist/"
 
   artifacts:
@@ -103,10 +100,7 @@ build_frontend:
     NEXT_PUBLIC_ROLE_CONTENT_MANAGER: "CONTENT_MANAGER"
 
   script:
-    - cd client
-    - npm ci --cache "$CI_PROJECT_DIR/.npm" --prefer-offline
-    - npm run lint
-    - npm run build
+    - docker run --rm --user "$(id -u):$(id -g)" -v "$CI_PROJECT_DIR":/workspace -w /workspace/client -e NEXT_PUBLIC_API_URL -e NEXT_PUBLIC_API_URL_SERVER -e NEXT_PUBLIC_API_URL_SERVER_TUNNEL -e NEXT_PUBLIC_API_URL_SERVER_BASE -e NEXT_PUBLIC_API_URL_CLIENT -e NEXT_PUBLIC_TOKEN_TEST -e NEXT_PUBLIC_CLOUD_API -e NEXT_PUBLIC_PAGE_SIZE -e NEXT_PUBLIC_ROOT_PARENT_INDUSTRY_ID -e NEXT_PUBLIC_JWT_SECRET -e NEXT_PUBLIC_ROLE_SUPER_ADMIN -e NEXT_PUBLIC_ROLE_RECRUITER -e NEXT_PUBLIC_ROLE_RECRUITER_ADMIN -e NEXT_PUBLIC_ROLE_CANDIDATE -e NEXT_PUBLIC_ROLE_GUEST -e NEXT_PUBLIC_ROLE_CONTENT_MANAGER node:20-alpine sh -lc "npm ci --cache /workspace/.npm --prefer-offline && npm run lint && npm run build"
     - echo "Frontend build completed!"
 
 # ================================================
