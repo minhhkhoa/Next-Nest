@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
@@ -69,12 +70,12 @@ export default function ForgotPasswordForm() {
         </Button>
 
         <div className="flex justify-between">
-          <a href="/login" className="text-sm text-white hover:text-primary">
+          <Link href="/login" className="text-sm text-white hover:text-primary">
             Quay lại đăng nhập
-          </a>
-          <a href="/register" className="text-sm text-white hover:text-primary">
+          </Link>
+          <Link href="/register" className="text-sm text-white hover:text-primary">
             Đăng ký tài khoản mới
-          </a>
+          </Link>
         </div>
       </form>
     </>

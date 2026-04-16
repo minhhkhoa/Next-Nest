@@ -1,0 +1,204 @@
+# ================================================
+# GitLab CI/CD - JobHub Monorepo (Next.js + NestJS)
+# Runner: Shell Executor on EC2
+# Runner name: runner-jobhub
+# Runner tag: doan_jobhub
+# Runner description: aws-server-jobhub
+# ================================================
+
+stages:
+  - preflight
+  - build
+  - deploy
+
+variables:
+  DOCKER_BUILDKIT: "1"
+  COMPOSE_DOCKER_CLI_BUILD: "1"
+
+# ================================================
+# Cấu hình Cache toàn cục
+# ================================================
+cache:
+  key:
+    files:
+      - client/package-lock.json
+      - server/package-lock.json
+  paths:
+    - .npm/
+
+# ================================================
+# JOB: Dọn dung lượng Runner (Auto)
+# Tự chạy trước build, chỉ dọn mạnh khi disk >= 85%
+# ================================================
+cleanup_runner_storage:
+  stage: preflight
+
+  tags:
+    - doan_jobhub
+
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+      changes:
+        - server/**/*
+        - client/**/*
+        - docker-compose.yml
+        - .gitlab-ci.yml
+      when: on_success
+    - when: never
+
+  allow_failure: true
+
+  script:
+    - |
+      echo "Disk usage before cleanup"
+      df -h
+      USAGE=$(df -P "$CI_PROJECT_DIR" | awk 'NR==2 {gsub("%","",$5); print $5}')
+      echo "Current disk usage: ${USAGE}%"
+      if [ "$USAGE" -ge 85 ]; then
+        echo "Usage >= 85%, running aggressive docker cleanup..."
+        docker system df || true
+        docker container prune -f || true
+        docker image prune -af || true
+        docker volume prune -f || true
+        docker builder prune -af || true
+      else
+        echo "Usage < 85%, skip aggressive cleanup."
+      fi
+      echo "Disk usage after cleanup"
+      df -h
+
+# ================================================
+# JOB: Build Backend (NestJS)
+# ================================================
+build_backend:
+  stage: build
+
+  tags:
+    - doan_jobhub
+
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - server/**/*
+        - docker-compose.yml
+        - .gitlab-ci.yml
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+      changes:
+        - server/**/*
+        - docker-compose.yml
+        - .gitlab-ci.yml
+    - when: never
+
+  script:
+    - docker builder prune -af || true
+    - rm -rf "$CI_PROJECT_DIR/server/node_modules" "$CI_PROJECT_DIR/server/dist" || true
+    - docker run --rm --user "$(id -u):$(id -g)" -v "$CI_PROJECT_DIR":/workspace -w /workspace/server node:20-alpine sh -lc "npm_config_loglevel=error npm ci --cache /workspace/.npm --prefer-offline --no-audit --no-fund && npm run build"
+    - echo "Backend build completed! Output in server/dist/"
+
+  artifacts:
+    name: 'backend-build-$CI_COMMIT_SHORT_SHA'
+    expire_in: 1 day
+    paths:
+      - server/dist/
+
+# ================================================
+# JOB: Build Frontend (Next.js)
+# ================================================
+build_frontend:
+  stage: build
+
+  tags:
+    - doan_jobhub
+
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - client/**/*
+        - docker-compose.yml
+        - .gitlab-ci.yml
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+      changes:
+        - client/**/*
+        - docker-compose.yml
+        - .gitlab-ci.yml
+    - when: never
+
+  variables:
+    NEXT_PUBLIC_API_URL: "http://jobhubabc.duckdns.org:2302"
+    NEXT_PUBLIC_API_URL_SERVER: "http://jobhubabc.duckdns.org:2302/api"
+    NEXT_PUBLIC_API_URL_SERVER_TUNNEL: "http://jobhubabc.duckdns.org:2302/api"
+    NEXT_PUBLIC_API_URL_SERVER_BASE: "http://jobhubabc.duckdns.org:2302"
+    NEXT_PUBLIC_API_URL_CLIENT: "http://jobhubabc.duckdns.org:3002"
+    NEXT_PUBLIC_TOKEN_TEST: "ci_build_token"
+    NEXT_PUBLIC_CLOUD_API: "https://api.cloudinary.com/v1_1"
+    NEXT_PUBLIC_PAGE_SIZE: "10"
+    NEXT_PUBLIC_ROOT_PARENT_INDUSTRY_ID: "000-00-000"
+    NEXT_PUBLIC_JWT_SECRET: "ci_build_secret"
+    NEXT_PUBLIC_ROLE_SUPER_ADMIN: "SUPER_ADMIN"
+    NEXT_PUBLIC_ROLE_RECRUITER: "RECRUITER"
+    NEXT_PUBLIC_ROLE_RECRUITER_ADMIN: "RECRUITER_ADMIN"
+    NEXT_PUBLIC_ROLE_CANDIDATE: "CANDIDATE"
+    NEXT_PUBLIC_ROLE_GUEST: "GUEST"
+    NEXT_PUBLIC_ROLE_CONTENT_MANAGER: "CONTENT_MANAGER"
+
+  script:
+    - docker builder prune -af || true
+    - rm -rf "$CI_PROJECT_DIR/client/node_modules" "$CI_PROJECT_DIR/client/.next" || true
+    - docker run --rm --user "$(id -u):$(id -g)" -v "$CI_PROJECT_DIR":/workspace -w /workspace/client -e NEXT_PUBLIC_API_URL -e NEXT_PUBLIC_API_URL_SERVER -e NEXT_PUBLIC_API_URL_SERVER_TUNNEL -e NEXT_PUBLIC_API_URL_SERVER_BASE -e NEXT_PUBLIC_API_URL_CLIENT -e NEXT_PUBLIC_TOKEN_TEST -e NEXT_PUBLIC_CLOUD_API -e NEXT_PUBLIC_PAGE_SIZE -e NEXT_PUBLIC_ROOT_PARENT_INDUSTRY_ID -e NEXT_PUBLIC_JWT_SECRET -e NEXT_PUBLIC_ROLE_SUPER_ADMIN -e NEXT_PUBLIC_ROLE_RECRUITER -e NEXT_PUBLIC_ROLE_RECRUITER_ADMIN -e NEXT_PUBLIC_ROLE_CANDIDATE -e NEXT_PUBLIC_ROLE_GUEST -e NEXT_PUBLIC_ROLE_CONTENT_MANAGER node:20-alpine sh -lc "npm_config_loglevel=error npm ci --cache /workspace/.npm --prefer-offline --no-audit --no-fund && NEXT_TELEMETRY_DISABLED=1 npm run build"
+    - echo "Frontend build completed!"
+
+# ================================================
+# JOB: Deploy Backend to Production Server
+# Chỉ chạy khi main có thay đổi liên quan backend
+# ================================================
+deploy_backend_production:
+  stage: deploy
+
+  tags:
+    - doan_jobhub
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - server/**/*
+        - docker-compose.yml
+        - .gitlab-ci.yml
+    - when: never
+
+  needs:
+    - job: build_backend
+
+  script:
+    - echo "Deploying backend service to Production Server..."
+    - docker compose -f docker-compose.yml up -d --build backend --remove-orphans
+    - echo "Backend deploy completed successfully!"
+
+  when: on_success
+
+# ================================================
+# JOB: Deploy Frontend to Production Server
+# Chỉ chạy khi main có thay đổi liên quan frontend
+# ================================================
+deploy_frontend_production:
+  stage: deploy
+
+  tags:
+    - doan_jobhub
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - client/**/*
+        - docker-compose.yml
+        - .gitlab-ci.yml
+    - when: never
+
+  needs:
+    - job: build_frontend
+
+  script:
+    - echo "Deploying frontend service to Production Server..."
+    - docker compose -f docker-compose.yml up -d --build frontend --remove-orphans
+    - echo "Frontend deploy completed successfully!"
+
+  when: on_success
