@@ -22,8 +22,6 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { ScheduleModule } from '@nestjs/schedule';
-import { CacheModule } from '@nestjs/cache-manager';
-import { redisStore } from 'cache-manager-redis-yet';
 import { IssueModule } from './modules/issue/issue.module';
 import { UserResumeModule } from './modules/user-resume/user-resume.module';
 import { BookmarkModule } from './modules/bookmark/bookmark.module';
@@ -33,27 +31,14 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { LoggingInterceptor } from './common/interceptor/logging.interceptor';
 import { ConversationModule } from './modules/conversation/conversation.module';
 import { MessageModule } from './modules/message/message.module';
+import { RedisModule } from './common/redis/redis.module';
 
 @Module({
   imports: [
     //- cronjob schedule
     ScheduleModule.forRoot(),
 
-    //- config connect redis
-    CacheModule.registerAsync({
-      isGlobal: true,
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        store: await redisStore({
-          url: configService.get<string>('REDIS_URL'),
-          ttl: 600000, //- time to live: 10 phút
-          socket: {
-            connectTimeout: 7000, //- Tăng timeout lên 30s để tránh lỗi kết nối chậm trên Docker Windows
-          },
-        }),
-      }),
-      inject: [ConfigService],
-    }),
+    RedisModule,
 
     MongooseModule.forRootAsync({
       imports: [ConfigModule],

@@ -1,10 +1,9 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
 import { Job, JobDocument } from 'src/modules/jobs/schemas/job.schema';
+import { RedisService } from '../redis/redis.service';
 
 //- Service để chạy các tác vụ định kỳ liên quan đến Job
 //- Hiện tại bao gồm việc tự động đóng các tin tuyển dụng đã hết hạn
@@ -15,7 +14,7 @@ export class JobCronService {
 
   constructor(
     @InjectModel(Job.name) private jobModel: Model<JobDocument>,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly redisService: RedisService,
   ) {}
 
   //- Cron Job chạy mỗi giờ một lần để quét các job hết hạn
@@ -55,16 +54,9 @@ export class JobCronService {
   // @Cron('*/30 * * * * *')
   async syncViewsToDb() {
     this.logger.log('Bắt đầu đồng bộ lượt xem từ Redis về MongoDB...');
-    const cache: any = this.cacheManager;
 
     try {
-      const redisStore = cache.stores ? cache.stores[0] : null;
-      if (!redisStore) return;
-
-      const keys: string[] =
-        typeof redisStore.keys === 'function'
-          ? await redisStore.keys('keyv:job_views:*')
-          : await redisStore.store?.keys('keyv:job_views:*');
+      const keys = await this.redisService.keys('job_views:*');
 
       if (!keys || keys.length === 0) {
         this.logger.log('Redis hiện không có lượt xem mới.');
@@ -87,8 +79,7 @@ export class JobCronService {
           continue;
         }
 
-        const cleanKey = key.replace(/^keyv:/, '');
-        const viewsToAdd = await cache.get(cleanKey);
+        const viewsToAdd = await this.redisService.get<number>(key);
 
         // Chỉ tăng successCount khi thực sự có view và update thành công
         if (viewsToAdd && viewsToAdd > 0) {
@@ -96,7 +87,7 @@ export class JobCronService {
             { _id: jobId },
             { $inc: { totalViews: viewsToAdd } },
           );
-          await cache.del(cleanKey);
+          await this.redisService.del(key);
           successCount++;
         }
       }

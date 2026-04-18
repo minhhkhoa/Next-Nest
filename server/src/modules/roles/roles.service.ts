@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { FindRoleQueryDto } from './dto/roleDto.dto';
@@ -7,16 +7,15 @@ import { TranslationService } from 'src/common/translation/translation.service';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import aqp from 'api-query-params';
 import mongoose from 'mongoose';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
 import { RolesRepository } from './repository/roles.repository';
+import { RedisService } from 'src/common/redis/redis.service';
 
 @Injectable()
 export class RolesService {
   constructor(
     private readonly translationService: TranslationService,
     private readonly rolesRepository: RolesRepository,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly redisService: RedisService,
   ) {}
 
   async create(createRoleDto: CreateRoleDto, user: UserDecoratorType) {
@@ -179,7 +178,7 @@ export class RolesService {
 
       //- xóa cache của tất cả user có roleID là id này
       const clearCachePromises = users.map((user) =>
-        this.cacheManager.del(`user_cache:${user._id}`),
+        this.redisService.del(`user_cache:${user._id}`),
       );
 
       //- không cần await ở đây vì không cần chờ xóa cache xong mới trả kết quả

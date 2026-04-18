@@ -1,18 +1,17 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UserResponse } from 'src/modules/user/schemas/user.schema';
 import { UserService } from 'src/modules/user/user.service';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
+import { RedisService } from 'src/common/redis/redis.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly configService: ConfigService,
     private readonly usersService: UserService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly redisService: RedisService,
   ) {
     //- decode access_token
     super({
@@ -29,7 +28,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const cacheKey = `user_cache:${payload.id}_${payload.roleID}_${payload.roleCodeName}_${payload.employerInfo?.companyID}`;
 
     //- Thử lấy user từ Redis
-    let user = await this.cacheManager.get<any>(cacheKey);
+    let user = await this.redisService.get<any>(cacheKey);
 
     if (!user) {
       //- Nếu Cache Miss (không có), mới query DB
@@ -37,7 +36,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
       if (user) {
         //- Lưu vào Redis (TTL 1 tiếng)
-        await this.cacheManager.set(cacheKey, user, 3600 * 1000);
+        await this.redisService.set(cacheKey, user, 3600 * 1000);
       }
     }
 

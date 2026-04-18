@@ -20,8 +20,6 @@ import { ConfigService } from '@nestjs/config';
 import { generateMultiLangSlug, slugify } from 'src/utils/generate-slug';
 import { UserService } from '../user/user.service';
 import { NotificationType } from 'src/common/constants/notification-type.enum';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
 import { IssueService } from '../issue/issue.service';
 import { RequestHotJobDto } from './dto/request-hot.dto';
 import { CreateIssueDto } from '../issue/dto/create-issue.dto';
@@ -32,6 +30,7 @@ import { Bookmark } from '../bookmark/schemas/bookmark.schema';
 import { IndustryService } from '../industry/industry.service';
 import { LEVEL_OPTIONS } from 'src/common/constants/company-const';
 import { JobsRepository } from './repository/jobs.repository';
+import { RedisService } from 'src/common/redis/redis.service';
 
 @Injectable()
 export class JobsService {
@@ -41,7 +40,7 @@ export class JobsService {
     private configService: ConfigService,
     @Inject(forwardRef(() => UserService)) private userService: UserService,
     private readonly jobsRepository: JobsRepository,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly redisService: RedisService,
     private readonly issueService: IssueService,
     @Inject(forwardRef(() => ApplicationService))
     private readonly applicationService: ApplicationService,
@@ -1065,9 +1064,6 @@ export class JobsService {
   }
 
   async findOne(id: string, ip: string, user: UserDecoratorType) {
-    //- Ép kiểu để dùng được get/set của cache-manager v5
-    const cache: any = this.cacheManager;
-
     if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new BadRequestCustom('ID không hợp lệ', true);
     }
@@ -1098,21 +1094,23 @@ export class JobsService {
       const lockKey = `view_lock:${id}:${ip}`; //- Khóa dựa trên JobID và IP người dùng
 
       //- Check xem IP này có đang trong thời gian "bị khóa" không
-      const isLocked = await cache.get(lockKey);
+      const isLocked = await this.redisService.get<boolean>(lockKey);
 
       if (!isLocked) {
         //- Tăng view tạm thời trong Redis
-        let additionalViews: number = (await cache.get(viewKey)) || 0;
+        let additionalViews: number =
+          (await this.redisService.get<number>(viewKey)) || 0;
         additionalViews++;
-        await cache.set(viewKey, additionalViews);
+        await this.redisService.set(viewKey, additionalViews);
 
         //- Ghi nhận "khóa" IP này lại trong 30 phút (1.800.000 ms)
         //- hết 30p tự mất lockKey để có thể tăng view lại
-        await cache.set(lockKey, true, 1800000);
+        await this.redisService.set(lockKey, true, 1800000);
       }
 
       //- Trả về kết quả: View gốc + View tạm từ Redis
-      const currentAdditional = (await cache.get(viewKey)) || 0;
+      const currentAdditional =
+        (await this.redisService.get<number>(viewKey)) || 0;
       const jobObject = job.toObject();
 
       //- Xử lý company đã populate
