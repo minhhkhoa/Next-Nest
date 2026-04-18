@@ -60,7 +60,7 @@ import { MessageModule } from './modules/message/message.module';
       useFactory: async (configService: ConfigService) => ({
         uri: configService.get<string>('MONGO_URL'),
         maxPoolSize: 5, //- Số lượng kết nối tối đa
-        serverSelectionTimeoutMS: 5000, //- Chờ server phản hồi bao lâu?
+        serverSelectionTimeoutMS: 7000, //- Chờ server phản hồi bao lâu?
         socketTimeoutMS: 10000, //- Chờ kết quả query bao lâu?
         connectionFactory: (connection: Connection) => {
           //- điều này giúp sử dụng soft delete

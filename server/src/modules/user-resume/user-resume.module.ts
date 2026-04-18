@@ -3,6 +3,7 @@ import { UserResumeService } from './user-resume.service';
 import { UserResumeController } from './user-resume.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserResume, UserResumeSchema } from './schemas/user-resume.schema';
+import { UserResumeRepository } from './repository/user-resume.repository';
 
 @Module({
   imports: [
@@ -11,7 +12,7 @@ import { UserResume, UserResumeSchema } from './schemas/user-resume.schema';
     ]),
   ],
   controllers: [UserResumeController],
-  providers: [UserResumeService],
+  providers: [UserResumeService, UserResumeRepository],
   exports: [UserResumeService],
 })
 export class UserResumeModule {}

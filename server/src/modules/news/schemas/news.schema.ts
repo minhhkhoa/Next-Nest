@@ -1,5 +1,6 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import {  Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
+import { Prop } from 'src/common/override/override-prop';
 import { CateNews } from 'src/modules/cate-news/schemas/cate-new.schema';
 import { MultiLang, NewsStatus, UserAudit } from 'src/utils/typeSchemas';
 

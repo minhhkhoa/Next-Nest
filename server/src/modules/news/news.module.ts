@@ -7,6 +7,7 @@ import { News, NewsSchema } from './schemas/news.schema';
 import { CateNewsModule } from 'src/modules/cate-news/cate-news.module';
 import { BusinessModule } from 'src/common/decorator/customize';
 import { UserModule } from '../user/user.module';
+import { NewsRepository } from './repository/news.repository';
 
 @BusinessModule()
 @Module({
@@ -17,6 +18,6 @@ import { UserModule } from '../user/user.module';
     MongooseModule.forFeature([{ name: News.name, schema: NewsSchema }]),
   ],
   controllers: [NewsController],
-  providers: [NewsService],
+  providers: [NewsService, NewsRepository],
 })
 export class NewsModule {}

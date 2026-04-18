@@ -1,4 +1,4 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument, Types } from 'mongoose';
 import {
   EMPLOYEE_TYPE_OPTIONS,
@@ -9,6 +9,8 @@ import { Company } from 'src/modules/company/schemas/company.schema';
 import { Industry } from 'src/modules/industry/schemas/industry.schema';
 import { Skill } from 'src/modules/skill/schemas/skill.schema';
 import { MultiLang, UserAudit } from 'src/utils/typeSchemas';
+import { Prop } from 'src/common/override/override-prop';
+
 
 class SalaryRange {
   @Prop()

@@ -7,6 +7,7 @@ import {
   ConversationSchema,
 } from './schemas/conversation.schema';
 import { Message, MessageSchema } from '../message/schemas/message.schema';
+import { ConversationRepository } from './repository/conversation.repository';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { Message, MessageSchema } from '../message/schemas/message.schema';
     ]),
   ],
   controllers: [ConversationController],
-  providers: [ConversationService],
+  providers: [ConversationService, ConversationRepository],
   exports: [ConversationService],
 })
 export class ConversationModule {}

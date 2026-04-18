@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Issue, IssueSchema } from './schemas/issue.schema';
 import { TranslationModule } from 'src/common/translation/translation.module';
 import { MailModule } from '../mail/mail.module';
+import { IssueRepository } from './repository/issue.repository';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { MailModule } from '../mail/mail.module';
     MongooseModule.forFeature([{ name: Issue.name, schema: IssueSchema }]),
   ],
   controllers: [IssueController],
-  providers: [IssueService],
+  providers: [IssueService, IssueRepository],
   exports: [IssueService],
 })
 export class IssueModule {}

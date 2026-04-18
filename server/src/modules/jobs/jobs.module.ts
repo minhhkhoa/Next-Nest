@@ -14,6 +14,7 @@ import { IssueModule } from '../issue/issue.module';
 import { ApplicationModule } from '../application/application.module';
 import { BookmarkModule } from '../bookmark/bookmark.module';
 import { IndustryModule } from '../industry/industry.module';
+import { JobsRepository } from './repository/jobs.repository';
 
 @BusinessModule()
 @Module({
@@ -28,7 +29,7 @@ import { IndustryModule } from '../industry/industry.module';
     IndustryModule,
   ],
   controllers: [JobsController],
-  providers: [JobsService, JobCronService, CompanyStatusGuard],
+  providers: [JobsService, JobCronService, CompanyStatusGuard, JobsRepository],
   exports: [JobsService],
 })
 export class JobsModule {}

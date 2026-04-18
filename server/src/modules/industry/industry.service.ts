@@ -2,21 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { CreateIndustryDto } from './dto/create-industry.dto';
 import { UpdateIndustryDto } from './dto/update-industry.dto';
 import { TranslationService } from 'src/common/translation/translation.service';
-import { InjectModel } from '@nestjs/mongoose';
-import { Industry, IndustryDocument } from './schemas/industry.schema';
 import mongoose, { Types } from 'mongoose';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
-import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import aqp from 'api-query-params';
 import { ConfigService } from '@nestjs/config';
+import { IndustryRepository } from './repository/industry.repository';
 
 @Injectable()
 export class IndustryService {
   constructor(
     private configService: ConfigService,
     private readonly translationService: TranslationService,
-    @InjectModel(Industry.name)
-    private indusTryModel: SoftDeleteModel<IndustryDocument>,
+    private readonly industryRepository: IndustryRepository,
   ) {}
   async create(createIndustryDto: CreateIndustryDto) {
     try {
@@ -27,7 +24,7 @@ export class IndustryService {
 
       //- quy ước các danh mục root thì có parentId: ROOT_PARENT_INDUSTRY_ID(.env)
 
-      const industry = await this.indusTryModel.create(dataLang);
+      const industry = await this.industryRepository.create(dataLang);
 
       return {
         _id: industry._id,
@@ -44,13 +41,13 @@ export class IndustryService {
     const roots = new Set<string>();
 
     for (const id of industryIds) {
-      let current = await this.indusTryModel.findById(id).lean();
+      let current = await this.industryRepository.findByIdLeanRaw(id);
 
       //- Vòng lặp leo ngược lên trên
       while (current && current.parentId !== '000-00-000') {
-        current = await this.indusTryModel
-          .findOne({ _id: current.parentId })
-          .lean();
+        current = await this.industryRepository.findByIdLeanRaw(
+          current.parentId,
+        );
       }
 
       if (current) roots.add(current._id.toString());
@@ -81,13 +78,8 @@ export class IndustryService {
     const allIds = parentIds.map((id) => new Types.ObjectId(id.toString()));
 
     //- Tìm các con trực tiếp
-    const children = await this.indusTryModel
-      .find({
-        parentId: { $in: stringParentIds },
-        isDeleted: false,
-      })
-      .select('_id')
-      .lean();
+    const children =
+      await this.industryRepository.findChildrenByParentIds(stringParentIds);
 
     if (children.length > 0) {
       const childrenIds = children.map((c) => c._id.toString());
@@ -121,16 +113,17 @@ export class IndustryService {
     let offset = (+defaultPage - 1) * +limit;
     let defaultLimit = +limit ? +limit : 10;
 
-    const totalItems = (await this.indusTryModel.find(filter)).length;
+    const totalItems = await this.industryRepository.countByFilter(
+      filter,
+    );
     const totalPages = Math.ceil(totalItems / defaultLimit);
 
-    const result = await this.indusTryModel
-      .find(filter) //- nó tự động bỏ document có isDeleted: true.
-      .skip(offset)
-      .limit(defaultLimit)
-      .sort('-createdAt')
-      .populate(population)
-      .exec();
+    const result = await this.industryRepository.findByFilterWithPagination(
+      filter,
+      offset,
+      defaultLimit,
+      population,
+    );
 
     return {
       meta: {
@@ -148,10 +141,7 @@ export class IndustryService {
   async getTreeIndustry(): Promise<any[]> {
     const ROOT_ID = this.configService.get<string>('ROOT_PARENT_INDUSTRY_ID');
 
-    const industries = await this.indusTryModel
-      .find({ isDeleted: false })
-      .select('name parentId createdAt updatedAt')
-      .lean();
+    const industries = await this.industryRepository.findActiveForTree();
 
     const industryMap = new Map<string, any>();
     const roots: any[] = [];
@@ -211,12 +201,9 @@ export class IndustryService {
     const searchRegex = new RegExp(query.trim(), 'i');
 
     // Bước 1: Tìm tất cả các ngành có tên khớp (vi hoặc en)
-    const matchedDocs = await this.indusTryModel
-      .find({
-        isDeleted: false,
-        $or: [{ 'name.vi': searchRegex }, { 'name.en': searchRegex }],
-      })
-      .lean();
+    const matchedDocs = await this.industryRepository.findMatchedByName(
+      searchRegex,
+    );
 
     if (matchedDocs.length === 0) return [];
 
@@ -234,7 +221,8 @@ export class IndustryService {
 
       // Lên đến cha trực tiếp (cấp 1)
       while (currentId && currentId !== ROOT_ID) {
-        const parent = await this.indusTryModel.findById(currentId).lean();
+        const parent =
+          await this.industryRepository.findByIdLeanRaw(currentId);
         if (!parent) break;
 
         // Nếu cha này là root → đánh dấu cần hiện toàn bộ cây của nó
@@ -251,12 +239,9 @@ export class IndustryService {
     const finalIds = new Set<string>();
 
     const collectAllDescendants = async (parentId: string) => {
-      const children = await this.indusTryModel
-        .find({
-          parentId,
-          isDeleted: false,
-        })
-        .lean();
+      const children = await this.industryRepository.findChildrenByParentId(
+        parentId,
+      );
 
       for (const child of children) {
         const childId = child._id.toString();
@@ -274,17 +259,9 @@ export class IndustryService {
     }
 
     // Bước 4: Lấy dữ liệu + build cây
-    const allDocs = await this.indusTryModel
-      .find({
-        _id: {
-          $in: Array.from(finalIds).map(
-            (id) => new mongoose.Types.ObjectId(id),
-          ),
-        },
-        isDeleted: false,
-      })
-      .select('name parentId createdAt updatedAt')
-      .lean();
+    const allDocs = await this.industryRepository.findActiveByIdsForTree(
+      Array.from(finalIds),
+    );
 
     const map = new Map<string, any>();
     const resultRoots: any[] = [];
@@ -339,7 +316,7 @@ export class IndustryService {
         throw new BadRequestCustom('ID industry không đúng định dạng', !!id);
       }
 
-      const industry = await this.indusTryModel.findById(id);
+      const industry = await this.industryRepository.findByIdRaw(id);
 
       if (!industry)
         throw new BadRequestCustom('ID industry không tìm thấy', !!id);
@@ -363,7 +340,7 @@ export class IndustryService {
         throw new BadRequestCustom('ID industry không đúng định dạng', !!id);
       }
 
-      const industry = await this.indusTryModel.findById(id);
+      const industry = await this.industryRepository.findByIdRaw(id);
       if (!industry)
         throw new BadRequestCustom('ID industry không tìm thấy', !!id);
 
@@ -372,10 +349,9 @@ export class IndustryService {
         'industry',
         updateIndustryDto,
       );
-      const filter = { _id: id };
       const update = { $set: dataTranslation };
 
-      const result = await this.indusTryModel.updateOne(filter, update);
+      const result = await this.industryRepository.updateByIdRaw(id, update);
 
       if (result.modifiedCount === 0)
         throw new BadRequestCustom('Lỗi sửa industry', !!id);
@@ -391,7 +367,7 @@ export class IndustryService {
         throw new BadRequestCustom('ID industry không đúng định dạng', !!id);
       }
 
-      const industry = await this.indusTryModel.findById(id);
+      const industry = await this.industryRepository.findByIdRaw(id);
       if (!industry)
         throw new BadRequestCustom('ID industry không tìm thấy', !!id);
 
@@ -403,14 +379,13 @@ export class IndustryService {
       //- check xem industry này có con hay không, nếu có thì không cho xóa
       const industryId = industry._id.toString();
 
-      const childIndustry = await this.indusTryModel.findOne({
-        parentId: industryId,
-      });
+      const childIndustry = await this.industryRepository.findOneByParentId(
+        industryId,
+      );
       if (childIndustry)
         throw new BadRequestCustom('Chưa thể xóa root industry', !!id);
 
-      const filter = { _id: id };
-      const result = this.indusTryModel.softDelete(filter);
+      const result = await this.industryRepository.softDeleteById(id);
 
       if (!result) throw new BadRequestCustom('Lỗi xóa industry', !!id);
 

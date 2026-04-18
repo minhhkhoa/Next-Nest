@@ -8,6 +8,7 @@ import {
   Notification,
   NotificationSchema,
 } from './schemas/notification.schema';
+import { NotificationsRepository } from './repository/notifications.repository';
 
 import { NotificationsGateway } from './notifications.gateway';
 import { NotificationsListener } from './notifications.listener';
@@ -25,6 +26,7 @@ import { NotificationsListener } from './notifications.listener';
     NotificationsService,
     NotificationsGateway,
     NotificationsListener,
+    NotificationsRepository,
   ],
   exports: [NotificationsService],
 })

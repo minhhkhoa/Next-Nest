@@ -1,6 +1,7 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { UserAudit } from 'src/utils/typeSchemas';
+import { Prop } from 'src/common/override/override-prop';
 
 /**
  * - Module này có nhiệm vụ lưu các bản cv mà người dùng tạo ra trên hệ thống của mình

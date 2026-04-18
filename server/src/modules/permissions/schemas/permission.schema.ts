@@ -1,6 +1,8 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { MultiLang, UserAudit } from 'src/utils/typeSchemas';
+import { Prop } from 'src/common/override/override-prop';
+
 
 @Schema({ timestamps: true })
 export class Permission {

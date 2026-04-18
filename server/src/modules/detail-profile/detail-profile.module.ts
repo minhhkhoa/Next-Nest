@@ -7,6 +7,7 @@ import {
   DetailProfileSchema,
 } from './schemas/detail-profile.schema';
 import { BusinessModule } from 'src/common/decorator/customize';
+import { DetailProfileRepository } from './repository/detail-profile.repository';
 
 @BusinessModule()
 @Module({
@@ -16,7 +17,7 @@ import { BusinessModule } from 'src/common/decorator/customize';
     ]),
   ],
   controllers: [DetailProfileController],
-  providers: [DetailProfileService],
+  providers: [DetailProfileService, DetailProfileRepository],
   exports: [DetailProfileService],
 })
 export class DetailProfileModule {}

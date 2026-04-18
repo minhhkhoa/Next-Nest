@@ -9,6 +9,7 @@ import { RolesModule } from '../roles/roles.module';
 import { UserModule } from '../user/user.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { JobsModule } from '../jobs/jobs.module';
+import { CompanyRepository } from './repository/company.repository';
 
 @BusinessModule()
 @Module({
@@ -21,7 +22,7 @@ import { JobsModule } from '../jobs/jobs.module';
     MongooseModule.forFeature([{ name: Company.name, schema: CompanySchema }]),
   ],
   controllers: [CompanyController],
-  providers: [CompanyService],
+  providers: [CompanyService, CompanyRepository],
   exports: [CompanyService, MongooseModule],
 })
 export class CompanyModule {}

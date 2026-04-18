@@ -4,24 +4,18 @@ import { UpdateRoleDto } from './dto/update-role.dto';
 import { FindRoleQueryDto } from './dto/roleDto.dto';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 import { TranslationService } from 'src/common/translation/translation.service';
-import { InjectModel } from '@nestjs/mongoose';
-import { Role, RoleDocument } from './schemas/role.schema';
-import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import aqp from 'api-query-params';
 import mongoose from 'mongoose';
-import { User, UserDocument } from '../user/schemas/user.schema';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { RolesRepository } from './repository/roles.repository';
 
 @Injectable()
 export class RolesService {
   constructor(
     private readonly translationService: TranslationService,
-    @InjectModel(Role.name)
-    private roleModel: SoftDeleteModel<RoleDocument>,
-    @InjectModel(User.name)
-    private userModel: SoftDeleteModel<UserDocument>,
+    private readonly rolesRepository: RolesRepository,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
@@ -32,7 +26,7 @@ export class RolesService {
         createRoleDto,
       );
 
-      const role = await this.roleModel.create({
+      const role = await this.rolesRepository.createRaw({
         ...dataLang,
         createdBy: {
           _id: user.id,
@@ -53,9 +47,7 @@ export class RolesService {
 
   async getRoleByName(name: string) {
     try {
-      const role = await this.roleModel.findOne({
-        $or: [{ 'name.vi': name }, { 'name.en': name }],
-      });
+      const role = await this.rolesRepository.findOneByNameAnyLang(name);
       return role;
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
@@ -68,13 +60,9 @@ export class RolesService {
         throw new BadRequestCustom('ID vai trò không đúng định dạng', !!roleID);
 
       // Sử dụng populate để "điền đầy" dữ liệu từ collection permissions vào
-      const role = await this.roleModel
-        .findById(roleID)
-        .populate({
-          path: 'permissions',
-          select: 'code -_id',
-        })
-        .lean(); // Dùng lean để trả về Plain Object thay vì Mongoose Document
+      const role = await this.rolesRepository.findByIdWithPermissionCodes(
+        roleID,
+      );
 
       if (!role)
         throw new BadRequestCustom('ID vai trò không tìm thấy', !!roleID);
@@ -87,7 +75,7 @@ export class RolesService {
 
   async findAll() {
     try {
-      return await this.roleModel.find({ isDeleted: false, isActived: true });
+      return this.rolesRepository.findAllActive();
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }
@@ -117,15 +105,16 @@ export class RolesService {
       let offset = (+defaultPage - 1) * +pageSize;
       let defaultLimit = +pageSize ? +pageSize : 10;
 
-      const totalItems = (await this.roleModel.find(filterConditions)).length;
+      const totalItems = await this.rolesRepository.countByFilter(
+        filterConditions,
+      );
       const totalPages = Math.ceil(totalItems / defaultLimit);
 
-      const result = await this.roleModel
-        .find(filterConditions)
-        .skip(offset)
-        .limit(defaultLimit)
-        .sort('-createdAt')
-        .exec();
+      const result = await this.rolesRepository.findByFilterWithPagination(
+        filterConditions,
+        offset,
+        defaultLimit,
+      );
 
       return {
         meta: {
@@ -147,7 +136,7 @@ export class RolesService {
         throw new BadRequestCustom('ID vai trò không đúng định dạng', !!id);
       }
 
-      const role = await this.roleModel.findById(id).lean();
+      const role = await this.rolesRepository.findByIdLeanRaw(id);
 
       if (!role) throw new BadRequestCustom('ID vai trò không tìm thấy', !!id);
 
@@ -181,14 +170,12 @@ export class RolesService {
         },
       };
 
-      const result = await this.roleModel.updateOne(filter, update);
+      const result = await this.rolesRepository.updateOneRaw(filter, update);
 
       if (!result) throw new BadRequestCustom('Lỗi sửa vai trò', !!id);
 
       //- xứ lý các user đang được cache ở Redis có roleID là id này, thì xóa cache của họ đi để lần sau họ login lại sẽ lấy thông tin role mới nhất
-      const users = await this.userModel
-        .find({ roleID: new mongoose.Types.ObjectId(id) })
-        .select('_id');
+      const users = await this.rolesRepository.findUserIdsByRoleId(id);
 
       //- xóa cache của tất cả user có roleID là id này
       const clearCachePromises = users.map((user) =>
@@ -212,16 +199,16 @@ export class RolesService {
         throw new BadRequestCustom('ID vai trò không đúng định dạng', !!id);
       }
 
-      const role = await this.roleModel.findById(id);
+      const role = await this.rolesRepository.findByIdRaw(id);
       if (!role) throw new BadRequestCustom('ID vai trò không tìm thấy', !!id);
 
       const filter = { _id: id };
-      const result = this.roleModel.softDelete(filter);
+      const result = await this.rolesRepository.softDeleteRaw(filter);
 
       if (!result) throw new BadRequestCustom('Lỗi xóa vai trò', !!id);
 
       //- delete by
-      await this.roleModel.updateOne(
+      await this.rolesRepository.updateOneRaw(
         {
           _id: id,
         },
@@ -260,7 +247,7 @@ export class RolesService {
         );
       }
 
-      const result = await this.roleModel.updateMany(
+      const result = await this.rolesRepository.updateManyRaw(
         { _id: { $in: validIds } },
         {
           $set: {

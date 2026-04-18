@@ -2,9 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { CreateNewsDto } from './dto/create-news.dto';
 import { UpdateNewsDto } from './dto/update-news.dto';
 import { TranslationService } from 'src/common/translation/translation.service';
-import { InjectModel } from '@nestjs/mongoose';
-import { News, NewsDocument } from './schemas/news.schema';
-import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 import mongoose from 'mongoose';
 import { FindNewsQueryDto } from './dto/newsDto-dto';
@@ -16,6 +13,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NotificationType } from 'src/common/constants/notification-type.enum';
 import { UserService } from '../user/user.service';
 import { ConfigService } from '@nestjs/config';
+import { NewsRepository } from './repository/news.repository';
 
 @Injectable()
 export class NewsService {
@@ -25,8 +23,7 @@ export class NewsService {
     private eventEmitter: EventEmitter2,
     private userService: UserService,
     private configService: ConfigService,
-    @InjectModel(News.name)
-    private newsModel: SoftDeleteModel<NewsDocument>,
+    private readonly newsRepository: NewsRepository,
   ) {}
 
   async create(createNewsDto: CreateNewsDto, user: UserDecoratorType) {
@@ -36,7 +33,7 @@ export class NewsService {
         createNewsDto,
       );
 
-      const news = await this.newsModel.create({
+      const news = await this.newsRepository.create({
         ...dataLang,
         createdBy: {
           _id: user.id,
@@ -80,14 +77,7 @@ export class NewsService {
 
   async findAll() {
     try {
-      const newsList = await this.newsModel
-        .find({ isDeleted: false })
-        .populate({
-          path: 'cateNewsID',
-          match: { isDeleted: false },
-          select: 'name _id summary',
-        })
-        .lean(); //- lean: trả về plain object thay vì mongoose document
+      const newsList = await this.newsRepository.findAllNotDeletedWithCateNews();
 
       return newsList.map((news) => {
         const slugNews = {
@@ -118,19 +108,9 @@ export class NewsService {
       ); //- trong fillAll da them slug cho cateNews roi
       const listCateNewsIDs = listCateNews.map((cate) => cate._id);
 
-      const listNews = await this.newsModel
-        .find({
-          cateNewsID: { $in: listCateNewsIDs },
-          isDeleted: false,
-          status: 'active',
-        })
-        .sort({ createdAt: -1 })
-        .populate({
-          path: 'cateNewsID',
-          match: { isDeleted: false },
-          select: 'name _id summary',
-        })
-        .select('_id title image summary status createdBy createdAt');
+      const listNews = await this.newsRepository.findActiveByCateNewsIds(
+        listCateNewsIDs,
+      );
 
       const listNewsWithSlug = listNews
         .map((news) => {
@@ -166,20 +146,10 @@ export class NewsService {
             en: slugify(cateNews.name.en, { lower: true, strict: true }),
           };
 
-          const getNewsByCate = await this.newsModel
-            .find({
-              cateNewsID: idCate,
-              isDeleted: false,
-              status: 'active',
-            })
-            .sort({ createdAt: -1 })
-            .limit(5)
-            .populate({
-              path: 'cateNewsID',
-              match: { isDeleted: false },
-              select: 'name _id summary',
-            })
-            .select('_id title image summary status createdBy createdAt');
+          const getNewsByCate = await this.newsRepository.findLatestActiveByCate(
+            idCate,
+            5,
+          );
 
           const getNewsByCateWithSlug = getNewsByCate.map((news) => {
             const slugNews = {
@@ -243,7 +213,9 @@ export class NewsService {
       let offset = (+defaultPage - 1) * +pageSize;
       let defaultLimit = +pageSize ? +pageSize : 10;
 
-      const totalItems = (await this.newsModel.find(filterConditions)).length;
+      const totalItems = await this.newsRepository.countByFilter(
+        filterConditions,
+      );
       const totalPages = Math.ceil(totalItems / defaultLimit);
 
       //- sort
@@ -251,16 +223,16 @@ export class NewsService {
         ? sort
         : { createdAt: -1 };
 
-      let result = await this.newsModel
-        .find(filterConditions)
-        .skip(offset)
-        .limit(defaultLimit)
-        .sort(defaultSort as any)
-        .populate(population)
-        .exec();
+      const result = await this.newsRepository.findByFilter(
+        filterConditions,
+        offset,
+        defaultLimit,
+        defaultSort as any,
+        population,
+      );
 
       //- thêm slug cho từng news
-      result = result.map((news) => {
+      const resultWithSlug = result.map((news) => {
         const slugNews = {
           vi: slugify(news.title.vi, {
             lower: true,
@@ -279,7 +251,7 @@ export class NewsService {
           totalPages: totalPages,
           totalItems: totalItems,
         },
-        result,
+        result: resultWithSlug,
       };
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
@@ -292,11 +264,7 @@ export class NewsService {
         throw new BadRequestCustom('ID news không đúng định dạng', !!id);
       }
 
-      const news = await this.newsModel.findById(id).populate({
-        path: 'cateNewsID',
-        match: { isDeleted: false },
-        select: 'name _id summary',
-      });
+      const news = await this.newsRepository.findByIdWithCateNews(id);
 
       if (!news) throw new BadRequestCustom('ID news không tìm thấy', !!id);
 
@@ -333,7 +301,7 @@ export class NewsService {
         throw new BadRequestCustom('ID news không đúng định dạng', !!id);
       }
 
-      const news = await this.newsModel.findById(id);
+      const news = await this.newsRepository.findByIdIncludingDeleted(id);
       if (!news) throw new BadRequestCustom('ID news không tìm thấy', !!id);
 
       //- cần translation trước đã
@@ -354,7 +322,7 @@ export class NewsService {
         },
       };
 
-      const result = await this.newsModel.updateOne(filter, update);
+      const result = await this.newsRepository.updateMany(filter, update);
 
       if (result.modifiedCount === 0)
         throw new BadRequestCustom('Lỗi sửa news', !!id);
@@ -370,7 +338,7 @@ export class NewsService {
         throw new BadRequestCustom('ID news không đúng định dạng', !!id);
       }
 
-      const news = await this.newsModel.findById(id);
+      const news = await this.newsRepository.findByIdIncludingDeleted(id);
       if (!news) throw new BadRequestCustom('ID news không tìm thấy', !!id);
 
       const isDeleted = news.isDeleted;
@@ -379,12 +347,12 @@ export class NewsService {
         throw new BadRequestCustom('news này đã được xóa', !!isDeleted);
 
       const filter = { _id: id };
-      const result = this.newsModel.softDelete(filter);
+      const result = await this.newsRepository.softDelete(filter);
 
       if (!result) throw new BadRequestCustom('Lỗi xóa news', !!id);
 
       //- delete by
-      await this.newsModel.updateOne(
+      await this.newsRepository.updateMany(
         {
           _id: id,
         },

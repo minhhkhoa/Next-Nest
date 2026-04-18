@@ -2,31 +2,25 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserResumeDto } from './dto/create-user-resume.dto';
 import { UpdateUserResumeDto } from './dto/update-user-resume.dto';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
-import { UserResume, UserResumeDocument } from './schemas/user-resume.schema';
-import { InjectModel } from '@nestjs/mongoose';
-import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 import mongoose from 'mongoose';
+import { UserResumeRepository } from './repository/user-resume.repository';
 
 @Injectable()
 export class UserResumeService {
   constructor(
-    @InjectModel(UserResume.name)
-    private resumeModel: SoftDeleteModel<UserResumeDocument>,
+    private readonly userResumeRepository: UserResumeRepository,
   ) {}
 
   async create(createDto: CreateUserResumeDto, user: UserDecoratorType) {
     try {
       //- Nếu CV mới là mặc định, reset các CV cũ thành không mặc định
       if (createDto.isDefault) {
-        await this.resumeModel.updateMany(
-          { userID: user.id },
-          { $set: { isDefault: false } },
-        );
+        await this.userResumeRepository.resetAllDefaultsByUser(user.id);
       }
 
       //- Tạo CV mới
-      const newResume = await this.resumeModel.create({
+      const newResume = await this.userResumeRepository.createRaw({
         ...createDto,
         userID: user.id,
         createdBy: {
@@ -44,9 +38,7 @@ export class UserResumeService {
   }
 
   async findAllByUser(user: UserDecoratorType) {
-    return await this.resumeModel
-      .find({ userID: user.id, isDeleted: false })
-      .sort('-updatedAt');
+    return this.userResumeRepository.findAllActiveByUser(user.id);
   }
 
   async findOne(id: string, user: UserDecoratorType) {
@@ -56,11 +48,10 @@ export class UserResumeService {
         throw new BadRequestCustom('ID CV không đúng định dạng', true);
       }
 
-      const resume = await this.resumeModel.findOne({
-        _id: id,
-        userID: user.id,
-        isDeleted: false,
-      });
+      const resume = await this.userResumeRepository.findOneActiveByIdAndUser(
+        id,
+        user.id,
+      );
 
       if (!resume) {
         throw new BadRequestCustom('Không tìm thấy bản CV yêu cầu', true);
@@ -85,15 +76,16 @@ export class UserResumeService {
 
       //- Nếu cập nhật này đặt làm mặc định, reset các bản CV khác thành không mặc định
       if (updateDto.isDefault) {
-        await this.resumeModel.updateMany(
-          { userID: user.id, _id: { $ne: id } }, //- loại trừ bản thân CV đang cập nhật
-          { $set: { isDefault: false } },
+        await this.userResumeRepository.resetOtherDefaultsByUser(
+          user.id,
+          id,
         );
       }
 
       //- Cập nhật nội dung
-      const updatedResume = await this.resumeModel.findOneAndUpdate(
-        { _id: id, userID: user.id },
+      const updatedResume = await this.userResumeRepository.findOneAndUpdateByIdAndUser(
+        id,
+        user.id,
         {
           ...updateDto,
           updatedBy: {
@@ -103,7 +95,6 @@ export class UserResumeService {
             avatar: user.avatar,
           },
         },
-        { new: true },
       );
 
       if (!updatedResume) {
@@ -126,11 +117,10 @@ export class UserResumeService {
       }
 
       //- Tìm bản ghi trước để kiểm tra xem nó có đang là CV mặc định không
-      const resume = await this.resumeModel.findOne({
-        _id: id,
-        userID: user.id,
-        isDeleted: false,
-      });
+      const resume = await this.userResumeRepository.findOneActiveByIdAndUser(
+        id,
+        user.id,
+      );
 
       if (!resume) {
         throw new BadRequestCustom(
@@ -140,34 +130,23 @@ export class UserResumeService {
       }
 
       //- Tiến hành xóa mềm thủ công bằng findOneAndUpdate
-      await this.resumeModel.findOneAndUpdate(
-        { _id: id, userID: user.id },
-        {
-          $set: {
-            isDeleted: true,
-            deletedAt: new Date(),
-            deletedBy: {
-              _id: user.id,
-              name: user.name,
-              email: user.email,
-              avatar: user.avatar,
-            },
-            isDefault: false, // Khi xóa thì bỏ luôn trạng thái mặc định
-          },
-        },
-      );
+      await this.userResumeRepository.softDeleteByIdAndUser(id, user.id, {
+        _id: user.id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+      });
 
       //- Logic "Phục vụ tốt hơn": Nếu vừa xóa bản mặc định,
       // tự động tìm bản CV còn lại mới nhất để đặt làm mặc định thay thế.
       if (resume.isDefault) {
-        const nextResume = await this.resumeModel
-          .findOne({ userID: user.id, isDeleted: false })
-          .sort('-updatedAt');
+        const nextResume = await this.userResumeRepository.findNextActiveByUser(
+          user.id,
+        );
 
         if (nextResume) {
-          await this.resumeModel.updateOne(
-            { _id: nextResume._id },
-            { $set: { isDefault: true } },
+          await this.userResumeRepository.setDefaultById(
+            nextResume._id.toString(),
           );
         }
       }
@@ -182,11 +161,10 @@ export class UserResumeService {
     if (!mongoose.Types.ObjectId.isValid(resumeId)) {
       throw new BadRequestCustom('ID CV không hợp lệ');
     }
-    const resume = await this.resumeModel.findOne({
-      _id: resumeId,
-      userID: userId,
-      isDeleted: false,
-    });
+    const resume = await this.userResumeRepository.findOneActiveByIdAndUser(
+      resumeId,
+      userId,
+    );
     if (!resume) {
       throw new BadRequestCustom(
         'CV không tồn tại hoặc không thuộc quyền sở hữu của bạn',

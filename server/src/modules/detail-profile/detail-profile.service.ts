@@ -4,25 +4,19 @@ import {
   CreateDetailProfileDto,
 } from './dto/create-detail-profile.dto';
 import { UpdateDetailProfileDto } from './dto/update-detail-profile.dto';
-import { InjectModel } from '@nestjs/mongoose';
-import {
-  DetailProfile,
-  DetailProfileDocument,
-} from './schemas/detail-profile.schema';
-import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
-import mongoose, { Types } from 'mongoose';
+import mongoose from 'mongoose';
 import { FindUserQueryDto } from 'src/modules/user/dto/userDto.dto';
+import { DetailProfileRepository } from './repository/detail-profile.repository';
 
 @Injectable()
 export class DetailProfileService {
   constructor(
-    @InjectModel(DetailProfile.name)
-    private detailProfileModel: SoftDeleteModel<DetailProfileDocument>,
+    private readonly detailProfileRepository: DetailProfileRepository,
   ) {}
   async create(createDetailProfileDto: CreateDetailProfileDto) {
     try {
-      const detailProfile = await this.detailProfileModel.create(
+      const detailProfile = await this.detailProfileRepository.create(
         createDetailProfileDto,
       );
 
@@ -197,7 +191,9 @@ export class DetailProfileService {
       },
     ].filter(Boolean);
 
-    const result = await this.detailProfileModel.aggregate(pipeline);
+    const result = await this.detailProfileRepository.aggregateWithPipeline(
+      pipeline,
+    );
     const totalItems = result[0]?.total[0]?.count || 0;
 
     return {
@@ -213,23 +209,7 @@ export class DetailProfileService {
 
   async findAll() {
     try {
-      return this.detailProfileModel.find({ isDeleted: false }).populate([
-        {
-          path: 'userID',
-          match: { isDeleted: false },
-          select: 'name _id avatar',
-        },
-        {
-          path: 'industryID',
-          match: { isDeleted: false },
-          select: 'name _id',
-        },
-        {
-          path: 'skillID',
-          match: { isDeleted: false },
-          select: 'name _id',
-        },
-      ]);
+      return this.detailProfileRepository.findAllWithPopulate();
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }
@@ -237,11 +217,9 @@ export class DetailProfileService {
 
   async findByUserIdForResume(userId: string) {
     try {
-      const profile = await this.detailProfileModel
-        .findOne({ userID: userId, isDeleted: false })
-        .populate({ path: 'industryID', select: 'name' })
-        .populate({ path: 'skillID', select: 'name' })
-        .lean();
+      const profile = await this.detailProfileRepository.findByUserIdForResume(
+        userId,
+      );
 
       return profile;
     } catch (error) {
@@ -258,25 +236,8 @@ export class DetailProfileService {
         );
       }
 
-      const detailProfile = await this.detailProfileModel
-        .findOne({ userID: id })
-        .populate([
-          {
-            path: 'userID',
-            match: { isDeleted: false },
-            select: 'name _id avatar',
-          },
-          {
-            path: 'industryID',
-            match: { isDeleted: false },
-            select: 'name _id',
-          },
-          {
-            path: 'skillID',
-            match: { isDeleted: false },
-            select: 'name _id',
-          },
-        ]);
+      const detailProfile =
+        await this.detailProfileRepository.findOneByUserIdWithPopulate(id);
 
       if (!detailProfile)
         throw new BadRequestCustom('ID detailProfile không tìm thấy', !!id);
@@ -303,14 +264,17 @@ export class DetailProfileService {
         );
       }
 
-      const detailProfile = await this.detailProfileModel.findById(id);
+      const detailProfile = await this.detailProfileRepository.findByIdRaw(id);
       if (!detailProfile)
         throw new BadRequestCustom('ID detailProfile không tìm thấy', !!id);
 
       const filter = { _id: id };
       const update = { $set: updateDetailProfileDto };
 
-      const result = await this.detailProfileModel.updateOne(filter, update);
+      const result = await this.detailProfileRepository.updateByIdRaw(
+        id,
+        update,
+      );
 
       if (result.modifiedCount === 0)
         throw new BadRequestCustom('Lỗi sửa detailProfile', !!id);
@@ -323,11 +287,7 @@ export class DetailProfileService {
   // src/modules/detail-profile/detail-profile.service.ts
 
   async restoreByUserId(userID: string, session: mongoose.ClientSession) {
-    return await this.detailProfileModel.findOneAndUpdate(
-      { userID: userID },
-      { $set: { isDeleted: false, deletedAt: null } },
-      { session, new: true },
-    );
+    return this.detailProfileRepository.restoreByUserId(userID, session);
   }
 
   async softCheckDeleteByUserId(
@@ -335,15 +295,9 @@ export class DetailProfileService {
     session: mongoose.ClientSession,
   ) {
     try {
-      const result = await this.detailProfileModel.findOneAndUpdate(
-        { userID: userID, isDeleted: false },
-        {
-          $set: {
-            isDeleted: true,
-            deletedAt: new Date(),
-          },
-        },
-        { session, new: true }, // Quan trọng: truyền session vào đây
+      const result = await this.detailProfileRepository.softCheckDeleteByUserId(
+        userID,
+        session,
       );
       return result;
     } catch (error) {
@@ -360,7 +314,7 @@ export class DetailProfileService {
         );
       }
 
-      const detailProfile = await this.detailProfileModel.findById(id);
+      const detailProfile = await this.detailProfileRepository.findByIdRaw(id);
       if (!detailProfile)
         throw new BadRequestCustom('ID detailProfile không tìm thấy', !!id);
 
@@ -372,8 +326,7 @@ export class DetailProfileService {
           !!isDeleted,
         );
 
-      const filter = { _id: id };
-      const result = this.detailProfileModel.softDelete(filter);
+      const result = await this.detailProfileRepository.softDeleteById(id);
 
       if (!result) throw new BadRequestCustom('Lỗi xóa detailProfile', !!id);
 
@@ -385,7 +338,7 @@ export class DetailProfileService {
 
   async createAuto(createDetailProfileDto: AutoCreateDetailProfileDto) {
     try {
-      const detailProfile = await this.detailProfileModel.create({
+      const detailProfile = await this.detailProfileRepository.create({
         ...createDetailProfileDto,
         sumary: '',
         gender: 'Nam',

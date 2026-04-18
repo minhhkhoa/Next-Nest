@@ -5,13 +5,10 @@ import {
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
-import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { UpdateApplicationDto } from './dto/update-application.dto';
-import { Application, ApplicationDocument } from './schemas/application.schema';
 import { FindApplicationQueryDto } from './dto/applicationDto.dto';
 import { JobsService } from '../jobs/jobs.service';
 import { UserResumeService } from '../user-resume/user-resume.service';
@@ -22,12 +19,12 @@ import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 import { TranslationService } from 'src/common/translation/translation.service';
 import { slugify } from 'src/utils/generate-slug';
 import { ConfigService } from '@nestjs/config';
+import { ApplicationRepository } from './repository/application.repository';
 
 @Injectable()
 export class ApplicationService {
   constructor(
-    @InjectModel(Application.name)
-    private applicationModel: SoftDeleteModel<ApplicationDocument>,
+    private readonly applicationRepository: ApplicationRepository,
     private configService: ConfigService,
     @Inject(forwardRef(() => JobsService)) private jobsService: JobsService,
     private readonly translationService: TranslationService,
@@ -66,10 +63,11 @@ export class ApplicationService {
       }
 
       //- Check existing application cho cùng job và user (chỉ cho phép 1 đơn ứng tuyển mỗi job)
-      const existApp = await this.applicationModel.findOne({
-        jobId,
-        userId: user.id,
-        isDeleted: false,
+      const existApp = await this.applicationRepository.findOne({
+        filter: {
+          jobId,
+          userId: user.id,
+        },
       });
 
       if (existApp) {
@@ -77,7 +75,7 @@ export class ApplicationService {
       }
 
       //- Create Application
-      const newApplication = await this.applicationModel.create({
+      const newApplication = await this.applicationRepository.create({
         ...dataLang,
         userId: user.id,
         companyId: job.companyID,
@@ -151,7 +149,9 @@ export class ApplicationService {
         userId: new Types.ObjectId(userId),
         isDeleted: false,
       };
-      const application = await this.applicationModel.findOne(filter);
+      const application = await this.applicationRepository.findOne({
+        filter: filter,
+      });
 
       if (!application) {
         return null; // Chưa ứng tuyển
@@ -277,57 +277,56 @@ export class ApplicationService {
       }
 
       const [dataResult, countResult] = await Promise.all([
-        this.applicationModel
-          .aggregate([
-            ...pipeline,
-            { $sort: { createdAt: -1 } }, //- Sắp xếp theo ngày tạo mới nhất
-            { $skip: offset },
-            { $limit: limit },
-            {
-              $project: { //- $project để chọn trường nào cần lấy ra
-                _id: 1, //- 1 tức là lấy, 0 là không lấy
-                jobId: {
-                  _id: '$jobPopulated._id',
-                  title: '$jobPopulated.title',
-                  slug: '$jobPopulated.slug',
-                  salary: '$jobPopulated.salary',
-                },
-                userId: {
-                  _id: '$userPopulated._id',
-                  name: '$userPopulated.name',
-                  email: '$userPopulated.email',
-                  avatar: '$userPopulated.avatar',
-                },
-                companyId: 1,
-                email: 1,
-                resumeType: 1,
-                cvUrl: 1,
-                systemCvData: {
-                  userResumeId: {
-                    _id: '$resumePopulated._id',
-                    resumeName: '$resumePopulated.resumeName',
-                    url: '$resumePopulated.url',
-                  },
-                  templateId: '$systemCvData.templateId',
-                  resumeContent: '$systemCvData.resumeContent',
-                },
-                coverLetter: 1,
-                status: 1,
-                isViewed: 1,
-                rating: 1,
-                recruiterNote: 1,
-                interviewTime: 1,
-                rejectionReason: 1,
-                history: 1,
-                createdAt: 1,
-                updatedAt: 1,
+        this.applicationRepository.aggregateWithPipeline([
+          ...pipeline,
+          { $sort: { createdAt: -1 } }, //- Sắp xếp theo ngày tạo mới nhất
+          { $skip: offset },
+          { $limit: limit },
+          {
+            $project: { //- $project để chọn trường nào cần lấy ra
+              _id: 1, //- 1 tức là lấy, 0 là không lấy
+              jobId: {
+                _id: '$jobPopulated._id',
+                title: '$jobPopulated.title',
+                slug: '$jobPopulated.slug',
+                salary: '$jobPopulated.salary',
               },
+              userId: {
+                _id: '$userPopulated._id',
+                name: '$userPopulated.name',
+                email: '$userPopulated.email',
+                avatar: '$userPopulated.avatar',
+              },
+              companyId: 1,
+              email: 1,
+              resumeType: 1,
+              cvUrl: 1,
+              systemCvData: {
+                userResumeId: {
+                  _id: '$resumePopulated._id',
+                  resumeName: '$resumePopulated.resumeName',
+                  url: '$resumePopulated.url',
+                },
+                templateId: '$systemCvData.templateId',
+                resumeContent: '$systemCvData.resumeContent',
+              },
+              coverLetter: 1,
+              status: 1,
+              isViewed: 1,
+              rating: 1,
+              recruiterNote: 1,
+              interviewTime: 1,
+              rejectionReason: 1,
+              history: 1,
+              createdAt: 1,
+              updatedAt: 1,
             },
-          ])
-          .exec(),
-        this.applicationModel
-          .aggregate([...pipeline, { $count: 'total' }])
-          .exec(),
+          },
+        ]),
+        this.applicationRepository.aggregateWithPipeline([
+          ...pipeline,
+          { $count: 'total' },
+        ]),
       ]);
 
       const totalItems = countResult.length > 0 ? countResult[0].total : 0;
@@ -419,45 +418,44 @@ export class ApplicationService {
 
       //- Query data (Pagination + Sort) & Count total
       const [dataResult, countResult] = await Promise.all([
-        this.applicationModel
-          .aggregate([
-            ...pipeline,
-            { $sort: { createdAt: -1 } },
-            { $skip: offset },
-            { $limit: limit },
-            {
-              //- Project lại data giống với find() .populate() truyền thống
-              $project: {
-                _id: 1,
-                jobId: {
-                  _id: '$jobPopulated._id',
-                  title: '$jobPopulated.title',
-                  slug: '$jobPopulated.slug',
-                  salary: '$jobPopulated.salary',
-                },
-                companyId: {
-                  _id: '$companyPopulated._id',
-                  name: '$companyPopulated.name',
-                  logo: '$companyPopulated.logo',
-                  slug: '$companyPopulated.slug',
-                },
-                userId: 1,
-                email: 1,
-                resumeType: 1,
-                cvUrl: 1,
-                systemCvData: 1,
-                coverLetter: 1,
-                status: 1,
-                isViewed: 1,
-                createdAt: 1,
-                updatedAt: 1,
+        this.applicationRepository.aggregateWithPipeline([
+          ...pipeline,
+          { $sort: { createdAt: -1 } },
+          { $skip: offset },
+          { $limit: limit },
+          {
+            //- Project lại data giống với find() .populate() truyền thống
+            $project: {
+              _id: 1,
+              jobId: {
+                _id: '$jobPopulated._id',
+                title: '$jobPopulated.title',
+                slug: '$jobPopulated.slug',
+                salary: '$jobPopulated.salary',
               },
+              companyId: {
+                _id: '$companyPopulated._id',
+                name: '$companyPopulated.name',
+                logo: '$companyPopulated.logo',
+                slug: '$companyPopulated.slug',
+              },
+              userId: 1,
+              email: 1,
+              resumeType: 1,
+              cvUrl: 1,
+              systemCvData: 1,
+              coverLetter: 1,
+              status: 1,
+              isViewed: 1,
+              createdAt: 1,
+              updatedAt: 1,
             },
-          ])
-          .exec(),
-        this.applicationModel
-          .aggregate([...pipeline, { $count: 'total' }])
-          .exec(),
+          },
+        ]),
+        this.applicationRepository.aggregateWithPipeline([
+          ...pipeline,
+          { $count: 'total' },
+        ]),
       ]);
 
       const totalItems = countResult.length > 0 ? countResult[0].total : 0;
@@ -493,12 +491,7 @@ export class ApplicationService {
       if (!Types.ObjectId.isValid(id))
         throw new BadRequestCustom('ID không hợp lệ');
 
-      const application = await this.applicationModel
-        .findById(id)
-        .populate('jobId', 'title salary slug')
-        .populate('userId', '-password -refresh_token')
-        .populate('companyId', 'name logo')
-        .populate('systemCvData.userResumeId');
+      const application = await this.applicationRepository.findByIdWithDetails(id);
 
       if (!application)
         throw new NotFoundException(`Không tìm thấy đơn ứng tuyển #${id}`);
@@ -551,10 +544,7 @@ export class ApplicationService {
         updateApplicationDto,
       );
 
-      const application = await this.applicationModel
-        .findById(id)
-        .populate('jobId', 'title')
-        .populate('userId', 'email name');
+      const application = await this.applicationRepository.findByIdForStatusUpdate(id);
 
       if (!application) throw new NotFoundException(`Application not found`);
 
@@ -639,7 +629,7 @@ export class ApplicationService {
       if (!Types.ObjectId.isValid(id))
         throw new BadRequestCustom('ID không hợp lệ');
 
-      const application = await this.applicationModel.findById(id);
+      const application = await this.applicationRepository.findByIdRaw(id);
       if (!application)
         throw new NotFoundException(`Application không tìm thấy`);
 
@@ -660,7 +650,7 @@ export class ApplicationService {
         );
       }
 
-      return this.applicationModel.softDelete({ _id: id });
+      return this.applicationRepository.softDeleteRaw({ _id: id });
     } catch (error) {
       if (
         error instanceof ForbiddenException ||

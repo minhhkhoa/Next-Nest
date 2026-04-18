@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Skill, SkillSchema } from './schemas/skill.schema';
 import { BusinessModule } from 'src/common/decorator/customize';
 import { IndustryModule } from '../industry/industry.module';
+import { SkillRepository } from './repository/skill.repository';
 
 @BusinessModule()
 @Module({
@@ -15,6 +16,6 @@ import { IndustryModule } from '../industry/industry.module';
     MongooseModule.forFeature([{ name: Skill.name, schema: SkillSchema }]),
   ],
   controllers: [SkillController],
-  providers: [SkillService],
+  providers: [SkillService, SkillRepository],
 })
 export class SkillModule {}

@@ -8,6 +8,7 @@ import { BusinessModule } from 'src/common/decorator/customize';
 import { RolesModule } from '../roles/roles.module';
 import { CompanyModule } from '../company/company.module';
 import { JobsModule } from '../jobs/jobs.module';
+import { UserRepository } from './repository/user.repository';
 
 @BusinessModule()
 @Module({
@@ -19,7 +20,7 @@ import { JobsModule } from '../jobs/jobs.module';
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
   controllers: [UserController],
-  providers: [UserService],
+  providers: [UserService, UserRepository],
   exports: [UserService],
 })
 export class UserModule {}

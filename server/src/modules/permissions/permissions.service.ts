@@ -2,21 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
 import { TranslationService } from 'src/common/translation/translation.service';
-import { Permission, PermissionDocument } from './schemas/permission.schema';
-import { InjectModel } from '@nestjs/mongoose';
-import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 import { FindPermissionQueryDto } from './dto/permissionDto.dto';
 import aqp from 'api-query-params';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import mongoose from 'mongoose';
+import { PermissionsRepository } from './repository/permissions.repository';
 
 @Injectable()
 export class PermissionsService {
   constructor(
     private readonly translationService: TranslationService,
-    @InjectModel(Permission.name)
-    private permissionModel: SoftDeleteModel<PermissionDocument>,
+    private readonly permissionsRepository: PermissionsRepository,
   ) {}
 
   async create(
@@ -29,7 +26,7 @@ export class PermissionsService {
         createPermissionDto,
       );
 
-      const permission = await this.permissionModel.create({
+      const permission = await this.permissionsRepository.createRaw({
         ...dataLang,
         createdBy: {
           _id: user.id,
@@ -50,7 +47,7 @@ export class PermissionsService {
 
   async findAll() {
     try {
-      return await this.permissionModel.find({ isDeleted: false });
+      return this.permissionsRepository.findAllActive();
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }
@@ -87,18 +84,18 @@ export class PermissionsService {
       let offset = (+defaultPage - 1) * +pageSize;
       let defaultLimit = +pageSize ? +pageSize : 10;
 
-      const totalItems = (await this.permissionModel.find(filterConditions))
-        .length;
+      const totalItems = await this.permissionsRepository.countByFilter(
+        filterConditions,
+      );
       const totalPages = Math.ceil(totalItems / defaultLimit);
 
       // delete filterConditions.industryID;
 
-      const result = await this.permissionModel
-        .find(filterConditions)
-        .skip(offset)
-        .limit(defaultLimit)
-        .sort('-createdAt')
-        .exec();
+      const result = await this.permissionsRepository.findByFilterWithPagination(
+        filterConditions,
+        offset,
+        defaultLimit,
+      );
 
       return {
         meta: {
@@ -117,7 +114,7 @@ export class PermissionsService {
   async getGroupModule() {
     try {
       //- gom nhóm các module lại với nhau
-      const permissions = await this.permissionModel.find({});
+      const permissions = await this.permissionsRepository.findAllRaw();
 
       const groupedPermissions = permissions.reduce((acc, permission) => {
         const moduleName = permission.module;
@@ -140,7 +137,7 @@ export class PermissionsService {
         throw new BadRequestCustom('ID quyền hạn không đúng định dạng', !!id);
       }
 
-      const permission = await this.permissionModel.findById(id);
+      const permission = await this.permissionsRepository.findByIdRaw(id);
 
       if (!permission)
         throw new BadRequestCustom('ID quyền hạn không tìm thấy', !!id);
@@ -182,7 +179,10 @@ export class PermissionsService {
         },
       };
 
-      const result = await this.permissionModel.updateOne(filter, update);
+      const result = await this.permissionsRepository.updateOneRaw(
+        filter,
+        update,
+      );
 
       if (result.modifiedCount === 0)
         throw new BadRequestCustom('Lỗi sửa quyền hạn', !!id);
@@ -198,7 +198,7 @@ export class PermissionsService {
         throw new BadRequestCustom('ID quyền hạn không đúng định dạng', !!id);
       }
 
-      const permission = await this.permissionModel.findById(id);
+      const permission = await this.permissionsRepository.findByIdRaw(id);
       if (!permission)
         throw new BadRequestCustom('ID quyền hạn không tìm thấy', !!id);
 
@@ -208,10 +208,10 @@ export class PermissionsService {
         throw new BadRequestCustom('Quyền hạn này đã được xóa', !!isDeleted);
 
       const filter = { _id: id };
-      const result = this.permissionModel.softDelete(filter);
+      const result = await this.permissionsRepository.softDeleteRaw(filter);
 
       //- delete by
-      await this.permissionModel.updateOne(
+      await this.permissionsRepository.updateOneRaw(
         { _id: id },
         {
           $set: {
@@ -250,7 +250,7 @@ export class PermissionsService {
         );
       }
 
-      const result = await this.permissionModel.updateMany(
+      const result = await this.permissionsRepository.updateManyRaw(
         { _id: { $in: validIds } },
         {
           $set: {

@@ -1,4 +1,5 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Prop } from 'src/common/override/override-prop';
 import { Document, HydratedDocument, Schema as MongooseSchema } from 'mongoose';
 import { BOOKMARK_TYPE } from 'src/common/constants';
 import { UserAudit } from 'src/utils/typeSchemas';
