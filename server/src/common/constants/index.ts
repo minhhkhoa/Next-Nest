@@ -11,3 +11,5 @@ export const APPLICATION_STATUS = [
   { value: 'APPROVED', label: 'Chấp nhận' },
   { value: 'REJECTED', label: 'Từ chối' },
 ];
+
+export * from './ad-const';

@@ -32,6 +32,7 @@ import { LoggingInterceptor } from './common/interceptor/logging.interceptor';
 import { ConversationModule } from './modules/conversation/conversation.module';
 import { MessageModule } from './modules/message/message.module';
 import { RedisModule } from './common/redis/redis.module';
+import { AdvertisingModule } from './modules/advertising/advertising.module';
 
 @Module({
   imports: [
@@ -89,6 +90,7 @@ import { RedisModule } from './common/redis/redis.module';
     ApplicationModule,
     ConversationModule,
     MessageModule,
+    AdvertisingModule,
   ],
   controllers: [AppController],
   providers: [
