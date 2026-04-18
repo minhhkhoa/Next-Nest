@@ -8,9 +8,7 @@ import {
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { TranslationService } from 'src/common/translation/translation.service';
-import { Company, CompanyDocument } from './schemas/company.schema';
-import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
-import { InjectConnection, InjectModel } from '@nestjs/mongoose';
+import { InjectConnection } from '@nestjs/mongoose';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 import mongoose, { Connection, Types } from 'mongoose';
 import { RolesService } from '../roles/roles.service';
@@ -27,6 +25,7 @@ import {
 import { NotificationsService } from '../notifications/notifications.service';
 import { JobsService } from '../jobs/jobs.service';
 import { slugify } from 'src/utils/generate-slug';
+import { CompanyRepository } from './repository/company.repository';
 
 @Injectable()
 export class CompanyService {
@@ -42,9 +41,8 @@ export class CompanyService {
 
     @Inject(forwardRef(() => JobsService))
     private readonly jobService: JobsService,
+    private readonly companyRepository: CompanyRepository,
     @InjectConnection() private readonly connection: Connection, //- để dùng Mongoose Transaction
-    @InjectModel(Company.name)
-    private companyModel: SoftDeleteModel<CompanyDocument>,
   ) {}
 
   //- cập nhật userFollow
@@ -54,15 +52,7 @@ export class CompanyService {
         throw new BadRequestCustom('ID công ty không hợp lệ', true);
       }
 
-      if (isFollow) {
-        await this.companyModel.findByIdAndUpdate(companyId, {
-          $addToSet: { userFollow: new mongoose.Types.ObjectId(userId) },
-        });
-      } else {
-        await this.companyModel.findByIdAndUpdate(companyId, {
-          $pull: { userFollow: new mongoose.Types.ObjectId(userId) },
-        });
-      }
+      await this.companyRepository.updateUserFollow(companyId, userId, isFollow);
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }
@@ -96,7 +86,7 @@ export class CompanyService {
       );
 
       //- Tạo bản ghi Company với status: 'PENDING'
-      const newCompany = new this.companyModel({
+      const company = await this.companyRepository.createWithSession({
         ...dataLang,
         status: 'PENDING',
         createdBy: {
@@ -105,8 +95,7 @@ export class CompanyService {
           email: user.email,
           avatar: user.avatar,
         },
-      });
-      const company = await newCompany.save({ session });
+      } as any, session);
 
       //- Lấy Role ID của RECRUITER_ADMIN
       const textRoleRecruiterAdmin = this.configService.get<string>(
@@ -262,8 +251,8 @@ export class CompanyService {
 
       // Execute queries
       const [totalItems, result] = await Promise.all([
-        this.companyModel.countDocuments(filterConditions),
-        this.companyModel.aggregate(pipeline).exec(),
+        this.companyRepository.countByFilter(filterConditions),
+        this.companyRepository.aggregateWithPipeline(pipeline),
       ]);
 
       const totalPages = Math.ceil(totalItems / defaultLimit);
@@ -292,7 +281,7 @@ export class CompanyService {
   async findAll() {
     try {
       //- sau này cần bổ sung thêm có bao job cho mỗi công ty
-      return this.companyModel.find({ isDeleted: false }).select('-userFollow');
+      return this.companyRepository.findAllActiveWithoutUserFollow();
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }
@@ -303,7 +292,9 @@ export class CompanyService {
       if (!taxCode)
         throw new BadRequestCustom('taxCode không được để trống', !!taxCode);
 
-      const company = await this.companyModel.findOne({ taxCode });
+      const company = await this.companyRepository.findByTaxCodeIncludeDeleted(
+        taxCode,
+      );
 
       //- có công ty rồi
       if (company)
@@ -329,20 +320,7 @@ export class CompanyService {
         throw new BadRequestCustom('ID company không đúng định dạng', !!id);
       }
 
-      const company = await this.companyModel
-        .findById(id)
-        .populate([
-          {
-            path: 'industryID',
-            select: 'name _id',
-          },
-          // {
-          //   path: 'userFollow',
-          //   match: { isDeleted: false },
-          //   select: 'name _id',
-          // },
-        ])
-        .lean();
+      const company = await this.companyRepository.findByIdWithIndustry(id);
 
       if (!company)
         throw new BadRequestCustom('ID company không tìm thấy', !!id);
@@ -362,7 +340,7 @@ export class CompanyService {
 
   //- dùng khi bên user service cần gọi trong transaction
   async findOneForInternal(id: string, session: mongoose.ClientSession) {
-    return await this.companyModel.findById(id).session(session).lean();
+    return this.companyRepository.findOneForInternal(id, session);
   }
 
   async restore(id: string, user: UserDecoratorType) {
@@ -371,19 +349,10 @@ export class CompanyService {
 
     try {
       //- Khôi phục Company
-      const company = await this.companyModel.findOneAndUpdate(
-        { _id: id, isDeleted: true },
-        {
-          isDeleted: false,
-          updatedBy: {
-            _id: user.id,
-            email: user.email,
-            name: user.name,
-            avatar: user.avatar,
-          },
-          $unset: { deletedAt: 1, deletedBy: 1 }, // Xóa vết tích xóa
-        },
-        { session, new: true },
+      const company = await this.companyRepository.restoreSoftDeleted(
+        id,
+        user,
+        session,
       );
 
       if (!company) {
@@ -424,7 +393,7 @@ export class CompanyService {
 
     try {
       //- tìm công ty
-      const company = await this.companyModel.findById(companyID);
+      const company = await this.companyRepository.findByIdRaw(companyID);
       if (!company) throw new BadRequestException('Công ty không tồn tại');
 
       //- Tìm người sở hữu công ty (Owner) để thông báo
@@ -436,7 +405,7 @@ export class CompanyService {
       //- xét hành động
       if (action === 'REJECT') {
         // 1. Xóa công ty
-        await this.companyModel.findByIdAndDelete(companyID, { session });
+        await this.companyRepository.hardDeleteById(companyID, session);
 
         // 2. Reset User về trạng thái ban đầu (Xóa role admin, xóa info công ty)
         if (owner) {
@@ -447,11 +416,7 @@ export class CompanyService {
         }
       } else {
         // 3. Chấp nhận: Đổi trạng thái Company sang ACCEPT
-        await this.companyModel.updateOne(
-          { _id: companyID },
-          { $set: { status: 'ACCEPT' } },
-          { session },
-        );
+        await this.companyRepository.updateStatus(companyID, 'ACCEPT', session);
 
         //- khi chấp nhận công ty, tự động kích hoạt tất cả user trong công ty đó
         //- phòng trường hợp khi tạo cty thì userStatus để active nhưng set lại pending cho công ty thì userStatus bị reset về pending
@@ -513,7 +478,7 @@ export class CompanyService {
         throw new BadRequestCustom('ID company không đúng định dạng', !!id);
       }
 
-      const company = await this.companyModel.findById(id);
+      const company = await this.companyRepository.findByIdRaw(id);
       if (!company)
         throw new BadRequestCustom('ID company không tìm thấy', !!id);
 
@@ -528,7 +493,6 @@ export class CompanyService {
         await this.userService.resetUsersStatusByCompanyID(id, 'PENDING');
       }
 
-      const filter = { _id: id };
       const update = {
         $set: {
           ...dataTranslation,
@@ -541,7 +505,7 @@ export class CompanyService {
         },
       };
 
-      const result = await this.companyModel.updateOne(filter, update);
+      const result = await this.companyRepository.updateByIdRaw(id, update);
 
       if (result.modifiedCount === 0)
         throw new BadRequestCustom('Lỗi sửa company', !!id);
@@ -609,22 +573,7 @@ export class CompanyService {
         return { message: 'Không có công ty nào được chọn' };
 
       // 1. Soft Delete các công ty trong danh sách
-      await this.companyModel.updateMany(
-        { _id: { $in: ids } },
-        {
-          $set: {
-            isDeleted: true,
-            deletedAt: new Date(),
-            deletedBy: {
-              _id: user.id,
-              email: user.email,
-              name: user.name,
-              avatar: user.avatar,
-            },
-          },
-        },
-        { session },
-      );
+      await this.companyRepository.softDeleteMany(ids, user, session);
 
       // 2. Vô hiệu hóa toàn bộ nhân viên thuộc các công ty này
       await this.userService.deactivateByCompany(ids, session);
@@ -653,19 +602,7 @@ export class CompanyService {
 
     try {
       // 1. Soft Delete Company
-      await this.companyModel.updateOne(
-        { _id: companyId },
-        {
-          isDeleted: true,
-          deletedBy: {
-            _id: user.id,
-            email: user.email,
-            name: user.name,
-            avatar: user.avatar,
-          },
-        },
-        { session },
-      );
+      await this.companyRepository.softDeleteOne(companyId, user, session);
 
       // 2. Vô hiệu hóa toàn bộ nhân viên thuộc công ty
       await this.userService.deactivateByCompany([companyId], session);
@@ -693,19 +630,10 @@ export class CompanyService {
     session: mongoose.ClientSession,
   ) {
     // 1. Khôi phục trạng thái Company
-    const company = await this.companyModel.findOneAndUpdate(
-      { _id: companyId, isDeleted: true },
-      {
-        $set: { isDeleted: false },
-        $unset: { deletedAt: 1, deletedBy: 1 },
-        updatedBy: {
-          _id: user.id,
-          email: user.email,
-          name: user.name,
-          avatar: user.avatar,
-        },
-      },
-      { session, new: true },
+    const company = await this.companyRepository.restoreSoftDeleted(
+      companyId,
+      user,
+      session,
     );
 
     if (!company) return null;
@@ -726,21 +654,7 @@ export class CompanyService {
     session: mongoose.ClientSession,
   ) {
     // 1. Soft Delete Company
-    await this.companyModel.updateOne(
-      { _id: companyId },
-      {
-        $set: {
-          isDeleted: true,
-          deletedBy: {
-            _id: user.id,
-            email: user.email,
-            name: user.name,
-            avatar: user.avatar,
-          },
-        },
-      },
-      { session },
-    );
+    await this.companyRepository.softDeleteOne(companyId, user, session);
 
     // 2. Vô hiệu hóa toàn bộ nhân viên (userStatus = INACTIVE)
     await this.userService.deactivateByCompany([companyId], session);

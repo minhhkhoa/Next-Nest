@@ -70,10 +70,10 @@ export function DetailedInfoSection() {
       sumary: formData?.sumary?.trim() || "",
       gender: formData?.gender || "Nam",
       industryID: Array.isArray(formData?.industryID)
-        ? formData?.industryID.map((ind) => ind?._id)
+        ? formData?.industryID?.map((ind) => ind?._id)
         : [],
       skillID: Array.isArray(formData?.skillID)
-        ? formData?.skillID.map((skill) => skill?._id)
+        ? formData?.skillID?.map((skill) => skill?._id)
         : [],
       desiredSalary: {
         min: Number(formData?.desiredSalary?.min) || 0,
@@ -248,7 +248,7 @@ export function DetailedInfoSection() {
           {isEditing ? (
             <MultiSelectTree
               selected={
-                formData?.industryID.map((item) => {
+                formData?.industryID?.map((item) => {
                   return {
                     label: item.name,
                     value: item._id,
@@ -262,7 +262,7 @@ export function DetailedInfoSection() {
                   ? industryData?.data?.result
                   : [];
                 const selectedIndustries =
-                  industryDataArray.filter((industry) =>
+                  industryDataArray?.filter((industry) =>
                     options.some((option) => option.value === industry._id)
                   ) ?? [];
 
@@ -358,7 +358,7 @@ export function DetailedInfoSection() {
                 <Input
                   id="salary-min"
                   type="number"
-                  value={formData?.desiredSalary.min}
+                  value={formData?.desiredSalary?.min}
                   onChange={(e) => handleSalaryChange("min", e.target.value)}
                   placeholder="0"
                   className="mt-2"
@@ -374,7 +374,7 @@ export function DetailedInfoSection() {
                 <Input
                   id="salary-max"
                   type="number"
-                  value={formData?.desiredSalary.max}
+                  value={formData?.desiredSalary?.max}
                   onChange={(e) => handleSalaryChange("max", e.target.value)}
                   placeholder="0"
                   className="mt-2"
@@ -384,7 +384,7 @@ export function DetailedInfoSection() {
           ) : (
             <p className="mt-2 text-foreground">
               {formatSalary(formData?.desiredSalary?.min ?? 0)} -{" "}
-              {formatSalary(formData?.desiredSalary.max ?? 0)}
+              {formatSalary(formData?.desiredSalary?.max ?? 0)}
             </p>
           )}
         </div>
@@ -400,7 +400,7 @@ export function DetailedInfoSection() {
             />
           ) : (
             <div className="space-y-3">
-              {formData?.education && formData?.education.length > 0 ? (
+              {formData?.education && formData?.education?.length > 0 ? (
                 formData?.education.map((edu, index) => (
                   <Card key={index} className="p-4 bg-muted">
                     <p className="font-medium text-foreground">{edu.school}</p>

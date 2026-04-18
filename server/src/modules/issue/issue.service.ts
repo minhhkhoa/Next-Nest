@@ -1,13 +1,10 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import mongoose from 'mongoose';
 import aqp from 'api-query-params';
 import { CreateIssueDto } from './dto/create-issue.dto';
 import { UpdateIssueAdminDto, UpdateIssueDto } from './dto/update-issue.dto';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
-import { Issue, IssueDocument } from './schemas/issue.schema';
 import { FindIssueQueryDto } from './dto/issueDto.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ConfigService } from '@nestjs/config';
@@ -15,6 +12,7 @@ import { UserService } from '../user/user.service';
 import { NotificationType } from 'src/common/constants/notification-type.enum';
 import { TranslationService } from 'src/common/translation/translation.service';
 import { MailService } from '../mail/mail.service';
+import { IssueRepository } from './repository/issue.repository';
 
 @Injectable()
 export class IssueService {
@@ -25,8 +23,7 @@ export class IssueService {
     @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
     private eventEmitter: EventEmitter2,
-    @InjectModel(Issue.name)
-    private issueModel: SoftDeleteModel<IssueDocument>,
+    private readonly issueRepository: IssueRepository,
   ) {}
 
   async create(createIssueDto: CreateIssueDto, user: UserDecoratorType) {
@@ -39,7 +36,7 @@ export class IssueService {
 
       const { title, description, type, targetId, attachments } = dataLang;
 
-      const newIssue = await this.issueModel.create({
+      const newIssue = await this.issueRepository.create({
         title,
         description,
         type,
@@ -148,15 +145,16 @@ export class IssueService {
       const defaultLimit = +pageSize > 0 ? +pageSize : 10;
       const offset = (defaultPage - 1) * defaultLimit;
 
-      const totalItems = await this.issueModel.countDocuments(filterConditions);
+      const totalItems = await this.issueRepository.countByFilter(
+        filterConditions,
+      );
       const totalPages = Math.ceil(totalItems / defaultLimit);
 
-      const result = await this.issueModel
-        .find(filterConditions)
-        .skip(offset)
-        .limit(defaultLimit)
-        .sort('-createdAt')
-        .exec();
+      const result = await this.issueRepository.findByFilterWithPagination(
+        filterConditions,
+        offset,
+        defaultLimit,
+      );
 
       return {
         meta: {
@@ -203,15 +201,16 @@ export class IssueService {
       const defaultLimit = +pageSize > 0 ? +pageSize : 10;
       const offset = (defaultPage - 1) * defaultLimit;
 
-      const totalItems = await this.issueModel.countDocuments(filterConditions);
+      const totalItems = await this.issueRepository.countByFilter(
+        filterConditions,
+      );
       const totalPages = Math.ceil(totalItems / defaultLimit);
 
-      const result = await this.issueModel
-        .find(filterConditions)
-        .skip(offset)
-        .limit(defaultLimit)
-        .sort('-createdAt')
-        .exec();
+      const result = await this.issueRepository.findByFilterWithPagination(
+        filterConditions,
+        offset,
+        defaultLimit,
+      );
 
       return {
         meta: {
@@ -236,7 +235,7 @@ export class IssueService {
         throw new BadRequestCustom('ID không đúng định dạng', true);
       }
 
-      const issue = await this.issueModel.findById(id).lean();
+      const issue = await this.issueRepository.findByIdLeanRaw(id);
       if (!issue) throw new BadRequestCustom('Không tìm thấy yêu cầu', true);
 
       return issue;
@@ -267,7 +266,7 @@ export class IssueService {
         throw new BadRequestCustom('ID không đúng định dạng', true);
       }
 
-      const updatedIssue = await this.issueModel.findByIdAndUpdate(
+      const updatedIssue = await this.issueRepository.findByIdAndUpdateRaw(
         id,
         {
           $set: {
@@ -343,7 +342,7 @@ export class IssueService {
     status: string,
     user: UserDecoratorType,
   ) {
-    return await this.issueModel.findByIdAndUpdate(
+    return await this.issueRepository.findByIdAndUpdateRaw(
       id,
       {
         status,
@@ -363,7 +362,7 @@ export class IssueService {
    */
   async update(id: string, updateDto: UpdateIssueDto, user: UserDecoratorType) {
     try {
-      const issue = await this.issueModel.findById(id);
+      const issue = await this.issueRepository.findByIdRaw(id);
       if (!issue) throw new BadRequestCustom('Không tìm thấy yêu cầu', true);
 
       //- Kiểm tra chính chủ
@@ -388,7 +387,7 @@ export class IssueService {
         updateDto,
       );
 
-      return await this.issueModel.findByIdAndUpdate(
+      return await this.issueRepository.findByIdAndUpdateRaw(
         id,
         { ...dataLang },
         { new: true },
@@ -405,7 +404,7 @@ export class IssueService {
       }
 
       //- check tồn tại yêu cầu
-      const issue = await this.issueModel.findOne({ _id: id });
+      const issue = await this.issueRepository.findByIdRaw(id);
       if (!issue) throw new BadRequestCustom('Không tìm thấy yêu cầu', true);
 
       const isOwner = issue.createdBy._id.toString() === user.id;
@@ -423,10 +422,9 @@ export class IssueService {
         deletedAt: new Date(),
       };
 
-      const result = await this.issueModel.updateOne(
-        { _id: id },
-        { $set: update },
-      );
+      const result = await this.issueRepository.updateByIdRaw(id, {
+        $set: update,
+      });
 
       return result;
     } catch (error) {
@@ -451,21 +449,16 @@ export class IssueService {
         );
       }
 
-      const result = await this.issueModel.updateMany(
-        { _id: { $in: validIds } },
-        {
-          $set: {
-            isDeleted: true,
-            deletedAt: new Date(),
-            deletedBy: {
-              _id: user.id,
-              name: user.name,
-              email: user.email,
-              avatar: user.avatar,
-            },
-          },
+      const result = await this.issueRepository.updateManyByIdsRaw(validIds, {
+        isDeleted: true,
+        deletedAt: new Date(),
+        deletedBy: {
+          _id: user.id,
+          name: user.name,
+          email: user.email,
+          avatar: user.avatar,
         },
-      );
+      });
 
       if (result.modifiedCount === 0) {
         return {

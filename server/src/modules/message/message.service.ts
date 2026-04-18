@@ -1,18 +1,16 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
-import { InjectModel } from '@nestjs/mongoose';
-import { Message, MessageDocument } from './schemas/message.schema';
-import { Model, Types } from 'mongoose';
+import { Types } from 'mongoose';
 import { ConversationService } from '../conversation/conversation.service';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { ConfigService } from '@nestjs/config';
 import { ChatGateway } from './chat.gateway';
+import { MessageRepository } from './repository/message.repository';
 
 @Injectable()
 export class MessageService {
   constructor(
-    @InjectModel(Message.name)
-    private messageModel: Model<MessageDocument>,
+    private readonly messageRepository: MessageRepository,
     private conversationService: ConversationService,
     private configService: ConfigService,
     private chatGateway: ChatGateway, // Inject ChatGateway
@@ -26,7 +24,7 @@ export class MessageService {
       const senderType =
         user.roleCodeName === candidateText ? 'CANDIDATE' : 'RECRUITER';
 
-      const newMessage = await this.messageModel.create({
+      const newMessage = await this.messageRepository.createAndPopulateSender({
         conversationId: new Types.ObjectId(createMessageDto.conversationId),
         senderId: new Types.ObjectId(user.id),
         senderType,
@@ -40,9 +38,6 @@ export class MessageService {
           avatar: user.avatar,
         },
       });
-
-      // Cần populate thông tin người gửi để Frontend có thể hiển thị ảnh đại diện và tên ngay trong tin nhắn mới
-      await newMessage.populate('senderId', 'name avatar email');
 
       //- Tạo text tóm tắt lastMessage tuỳ theo type
       let lastMsgText = 'Đã gửi một tin nhắn mới';
@@ -84,16 +79,15 @@ export class MessageService {
   ) {
     const skip = (page - 1) * limit;
 
-    const messages = await this.messageModel
-      .find({ conversationId: new Types.ObjectId(conversationId) })
-      .sort({ createdAt: -1 }) // Sắp xếp mới nhất lên đầu (FE thường load từ dưới lên)
-      .skip(skip)
-      .limit(limit)
-      .populate('senderId', 'name avatar email'); // Dùng khi cần hiển thị tên recruiter cho candidate
+    const messages = await this.messageRepository.findByConversationWithPagination(
+      conversationId,
+      skip,
+      limit,
+    );
 
-    const total = await this.messageModel.countDocuments({
-      conversationId: new Types.ObjectId(conversationId),
-    });
+    const total = await this.messageRepository.countByConversation(
+      conversationId,
+    );
 
     return {
       messages: messages.reverse(), // Đảo lại mảng để messages cũ ở trên, mới ở dưới phù hợp giao diện khung chat

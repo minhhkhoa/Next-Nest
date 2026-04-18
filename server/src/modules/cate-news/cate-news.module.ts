@@ -5,6 +5,7 @@ import { TranslationModule } from 'src/common/translation/translation.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CateNews, CateNewsSchema } from './schemas/cate-new.schema';
 import { BusinessModule } from 'src/common/decorator/customize';
+import { CateNewsRepository } from './repository/cate-news.repository';
 
 @BusinessModule()
 @Module({
@@ -15,7 +16,7 @@ import { BusinessModule } from 'src/common/decorator/customize';
     ]),
   ],
   controllers: [CateNewsController],
-  providers: [CateNewsService],
+  providers: [CateNewsService, CateNewsRepository],
   exports: [CateNewsService],
 })
 export class CateNewsModule {}

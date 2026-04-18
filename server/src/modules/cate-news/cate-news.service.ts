@@ -2,13 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { CreateCateNewsDto } from './dto/create-cate-new.dto';
 import { UpdateCateNewsDto } from './dto/update-cate-new.dto';
 import { TranslationService } from 'src/common/translation/translation.service';
-import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
-import { CateNews, CateNewsDocument } from './schemas/cate-new.schema';
-import { InjectModel } from '@nestjs/mongoose';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 import mongoose from 'mongoose';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import slugify from 'slugify';
+import { CateNewsRepository } from './repository/cate-news.repository';
 
 @Injectable()
 export class CateNewsService {
@@ -16,8 +14,7 @@ export class CateNewsService {
 
   constructor(
     private readonly translationService: TranslationService,
-    @InjectModel(CateNews.name)
-    private cateNewsModel: SoftDeleteModel<CateNewsDocument>,
+    private readonly cateNewsRepository: CateNewsRepository,
   ) {}
 
   async create(createCateNewsDto: CreateCateNewsDto, user: UserDecoratorType) {
@@ -27,7 +24,7 @@ export class CateNewsService {
         createCateNewsDto,
       );
 
-      const cateNews = await this.cateNewsModel.create({
+      const cateNews = await this.cateNewsRepository.create({
         ...dataLang,
         createdBy: {
           _id: user.id,
@@ -50,7 +47,7 @@ export class CateNewsService {
   async findAll(traceId: string) {
     const startDB = Date.now();
     try {
-      const list = await this.cateNewsModel.find({ isDeleted: false }).lean(); //- lean để chuyển về obj thường
+      const list = await this.cateNewsRepository.findAllNotDeleted();
 
       const dbDuration = Date.now() - startDB;
       this.logger.log(`[${traceId}] MongoDB quét mất: ${dbDuration}ms`);
@@ -77,10 +74,11 @@ export class CateNewsService {
         throw new BadRequestCustom('ID CateNews không đúng định dạng', !!id);
       }
 
-      const cateNews = await this.cateNewsModel.findById(id);
+      const cateNews = await this.cateNewsRepository.findByIdIncludingDeleted(id);
 
-      if (!cateNews)
+      if (!cateNews) {
         throw new BadRequestCustom('ID cateNews không tìm thấy', !!id);
+      }
 
       if (cateNews?.isDeleted) {
         throw new BadRequestCustom(
@@ -105,9 +103,10 @@ export class CateNewsService {
         throw new BadRequestCustom('ID CateNews không đúng định dạng', !!id);
       }
 
-      const cateNews = await this.cateNewsModel.findById(id);
-      if (!cateNews)
+      const cateNews = await this.cateNewsRepository.findByIdIncludingDeleted(id);
+      if (!cateNews) {
         throw new BadRequestCustom('ID cateNews không tìm thấy', !!id);
+      }
 
       //- cần translation trước đã
       const dataTranslation = await this.translationService.translateModuleData(
@@ -127,7 +126,7 @@ export class CateNewsService {
         },
       };
 
-      const result = await this.cateNewsModel.updateOne(filter, update);
+      const result = await this.cateNewsRepository.updateMany(filter, update);
 
       if (result.modifiedCount === 0)
         throw new BadRequestCustom('Lỗi sửa cateNews', !!id);
@@ -143,9 +142,10 @@ export class CateNewsService {
         throw new BadRequestCustom('ID cateNews không đúng định dạng', !!id);
       }
 
-      const cateNews = await this.cateNewsModel.findById(id);
-      if (!cateNews)
+      const cateNews = await this.cateNewsRepository.findByIdIncludingDeleted(id);
+      if (!cateNews) {
         throw new BadRequestCustom('ID cateNews không tìm thấy', !!id);
+      }
 
       const isDeleted = cateNews.isDeleted;
 
@@ -153,7 +153,7 @@ export class CateNewsService {
         throw new BadRequestCustom('CateNews này đã được xóa', !!isDeleted);
 
       const filter = { _id: id };
-      const result = this.cateNewsModel.softDelete(filter);
+      const result = await this.cateNewsRepository.softDelete(filter);
 
       if (!result) throw new BadRequestCustom('Lỗi xóa cateNews', !!id);
 

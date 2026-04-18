@@ -1,20 +1,17 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { CreateBookmarkDto } from './dto/create-bookmark.dto';
-import { Bookmark, BookmarkDocument } from './schemas/bookmark.schema';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 import mongoose from 'mongoose';
 import { FindBookmarkQueryDto } from './dto/bookmarkDto.dto';
 import { CompanyService } from '../company/company.service';
 import { generateMultiLangSlug } from 'src/utils/generate-slug';
+import { BookmarkRepository } from './repository/bookmark.repository';
 
 @Injectable()
 export class BookmarkService {
   constructor(
-    @InjectModel(Bookmark.name)
-    private bookmarkModel: SoftDeleteModel<BookmarkDocument>,
+    private readonly bookmarkRepository: BookmarkRepository,
     @Inject(forwardRef(() => CompanyService))
     private readonly companyService: CompanyService,
   ) {}
@@ -24,25 +21,27 @@ export class BookmarkService {
       const { itemId, itemType } = createBookmarkDto;
 
       //- Check exist
-      const existingBookmark = await this.bookmarkModel.findOne({
-        userId: user.id,
-        itemId: itemId,
-        itemType: itemType,
-        isDeleted: false,
-      });
+      const existingBookmark = await this.bookmarkRepository.findOne({
+        filter: {
+          userId: user.id,
+          itemId,
+          itemType,
+        },
+      },
+    );
 
       if (existingBookmark) {
         throw new BadRequestCustom('Bạn đã đánh dấu mục này rồi');
       }
 
-      // TODO: Nếu muốn kĩ hơn, có thể check xem itemId có tồn tại trong collection tương ứng (Job, Company, News) hay không.
+      // TODO: Nếu muốn kĩ hơn, có thể check xem itemId có tồn tại trong collection tương ứng (Job, Company) hay không.
       // Nhưng để đơn giản và linh hoạt, tạm thời tin tưởng client gửi đúng.
       // Hoặc nếu cần thiết, inject các service/model tương ứng vào kiểm tra.
 
-      const newBookmark = await this.bookmarkModel.create({
+      const newBookmark = await this.bookmarkRepository.create({
         userId: user.id,
-        itemId: itemId,
-        itemType: itemType,
+        itemId,
+        itemType,
         createdBy: {
           _id: user.id,
           name: user.name,
@@ -79,8 +78,9 @@ export class BookmarkService {
       const defaultLimit = +pageSize > 0 ? +pageSize : 10;
       const skip = (defaultPage - 1) * defaultLimit;
 
-      const totalItems =
-        await this.bookmarkModel.countDocuments(filterConditions);
+      const totalItems = await this.bookmarkRepository.countByFilter(
+        filterConditions,
+      );
       const totalPages = Math.ceil(totalItems / defaultLimit);
 
       const pipeline: any[] = [
@@ -177,7 +177,9 @@ export class BookmarkService {
         });
       }
 
-      const result = await this.bookmarkModel.aggregate(pipeline);
+      const result = await this.bookmarkRepository.aggregateWithPipeline(
+        pipeline,
+      );
 
       //- Thêm slug cho companyDetail nếu có
       if (itemType === 'company' || !itemType) {
@@ -211,11 +213,10 @@ export class BookmarkService {
         throw new BadRequestCustom('ID không hợp lệ', true);
       }
 
-      const bookmark = await this.bookmarkModel.findOne({
-        _id: id,
-        userId: user.id,
-        isDeleted: false,
-      });
+      const bookmark = await this.bookmarkRepository.findActiveByIdAndUser(
+        id,
+        user.id,
+      );
 
       if (!bookmark) {
         throw new BadRequestCustom(
@@ -225,7 +226,7 @@ export class BookmarkService {
       }
 
       //- xóa luôn
-      const result = await this.bookmarkModel.deleteOne({ _id: id });
+      const result = await this.bookmarkRepository.hardDeleteById(id);
 
       if (bookmark.itemType === 'company') {
         const itemIdStr = bookmark.itemId.toString();
@@ -241,21 +242,20 @@ export class BookmarkService {
   //- Xóa theo itemId (Ví dụ nút bookmark toggle trên UI Job Detail)
   async removeByItemId(itemId: string, user: UserDecoratorType) {
     try {
-      const bookmark = await this.bookmarkModel.findOne({
-        userId: new mongoose.Types.ObjectId(user.id),
-        itemId: new mongoose.Types.ObjectId(itemId),
-        isDeleted: false,
-      });
+      const bookmark = await this.bookmarkRepository.findActiveByUserAndItemId(
+        user.id,
+        itemId,
+      );
 
       if (!bookmark) {
         throw new BadRequestCustom('Không tìm thấy bookmark để xóa', true);
       }
 
       //- xóa luôn
-      const result = await this.bookmarkModel.deleteOne({
-        userId: new mongoose.Types.ObjectId(user.id),
-        itemId: new mongoose.Types.ObjectId(itemId),
-      });
+      const result = await this.bookmarkRepository.hardDeleteByUserAndItemId(
+        user.id,
+        itemId,
+      );
 
       if (bookmark.itemType === 'company') {
         const itemIdStr = bookmark.itemId.toString();
@@ -284,10 +284,9 @@ export class BookmarkService {
       }
 
       // Chỉ lấy itemId để client check
-      const bookmarks = await this.bookmarkModel
-        .find(filterConditions)
-        .select('itemId itemType')
-        .lean();
+      const bookmarks = await this.bookmarkRepository.findAllItemIds(
+        filterConditions,
+      );
 
       return bookmarks;
     } catch (error) {

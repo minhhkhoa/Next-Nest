@@ -17,9 +17,6 @@ import mongoose from 'mongoose';
 import { TranslationService } from 'src/common/translation/translation.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ConfigService } from '@nestjs/config';
-import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
-import { InjectModel } from '@nestjs/mongoose';
-import { Job, JobDocument } from './schemas/job.schema';
 import { generateMultiLangSlug, slugify } from 'src/utils/generate-slug';
 import { UserService } from '../user/user.service';
 import { NotificationType } from 'src/common/constants/notification-type.enum';
@@ -34,6 +31,7 @@ import { BookmarkService } from '../bookmark/bookmark.service';
 import { Bookmark } from '../bookmark/schemas/bookmark.schema';
 import { IndustryService } from '../industry/industry.service';
 import { LEVEL_OPTIONS } from 'src/common/constants/company-const';
+import { JobsRepository } from './repository/jobs.repository';
 
 @Injectable()
 export class JobsService {
@@ -42,8 +40,7 @@ export class JobsService {
     private eventEmitter: EventEmitter2,
     private configService: ConfigService,
     @Inject(forwardRef(() => UserService)) private userService: UserService,
-    @InjectModel(Job.name)
-    private jobModel: SoftDeleteModel<JobDocument>,
+    private readonly jobsRepository: JobsRepository,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly issueService: IssueService,
     @Inject(forwardRef(() => ApplicationService))
@@ -79,7 +76,7 @@ export class JobsService {
 
       //- Update Job
       const { jobId, isHot, hotUntil, issueId } = updateHotJobDto;
-      const job = await this.jobModel.findById(jobId);
+      const job = await this.jobsRepository.findByIdRaw(jobId);
       if (!job) {
         throw new BadRequestCustom('Công việc không tồn tại');
       }
@@ -168,7 +165,7 @@ export class JobsService {
       }
 
       //- Validate Job tồn tại & thuộc về công ty user
-      const job = await this.jobModel.findOne({
+      const job = await this.jobsRepository.findOneRaw({
         _id: requestHotJobDto.targetId,
         isDeleted: false,
       });
@@ -263,7 +260,7 @@ export class JobsService {
       const isAdminCreating =
         recruiterAdmin?._id.toString() === user.id.toString();
 
-      const newJob = await this.jobModel.create({
+      const newJob = await this.jobsRepository.createRaw({
         ...dataLang,
         slug: createSlug,
         isActive: isAdminCreating, //- Tự động duyệt nếu là recruiter_admin
@@ -404,8 +401,8 @@ export class JobsService {
       );
 
       const [countResult, result] = await Promise.all([
-        this.jobModel.aggregate(countPipeline).exec(),
-        this.jobModel.aggregate(pipeline).exec(),
+        this.jobsRepository.aggregateWithPipeline(countPipeline),
+        this.jobsRepository.aggregateWithPipeline(pipeline),
       ]);
 
       const totalItems = countResult.length > 0 ? countResult[0].total : 0;
@@ -567,8 +564,8 @@ export class JobsService {
       );
 
       const [countResult, result] = await Promise.all([
-        this.jobModel.aggregate(countPipeline).exec(),
-        this.jobModel.aggregate(pipeline).exec(),
+        this.jobsRepository.aggregateWithPipeline(countPipeline),
+        this.jobsRepository.aggregateWithPipeline(pipeline),
       ]);
 
       const totalItems = countResult.length > 0 ? countResult[0].total : 0;
@@ -939,8 +936,8 @@ export class JobsService {
       );
 
       const [countResult, result] = await Promise.all([
-        this.jobModel.aggregate(countPipeline).exec(),
-        this.jobModel.aggregate(pipeline).exec(),
+        this.jobsRepository.aggregateWithPipeline(countPipeline),
+        this.jobsRepository.aggregateWithPipeline(pipeline),
       ]);
 
       const totalItems = countResult.length > 0 ? countResult[0].total : 0;
@@ -974,7 +971,7 @@ export class JobsService {
 
   async findAll() {
     try {
-      return await this.jobModel.find().exec();
+      return await this.jobsRepository.findAllRaw();
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }
@@ -988,7 +985,10 @@ export class JobsService {
       const { jobId, action } = verifyDto;
 
       //- Kiểm tra Job tồn tại
-      const job = await this.jobModel.findOne({ _id: jobId, isDeleted: false });
+      const job = await this.jobsRepository.findOneRaw({
+        _id: jobId,
+        isDeleted: false,
+      });
       if (!job) {
         throw new BadRequestCustom(
           'Công việc không tồn tại hoặc đã bị xóa',
@@ -1022,7 +1022,7 @@ export class JobsService {
       };
 
       //- Cập nhật vào db
-      const updatedJob = await this.jobModel.findByIdAndUpdate(
+      const updatedJob = await this.jobsRepository.findByIdAndUpdateRaw(
         jobId,
         updateData,
         { new: true },
@@ -1073,14 +1073,7 @@ export class JobsService {
     }
 
     //- check job
-    const job = await this.jobModel
-      .findOne({
-        _id: id,
-        isDeleted: false,
-      })
-      .populate({ path: 'companyID', model: 'Company' })
-      .populate({ path: 'skills', model: 'Skill' })
-      .exec();
+    const job = await this.jobsRepository.findOneWithCompanyAndSkills(id);
 
     if (!job) {
       throw new BadRequestCustom('Không tìm thấy công việc', true);
@@ -1187,7 +1180,7 @@ export class JobsService {
       }
 
       //- Tìm Job hiện tại
-      const currentJob = await this.jobModel.findOne({
+      const currentJob = await this.jobsRepository.findOneRaw({
         _id: id,
         isDeleted: false,
       });
@@ -1256,7 +1249,7 @@ export class JobsService {
       }
 
       //- Thực hiện cập nhật vào DB
-      const updatedJob = await this.jobModel.findByIdAndUpdate(
+      const updatedJob = await this.jobsRepository.findByIdAndUpdateRaw(
         id,
         {
           ...updatePayload,
@@ -1325,7 +1318,10 @@ export class JobsService {
       }
 
       //- Tìm Job đang ở trạng thái bị xóa
-      const job = await this.jobModel.findOne({ _id: id, isDeleted: true });
+      const job = await this.jobsRepository.findOneRaw({
+        _id: id,
+        isDeleted: true,
+      });
 
       if (!job) {
         throw new BadRequestCustom(
@@ -1335,7 +1331,7 @@ export class JobsService {
       }
 
       //- Thực hiện khôi phục
-      return await this.jobModel.updateOne(
+      return await this.jobsRepository.updateOneRaw(
         { _id: id },
         {
           $set: {
@@ -1395,7 +1391,7 @@ export class JobsService {
         filter.companyID = new mongoose.Types.ObjectId(userCompanyID);
       }
 
-      const result = await this.jobModel.updateMany(filter, {
+      const result = await this.jobsRepository.updateManyRaw(filter, {
         $set: {
           isDeleted: true,
           deletedAt: new Date(),
@@ -1430,16 +1426,7 @@ export class JobsService {
     companyIds: string[],
     session: mongoose.ClientSession,
   ) {
-    return await this.jobModel.updateMany(
-      {
-        companyID: {
-          $in: companyIds.map((id) => new mongoose.Types.ObjectId(id)),
-        },
-        isDeleted: false,
-      },
-      { $set: { isDeleted: true, status: 'inactive' } },
-      { session },
-    );
+    return this.jobsRepository.softDeleteManyByCompanyIds(companyIds, session);
   }
 
   //- hàm này là đối ngược với hàm softDeleteManyByCompany, ta sẽ khôi phục công ty
@@ -1447,15 +1434,7 @@ export class JobsService {
     companyId: string,
     session: mongoose.ClientSession,
   ) {
-    return await this.jobModel.updateMany(
-      {
-        companyID: new mongoose.Types.ObjectId(companyId),
-        isDeleted: true,
-        status: 'inactive',
-      },
-      { $set: { isDeleted: false, status: 'active' } },
-      { session },
-    );
+    return this.jobsRepository.restoreManyByCompanyId(companyId, session);
   }
 
   async remove(id: string, user: UserDecoratorType) {
@@ -1464,7 +1443,10 @@ export class JobsService {
         throw new BadRequestCustom('ID không hợp lệ', true);
       }
 
-      const job = await this.jobModel.findOne({ _id: id, isDeleted: false });
+      const job = await this.jobsRepository.findOneRaw({
+        _id: id,
+        isDeleted: false,
+      });
       if (!job) {
         throw new BadRequestCustom(
           'Không tìm thấy công việc hoặc đã bị xóa',
@@ -1496,7 +1478,7 @@ export class JobsService {
         );
       }
 
-      return await this.jobModel.updateOne(
+      return await this.jobsRepository.updateOneRaw(
         { _id: id },
         {
           isDeleted: true,
@@ -1526,7 +1508,7 @@ export class JobsService {
       if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new BadRequestCustom('ID không hợp lệ', true);
       }
-      const currentJob = await this.jobModel.findById(id).select('industryID');
+      const currentJob = await this.jobsRepository.findByIdSelectIndustry(id);
 
       if (!currentJob) {
         return {
@@ -1553,24 +1535,13 @@ export class JobsService {
         };
       }
 
-      const query = {
-        _id: { $ne: id },
-        industryID: { $in: industryIDs },
-        isActive: true,
-        status: 'active',
-        isDeleted: false,
-      };
-
-      const [relatedJobs, totalItems] = await Promise.all([
-        this.jobModel
-          .find(query)
-          .skip(skip)
-          .limit(limit)
-          .populate('companyID')
-          .populate('skills')
-          .populate('industryID'),
-        this.jobModel.countDocuments(query),
-      ]);
+      const { relatedJobs, totalItems } =
+        await this.jobsRepository.findRelatedJobsByIndustry(
+          id,
+          industryIDs,
+          skip,
+          limit,
+        );
 
       const totalPages = Math.ceil(totalItems / limit);
 
@@ -1604,7 +1575,7 @@ export class JobsService {
       if (!mongoose.Types.ObjectId.isValid(jobId)) {
         throw new BadRequestCustom('ID công việc không hợp lệ');
       }
-      const job = await this.jobModel.findOne({
+      const job = await this.jobsRepository.findOneRaw({
         _id: jobId,
         isDeleted: false,
         isActive: true, //- Chỉ cho phép ứng tuyển job đã duyệt

@@ -1,4 +1,5 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Prop } from 'src/common/override/override-prop';
 import mongoose, { HydratedDocument, Types } from 'mongoose';
 import { APPLICATION_STATUS } from 'src/common/constants';
 import { Company } from 'src/modules/company/schemas/company.schema';

@@ -1,7 +1,9 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { NotificationType } from 'src/common/constants/notification-type.enum';
 import { MultiLang } from 'src/utils/typeSchemas';
+import { Prop } from 'src/common/override/override-prop';
+
 
 @Schema({ timestamps: true })
 export class Notification {

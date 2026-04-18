@@ -2,20 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { CreateSkillDto } from './dto/create-skill.dto';
 import { UpdateSkillDto } from './dto/update-skill.dto';
 import { TranslationService } from 'src/common/translation/translation.service';
-import { Skill, SkillDocument } from './schemas/skill.schema';
-import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
-import { InjectModel } from '@nestjs/mongoose';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 import mongoose from 'mongoose';
 import { FindSkillQueryDto } from './dto/skillDto.dto';
 import { IndustryService } from '../industry/industry.service';
+import { SkillRepository } from './repository/skill.repository';
 
 @Injectable()
 export class SkillService {
   constructor(
     private readonly translationService: TranslationService,
-    @InjectModel(Skill.name)
-    private skillModel: SoftDeleteModel<SkillDocument>,
+    private readonly skillRepository: SkillRepository,
     private industryService: IndustryService,
   ) {}
 
@@ -27,7 +24,7 @@ export class SkillService {
         createSkillDto,
       );
 
-      const skill = await this.skillModel.create(dataLang);
+      const skill = await this.skillRepository.createRaw(dataLang);
 
       return {
         _id: skill._id,
@@ -40,7 +37,7 @@ export class SkillService {
 
   findAll() {
     try {
-      return this.skillModel.find({ isDeleted: false }).populate('industryID');
+      return this.skillRepository.findAllActiveWithIndustry();
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }
@@ -79,14 +76,12 @@ export class SkillService {
       const offset = (defaultPage - 1) * defaultLimit;
 
       const [totalItems, result] = await Promise.all([
-        this.skillModel.countDocuments(filterConditions),
-        this.skillModel
-          .find(filterConditions)
-          .skip(offset)
-          .limit(defaultLimit)
-          .sort('-createdAt')
-          .populate({ path: 'industryID', select: '_id name parentId' })
-          .lean(),
+        this.skillRepository.countByFilter(filterConditions),
+        this.skillRepository.findByFilterWithPagination(
+          filterConditions,
+          offset,
+          defaultLimit,
+        ),
       ]);
 
       const totalPages = Math.ceil(totalItems / defaultLimit);
@@ -111,11 +106,7 @@ export class SkillService {
         throw new BadRequestCustom('ID skill không đúng định dạng', !!id);
       }
 
-      const skill = await this.skillModel.findById(id).populate({
-        path: 'industryID',
-        match: { isDeleted: false }, //- Chỉ lấy khi chưa bị xóa mềm
-        select: 'name _id', //- Chỉ lấy name và _id
-      });
+      const skill = await this.skillRepository.findByIdWithIndustry(id);
 
       if (!skill) throw new BadRequestCustom('ID skill không tìm thấy', !!id);
 
@@ -138,7 +129,7 @@ export class SkillService {
         throw new BadRequestCustom('ID skill không đúng định dạng', !!id);
       }
 
-      const skill = await this.skillModel.findById(id);
+      const skill = await this.skillRepository.findByIdRaw(id);
       if (!skill) throw new BadRequestCustom('ID skill không tìm thấy', !!id);
 
       //- cần translation trước đã
@@ -149,7 +140,7 @@ export class SkillService {
       const filter = { _id: id };
       const update = { $set: dataTranslation };
 
-      const result = await this.skillModel.updateOne(filter, update);
+      const result = await this.skillRepository.updateOneRaw(filter, update);
 
       if (result.modifiedCount === 0)
         throw new BadRequestCustom('Lỗi sửa skill', !!id);
@@ -165,7 +156,7 @@ export class SkillService {
         throw new BadRequestCustom('ID skill không đúng định dạng', !!id);
       }
 
-      const skill = await this.skillModel.findById(id);
+      const skill = await this.skillRepository.findByIdRaw(id);
       if (!skill) throw new BadRequestCustom('ID skill không tìm thấy', !!id);
 
       const isDeleted = skill.isDeleted;
@@ -174,7 +165,7 @@ export class SkillService {
         throw new BadRequestCustom('Skill này đã được xóa', !!isDeleted);
 
       const filter = { _id: id };
-      const result = this.skillModel.softDelete(filter);
+      const result = await this.skillRepository.softDeleteRaw(filter);
 
       if (!result) throw new BadRequestCustom('Lỗi xóa skill', !!id);
 

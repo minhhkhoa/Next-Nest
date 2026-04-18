@@ -5,6 +5,7 @@ import { TranslationModule } from 'src/common/translation/translation.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Industry, IndustrySchema } from './schemas/industry.schema';
 import { BusinessModule } from 'src/common/decorator/customize';
+import { IndustryRepository } from './repository/industry.repository';
 
 @BusinessModule()
 @Module({
@@ -15,7 +16,7 @@ import { BusinessModule } from 'src/common/decorator/customize';
     ]),
   ],
   controllers: [IndustryController],
-  providers: [IndustryService],
+  providers: [IndustryService, IndustryRepository],
   exports: [IndustryService],
 })
 export class IndustryModule {}

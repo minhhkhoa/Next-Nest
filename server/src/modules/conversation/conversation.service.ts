@@ -3,23 +3,15 @@ import {
   CreateConversationDto,
   AssignConversationDto,
 } from './dto/create-conversation.dto';
-import { InjectModel } from '@nestjs/mongoose';
-import {
-  Conversation,
-  ConversationDocument,
-} from './schemas/conversation.schema';
-import { Message, MessageDocument } from '../message/schemas/message.schema';
-import { Model, Types } from 'mongoose';
+import { Types } from 'mongoose';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { ConfigService } from '@nestjs/config';
+import { ConversationRepository } from './repository/conversation.repository';
 
 @Injectable()
 export class ConversationService {
   constructor(
-    @InjectModel(Conversation.name)
-    private conversationModel: Model<ConversationDocument>,
-    @InjectModel(Message.name)
-    private messageModel: Model<MessageDocument>,
+    private readonly conversationRepository: ConversationRepository,
     private configService: ConfigService,
   ) {}
 
@@ -69,18 +61,16 @@ export class ConversationService {
       }
 
       //- Kiểm tra xem đã có conversation giữa candidateId và companyId này chưa
-      const existingConv = await this.conversationModel
-        .findOne({
-          candidateId: new Types.ObjectId(candidateId),
-          companyId: new Types.ObjectId(companyId),
-        })
-        .populate(['candidateId', 'companyId']);
+      const existingConv = await this.conversationRepository.findExisting(
+        candidateId,
+        companyId,
+      );
 
       if (existingConv) {
         return existingConv;
       }
 
-      const newConv = await this.conversationModel.create({
+      const newConv = await this.conversationRepository.createAndPopulate({
         candidateId: new Types.ObjectId(candidateId),
         companyId: new Types.ObjectId(companyId),
         assignedRecruiterId,
@@ -92,7 +82,7 @@ export class ConversationService {
         },
       });
 
-      return await newConv.populate(['candidateId', 'companyId']);
+      return newConv;
     } catch (error) {
       throw new BadRequestException('Không thể tạo phòng chat mới');
     }
@@ -117,22 +107,14 @@ export class ConversationService {
         }
       }
 
-      return await this.conversationModel
-        .find(filter)
-        .populate('candidateId', 'name avatar email')
-        .populate('companyId', 'name logo')
-        .sort({ updatedAt: -1 });
+      return await this.conversationRepository.findAllByFilter(filter);
     } catch (error) {
       throw new BadRequestException('Không thể lấy danh sách phòng chat');
     }
   }
 
   async findOne(id: number | string) {
-    return await this.conversationModel
-      .findById(id)
-      .populate('candidateId', 'name avatar email')
-      .populate('companyId', 'name logo')
-      .populate('assignedRecruiterId', 'name avatar email');
+    return await this.conversationRepository.findByIdWithDetails(String(id));
   }
 
   async assign(
@@ -150,49 +132,17 @@ export class ConversationService {
       );
     }
 
-    return await this.conversationModel.findByIdAndUpdate(
+    return await this.conversationRepository.assignRecruiter(
       id,
-      {
-        assignedRecruiterId: new Types.ObjectId(assignDto.assignedRecruiterId),
-      },
-      { new: true },
+      assignDto.assignedRecruiterId,
     );
   }
 
   async markAsRead(id: string, user: UserDecoratorType) {
-    let updateData = {};
     const candidateText = this.configService.get<string>('role_candidate');
-    const readAt = new Date();
-    const conversationObjectId = new Types.ObjectId(id);
-    const readerObjectId = new Types.ObjectId(user.id);
+    const isCandidate = user.roleCodeName === candidateText;
 
-    if (user.roleCodeName === candidateText) {
-      updateData = { unreadCandidate: 0 };
-    } else {
-      updateData = { unreadCompany: 0 };
-    }
-
-    const [updatedConversation] = await Promise.all([
-      this.conversationModel.findByIdAndUpdate(id, updateData, {
-        new: true,
-      }),
-      this.messageModel.updateMany(
-        {
-          conversationId: conversationObjectId,
-          senderId: { $ne: readerObjectId },
-          isDeleted: false,
-          $or: [{ isRead: { $exists: false } }, { isRead: false }],
-        },
-        {
-          $set: {
-            isRead: true,
-            readAt,
-          },
-        },
-      ),
-    ]);
-
-    return updatedConversation;
+    return this.conversationRepository.markAsRead(id, user.id, isCandidate);
   }
 
   async updateLastMessage(
@@ -203,14 +153,11 @@ export class ConversationService {
     const candidateText = this.configService.get<string>('role_candidate');
 
     const isCandidate = userRole === candidateText;
-    const incQuery = isCandidate
-      ? { unreadCompany: 1 }
-      : { unreadCandidate: 1 };
 
-    await this.conversationModel.findByIdAndUpdate(conversationId, {
-      lastMessage: message,
-      lastMessageAt: new Date(),
-      $inc: incQuery,
-    });
+    await this.conversationRepository.updateLastMessage(
+      conversationId,
+      message,
+      isCandidate,
+    );
   }
 }

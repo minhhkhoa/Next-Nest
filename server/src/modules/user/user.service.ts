@@ -7,9 +7,7 @@ import {
 } from '@nestjs/common';
 import { CreateUserDto, RegisterDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
-import { InjectConnection, InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument, UserResponse } from './schemas/user.schema';
+import { UserDocument, UserResponse } from './schemas/user.schema';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 import { hashPassword } from 'src/utils/hashPassword';
 import mongoose, { Types } from 'mongoose';
@@ -25,19 +23,18 @@ import {
   ApproveCompanyDto,
   JoinCompanyDto,
 } from '../company/dto/companyDto.dto';
+import { UserRepository } from './repository/user.repository';
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectModel(User.name)
-    private userModel: SoftDeleteModel<UserDocument>,
+    private readonly userRepository: UserRepository,
     private detailProfileService: DetailProfileService,
     private readonly configService: ConfigService,
     private readonly roleService: RolesService,
     @Inject(forwardRef(() => CompanyService))
     private readonly companyService: CompanyService,
     private eventEmitter: EventEmitter2,
-    @InjectConnection() private readonly connection: mongoose.Connection,
   ) {}
   async create(createUserDto: CreateUserDto) {
     try {
@@ -46,7 +43,7 @@ export class UserService {
       if (password.length < 8)
         throw new BadRequestCustom('Mật khẩu phải có ít nhất 8 ký tự');
 
-      const user = await this.userModel.findOne({ email });
+      const user = await this.userRepository.findByEmail(email);
 
       if (user) throw new BadRequestCustom('Email này đã được đăng ký', !!user);
 
@@ -57,7 +54,7 @@ export class UserService {
         password: hashedPassword,
       };
 
-      const createdUser = await this.userModel.create(newUser);
+      const createdUser = await this.userRepository.createRaw(newUser);
 
       if (!createdUser)
         throw new BadRequestCustom('Tạo người dùng thất bại', !!createdUser);
@@ -81,7 +78,7 @@ export class UserService {
     data: { roleID: string; companyID: string },
     session: any,
   ) {
-    return await this.userModel.updateOne(
+    return this.userRepository.updateOneRaw(
       { _id: userId },
       {
         $set: {
@@ -99,7 +96,7 @@ export class UserService {
 
   //- dành cho recruiter_admin remove recruiter khỏi công ty
   async removeRecruiterFromCompany(userId: string, companyId: string) {
-    return await this.userModel.findOneAndUpdate(
+    return this.userRepository.findOneAndUpdateRaw(
       {
         _id: userId,
         'employerInfo.companyID': companyId,
@@ -117,11 +114,7 @@ export class UserService {
       if (!mongoose.Types.ObjectId.isValid(companyId)) {
         throw new BadRequestException('ID công ty không hợp lệ');
       }
-      return await this.userModel
-        .find({
-          'employerInfo.companyID': companyId,
-        })
-        .select('name email avatar');
+      return this.userRepository.findRecruitersByCompany(companyId);
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }
@@ -139,7 +132,7 @@ export class UserService {
           id: userData.id,
         },
       };
-      const createdUser = await this.userModel.create(data);
+      const createdUser = await this.userRepository.createRaw(data);
 
       if (!createdUser)
         throw new BadRequestCustom('Tạo người dùng thất bại', !!createdUser);
@@ -170,10 +163,7 @@ export class UserService {
         throw new BadRequestCustom('ID không đúng định dạng', !!userId);
       }
 
-      const user = await this.userModel
-        .findById(userId)
-        .select('name email avatar')
-        .lean();
+      const user = await this.userRepository.findByIdBasicForResume(userId);
 
       if (!user) throw new BadRequestCustom('Không tìm thấy người dùng', true);
 
@@ -203,14 +193,7 @@ export class UserService {
   }
 
   async findMembersByCompany(companyId: string) {
-    return await this.userModel
-      .find({
-        'employerInfo.companyID': companyId,
-        isDeleted: false,
-        'employerInfo.userStatus': 'ACTIVE',
-      })
-      .select('name email avatar')
-      .lean();
+    return this.userRepository.findMembersByCompany(companyId);
   }
 
   //- reset userStatus ve pending/active khi công ty dc accept/reject
@@ -226,7 +209,7 @@ export class UserService {
         $set: { 'employerInfo.userStatus': action.toUpperCase() },
       };
 
-      const result = await this.userModel.updateMany(filter, update);
+      const result = await this.userRepository.updateManyRaw(filter, update);
 
       return result;
     } catch (error) {
@@ -236,14 +219,7 @@ export class UserService {
 
   async findAll() {
     try {
-      return this.userModel
-        .find({ isDeleted: false })
-        .populate({
-          path: 'employerInfo.companyID',
-          match: { isDeleted: false },
-          select: 'name _id',
-        })
-        .exec();
+      return this.userRepository.findAllActiveWithCompany();
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
     }
@@ -262,15 +238,7 @@ export class UserService {
         'employerInfo.companyID': companyID,
       };
 
-      const result = await this.userModel
-        .find(filter)
-        .populate({
-          path: 'roleID',
-          match: { isDeleted: false },
-          select: 'name _id',
-        })
-        .select('-password -refresh_token -__v')
-        .lean();
+      const result = await this.userRepository.findMembersByCompanyID(companyID);
 
       return result;
     } catch (error) {
@@ -284,26 +252,10 @@ export class UserService {
         throw new BadRequestCustom('ID user không đúng định dạng', !!id);
       }
 
-      const user = await this.userModel
-        .findById(id)
-        .populate([
-          {
-            path: 'employerInfo.companyID',
-            match: { isDeleted: false },
-            select: 'name _id',
-          },
-          {
-            path: 'roleID',
-            match: { isDeleted: false },
-            select: 'name _id',
-          },
-        ])
-        .select(
-          getPassword
-            ? 'password'
-            : '-password -isDeleted -deletedAt -createdAt -updatedAt -__v',
-        )
-        .lean();
+      const user = await this.userRepository.findByIdWithCompanyAndRole(
+        id,
+        getPassword,
+      );
 
       if (!user) throw new BadRequestCustom('ID user không tìm thấy', !!id);
 
@@ -338,7 +290,7 @@ export class UserService {
       if (!company) throw new BadRequestException('Công ty không tồn tại');
 
       //- Kiểm tra User hiện tại
-      const currentUser = await this.userModel.findById(user?.id);
+      const currentUser = await this.userRepository.findByIdRaw(user?.id);
       if (!currentUser)
         throw new BadRequestException('Người dùng không tồn tại');
 
@@ -350,15 +302,9 @@ export class UserService {
       }
 
       //- Cập nhật employerInfo
-      const result = await this.userModel.updateOne(
-        { _id: new Types.ObjectId(user.id) },
-        {
-          $set: {
-            'employerInfo.companyID': companyID,
-            'employerInfo.userStatus': 'PENDING', //- chờ RECRUITER_ADMIN duyệt
-            'employerInfo.isOwner': false, //- không phải người tạo công ty
-          },
-        },
+      const result = await this.userRepository.updateEmployerInfoByJoinRequest(
+        user.id,
+        companyID,
       );
 
       //- start ping event
@@ -405,7 +351,7 @@ export class UserService {
     const { targetUserId, action } = approveDto;
 
     //- Tìm người xin gia nhập
-    const targetUser = await this.userModel.findById(targetUserId);
+    const targetUser = await this.userRepository.findByIdRaw(targetUserId);
     if (!targetUser) throw new BadRequestException('Người dùng không tồn tại');
 
     //- Kiểm tra tính bảo mật: Admin phải cùng companyID với người xin gia nhập
@@ -419,14 +365,14 @@ export class UserService {
     //- Xử lý theo hành động
     if (action === 'REJECT') {
       //- Từ chối: Xóa trắng employerInfo để họ có thể xin vào chỗ khác
-      return await this.userModel.updateOne(
+      return this.userRepository.updateOneRaw(
         { _id: targetUserId },
         { $unset: { employerInfo: '' } },
       );
     }
 
     //- Chấp nhận: Chuyển status sang ACTIVE
-    const result = await this.userModel.updateOne(
+    const result = await this.userRepository.updateOneRaw(
       { _id: targetUserId },
       {
         $set: { 'employerInfo.userStatus': 'ACTIVE' },
@@ -468,7 +414,7 @@ export class UserService {
 
       if (!defaultRole) throw new BadRequestException('Role không tồn tại');
 
-      return await this.userModel.updateOne(
+      return this.userRepository.updateOneRaw(
         { _id: userId },
         {
           $set: {
@@ -485,7 +431,7 @@ export class UserService {
 
   async findOneByFilter(filter: Record<string, any>) {
     try {
-      const user = await this.userModel.findOne(filter).lean();
+      const user = await this.userRepository.findOneLean(filter);
       return user;
     } catch (error) {
       throw new BadRequestCustom(
@@ -497,20 +443,7 @@ export class UserService {
 
   async findOneWithRole(id: string) {
     try {
-      const user = await this.userModel
-        .findById(id)
-        .populate({
-          path: 'roleID',
-          match: { isDeleted: false }, // Chỉ lấy role chưa bị xóa
-          select: 'name _id', // Lấy thông tin role
-          populate: {
-            path: 'permissions',
-            match: { isDeleted: false }, // Chỉ lấy quyền chưa bị xóa
-            select: 'name apiPath method _id', // Lấy các thông tin cần để check quyền
-          },
-        })
-        .select('-password') // Không bao giờ lấy password ở đây
-        .lean();
+      const user = await this.userRepository.findByIdWithRoleAndPermissions(id);
 
       if (!user) throw new BadRequestCustom('ID user không tìm thấy', !!id);
 
@@ -530,7 +463,7 @@ export class UserService {
       if (!email)
         throw new BadRequestCustom('email khong duoc de trong', !!email);
 
-      const user = await this.userModel.findOne({ email });
+      const user = await this.userRepository.findByEmail(email);
       return user;
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
@@ -559,7 +492,7 @@ export class UserService {
         'employerInfo.isOwner': true, // Lấy người sở hữu để gửi thông báo phê duyệt
       };
 
-      const recruiterAdmin = await this.userModel.findOne(filter);
+      const recruiterAdmin = await this.userRepository.findOneRaw(filter);
 
       if (!recruiterAdmin)
         throw new BadRequestCustom(
@@ -582,7 +515,7 @@ export class UserService {
 
       if (!role) throw new BadRequestCustom('Không tìm thấy vai trò admin');
 
-      const userAdmin = await this.userModel.findOne({
+      const userAdmin = await this.userRepository.findOneRaw({
         roleID: role._id,
       });
 
@@ -602,7 +535,7 @@ export class UserService {
           !!idProvider,
         );
 
-      const user = await this.userModel.findOne({ 'provider.id': idProvider });
+      const user = await this.userRepository.findByProviderId(idProvider);
 
       if (!user) return null;
 
@@ -618,7 +551,7 @@ export class UserService {
         throw new BadRequestCustom('ID user không đúng định dạng', !!id);
       }
 
-      const user = await this.userModel.findById(id);
+      const user = await this.userRepository.findByIdRaw(id);
       if (!user) throw new BadRequestCustom('ID user không tìm thấy', !!id);
 
       const filter = {
@@ -629,7 +562,7 @@ export class UserService {
         $set: updateUserDto,
       };
 
-      const result = await this.userModel.updateOne(filter, update);
+      const result = await this.userRepository.updateOneRaw(filter, update);
 
       if (result.modifiedCount === 0)
         throw new BadRequestCustom('Lỗi sửa user', !!id);
@@ -650,7 +583,7 @@ export class UserService {
         _id: id,
       };
 
-      const result = await this.userModel.updateOne(filter, update);
+      const result = await this.userRepository.updateOneRaw(filter, update);
 
       if (result.modifiedCount === 0)
         throw new BadRequestCustom('Lỗi sửa user', !!id);
@@ -668,7 +601,7 @@ export class UserService {
       const filter = { _id: id };
       const update = { $set: { refresh_token: refreshToken } };
 
-      const result = await this.userModel.updateOne(filter, update);
+      const result = await this.userRepository.updateOneRaw(filter, update);
 
       if (result.modifiedCount === 0)
         throw new BadRequestCustom('Lỗi sửa refresh token', !!id);
@@ -692,7 +625,7 @@ export class UserService {
 
       if (!idRole) throw new BadRequestException('Role không tồn tại');
 
-      const user = await this.userModel.create({
+      const user = await this.userRepository.createRaw({
         ...registerDto,
         roleID: idRole,
       });
@@ -721,7 +654,7 @@ export class UserService {
 
       if (!idRole) throw new BadRequestException('Role không tồn tại');
 
-      const user = await this.userModel.create({
+      const user = await this.userRepository.createRaw({
         ...registerDto,
         roleID: idRole,
       });
@@ -746,7 +679,7 @@ export class UserService {
       throw new BadRequestCustom('ID không đúng định dạng');
     }
 
-    const result = await this.userModel.updateOne(
+    const result = await this.userRepository.updateOneRaw(
       { _id: id, isDeleted: false },
       { $set: { roleID: roleID } },
     );
@@ -766,13 +699,13 @@ export class UserService {
       throw new BadRequestCustom('ID không đúng định dạng');
     }
 
-    const session = await this.connection.startSession();
+    const session = await this.userRepository.startSession();
     session.startTransaction();
 
     try {
       // 1. Khôi phục bản ghi User
       // Chúng ta sử dụng findOneAndUpdate để lấy được dữ liệu bản ghi SAU khi update (new: true)
-      const user = await this.userModel.findOneAndUpdate(
+      const user = await this.userRepository.findOneAndUpdateRaw(
         { _id: id, isDeleted: true },
         {
           $set: { isDeleted: false },
@@ -806,10 +739,9 @@ export class UserService {
             session,
           );
 
-          await this.userModel.updateOne(
-            { _id: id },
-            { $set: { 'employerInfo.userStatus': 'ACTIVE' } },
-            { session },
+          await this.userRepository.reactivateEmployerStatus(
+            id,
+            session,
           );
         } else {
           // CASE 2: Là nhân viên quay lại(bao cả chủ cũ về nhân viên) -> Chỉ kích hoạt nếu công ty đang hoạt động
@@ -819,10 +751,9 @@ export class UserService {
           );
 
           if (company && !company.isDeleted) {
-            await this.userModel.updateOne(
-              { _id: id },
-              { $set: { 'employerInfo.userStatus': 'ACTIVE' } },
-              { session },
+            await this.userRepository.reactivateEmployerStatus(
+              id,
+              session,
             );
           }
         }
@@ -847,7 +778,7 @@ export class UserService {
   ) {
     try {
       // Tìm và cập nhật tất cả User có companyID trùng với ID công ty bị xóa
-      const result = await this.userModel.updateMany(
+      const result = await this.userRepository.updateManyRaw(
         {
           'employerInfo.companyID': { $in: companyIds },
           isDeleted: false,
@@ -870,7 +801,7 @@ export class UserService {
     companyId: string,
     session: mongoose.ClientSession,
   ) {
-    return await this.userModel.updateMany(
+    return this.userRepository.updateManyRaw(
       {
         'employerInfo.companyID': companyId,
         'employerInfo.userStatus': 'INACTIVE',
@@ -896,7 +827,7 @@ export class UserService {
       );
     }
 
-    const session = await this.connection.startSession();
+    const session = await this.userRepository.startSession();
     session.startTransaction();
 
     try {
@@ -905,7 +836,7 @@ export class UserService {
         throw new BadRequestCustom('ID người thay thế không đúng định dạng');
       }
 
-      const userNewOwner = await this.userModel.findById(newOwnerID);
+      const userNewOwner = await this.userRepository.findByIdRaw(newOwnerID);
 
       if (newOwnerID && (!userNewOwner || userNewOwner.isDeleted)) {
         throw new BadRequestCustom(
@@ -914,7 +845,10 @@ export class UserService {
       }
 
       // 1. Lấy thông tin User để kiểm tra vai trò
-      const userToDelete = await this.userModel.findById(id).session(session);
+      const userToDelete = await this.userRepository.findByIdWithSession(
+        id,
+        session,
+      );
       if (!userToDelete || userToDelete.isDeleted) {
         throw new Error('Người dùng không tồn tại hoặc đã bị xóa');
       }
@@ -924,7 +858,7 @@ export class UserService {
       // KIỂM TRA NẾU LÀ CHỦ SỞ HỮU
       if (userToDelete.employerInfo?.isOwner && companyID) {
         //- Tìm xem công ty còn ai khác không
-        const otherStaff = await this.userModel.countDocuments({
+        const otherStaff = await this.userRepository.countByFilter({
           'employerInfo.companyID': companyID,
           _id: { $ne: id },
           isDeleted: false,
@@ -954,15 +888,10 @@ export class UserService {
             );
           }
 
-          await this.userModel.updateOne(
-            { _id: newOwnerID },
-            {
-              $set: {
-                'employerInfo.isOwner': true,
-                roleID: roleRecruiterAdmin._id,
-              },
-            },
-            { session },
+          await this.userRepository.setCompanyOwnerAndRole(
+            newOwnerID,
+            roleRecruiterAdmin._id,
+            session,
           );
 
           // 2. Hạ quyền người cũ xuống thành nhân viên bình thường trước khi xóa
@@ -979,15 +908,10 @@ export class UserService {
             );
           }
 
-          await this.userModel.updateOne(
-            { _id: id },
-            {
-              $set: {
-                'employerInfo.isOwner': false,
-                roleID: roleRecruiter._id, // Hạ về Recruiter
-              },
-            },
-            { session },
+          await this.userRepository.unsetCompanyOwnerAndSetRole(
+            id,
+            roleRecruiter._id,
+            session,
           );
         } else {
           // TRƯỜNG HỢP KHÔNG CÓ AI THAY THẾ (Owner duy nhất)
@@ -1001,7 +925,7 @@ export class UserService {
       }
 
       // 3. Tiến hành xóa mềm User
-      await this.userModel.findOneAndUpdate(
+      await this.userRepository.findOneAndUpdateRaw(
         { _id: id },
         {
           $set: {
@@ -1039,7 +963,7 @@ export class UserService {
         throw new BadRequestCustom('ID user không đúng định dạng', !!id);
       }
 
-      const user = await this.userModel.findById(id);
+      const user = await this.userRepository.findByIdRaw(id);
       if (!user) throw new BadRequestCustom('ID user không tìm thấy', !!id);
 
       const isDeleted = user.isDeleted;
@@ -1048,7 +972,7 @@ export class UserService {
         throw new BadRequestCustom('user này đã được xóa', !!isDeleted);
 
       const filter = { _id: id };
-      const result = this.userModel.softDelete(filter);
+      const result = await this.userRepository.softDeleteRaw(filter);
 
       if (!result) throw new BadRequestCustom('Lỗi xóa user', !!id);
 

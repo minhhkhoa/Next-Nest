@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Permission, PermissionSchema } from './schemas/permission.schema';
 import { BusinessModule } from 'src/common/decorator/customize';
 import { DiscoveryService } from './discovery.service';
+import { PermissionsRepository } from './repository/permissions.repository';
 
 @BusinessModule()
 @Module({
@@ -16,6 +17,6 @@ import { DiscoveryService } from './discovery.service';
     ]),
   ],
   controllers: [PermissionsController],
-  providers: [PermissionsService, DiscoveryService],
+  providers: [PermissionsService, DiscoveryService, PermissionsRepository],
 })
 export class PermissionsModule {}

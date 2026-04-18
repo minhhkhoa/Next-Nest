@@ -1,8 +1,10 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument, Types } from 'mongoose';
 import { Company } from 'src/modules/company/schemas/company.schema';
 import { User } from 'src/modules/user/schemas/user.schema';
 import { UserAudit } from 'src/utils/typeSchemas';
+import { Prop } from 'src/common/override/override-prop';
+
 
 export type ConversationDocument = HydratedDocument<Conversation>;
 

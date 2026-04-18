@@ -1,7 +1,9 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { Industry } from 'src/modules/industry/schemas/industry.schema';
 import { MultiLang } from 'src/utils/typeSchemas';
+import { Prop } from 'src/common/override/override-prop';
+
 
 @Schema({ timestamps: true })
 //- Định nghĩa các field có trong collection Skill

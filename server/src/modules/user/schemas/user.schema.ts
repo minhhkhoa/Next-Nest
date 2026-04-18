@@ -1,7 +1,8 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument, Types } from 'mongoose';
 import { Role } from 'src/modules/roles/schemas/role.schema';
 import { UserAudit } from 'src/utils/typeSchemas';
+import { Prop } from 'src/common/override/override-prop';
 
 class EmployerInfo {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Company' })

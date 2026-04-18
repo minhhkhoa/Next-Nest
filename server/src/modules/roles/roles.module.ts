@@ -7,6 +7,7 @@ import { Role, RoleSchema } from './schemas/role.schema';
 import { BusinessModule } from 'src/common/decorator/customize';
 import { UserModule } from '../user/user.module';
 import { User, UserSchema } from '../user/schemas/user.schema';
+import { RolesRepository } from './repository/roles.repository';
 
 @BusinessModule()
 @Module({
@@ -14,12 +15,12 @@ import { User, UserSchema } from '../user/schemas/user.schema';
     TranslationModule,
     MongooseModule.forFeature([
       { name: Role.name, schema: RoleSchema },
-      { name: User.name, schema: UserSchema }
+      { name: User.name, schema: UserSchema },
     ]),
     forwardRef(() => UserModule),
   ],
   controllers: [RolesController],
-  providers: [RolesService],
+  providers: [RolesService, RolesRepository],
   exports: [RolesService],
 })
 export class RolesModule {}

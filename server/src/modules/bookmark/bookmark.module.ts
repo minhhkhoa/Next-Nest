@@ -4,6 +4,7 @@ import { BookmarkController } from './bookmark.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Bookmark, BookmarkSchema } from './schemas/bookmark.schema';
 import { CompanyModule } from '../company/company.module';
+import { BookmarkRepository } from './repository/bookmark.repository';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { CompanyModule } from '../company/company.module';
     forwardRef(() => CompanyModule),
   ],
   controllers: [BookmarkController],
-  providers: [BookmarkService],
+  providers: [BookmarkService, BookmarkRepository],
   exports: [BookmarkService],
 })
 export class BookmarkModule {}
