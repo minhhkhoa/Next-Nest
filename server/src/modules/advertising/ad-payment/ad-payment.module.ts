@@ -5,6 +5,7 @@ import { AdPaymentController } from './ad-payment.controller';
 import { AdPaymentService } from './ad-payment.service';
 import { AdPaymentRepository } from './repository/ad-payment.repository';
 import { AdPayment, AdPaymentSchema } from './schemas/ad-payment.schema';
+import { AdBookingModule } from '../ad-booking/ad-booking.module';
 
 @BusinessModule()
 @Module({
@@ -12,6 +13,7 @@ import { AdPayment, AdPaymentSchema } from './schemas/ad-payment.schema';
     MongooseModule.forFeature([
       { name: AdPayment.name, schema: AdPaymentSchema },
     ]),
+    AdBookingModule,
   ],
   controllers: [AdPaymentController],
   providers: [AdPaymentService, AdPaymentRepository],
