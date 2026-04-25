@@ -50,7 +50,10 @@ export class CreateAdBookingDto {
   @IsDateString()
   endAt: string;
 
-  @ApiPropertyOptional({ enum: AD_BOOKING_STATUS_OPTIONS, default: 'PENDING_PAYMENT' })
+  @ApiPropertyOptional({
+    enum: AD_BOOKING_STATUS_OPTIONS,
+    default: 'PENDING_PAYMENT',
+  })
   @IsOptional()
   @IsEnum(AD_BOOKING_STATUS_OPTIONS)
   status?: string;

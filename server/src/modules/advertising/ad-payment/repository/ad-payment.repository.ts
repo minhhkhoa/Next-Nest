@@ -14,9 +14,9 @@ export class AdPaymentRepository extends MongoAbstractRepository<AdPaymentDocume
   }
 
   async findByOrderCode(orderCode: string) {
-    return this.findOneRaw(
-      { orderCode } as any,
-      { includeDeleted: true, lean: true },
-    );
+    return this.findOneRaw({ orderCode }, {
+      includeDeleted: true,
+      lean: true,
+    });
   }
 }

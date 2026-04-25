@@ -9,7 +9,9 @@ import { AdPayment, AdPaymentSchema } from './schemas/ad-payment.schema';
 @BusinessModule()
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: AdPayment.name, schema: AdPaymentSchema }]),
+    MongooseModule.forFeature([
+      { name: AdPayment.name, schema: AdPaymentSchema },
+    ]),
   ],
   controllers: [AdPaymentController],
   providers: [AdPaymentService, AdPaymentRepository],

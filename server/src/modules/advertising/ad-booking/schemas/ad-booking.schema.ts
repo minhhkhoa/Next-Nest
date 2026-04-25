@@ -33,7 +33,11 @@ export class AdBooking {
   @Prop({ required: true })
   endAt: Date;
 
-  @Prop({ required: true, enum: AD_BOOKING_STATUS_OPTIONS, default: 'PENDING_PAYMENT' })
+  @Prop({
+    required: true,
+    enum: AD_BOOKING_STATUS_OPTIONS,
+    default: 'PENDING_PAYMENT',
+  })
   status: string;
 
   @Prop({ min: 1 })

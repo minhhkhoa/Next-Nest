@@ -1,6 +1,9 @@
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
-import { AD_MODE_ALLOWED_OPTIONS, AD_PAGE_OPTIONS } from 'src/common/constants/ad-const';
+import {
+  AD_MODE_ALLOWED_OPTIONS,
+  AD_PAGE_OPTIONS,
+} from 'src/common/constants/ad-const';
 import { Prop } from 'src/common/override/override-prop';
 import { UserAudit } from 'src/utils/typeSchemas';
 

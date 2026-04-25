@@ -1,6 +1,17 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
-import { AD_MODE_ALLOWED_OPTIONS, AD_PAGE_OPTIONS } from 'src/common/constants/ad-const';
+import {
+  IsBoolean,
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
+import {
+  AD_MODE_ALLOWED_OPTIONS,
+  AD_PAGE_OPTIONS,
+} from 'src/common/constants/ad-const';
 
 export class CreateAdSlotDto {
   @ApiProperty({ example: 'HOME_TOP' })

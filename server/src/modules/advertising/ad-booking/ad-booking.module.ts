@@ -9,7 +9,9 @@ import { AdBooking, AdBookingSchema } from './schemas/ad-booking.schema';
 @BusinessModule()
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: AdBooking.name, schema: AdBookingSchema }]),
+    MongooseModule.forFeature([
+      { name: AdBooking.name, schema: AdBookingSchema },
+    ]),
   ],
   controllers: [AdBookingController],
   providers: [AdBookingService, AdBookingRepository],

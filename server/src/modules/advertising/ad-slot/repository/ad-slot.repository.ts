@@ -13,10 +13,26 @@ export class AdSlotRepository extends MongoAbstractRepository<AdSlotDocument> {
     super(AdSlot, adSlotModel);
   }
 
+  //- Tìm slot theo code (bao gồm cả đã xóa mềm để kiểm tra trùng)
   async findByCode(code: string) {
     return this.findOneRaw(
       { code: code.toUpperCase() } as any,
       { includeDeleted: true, lean: true },
     );
+  }
+
+  //- Tạo slot mới
+  async createRaw(payload: any) {
+    return this.create(payload);
+  }
+
+  //- Override findByIdRaw mặc định để include deleted
+  async findByIdRaw(id?: string | any, options: any = {}) {
+    return super.findByIdRaw(id, { includeDeleted: true, ...options });
+  }
+
+  //- Aggregate pipeline (dùng khi cần thống kê phức tạp)
+  async aggregateWithPipeline<T = any>(pipeline: any[]): Promise<T[]> {
+    return this.aggregateRaw<T>(pipeline);
   }
 }
