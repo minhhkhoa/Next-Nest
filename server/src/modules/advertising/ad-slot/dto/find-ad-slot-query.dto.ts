@@ -58,16 +58,16 @@ export class FindAdSlotQueryDto {
     if (value === 'false') return false;
     return undefined;
   })
-  @IsBoolean()
-  isActive?: boolean;
+  isActive?: string;
 
   //- Có include slot đã xóa mềm không
   @ApiPropertyOptional()
   @IsOptional()
   @Transform(({ value }) => {
     if (value === '' || value === undefined || value === null) return undefined;
-    return value === 'true';
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return undefined;
   })
-  @IsBoolean()
-  isDeleted?: boolean;
+  isDeleted?: string;
 }

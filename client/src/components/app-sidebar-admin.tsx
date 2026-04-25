@@ -11,6 +11,7 @@ import {
   ChevronDown,
   DoorClosedLocked,
   Mailbox,
+  Megaphone,
 } from "lucide-react";
 
 import {
@@ -220,6 +221,30 @@ export function AppSidebarAdmin() {
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
+
+          {/* 5. Phần Quảng cáo - Chỉ dành cho Super Admin */}
+          {isSuperAdmin && (
+            <SidebarGroup>
+              <SidebarGroupLabel>Quảng cáo</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem className="mr-2.5">
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname.startsWith("/admin/ad-slot")}
+                      tooltip="Vị trí quảng cáo"
+                      className="data-[active=true]:bg-primary data-[active=true]:text-white"
+                    >
+                      <Link href="/admin/ad-slot">
+                        <Megaphone />
+                        <span className="truncate">Vị trí quảng cáo</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
