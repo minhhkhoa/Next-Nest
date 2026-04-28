@@ -45,6 +45,7 @@
     "class-validator": "^0.14.2",
     "cloudinary": "^2.7.0",
     "cookie-parser": "^1.4.7",
+    "dayjs": "^1.11.20",
     "google-translate-api-x": "^10.7.2",
     "html-entities": "^2.6.0",
     "https-proxy-agent": "^7.0.6",

@@ -16,13 +16,15 @@ import {
 } from 'src/common/constants/ad-const';
 
 export class CreateAdBookingDto {
-  @ApiProperty({ example: '6752cc5331e2d424074213d2' })
+  @ApiPropertyOptional({ example: '6752cc5331e2d424074213d2' })
+  @IsOptional()
   @IsMongoId()
-  companyId: string;
+  companyId?: string;
 
-  @ApiProperty({ example: '6752cc5331e2d424074213d3' })
+  @ApiPropertyOptional({ example: '6752cc5331e2d424074213d3' })
+  @IsOptional()
   @IsMongoId()
-  recruiterId: string;
+  recruiterId?: string;
 
   @ApiProperty({ example: 'HOME_TOP' })
   @IsString()
@@ -64,10 +66,11 @@ export class CreateAdBookingDto {
   @Min(1)
   queueNo?: number;
 
-  @ApiProperty({ example: 700000 })
+  @ApiPropertyOptional({ example: 700000 })
+  @IsOptional()
   @IsInt()
   @Min(0)
-  amount: number;
+  amount?: number;
 
   @ApiPropertyOptional({ example: '6752cc5331e2d424074213d4' })
   @IsOptional()

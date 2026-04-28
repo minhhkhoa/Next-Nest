@@ -16,7 +16,7 @@ export class AdSlotRepository extends MongoAbstractRepository<AdSlotDocument> {
   //- Tìm slot theo code (bao gồm cả đã xóa mềm để kiểm tra trùng)
   async findByCode(code: string) {
     return this.findOneRaw(
-      { code: code.toUpperCase() } as any,
+      { code: code.toUpperCase() },
       { includeDeleted: true, lean: true },
     );
   }

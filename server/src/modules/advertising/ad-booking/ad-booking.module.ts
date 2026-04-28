@@ -1,10 +1,12 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BusinessModule } from 'src/common/decorator/customize';
 import { AdBookingController } from './ad-booking.controller';
 import { AdBookingService } from './ad-booking.service';
 import { AdBookingRepository } from './repository/ad-booking.repository';
 import { AdBooking, AdBookingSchema } from './schemas/ad-booking.schema';
+import { AdPaymentModule } from '../ad-payment/ad-payment.module';
+import { AdSlotModule } from '../ad-slot/ad-slot.module';
 
 @BusinessModule()
 @Module({
@@ -12,6 +14,8 @@ import { AdBooking, AdBookingSchema } from './schemas/ad-booking.schema';
     MongooseModule.forFeature([
       { name: AdBooking.name, schema: AdBookingSchema },
     ]),
+    forwardRef(() => AdPaymentModule),
+    AdSlotModule,
   ],
   controllers: [AdBookingController],
   providers: [AdBookingService, AdBookingRepository],

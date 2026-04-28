@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BusinessModule } from 'src/common/decorator/customize';
 import { AdPaymentController } from './ad-payment.controller';
@@ -13,7 +13,7 @@ import { AdBookingModule } from '../ad-booking/ad-booking.module';
     MongooseModule.forFeature([
       { name: AdPayment.name, schema: AdPaymentSchema },
     ]),
-    AdBookingModule,
+    forwardRef(() => AdBookingModule),
   ],
   controllers: [AdPaymentController],
   providers: [AdPaymentService, AdPaymentRepository],
