@@ -119,10 +119,10 @@ export class AdBookingService {
 
       return {
         booking: {
-          ...booking,
+          ...booking.toObject(),
           paymentId: payment._id,
         },
-        payment,
+        payment: payment.toObject(),
       };
     } catch (error) {
       await session.abortTransaction();

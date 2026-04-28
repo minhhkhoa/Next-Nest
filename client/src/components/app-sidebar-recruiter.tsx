@@ -7,6 +7,7 @@ import {
   FileUser,
   FolderKanban,
   ChevronDown,
+  QrCode,
 } from "lucide-react";
 
 import {
@@ -99,7 +100,6 @@ export function AppSidebarRecruiter() {
           </SidebarGroup>
 
           {/* thong tin cong viec cho recruiter_admin*/}
-          {/* {roleCodeName === roleRecruiterAdmin && ( */}
           <SidebarGroup>
             <SidebarGroupLabel>Công việc</SidebarGroupLabel>
             <SidebarGroupContent>
@@ -152,7 +152,28 @@ export function AppSidebarRecruiter() {
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
-          {/* )} */}
+
+          {/* Quang cao */}
+          <SidebarGroup>
+            <SidebarGroupLabel>Dịch vụ</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem className="mr-2.5">
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === "/recruiter/manager/advertising"}
+                    tooltip="Mua quảng cáo"
+                    className="data-[active=true]:bg-primary data-[active=true]:text-white"
+                  >
+                    <Link href="/recruiter/manager/advertising">
+                      <QrCode />
+                      <span className="truncate">Mua quảng cáo</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
 
           {/* thong tin cong ty */}
           <SidebarGroup>

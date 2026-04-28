@@ -48,6 +48,11 @@ export class NotificationsGateway implements OnGatewayConnection {
   sendToUser(userId: string, payload: any) {
     this.server.to(userId).emit('new-notification', payload);
   }
+
+  //- Bắn tín hiệu thanh toán thành công chuyên dụng cho module quảng cáo
+  emitPaymentSuccess(userId: string, paymentId: string) {
+    this.server.to(userId).emit('payment-success', { paymentId });
+  }
 }
 
 /**

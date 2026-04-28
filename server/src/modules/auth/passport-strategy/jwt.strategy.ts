@@ -25,7 +25,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   //- payload là tham số nó tự truyền vào sau khi giải mã song hàm super bên trên, và nó tự động chạy hàm validate này
   async validate(payload: UserResponse) {
-    const cacheKey = `user_cache:${payload.id}_${payload.roleID}_${payload.roleCodeName}_${payload.employerInfo?.companyID}`;
+    const cacheKey = `user_cache:${payload.id}_${payload.roleID}_${payload.employerInfo?.companyID}`;
 
     //- Thử lấy user từ Redis
     let user = await this.redisService.get<any>(cacheKey);

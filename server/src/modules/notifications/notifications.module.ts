@@ -28,6 +28,6 @@ import { NotificationsListener } from './notifications.listener';
     NotificationsListener,
     NotificationsRepository,
   ],
-  exports: [NotificationsService],
+  exports: [NotificationsService, NotificationsGateway],
 })
 export class NotificationsModule {}

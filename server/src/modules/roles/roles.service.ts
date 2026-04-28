@@ -59,9 +59,8 @@ export class RolesService {
         throw new BadRequestCustom('ID vai trò không đúng định dạng', !!roleID);
 
       // Sử dụng populate để "điền đầy" dữ liệu từ collection permissions vào
-      const role = await this.rolesRepository.findByIdWithPermissionCodes(
-        roleID,
-      );
+      const role =
+        await this.rolesRepository.findByIdWithPermissionCodes(roleID);
 
       if (!role)
         throw new BadRequestCustom('ID vai trò không tìm thấy', !!roleID);
@@ -104,9 +103,8 @@ export class RolesService {
       let offset = (+defaultPage - 1) * +pageSize;
       let defaultLimit = +pageSize ? +pageSize : 10;
 
-      const totalItems = await this.rolesRepository.countByFilter(
-        filterConditions,
-      );
+      const totalItems =
+        await this.rolesRepository.countByFilter(filterConditions);
       const totalPages = Math.ceil(totalItems / defaultLimit);
 
       const result = await this.rolesRepository.findByFilterWithPagination(
@@ -178,7 +176,9 @@ export class RolesService {
 
       //- xóa cache của tất cả user có roleID là id này
       const clearCachePromises = users.map((user) =>
-        this.redisService.del(`user_cache:${user._id}`),
+        this.redisService.del(
+          `user_cache:${user?._id.toString()}_${user?.roleID}_${user?.employerInfo?.companyID}`,
+        ),
       );
 
       //- không cần await ở đây vì không cần chờ xóa cache xong mới trả kết quả

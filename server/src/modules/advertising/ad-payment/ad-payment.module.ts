@@ -6,6 +6,7 @@ import { AdPaymentService } from './ad-payment.service';
 import { AdPaymentRepository } from './repository/ad-payment.repository';
 import { AdPayment, AdPaymentSchema } from './schemas/ad-payment.schema';
 import { AdBookingModule } from '../ad-booking/ad-booking.module';
+import { NotificationsModule } from 'src/modules/notifications/notifications.module';
 
 @BusinessModule()
 @Module({
@@ -14,6 +15,7 @@ import { AdBookingModule } from '../ad-booking/ad-booking.module';
       { name: AdPayment.name, schema: AdPaymentSchema },
     ]),
     forwardRef(() => AdBookingModule),
+    NotificationsModule,
   ],
   controllers: [AdPaymentController],
   providers: [AdPaymentService, AdPaymentRepository],

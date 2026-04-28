@@ -10,6 +10,7 @@ import { CreateAdPaymentDto } from './dto/create-ad-payment.dto';
 import { SePayWebhookDto } from './dto/sepay-webhook.dto';
 import { UpdateAdPaymentDto } from './dto/update-ad-payment.dto';
 import { AdPaymentRepository } from './repository/ad-payment.repository';
+import { NotificationsGateway } from '../../notifications/notifications.gateway';
 
 @Injectable()
 export class AdPaymentService {
@@ -19,6 +20,7 @@ export class AdPaymentService {
     private readonly adPaymentRepository: AdPaymentRepository,
     private readonly adBookingRepository: AdBookingRepository,
     private readonly configService: ConfigService,
+    private readonly notificationsGateway: NotificationsGateway,
   ) {}
 
   async handleSePayWebhook(payload: SePayWebhookDto, authHeader: string) {
@@ -39,7 +41,6 @@ export class AdPaymentService {
     }
 
     //- Tìm AdPayment theo nội dung chuyển khoản (transferContent)
-    //- SePay gửi nội dung chuyển khoản trong trường 'content'
     const payment = await this.adPaymentRepository.findOne({
       filter: { transferContent: payload.content, status: 'PENDING' },
     });
@@ -51,11 +52,8 @@ export class AdPaymentService {
       return { status: 'error', message: 'Payment not found' };
     }
 
-    //- Kiểm tra số tiền (tùy chọn nhưng nên có)
-    // if (payload.transferAmount < payment.amount) {
-    //   this.logger.warn(`Amount mismatch: expected ${payment.amount}, got ${payload.transferAmount}`);
-    //   // Có thể cập nhật trạng thái là FAILED hoặc để PENDING chờ xử lý thủ công
-    // }
+    //- Lấy thông tin booking để biết recruiterId cần gửi socket
+    const booking = await this.adBookingRepository.findById(payment.bookingId);
 
     //- Cập nhật trạng thái Payment thành PAID
     await this.adPaymentRepository.updateOneRaw(
@@ -72,6 +70,14 @@ export class AdPaymentService {
       { _id: payment.bookingId },
       { status: 'WAITING_SLOT' },
     );
+
+    //- Bắn Socket thông báo thành công cho client
+    if (booking?.recruiterId) {
+      this.notificationsGateway.emitPaymentSuccess(
+        booking.recruiterId.toString(),
+        payment._id.toString(),
+      );
+    }
 
     this.logger.log(
       `Payment ${payment.orderCode} processed successfully for Booking ${payment.bookingId}`,
