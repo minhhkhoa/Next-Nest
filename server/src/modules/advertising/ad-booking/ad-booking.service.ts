@@ -53,7 +53,7 @@ export class AdBookingService {
     //- Tính toán số ngày và số tiền
     const start = dayjs(createAdBookingDto.startAt).startOf('day');
     const end = dayjs(createAdBookingDto.endAt).startOf('day');
-    const diffDays = end.diff(start, 'day') + 1; // Tính cả ngày bắt đầu và kết thúc
+    const diffDays = end.diff(start, 'day') + 1;
 
     if (diffDays <= 0) {
       throw new BadRequestException('Ngày kết thúc phải sau ngày bắt đầu');
@@ -62,6 +62,25 @@ export class AdBookingService {
     if (diffDays > slot.maxDurationDays) {
       throw new BadRequestException(
         `Thời gian chạy tối đa cho slot này là ${slot.maxDurationDays} ngày`,
+      );
+    }
+
+    //- KIỂM TRA TRÙNG LỊCH (Overlap check)
+    // Tìm bất kỳ booking nào của slot này mà có thời gian chồng lấn và chưa bị hủy
+    const overlappingBooking = await this.adBookingRepository.findOneRaw({
+      slotCode: createAdBookingDto.slotCode,
+      status: { $ne: 'CANCELLED' },
+      $or: [
+        {
+          startAt: { $lte: createAdBookingDto.endAt },
+          endAt: { $gte: createAdBookingDto.startAt },
+        },
+      ],
+    });
+
+    if (overlappingBooking) {
+      throw new BadRequestException(
+        'Khoảng thời gian này đã có công ty khác đặt chỗ. Vui lòng chọn thời gian khác.',
       );
     }
 
@@ -88,7 +107,6 @@ export class AdBookingService {
 
       //- Sinh mã giao dịch (Transfer Content & Order Code)
       const timestamp = dayjs().format('YYMMDDHHmmss');
-      // Mã nội dung chuyển khoản
       const transferContent =
         `ADV${timestamp}${recruiterId.slice(-4)}`.toUpperCase();
       const orderCode = `ORD_${timestamp}_${booking._id}`;
@@ -127,11 +145,28 @@ export class AdBookingService {
     } catch (error) {
       await session.abortTransaction();
       throw new InternalServerErrorException(
-        'Lỗi hệ thống khi tạo đơn quảng cáo',
+        error.message || 'Lỗi hệ thống khi tạo đơn quảng cáo',
       );
     } finally {
       session.endSession();
     }
+  }
+
+  async getBusyDates(slotCode: string) {
+    const bookings = await this.adBookingRepository.find({
+      filter: {
+        slotCode,
+        status: { $ne: 'CANCELLED' },
+        // Lấy các booking từ hôm nay trở đi để tối ưu
+        endAt: { $gte: dayjs().startOf('day').toDate() },
+      },
+    });
+
+    return bookings.map((b) => ({
+      startAt: b.startAt,
+      endAt: b.endAt,
+      companyId: b.companyId, //- Có thể dùng để hiển thị tên công ty nếu cần (masking info)
+    }));
   }
 
   async findAll(user: UserDecoratorType) {

@@ -24,6 +24,11 @@ const adBookingApiRequest = {
 
   remove: (id: string) =>
     http.delete<ApiResponse<{ message: string }>>(`${prefix}/${id}`),
+
+  getBusyDates: (slotCode: string) =>
+    http.get<ApiResponse<{ startAt: string; endAt: string }[]>>(
+      `${prefix}/busy-dates/${slotCode}`,
+    ),
 };
 
 export default adBookingApiRequest;

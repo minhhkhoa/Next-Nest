@@ -76,7 +76,8 @@ export class RolesRepository extends MongoAbstractRepository<RoleDocument> {
   async findUserIdsByRoleId(roleId: string) {
     return this.userModel
       .find({ roleID: new mongoose.Types.ObjectId(roleId) })
-      .select('_id')
+      .select('_id roleID employerInfo')
+      .lean()
       .exec();
   }
 

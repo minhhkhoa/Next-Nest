@@ -19,6 +19,11 @@ import { UserDecoratorType } from 'src/utils/typeSchemas';
 export class AdBookingController {
   constructor(private readonly adBookingService: AdBookingService) {}
 
+  @Get('busy-dates/:slotCode')
+  getBusyDates(@Param('slotCode') slotCode: string) {
+    return this.adBookingService.getBusyDates(slotCode);
+  }
+
   @Post()
   create(
     @Body() createAdBookingDto: CreateAdBookingDto,

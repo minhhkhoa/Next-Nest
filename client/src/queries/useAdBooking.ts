@@ -21,3 +21,11 @@ export const useDeleteAdBookingMutation = () => {
     mutationFn: (id: string) => adBookingApiRequest.remove(id),
   });
 };
+
+export const useGetBusyDatesQuery = (slotCode: string, enabled: boolean) => {
+  return useQuery({
+    queryKey: ["ad-busy-dates", slotCode],
+    queryFn: () => adBookingApiRequest.getBusyDates(slotCode),
+    enabled: enabled && !!slotCode,
+  });
+};
