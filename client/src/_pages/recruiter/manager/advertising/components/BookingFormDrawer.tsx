@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import {
   Sheet,
   SheetContent,
@@ -131,7 +133,8 @@ export default function BookingFormDrawer({
           newErrors.targetUrl = "Link phải bắt đầu bằng http:// hoặc https://";
         }
       } catch (_) {
-        newErrors.targetUrl = "Định dạng link không hợp lệ (Ví dụ: https://example.com)";
+        newErrors.targetUrl =
+          "Định dạng link không hợp lệ (Ví dụ: https://example.com)";
       }
     }
 

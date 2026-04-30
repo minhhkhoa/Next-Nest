@@ -13,11 +13,12 @@ import {
   AdBookingResType,
   AdPaymentResType,
 } from "@/schemasvalidation/adBooking";
-import { CheckCircle2, Copy, Loader2, QrCode } from "lucide-react";
+import { CheckCircle2, Copy, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
 import { useAppStore } from "./TanstackProvider";
 import { ScrollArea } from "./ui/scroll-area";
+import { envConfig } from "../../config";
 
 interface AdPaymentModalProps {
   isOpen: boolean;
@@ -36,6 +37,10 @@ export default function AdPaymentModal({
 }: AdPaymentModalProps) {
   const [isSuccess, setIsSuccess] = useState(false);
   const { socket } = useAppStore();
+
+  const baseUrl = envConfig.NEXT_PUBLIC_SEPAY_BASE_URL;
+  const account = envConfig.NEXT_PUBLIC_SEPAY_ACCOUNT;
+  const bank = envConfig.NEXT_PUBLIC_SEPAY_BANK;
 
   useEffect(() => {
     if (!socket || !payment) return;
@@ -68,7 +73,7 @@ export default function AdPaymentModal({
   if (!booking || !payment) return null;
 
   //- SePay QR API URL
-  const qrUrl = `https://qr.sepay.vn/img?acc=0387023308&bank=MBBank&amount=${payment.amount}&des=${payment.transferContent}`;
+  const qrUrl = `${baseUrl}/img?acc=${account}&bank=${bank}&amount=${payment.amount}&des=${payment.transferContent}`;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>

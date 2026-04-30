@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import {
   Dialog,
   DialogContent,
@@ -18,7 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import dayjs from "dayjs";
 import { AdSlotResType } from "@/schemasvalidation/adSlot";
 import AdCalendarPicker from "./AdCalendarPicker";
 import { useGetBusyDatesQuery } from "@/queries/useAdBooking";
@@ -53,26 +54,29 @@ export default function BookingFormDialog({
   //- Lấy lịch bận của slot này
   const { data: busyDatesRes, isLoading: isLoadingBusy } = useGetBusyDatesQuery(
     selectedSlot?.code || "",
-    isOpen
+    isOpen,
   );
 
   const busyDates = busyDatesRes?.data || [];
 
   //- Kiểm tra xung đột lịch (Client-side validation)
   const isConflict = useMemo(() => {
-    if (!formData.startAt || !formData.duration || busyDates.length === 0) return false;
+    if (!formData.startAt || !formData.duration || busyDates.length === 0)
+      return false;
 
     const start = startOfDay(new Date(formData.startAt));
     const end = addDays(start, formData.duration - 1);
 
-    const intervals = busyDates.map(b => ({
+    const intervals = busyDates.map((b) => ({
       start: startOfDay(new Date(b.startAt)),
-      end: startOfDay(new Date(b.endAt))
+      end: startOfDay(new Date(b.endAt)),
     }));
 
     for (let i = 0; i < formData.duration; i++) {
       const currentDay = addDays(start, i);
-      if (intervals.some(interval => isWithinInterval(currentDay, interval))) {
+      if (
+        intervals.some((interval) => isWithinInterval(currentDay, interval))
+      ) {
         return true;
       }
     }
@@ -100,35 +104,43 @@ export default function BookingFormDialog({
               value={formData.adType}
               onValueChange={(v) => setFormData({ ...formData, adType: v })}
             >
-              <SelectTrigger className={selectedSlot.adModeAllowed !== "BOTH" ? "bg-muted" : ""}>
+              <SelectTrigger
+                className={
+                  selectedSlot.adModeAllowed !== "BOTH" ? "bg-muted" : ""
+                }
+              >
                 <SelectValue placeholder="Chọn loại quảng cáo" />
               </SelectTrigger>
               <SelectContent>
                 {selectedSlot.adModeAllowed !== "DISMISSIBLE" && (
-                   <SelectItem value="NON_DISMISSIBLE">
-                      Cố định (Ưu tiên)
-                   </SelectItem>
+                  <SelectItem value="NON_DISMISSIBLE">
+                    Cố định (Ưu tiên)
+                  </SelectItem>
                 )}
                 {selectedSlot.adModeAllowed !== "NON_DISMISSIBLE" && (
-                   <SelectItem value="DISMISSIBLE">
-                      Có thể đóng (x)
-                   </SelectItem>
+                  <SelectItem value="DISMISSIBLE">Có thể đóng (x)</SelectItem>
                 )}
               </SelectContent>
             </Select>
             {selectedSlot.adModeAllowed !== "BOTH" && (
-               <p className="text-[10px] text-primary italic font-medium">
-                 * Vị trí này bắt buộc sử dụng chế độ {selectedSlot.adModeAllowed === "NON_DISMISSIBLE" ? "Cố định" : "Có thể đóng"}.
-               </p>
+              <p className="text-[10px] text-primary italic font-medium">
+                * Vị trí này bắt buộc sử dụng chế độ{" "}
+                {selectedSlot.adModeAllowed === "NON_DISMISSIBLE"
+                  ? "Cố định"
+                  : "Có thể đóng"}
+                .
+              </p>
             )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="startAt">Ngày bắt đầu</Label>
-              <AdCalendarPicker 
+              <AdCalendarPicker
                 date={formData.startAt ? new Date(formData.startAt) : undefined}
-                setDate={(date) => setFormData({ ...formData, startAt: date?.toISOString() })}
+                setDate={(date) =>
+                  setFormData({ ...formData, startAt: date?.toISOString() })
+                }
                 busyDates={busyDates}
                 duration={formData.duration}
                 maxDuration={selectedSlot.maxDurationDays}
@@ -184,12 +196,17 @@ export default function BookingFormDialog({
           <div className="bg-primary/5 p-4 rounded-xl border border-primary/20 space-y-2 mt-2 shadow-inner text-sm">
             <div className="flex justify-between text-muted-foreground">
               <span>Đơn giá:</span>
-              <span>{selectedSlot.pricePerDay.toLocaleString("vi-VN")}đ / ngày</span>
+              <span>
+                {selectedSlot.pricePerDay.toLocaleString("vi-VN")}đ / ngày
+              </span>
             </div>
             <div className="flex justify-between font-bold text-lg border-t border-primary/10 pt-2">
               <span>Tổng thanh toán:</span>
               <span className="text-primary">
-                {(selectedSlot.pricePerDay * formData.duration).toLocaleString("vi-VN")} VND
+                {(selectedSlot.pricePerDay * formData.duration).toLocaleString(
+                  "vi-VN",
+                )}{" "}
+                VND
               </span>
             </div>
           </div>
@@ -205,7 +222,9 @@ export default function BookingFormDialog({
           </Button>
           <Button
             onClick={onSubmit}
-            disabled={isPending || isConflict || isLoadingBusy || !formData.startAt}
+            disabled={
+              isPending || isConflict || isLoadingBusy || !formData.startAt
+            }
             className="min-w-[150px]"
           >
             {isPending ? "Đang xử lý..." : "Tạo đơn & Thanh toán"}

@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { useDebounce } from "use-debounce";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -12,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { Plus, LayoutGrid, Search } from "lucide-react";
+import { Plus, LayoutGrid } from "lucide-react";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import { DeleteConfirmModal } from "../NewsCategory/components/modals/delete-confirm-modal";

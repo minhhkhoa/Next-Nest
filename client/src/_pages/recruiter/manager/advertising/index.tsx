@@ -117,6 +117,7 @@ export default function AdvertisingPage() {
       }
     } catch (error) {
       toast.error("Lỗi khi tạo đơn hàng");
+      console.log(error);
     }
   };
 
