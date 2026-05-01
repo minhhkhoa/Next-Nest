@@ -29,6 +29,15 @@ const adBookingApiRequest = {
     http.get<ApiResponse<{ startAt: string; endAt: string }[]>>(
       `${prefix}/busy-dates/${slotCode}`,
     ),
+
+  findAllByAdmin: (params: { currentPage: number; pageSize: number }) =>
+    http.get<ApiResponse<any>>(`${prefix}/admin/all`, { params }),
+
+  cancelByUser: (id: string) =>
+    http.patch<ApiResponse<any>>(`${prefix}/cancel/${id}`, {}),
+
+  cancelByAdmin: (id: string) =>
+    http.patch<ApiResponse<any>>(`${prefix}/admin/cancel/${id}`, {}),
 };
 
 export default adBookingApiRequest;

@@ -29,3 +29,22 @@ export const useGetBusyDatesQuery = (slotCode: string, enabled: boolean) => {
     enabled: enabled && !!slotCode,
   });
 };
+
+export const useGetAdBookingsAdminQuery = (params: { currentPage: number; pageSize: number }) => {
+  return useQuery({
+    queryKey: ["admin-ad-bookings", params.currentPage, params.pageSize],
+    queryFn: () => adBookingApiRequest.findAllByAdmin(params),
+  });
+};
+
+export const useCancelByUserMutation = () => {
+  return useMutation({
+    mutationFn: (id: string) => adBookingApiRequest.cancelByUser(id),
+  });
+};
+
+export const useCancelByAdminMutation = () => {
+  return useMutation({
+    mutationFn: (id: string) => adBookingApiRequest.cancelByAdmin(id),
+  });
+};

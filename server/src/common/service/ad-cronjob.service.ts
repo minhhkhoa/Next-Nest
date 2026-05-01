@@ -3,6 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { AdBookingRepository } from '../../modules/advertising/ad-booking/repository/ad-booking.repository';
 import { AdPaymentRepository } from '../../modules/advertising/ad-payment/repository/ad-payment.repository';
 import * as dayjs from 'dayjs';
+import { NotificationsGateway } from 'src/modules/notifications/notifications.gateway';
 
 @Injectable()
 export class AdCronjobService {
@@ -11,6 +12,7 @@ export class AdCronjobService {
   constructor(
     private readonly adBookingRepository: AdBookingRepository,
     private readonly adPaymentRepository: AdPaymentRepository,
+    private readonly notificationsGateway: NotificationsGateway,
   ) {}
 
   //- Dọn rác đơn chưa thanh toán quá 15 phút
@@ -42,6 +44,13 @@ export class AdCronjobService {
             { status: 'EXPIRED' },
           );
         }
+
+        //- Bắn thông báo qua socket
+        this.notificationsGateway.emitPaymentCancelled(
+          booking.recruiterId.toString(),
+          booking.paymentId?.toString(),
+        );
+
         this.logger.log(`Expired booking ${booking._id}`);
       }
     } catch (error) {

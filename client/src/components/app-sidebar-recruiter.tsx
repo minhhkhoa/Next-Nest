@@ -162,12 +162,12 @@ export function AppSidebarRecruiter() {
                   <SidebarMenuButton
                     asChild
                     isActive={pathname === "/recruiter/manager/advertising"}
-                    tooltip="Mua quảng cáo"
+                    tooltip="Dịch vụ quảng cáo"
                     className="data-[active=true]:bg-primary data-[active=true]:text-white"
                   >
                     <Link href="/recruiter/manager/advertising">
                       <QrCode />
-                      <span className="truncate">Mua quảng cáo</span>
+                      <span className="truncate">Dịch vụ quảng cáo</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

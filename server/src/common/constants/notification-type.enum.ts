@@ -27,4 +27,8 @@ export enum NotificationType {
 
   //- Module System
   SYSTEM_ANNOUNCEMENT = 'SYSTEM_ANNOUNCEMENT',
+
+  //- Module Advertising
+  AD_CREATED = 'AD_CREATED', // Admin nhận: Có đơn quảng cáo mới
+  AD_CANCELLED = 'AD_CANCELLED', // Recruiter nhận: Đơn quảng cáo bị admin hủy
 }

@@ -13,12 +13,13 @@ import {
   AdBookingResType,
   AdPaymentResType,
 } from "@/schemasvalidation/adBooking";
-import { CheckCircle2, Copy, Loader2 } from "lucide-react";
+import { CheckCircle2, Copy, Loader2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
 import { useAppStore } from "./TanstackProvider";
 import { ScrollArea } from "./ui/scroll-area";
 import { envConfig } from "../../config";
+import { useCancelByUserMutation } from "@/queries/useAdBooking";
 
 interface AdPaymentModalProps {
   isOpen: boolean;
@@ -36,7 +37,9 @@ export default function AdPaymentModal({
   onSuccess,
 }: AdPaymentModalProps) {
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isCancelled, setIsCancelled] = useState(false);
   const { socket } = useAppStore();
+  const { mutateAsync: cancelBookingMutation, isPending: isCancelling } = useCancelByUserMutation();
 
   const baseUrl = envConfig.NEXT_PUBLIC_SEPAY_BASE_URL;
   const account = envConfig.NEXT_PUBLIC_SEPAY_ACCOUNT;
@@ -58,10 +61,22 @@ export default function AdPaymentModal({
       }
     };
 
+    const handlePaymentCancelled = (data: { paymentId: string }) => {
+      if (data.paymentId === payment._id) {
+        setIsCancelled(true);
+        toast.error("Đơn hàng đã bị hủy hoặc hết hạn thanh toán!");
+        setTimeout(() => {
+          onClose();
+        }, 3000);
+      }
+    };
+
     socket.on("payment-success", handlePaymentSuccess);
+    socket.on("payment-cancelled", handlePaymentCancelled);
 
     return () => {
       socket.off("payment-success", handlePaymentSuccess);
+      socket.off("payment-cancelled", handlePaymentCancelled);
     };
   }, [socket, payment, onSuccess, onClose]);
 
@@ -70,24 +85,66 @@ export default function AdPaymentModal({
     toast.success(`Đã sao chép ${label}`);
   };
 
+  const handleCancelBooking = async () => {
+    if (!booking) return;
+    try {
+      await cancelBookingMutation(booking._id);
+      setIsCancelled(true);
+      toast.success("Đã hủy đơn quảng cáo thành công.");
+      setTimeout(() => {
+        onClose();
+      }, 3000);
+    } catch (error: any) {
+      toast.error(error.message || "Lỗi khi hủy đơn hàng");
+    }
+  };
+
   if (!booking || !payment) return null;
 
   //- SePay QR API URL
   const qrUrl = `${baseUrl}/img?acc=${account}&bank=${bank}&amount=${payment.amount}&des=${payment.transferContent}`;
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden">
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          //- Nếu chưa thành công và chưa hủy mà đóng thì hỏi
+          if (!isSuccess && !isCancelled) {
+            const confirm = window.confirm(
+              "Bạn có chắc chắn muốn thoát? Đơn hàng sẽ bị hủy.",
+            );
+            if (confirm) {
+              handleCancelBooking();
+            }
+          } else {
+            onClose();
+          }
+        }
+      }}
+    >
+      <DialogContent
+        className="sm:max-w-[550px] p-0 overflow-hidden"
+        onInteractOutside={(e) => {
+          if (!isSuccess && !isCancelled) e.preventDefault();
+        }}
+      >
         <ScrollArea className="max-h-[90vh]">
           <div className="p-6">
             <DialogHeader className="mb-6">
               <DialogTitle className="text-2xl font-bold text-center">
-                {isSuccess ? "Thanh toán thành công" : "Thanh toán quảng cáo"}
+                {isSuccess
+                  ? "Thanh toán thành công"
+                  : isCancelled
+                    ? "Đã hủy thanh toán"
+                    : "Thanh toán quảng cáo"}
               </DialogTitle>
               <DialogDescription className="text-center">
                 {isSuccess
                   ? "Cảm ơn bạn đã tin dùng dịch vụ của chúng tôi."
-                  : "Vui lòng quét mã QR hoặc chuyển khoản theo thông tin bên dưới."}
+                  : isCancelled
+                    ? "Đơn hàng này đã bị hủy và không còn hiệu lực."
+                    : "Vui lòng quét mã QR hoặc chuyển khoản theo thông tin bên dưới."}
               </DialogDescription>
             </DialogHeader>
 
@@ -99,6 +156,17 @@ export default function AdPaymentModal({
                   Quảng cáo của bạn đang được xử lý.
                 </p>
                 <Button onClick={onClose} className="w-full">
+                  Đóng
+                </Button>
+              </div>
+            ) : isCancelled ? (
+              <div className="flex flex-col items-center justify-center py-10 space-y-4">
+                <XCircle className="w-20 h-20 text-red-500 animate-in zoom-in duration-300" />
+                <p className="text-lg font-medium text-center text-red-600">
+                  Đơn hàng đã bị hủy. <br />
+                  Bạn có thể tạo lại đơn quảng cáo mới lúc khác.
+                </p>
+                <Button variant="outline" onClick={onClose} className="w-full">
                   Đóng
                 </Button>
               </div>
@@ -190,10 +258,23 @@ export default function AdPaymentModal({
                   Đang chờ hệ thống xác nhận giao dịch...
                 </div>
 
-                <div className="text-[10px] text-muted-foreground bg-yellow-50 p-2 rounded border border-yellow-100 italic">
-                  * Vui lòng chuyển đúng số tiền và nội dung để được xác nhận tự
-                  động trong 1-3 phút.
+                <div className="text-[12px] text-red-600 bg-red-50 p-3 rounded border border-red-100 font-medium text-center">
+                  Cảnh báo: Nếu bạn không thanh toán trong vòng 15 phút hoặc
+                  đóng bảng này, đơn hàng sẽ bị coi như Đã Hủy và nhường quyền
+                  đặt lịch cho người khác.
                 </div>
+
+                <Button
+                  variant="destructive"
+                  className="w-full"
+                  onClick={handleCancelBooking}
+                  disabled={isCancelling}
+                >
+                  {isCancelling ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : null}
+                  Tôi muốn hủy thanh toán đơn này
+                </Button>
               </div>
             )}
           </div>

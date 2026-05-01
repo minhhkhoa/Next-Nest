@@ -6,9 +6,11 @@ import { AdPaymentModule } from './ad-payment/ad-payment.module';
 
 import { AdCronjobService } from 'src/common/service/ad-cronjob.service';
 
+import { NotificationsModule } from '../notifications/notifications.module';
+
 @BusinessModule()
 @Module({
-  imports: [AdSlotModule, AdBookingModule, AdPaymentModule],
+  imports: [AdSlotModule, AdBookingModule, AdPaymentModule, NotificationsModule],
   providers: [AdCronjobService],
   exports: [AdSlotModule, AdBookingModule, AdPaymentModule, AdCronjobService],
 })

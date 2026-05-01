@@ -53,6 +53,11 @@ export class NotificationsGateway implements OnGatewayConnection {
   emitPaymentSuccess(userId: string, paymentId: string) {
     this.server.to(userId).emit('payment-success', { paymentId });
   }
+
+  //- Bắn tín hiệu hủy/hết hạn thanh toán
+  emitPaymentCancelled(userId: string, paymentId?: string) {
+    this.server.to(userId).emit('payment-cancelled', { paymentId });
+  }
 }
 
 /**

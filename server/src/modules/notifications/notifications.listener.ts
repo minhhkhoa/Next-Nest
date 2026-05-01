@@ -147,4 +147,16 @@ export class NotificationsListener {
       NotificationType.APPLICATION_STATUS_CHANGED,
     );
   }
+
+  //- tạo đơn quảng cáo mới
+  @OnEvent(NotificationType.AD_CREATED)
+  handleAdCreated(payload: CreateNotificationDto) {
+    return this.processNotification(payload, NotificationType.AD_CREATED);
+  }
+
+  //- admin hủy đơn quảng cáo
+  @OnEvent(NotificationType.AD_CANCELLED)
+  handleAdCancelled(payload: CreateNotificationDto) {
+    return this.processNotification(payload, NotificationType.AD_CANCELLED);
+  }
 }

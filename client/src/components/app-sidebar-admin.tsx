@@ -12,6 +12,7 @@ import {
   DoorClosedLocked,
   Mailbox,
   Megaphone,
+  BadgeDollarSign,
 } from "lucide-react";
 
 import {
@@ -233,6 +234,20 @@ export function AppSidebarAdmin() {
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem className="mr-2.5">
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname.startsWith("/admin/advertising")}
+                      tooltip="Đơn quảng cáo"
+                      className="data-[active=true]:bg-primary data-[active=true]:text-white"
+                    >
+                      <Link href="/admin/advertising">
+                        <BadgeDollarSign />
+                        <span className="truncate">Đơn quảng cáo</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+
+                  <SidebarMenuItem className="mr-2.5 mt-1">
                     <SidebarMenuButton
                       asChild
                       isActive={pathname.startsWith("/admin/ad-slot")}

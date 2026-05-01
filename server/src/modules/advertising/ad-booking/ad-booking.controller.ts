@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AdBookingService } from './ad-booking.service';
@@ -37,6 +38,18 @@ export class AdBookingController {
     return this.adBookingService.findAll(user);
   }
 
+  @Get('admin/all')
+  findAllByAdmin(
+    @Query('currentPage') currentPage: string = '1',
+    @Query('pageSize') pageSize: string = '10',
+    @userDecorator() admin: UserDecoratorType,
+  ) {
+    return this.adBookingService.findAllByAdmin({
+      currentPage: Number(currentPage),
+      pageSize: Number(pageSize),
+    });
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string, @userDecorator() user: UserDecoratorType) {
     return this.adBookingService.findOne(id, user);
@@ -54,5 +67,21 @@ export class AdBookingController {
   @Delete(':id')
   remove(@Param('id') id: string, @userDecorator() user: UserDecoratorType) {
     return this.adBookingService.remove(id, user);
+  }
+
+  @Patch('cancel/:id')
+  cancelByUser(
+    @Param('id') id: string,
+    @userDecorator() user: UserDecoratorType,
+  ) {
+    return this.adBookingService.cancelByUser(id, user);
+  }
+
+  @Patch('admin/cancel/:id')
+  cancelByAdmin(
+    @Param('id') id: string,
+    @userDecorator() admin: UserDecoratorType,
+  ) {
+    return this.adBookingService.cancelByAdmin(id, admin);
   }
 }

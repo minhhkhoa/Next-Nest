@@ -14,6 +14,11 @@ import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection, Types } from 'mongoose';
 import * as dayjs from 'dayjs';
+import { NotificationsGateway } from 'src/modules/notifications/notifications.gateway';
+import { NotificationType } from 'src/common/constants/notification-type.enum';
+import { ConfigService } from '@nestjs/config';
+import { UserService } from 'src/modules/user/user.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class AdBookingService {
@@ -21,6 +26,10 @@ export class AdBookingService {
     private readonly adBookingRepository: AdBookingRepository,
     private readonly adPaymentRepository: AdPaymentRepository,
     private readonly adSlotRepository: AdSlotRepository,
+    private readonly userService: UserService,
+    private readonly configService: ConfigService,
+    private eventEmitter: EventEmitter2,
+    private readonly notificationsGateway: NotificationsGateway,
     @InjectConnection() private readonly connection: Connection,
   ) {}
 
@@ -135,6 +144,31 @@ export class AdBookingService {
 
       await session.commitTransaction();
 
+      //- Notify Admin
+      try {
+        const textRoleAdmin =
+          this.configService.get<string>('role_super_admin');
+        const superAdmin = await this.userService.getUserByRoleSuperAdmin(
+          textRoleAdmin!,
+        );
+
+        if (superAdmin) {
+          this.eventEmitter.emit(NotificationType.AD_CREATED, {
+            receiverId: superAdmin._id.toString(),
+            senderId: recruiterId,
+            title: 'Đơn quảng cáo mới',
+            content: `Khách hàng vừa tạo một đơn quảng cáo mới (Mã: ${orderCode}) và đang chờ thanh toán.`,
+            type: NotificationType.AD_CREATED,
+            metadata: {
+              module: 'ADVERTISING',
+              resourceId: booking._id.toString(),
+            },
+          });
+        }
+      } catch (err) {
+        console.error('Failed to notify admin on ad creation:', err.message);
+      }
+
       return {
         booking: {
           ...booking.toObject(),
@@ -179,6 +213,36 @@ export class AdBookingService {
     });
   }
 
+  async findAllByAdmin(query: { currentPage: number; pageSize: number }) {
+    const { currentPage, pageSize } = query;
+    const defaultPage = currentPage > 0 ? +currentPage : 1;
+    const defaultLimit = pageSize > 0 ? +pageSize : 10;
+    const skip = (defaultPage - 1) * defaultLimit;
+
+    const [totalItems, items] = await Promise.all([
+      this.adBookingRepository.countDocumentsRaw({}),
+      this.adBookingRepository.findRaw(
+        {},
+        {
+          skip,
+          limit: defaultLimit,
+          sort: { createdAt: -1 },
+          populate: ['recruiterId', 'companyId'],
+        },
+      ),
+    ]);
+
+    return {
+      meta: {
+        current: defaultPage,
+        pageSize: defaultLimit,
+        totalPages: Math.ceil(totalItems / defaultLimit),
+        totalItems,
+      },
+      result: items,
+    };
+  }
+
   async findOne(id: string, user: UserDecoratorType) {
     const booking = await this.adBookingRepository.findById(id);
     if (!booking) {
@@ -221,5 +285,115 @@ export class AdBookingService {
     }
 
     return this.adBookingRepository.softDeleteById(id);
+  }
+
+  //- Khách hàng (Recruiter) tự hủy đơn khi đổi ý (chỉ áp dụng khi chưa thanh toán)
+  async cancelByUser(id: string, user: UserDecoratorType) {
+    const booking = await this.findOne(id, user);
+
+    if (booking.status !== 'PENDING_PAYMENT') {
+      throw new BadRequestException('Chỉ có thể hủy đơn đang chờ thanh toán');
+    }
+
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
+    try {
+      await this.adBookingRepository.updateOneRaw(
+        { _id: id },
+        { status: 'CANCELLED' },
+        { session },
+      );
+
+      if (booking.paymentId) {
+        await this.adPaymentRepository.updateOneRaw(
+          { _id: booking.paymentId },
+          { status: 'EXPIRED' },
+          { session },
+        );
+      }
+
+      await session.commitTransaction();
+
+      //- Notify via socket so client can update UI if needed
+      this.notificationsGateway.emitPaymentCancelled(
+        user.id,
+        booking.paymentId?.toString(),
+      );
+
+      return { message: 'Đã hủy đơn quảng cáo thành công' };
+    } catch (error) {
+      await session.abortTransaction();
+      throw new InternalServerErrorException(error.message);
+    } finally {
+      session.endSession();
+    }
+  }
+
+  //- Admin hủy đơn (có quyền cao nhất, hủy ở bất kỳ trạng thái nào)
+  async cancelByAdmin(id: string, admin: UserDecoratorType) {
+    const booking = await this.adBookingRepository.findByIdRaw(id);
+
+    if (!booking) {
+      throw new NotFoundException('Không tìm thấy đơn quảng cáo');
+    }
+
+    if (booking.status === 'CANCELLED' || booking.status === 'EXPIRED') {
+      throw new BadRequestException('Đơn quảng cáo này đã bị hủy hoặc hết hạn');
+    }
+
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
+    try {
+      await this.adBookingRepository.updateOneRaw(
+        { _id: id },
+        { status: 'CANCELLED' },
+        { session },
+      );
+
+      if (booking.paymentId && booking.status === 'PENDING_PAYMENT') {
+        await this.adPaymentRepository.updateOneRaw(
+          { _id: booking.paymentId },
+          { status: 'EXPIRED' },
+          { session },
+        );
+      }
+
+      await session.commitTransaction();
+
+      //- Notify Recruiter
+      try {
+        this.eventEmitter.emit(NotificationType.AD_CANCELLED, {
+          receiverId: booking.recruiterId.toString(),
+          senderId: admin.id,
+          title: 'Quảng cáo bị hủy',
+          content: `Quảng cáo của bạn (Slot: ${booking.slotCode}) đã bị Ban Quản Trị hệ thống hủy. Nếu bạn đã thanh toán, vui lòng liên hệ CSKH.`,
+          type: NotificationType.AD_CANCELLED,
+          metadata: {
+            module: 'ADVERTISING',
+            resourceId: booking._id.toString(),
+          },
+        });
+
+        //- Emit socket event
+        this.notificationsGateway.emitPaymentCancelled(
+          booking.recruiterId.toString(),
+          booking.paymentId?.toString(),
+        );
+      } catch (err) {
+        console.error(
+          'Failed to notify recruiter on ad cancellation:',
+          err.message,
+        );
+      }
+
+      return { message: 'Đã hủy đơn quảng cáo thành công' };
+    } catch (error) {
+      await session.abortTransaction();
+      throw new InternalServerErrorException(error.message);
+    } finally {
+      session.endSession();
+    }
   }
 }
