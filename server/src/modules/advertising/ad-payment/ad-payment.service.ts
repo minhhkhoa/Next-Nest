@@ -65,10 +65,10 @@ export class AdPaymentService {
       },
     );
 
-    //- Cập nhật trạng thái Booking tương ứng
+    //- Cập nhật trạng thái Booking tương ứng, thanh toán thành công thì status là SCHEDULED
     await this.adBookingRepository.updateOneRaw(
       { _id: payment.bookingId },
-      { status: 'WAITING_SLOT' },
+      { status: 'SCHEDULED' },
     );
 
     //- Bắn Socket thông báo thành công cho client

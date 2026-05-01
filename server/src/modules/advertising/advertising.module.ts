@@ -4,9 +4,12 @@ import { AdSlotModule } from './ad-slot/ad-slot.module';
 import { AdBookingModule } from './ad-booking/ad-booking.module';
 import { AdPaymentModule } from './ad-payment/ad-payment.module';
 
+import { AdCronjobService } from 'src/common/service/ad-cronjob.service';
+
 @BusinessModule()
 @Module({
   imports: [AdSlotModule, AdBookingModule, AdPaymentModule],
-  exports: [AdSlotModule, AdBookingModule, AdPaymentModule],
+  providers: [AdCronjobService],
+  exports: [AdSlotModule, AdBookingModule, AdPaymentModule, AdCronjobService],
 })
 export class AdvertisingModule {}

@@ -31,16 +31,16 @@ export default function BookingTable({ bookings, onPay }: BookingTableProps) {
             Chờ thanh toán
           </Badge>
         );
-      case "WAITING_SLOT":
+      case "SCHEDULED":
         return (
           <Badge
             variant="outline"
             className="text-blue-500 border-blue-500 bg-blue-50"
           >
-            Chờ vị trí
+            Đã lên lịch
           </Badge>
         );
-      case "ACTIVE":
+      case "RUNNING":
         return <Badge className="bg-green-500">Đang chạy</Badge>;
       case "COMPLETED":
         return <Badge variant="secondary">Đã kết thúc</Badge>;

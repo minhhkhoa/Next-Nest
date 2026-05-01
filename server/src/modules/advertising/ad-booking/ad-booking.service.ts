@@ -69,7 +69,7 @@ export class AdBookingService {
     // Tìm bất kỳ booking nào của slot này mà có thời gian chồng lấn và chưa bị hủy
     const overlappingBooking = await this.adBookingRepository.findOneRaw({
       slotCode: createAdBookingDto.slotCode,
-      status: { $ne: 'CANCELLED' },
+      status: { $nin: ['CANCELLED', 'EXPIRED'] },
       $or: [
         {
           startAt: { $lte: createAdBookingDto.endAt },
@@ -156,7 +156,7 @@ export class AdBookingService {
     const bookings = await this.adBookingRepository.find({
       filter: {
         slotCode,
-        status: { $ne: 'CANCELLED' },
+        status: { $nin: ['CANCELLED', 'EXPIRED'] },
         // Lấy các booking từ hôm nay trở đi để tối ưu
         endAt: { $gte: dayjs().startOf('day').toDate() },
       },
