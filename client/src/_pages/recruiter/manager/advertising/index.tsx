@@ -27,6 +27,7 @@ import AdSlotCard from "./components/AdSlotCard";
 import BookingFormDrawer from "./components/BookingFormDrawer";
 import BookingTable from "./components/BookingTable";
 import StatsCards from "./components/StatsCards";
+import AdTermsModal from "./components/AdTermsModal";
 
 //- Types
 import {
@@ -45,6 +46,7 @@ export default function AdvertisingPage() {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
 
   //- Selection Data
   const [selectedBooking, setSelectedBooking] =
@@ -92,7 +94,16 @@ export default function AdvertisingPage() {
     setIsCreateModalOpen(true);
   };
 
-  const handleCreateBooking = async () => {
+  const handleOpenTermsModal = () => {
+    // Validate first before opening terms
+    if (!formData.imageUrl || !formData.targetUrl || !formData.startAt) {
+      toast.error("Vui lòng điền đầy đủ thông tin quảng cáo");
+      return;
+    }
+    setIsTermsModalOpen(true);
+  };
+
+  const executeCreateBooking = async () => {
     if (!selectedSlot) return;
 
     const payload = {
@@ -111,12 +122,13 @@ export default function AdvertisingPage() {
       if (res.data) {
         setSelectedBooking(res.data.booking);
         setSelectedPayment(res.data.payment);
+        setIsTermsModalOpen(false);
         setIsCreateModalOpen(false);
         setIsPaymentModalOpen(true);
         refetch();
       }
-    } catch (error) {
-      toast.error("Lỗi khi tạo đơn hàng");
+    } catch (error: any) {
+      toast.error(error.message || "Lỗi khi tạo đơn hàng");
       console.log(error);
     }
   };
@@ -214,7 +226,15 @@ export default function AdvertisingPage() {
         selectedSlot={selectedSlot}
         formData={formData}
         setFormData={setFormData}
-        onSubmit={handleCreateBooking}
+        onSubmit={handleOpenTermsModal}
+        isPending={createBookingMutation.isPending}
+      />
+
+      {/* TERMS AND CONDITIONS MODAL */}
+      <AdTermsModal
+        isOpen={isTermsModalOpen}
+        onClose={() => setIsTermsModalOpen(false)}
+        onConfirm={executeCreateBooking}
         isPending={createBookingMutation.isPending}
       />
 

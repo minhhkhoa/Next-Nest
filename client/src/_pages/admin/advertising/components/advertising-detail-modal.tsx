@@ -10,6 +10,9 @@ import { AdBookingResType } from "@/schemasvalidation/adBooking";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import Image from "next/image";
+import { Link } from "@/i18n/navigation";
 
 interface Props {
   isOpen: boolean;
@@ -83,61 +86,102 @@ export function AdvertisingDetailModal({ isOpen, onClose, data }: Props) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden">
+        <DialogHeader className="pt-6 px-6 pb-2">
           <DialogTitle className="text-xl">Chi tiết đơn quảng cáo</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="flex justify-between items-center">
-            <span className="text-muted-foreground">Mã Booking:</span>
-            <span className="font-semibold uppercase">
-              {data._id.substring(data._id.length - 8)}
-            </span>
-          </div>
+        <ScrollArea className="max-h-[75vh] px-6 pb-6">
+          <div className="space-y-4 py-2">
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">Mã Booking:</span>
+              <span className="font-semibold uppercase">
+                {data._id.substring(data._id.length - 8)}
+              </span>
+            </div>
 
-          <Separator />
+            <Separator />
 
-          <div className="flex justify-between items-center">
-            <span className="text-muted-foreground">Vị trí:</span>
-            <Badge variant="secondary" className="text-base">
-              {data.slotCode}
-            </Badge>
-          </div>
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">Vị trí:</span>
+              <Badge variant="secondary" className="text-base">
+                {data.slotCode}
+              </Badge>
+            </div>
 
-          <div className="flex justify-between items-center">
-            <span className="text-muted-foreground">Thời gian:</span>
-            <span className="font-medium">
-              {format(new Date(data.startAt), "dd/MM/yyyy")} -{" "}
-              {format(new Date(data.endAt), "dd/MM/yyyy")}
-            </span>
-          </div>
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">Thời gian:</span>
+              <span className="font-medium">
+                {format(new Date(data.startAt), "dd/MM/yyyy")} -{" "}
+                {format(new Date(data.endAt), "dd/MM/yyyy")}
+              </span>
+            </div>
 
-          <div className="flex justify-between items-center">
-            <span className="text-muted-foreground">Trạng thái:</span>
-            {getStatusBadge(data.status)}
-          </div>
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">Trạng thái:</span>
+              {getStatusBadge(data.status)}
+            </div>
 
-          <Separator />
+            <Separator />
 
-          <div>
-            <p className="text-muted-foreground mb-2">Thông tin khách hàng:</p>
-            <div className="bg-muted p-3 rounded-md space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm">Công ty:</span>
-                <span className="text-sm font-medium">
-                  {(data.companyId as any)?.name || "N/A"}
+            <div className="space-y-3">
+              <div className="flex flex-col gap-1">
+                <span className="text-muted-foreground text-sm">
+                  Target URL (Đường dẫn khi click):
                 </span>
+                <Link
+                  href={data.targetUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-blue-500 hover:underline break-all text-sm"
+                >
+                  {data.targetUrl}
+                </Link>
               </div>
-              <div className="flex justify-between">
-                <span className="text-sm">Người đặt:</span>
-                <span className="text-sm font-medium">
-                  {(data.recruiterId as any)?.name || "N/A"}
+
+              <div className="flex flex-col gap-1">
+                <span className="text-muted-foreground text-sm">
+                  Banner (Hình ảnh quảng cáo):
                 </span>
+                {data.imageUrl ? (
+                  <div className="rounded-md border p-1 bg-muted/30 flex justify-center">
+                    <Image
+                      src={data.imageUrl}
+                      alt="Ad Banner"
+                      className="max-h-[200px] object-contain rounded w-auto"
+                      width={200}
+                      height={200}
+                    />
+                  </div>
+                ) : (
+                  <span className="text-sm italic text-muted-foreground">
+                    Không có hình ảnh
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <Separator />
+
+            <div>
+              <p className="text-muted-foreground mb-2">Thông tin khách hàng:</p>
+              <div className="bg-muted p-3 rounded-md space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm">Công ty:</span>
+                  <span className="text-sm font-medium">
+                    {(data.companyId as any)?.name || "N/A"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm">Người đặt:</span>
+                  <span className="text-sm font-medium">
+                    {(data.recruiterId as any)?.name || "N/A"}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
