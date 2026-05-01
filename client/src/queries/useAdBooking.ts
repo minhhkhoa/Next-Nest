@@ -9,10 +9,13 @@ export const useCreateAdBookingMutation = () => {
   });
 };
 
-export const useGetAdBookingsQuery = () => {
+export const useGetAdBookingsQuery = (query: {
+  currentPage: number;
+  pageSize: number;
+}) => {
   return useQuery({
-    queryKey: ["ad-bookings"],
-    queryFn: () => adBookingApiRequest.findAll(),
+    queryKey: ["ad-bookings", query],
+    queryFn: () => adBookingApiRequest.findAll(query),
   });
 };
 

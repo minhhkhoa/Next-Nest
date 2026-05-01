@@ -40,9 +40,6 @@ export class AdBooking {
   })
   status: string;
 
-  @Prop({ min: 1 })
-  queueNo?: number;
-
   @Prop({ required: true, min: 0 })
   amount: number;
 

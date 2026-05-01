@@ -33,11 +33,20 @@ export class AdBookingController {
     return this.adBookingService.create(createAdBookingDto, user);
   }
 
-  @Get()
-  findAll(@userDecorator() user: UserDecoratorType) {
-    return this.adBookingService.findAll(user);
+  //- recruiter lấy danh sách đơn của công ty mình
+  @Get('recruiter/all')
+  findAll(
+    @Query('currentPage') currentPage: string = '1',
+    @Query('pageSize') pageSize: string = '10',
+    @userDecorator() user: UserDecoratorType,
+  ) {
+    return this.adBookingService.findAll(user, {
+      currentPage: Number(currentPage),
+      pageSize: Number(pageSize),
+    });
   }
 
+  //- admin lấy tất cả các yêu cầu đặt quảng cáo
   @Get('admin/all')
   findAllByAdmin(
     @Query('currentPage') currentPage: string = '1',
@@ -69,6 +78,7 @@ export class AdBookingController {
     return this.adBookingService.remove(id, user);
   }
 
+  //- người dùng hủy yêu cầu
   @Patch('cancel/:id')
   cancelByUser(
     @Param('id') id: string,
@@ -77,6 +87,7 @@ export class AdBookingController {
     return this.adBookingService.cancelByUser(id, user);
   }
 
+  //- admin hủy yêu cầu
   @Patch('admin/cancel/:id')
   cancelByAdmin(
     @Param('id') id: string,

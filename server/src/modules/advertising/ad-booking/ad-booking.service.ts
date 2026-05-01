@@ -203,14 +203,49 @@ export class AdBookingService {
     }));
   }
 
-  async findAll(user: UserDecoratorType) {
+  async findAll(
+    user: UserDecoratorType,
+    query: { currentPage: number; pageSize: number },
+  ) {
     const companyId = user.employerInfo?.companyID;
     if (!companyId) {
       throw new ForbiddenException('Bạn không có quyền truy cập dữ liệu này');
     }
-    return this.adBookingRepository.find({
-      filter: { companyId: new Types.ObjectId(companyId) },
-    });
+
+    const { currentPage, pageSize } = query;
+
+    const [total, items] = await Promise.all([
+      this.adBookingRepository.countDocumentsRaw(
+        {
+          companyId: companyId,
+          isDeleted: { $ne: true },
+        },
+        false, //- includeDeleted = false
+      ),
+      this.adBookingRepository.findRaw(
+        {
+          companyId: companyId,
+          isDeleted: { $ne: true },
+        },
+        {
+          skip: (currentPage - 1) * pageSize,
+          limit: pageSize,
+          sort: { createdAt: -1 },
+          lean: true,
+          populate: ['recruiterId', 'companyId'],
+        },
+      ),
+    ]);
+
+    return {
+      meta: {
+        current: currentPage,
+        pageSize: pageSize,
+        totalPages: Math.ceil(total / pageSize),
+        totalItems: total,
+      },
+      result: items,
+    };
   }
 
   async findAllByAdmin(query: { currentPage: number; pageSize: number }) {
@@ -279,9 +314,11 @@ export class AdBookingService {
   async remove(id: string, user: UserDecoratorType) {
     const booking = await this.findOne(id, user);
 
-    //- Chỉ cho phép xóa nếu đơn chưa thanh toán
-    if (booking.status !== 'PENDING_PAYMENT') {
-      throw new BadRequestException('Không thể xóa đơn hàng đã thanh toán');
+    //- Cho phép xóa mềm đối với các đơn chưa thanh toán, đã hủy hoặc hết hạn
+    if (!['PENDING_PAYMENT', 'CANCELLED', 'EXPIRED'].includes(booking.status)) {
+      throw new BadRequestException(
+        'Chỉ có thể xóa các đơn nháp, đã hủy hoặc hết hạn',
+      );
     }
 
     return this.adBookingRepository.softDeleteById(id);

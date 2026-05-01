@@ -14,53 +14,77 @@ interface StatsCardsProps {
 }
 
 export default function StatsCards({ bookings }: StatsCardsProps) {
+  const totalBookings = bookings.length;
+
+  const runningCount = bookings.filter((b) => b.status === "RUNNING").length;
+
+  const pendingScheduledCount = bookings.filter((b) =>
+    ["PENDING_PAYMENT", "SCHEDULED"].includes(b.status)
+  ).length;
+
   const totalSpent = bookings
-    .reduce((acc, curr) => acc + (curr.status !== "CANCELLED" ? curr.amount : 0), 0)
+    .reduce((acc, curr) => {
+      if (["RUNNING", "SCHEDULED", "COMPLETED"].includes(curr.status)) {
+        return acc + curr.amount;
+      }
+      return acc;
+    }, 0)
     .toLocaleString("vi-VN");
 
-  const pendingCount = bookings.filter((b) => b.status === "PENDING_PAYMENT").length;
-  const activeCount = bookings.filter((b) => b.status === "ACTIVE").length;
-
   return (
-    <div className="grid gap-6 md:grid-cols-3">
-      <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 shadow-md">
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <Card className="shadow-sm">
         <CardHeader className="pb-2">
           <CardTitle className="py-2 text-sm font-medium text-muted-foreground uppercase flex items-center gap-2">
-            <CreditCard className="w-4 h-4" /> Tổng chi tiêu
+            <History className="w-4 h-4" /> Tổng số đơn
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold text-primary">{totalSpent} VND</div>
+          <div className="text-3xl font-bold">{totalBookings}</div>
           <p className="text-xs text-muted-foreground mt-1">
-            Tính trên tất cả đơn hàng trừ đơn đã hủy
+            Đơn quảng cáo đã tạo
           </p>
         </CardContent>
       </Card>
 
-      <Card className="shadow-md">
+      <Card className="shadow-sm border-green-100 bg-gradient-to-br from-green-50 to-transparent">
         <CardHeader className="pb-2">
           <CardTitle className="py-2 text-sm font-medium text-muted-foreground uppercase flex items-center gap-2">
-            <History className="w-4 h-4" /> Đơn chờ xử lý
+            <CheckCircle2 className="w-4 h-4 text-green-500" /> Đang hoạt động
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold">{pendingCount}</div>
-          <p className="text-xs text-muted-foreground mt-1 text-orange-500 font-medium">
-            Cần thanh toán để kích hoạt
-          </p>
-        </CardContent>
-      </Card>
-
-      <Card className="shadow-md border-green-100">
-        <CardHeader className="pb-2">
-          <CardTitle className="py-2 text-sm font-medium text-muted-foreground uppercase flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4" /> Quảng cáo Active
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold text-green-500">{activeCount}</div>
-          <p className="text-xs text-muted-foreground mt-1 font-medium">
+          <div className="text-3xl font-bold text-green-600">{runningCount}</div>
+          <p className="text-xs text-muted-foreground mt-1">
             Đang hiển thị trên website
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="py-2 text-sm font-medium text-muted-foreground uppercase flex items-center gap-2">
+            <History className="w-4 h-4" /> Chờ / Sắp chạy
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold text-orange-500">{pendingScheduledCount}</div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Đang chờ thanh toán hoặc tới lịch
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="py-2 text-sm font-medium text-muted-foreground uppercase flex items-center gap-2">
+            <CreditCard className="w-4 h-4 text-primary" /> Tổng chi phí
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-primary">{totalSpent}đ</div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Tổng tiền đã đầu tư thành công
           </p>
         </CardContent>
       </Card>

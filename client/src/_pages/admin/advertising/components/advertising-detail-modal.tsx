@@ -18,9 +18,10 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   data: AdBookingResType | null;
+  isAdmin?: boolean;
 }
 
-export function AdvertisingDetailModal({ isOpen, onClose, data }: Props) {
+export function AdvertisingDetailModal({ isOpen, onClose, data, isAdmin = true }: Props) {
   if (!data) return null;
 
   const getStatusBadge = (status: string) => {
@@ -110,10 +111,24 @@ export function AdvertisingDetailModal({ isOpen, onClose, data }: Props) {
             </div>
 
             <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">Loại hiển thị:</span>
+              <span className="font-medium text-sm">
+                {data.adType === "NON_DISMISSIBLE" ? "Không thể tắt" : "Có thể tắt (Skip)"}
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Thời gian:</span>
               <span className="font-medium">
                 {format(new Date(data.startAt), "dd/MM/yyyy")} -{" "}
                 {format(new Date(data.endAt), "dd/MM/yyyy")}
+              </span>
+            </div>
+            
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">Tổng tiền:</span>
+              <span className="font-bold text-primary">
+                {data.amount.toLocaleString("vi-VN")}đ
               </span>
             </div>
 
@@ -161,25 +176,28 @@ export function AdvertisingDetailModal({ isOpen, onClose, data }: Props) {
               </div>
             </div>
 
-            <Separator />
-
-            <div>
-              <p className="text-muted-foreground mb-2">Thông tin khách hàng:</p>
-              <div className="bg-muted p-3 rounded-md space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm">Công ty:</span>
-                  <span className="text-sm font-medium">
-                    {(data.companyId as any)?.name || "N/A"}
-                  </span>
+            {isAdmin && (
+              <>
+                <Separator />
+                <div>
+                  <p className="text-muted-foreground mb-2">Thông tin khách hàng:</p>
+                  <div className="bg-muted p-3 rounded-md space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm">Công ty:</span>
+                      <span className="text-sm font-medium">
+                        {(data.companyId as any)?.name || "N/A"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm">Người đặt:</span>
+                      <span className="text-sm font-medium">
+                        {(data.recruiterId as any)?.name || "N/A"}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm">Người đặt:</span>
-                  <span className="text-sm font-medium">
-                    {(data.recruiterId as any)?.name || "N/A"}
-                  </span>
-                </div>
-              </div>
-            </div>
+              </>
+            )}
           </div>
         </ScrollArea>
       </DialogContent>

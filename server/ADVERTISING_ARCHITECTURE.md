@@ -132,10 +132,6 @@ Schema files chính:
     - `CANCELLED`: đã hủy.
     - `EXPIRED`: hết hạn/không còn hiệu lực.
 
-- `queueNo` (number, optional, min 1):
-  - Thứ tự xếp hàng khi booking ở trạng thái chờ slot.
-  - Null khi booking không ở hàng chờ.
-
 - `amount` (number, required, min 0):
   - Tổng tiền của đơn booking.
 

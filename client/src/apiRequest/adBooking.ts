@@ -17,7 +17,10 @@ const adBookingApiRequest = {
       }>
     >(prefix, payload),
 
-  findAll: () => http.get<ApiResponse<AdBookingResType[]>>(prefix),
+  findAll: (query: { currentPage: number; pageSize: number }) =>
+    http.get<ApiResponse<any>>(
+      `${prefix}/recruiter/all?currentPage=${query.currentPage}&pageSize=${query.pageSize}`
+    ),
 
   findOne: (id: string) =>
     http.get<ApiResponse<AdBookingResType>>(`${prefix}/${id}`),

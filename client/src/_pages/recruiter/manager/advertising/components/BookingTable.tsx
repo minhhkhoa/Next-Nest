@@ -14,12 +14,28 @@ import { Calendar, QrCode, Eye } from "lucide-react";
 import dayjs from "dayjs";
 import { AdBookingResType } from "@/schemasvalidation/adBooking";
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal, Trash2 } from "lucide-react";
+
 interface BookingTableProps {
   bookings: AdBookingResType[];
   onPay: (booking: AdBookingResType) => void;
+  onView: (booking: AdBookingResType) => void;
+  onDelete: (booking: AdBookingResType) => void;
 }
 
-export default function BookingTable({ bookings, onPay }: BookingTableProps) {
+export default function BookingTable({
+  bookings,
+  onPay,
+  onView,
+  onDelete,
+}: BookingTableProps) {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "PENDING_PAYMENT":
@@ -46,9 +62,15 @@ export default function BookingTable({ bookings, onPay }: BookingTableProps) {
         return <Badge variant="secondary">Đã kết thúc</Badge>;
       case "CANCELLED":
         return <Badge variant="destructive">Đã hủy</Badge>;
+      case "EXPIRED":
+        return <Badge variant="destructive">Hết hạn</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
+  };
+
+  const canDelete = (status: string) => {
+    return ["CANCELLED", "EXPIRED", "PENDING_PAYMENT"].includes(status);
   };
 
   return (
@@ -59,7 +81,7 @@ export default function BookingTable({ bookings, onPay }: BookingTableProps) {
           <TableHead>Thời gian</TableHead>
           <TableHead>Tổng tiền</TableHead>
           <TableHead>Trạng thái</TableHead>
-          <TableHead className="text-right pr-6">Thao tác</TableHead>
+          <TableHead className="text-right pr-6 w-[100px]">Thao tác</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -83,9 +105,11 @@ export default function BookingTable({ bookings, onPay }: BookingTableProps) {
                   <span className="font-bold text-primary">
                     {booking._id.slice(-8).toUpperCase()}
                   </span>
-                  <span className="text-sm font-medium">{booking.slotCode}</span>
+                  <span className="text-sm font-medium">
+                    {booking.slotCode}
+                  </span>
                   <span className="text-[10px] text-muted-foreground uppercase">
-                    {booking.adType}
+                    {booking.adType === "NON_DISMISSIBLE" ? "Không thể tắt" : "Có thể tắt (Skip)"}
                   </span>
                 </div>
               </TableCell>
@@ -97,7 +121,8 @@ export default function BookingTable({ bookings, onPay }: BookingTableProps) {
                     {dayjs(booking.endAt).format("DD/MM/YY")}
                   </div>
                   <span className="text-[10px] text-muted-foreground italic pl-5">
-                    ({dayjs(booking.endAt).diff(dayjs(booking.startAt), "day")} ngày)
+                    ({dayjs(booking.endAt).diff(dayjs(booking.startAt), "day")}{" "}
+                    ngày)
                   </span>
                 </div>
               </TableCell>
@@ -106,25 +131,38 @@ export default function BookingTable({ bookings, onPay }: BookingTableProps) {
               </TableCell>
               <TableCell>{getStatusBadge(booking.status)}</TableCell>
               <TableCell className="text-right pr-6">
-                <div className="flex justify-end gap-2">
-                  {booking.status === "PENDING_PAYMENT" && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-8 gap-1 border-primary text-primary hover:bg-primary/5 shadow-sm"
-                      onClick={() => onPay(booking)}
-                    >
-                      <QrCode className="w-3.5 h-3.5" /> Thanh toán
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                      <span className="sr-only">Mở menu</span>
+                      <MoreHorizontal className="h-4 w-4" />
                     </Button>
-                  )}
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-8 w-8 text-muted-foreground hover:text-primary"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </Button>
-                </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {booking.status === "PENDING_PAYMENT" && (
+                      <DropdownMenuItem onClick={() => onPay(booking)}>
+                        <QrCode className="mr-2 h-4 w-4" />
+                        <span>Thanh toán</span>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem onClick={() => onView(booking)}>
+                      <Eye className="mr-2 h-4 w-4" />
+                      <span>Xem chi tiết</span>
+                    </DropdownMenuItem>
+                    {canDelete(booking.status) && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => onDelete(booking)}
+                          className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          <span>Xóa</span>
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </TableCell>
             </TableRow>
           ))

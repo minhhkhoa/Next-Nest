@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import {
   useGetAdBookingsQuery,
   useCreateAdBookingMutation,
+  useDeleteAdBookingMutation,
 } from "@/queries/useAdBooking";
 import { useGetAdSlotsPublic } from "@/queries/useAdSlot";
 
@@ -25,9 +26,11 @@ import AdPaymentModal from "@/components/AdPaymentModal";
 import StatusModal, { StatusType } from "./components/StatusModal";
 import AdSlotCard from "./components/AdSlotCard";
 import BookingFormDrawer from "./components/BookingFormDrawer";
-import BookingTable from "./components/BookingTable";
 import StatsCards from "./components/StatsCards";
 import AdTermsModal from "./components/AdTermsModal";
+import { getAdvertisingColumns } from "./components/advertisingColumn";
+import { TableAdvertising } from "./components/tableAdvertising";
+import { DeleteConfirmModal } from "@/_pages/admin/NewsCategory/components/modals/delete-confirm-modal";
 
 //- Types
 import {
@@ -35,18 +38,29 @@ import {
   AdPaymentResType,
 } from "@/schemasvalidation/adBooking";
 import { AdSlotResType } from "@/schemasvalidation/adSlot";
+import { AdvertisingDetailModal } from "@/_pages/admin/advertising/components/advertising-detail-modal";
 
 export default function AdvertisingPage() {
+  //- Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 8;
+
   //- Queries
-  const { data: bookingsRes, refetch } = useGetAdBookingsQuery();
+  const { data: bookingsRes, refetch } = useGetAdBookingsQuery({
+    currentPage,
+    pageSize,
+  });
   const { data: slotsRes } = useGetAdSlotsPublic();
   const createBookingMutation = useCreateAdBookingMutation();
+  const deleteBookingMutation = useDeleteAdBookingMutation();
 
   //- Modals Visibility
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   //- Selection Data
   const [selectedBooking, setSelectedBooking] =
@@ -75,7 +89,7 @@ export default function AdvertisingPage() {
     duration: 1,
   });
 
-  const bookings = bookingsRes?.data || [];
+  const bookings = bookingsRes?.data?.result || [];
   const slots = slotsRes?.data || [];
 
   const handleOpenCreateForm = (slot: AdSlotResType) => {
@@ -144,6 +158,18 @@ export default function AdvertisingPage() {
     refetch();
   };
 
+  const handleDeleteBooking = async () => {
+    if (!selectedBooking) return;
+    try {
+      await deleteBookingMutation.mutateAsync(selectedBooking._id);
+      toast.success("Đã xóa đơn quảng cáo thành công");
+      setIsDeleteModalOpen(false);
+      refetch();
+    } catch (error: any) {
+      toast.error(error.message || "Lỗi khi xóa đơn quảng cáo");
+    }
+  };
+
   return (
     <div className="p-4 space-y-8 max-w-7xl mx-auto">
       {/* Header Section */}
@@ -201,13 +227,32 @@ export default function AdvertisingPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
-              <BookingTable
-                bookings={bookings}
-                onPay={(b) => {
-                  setSelectedBooking(b);
-                  //- Logic lấy paymentId nếu cần
-                  setIsPaymentModalOpen(true);
-                }}
+              <TableAdvertising
+                columns={getAdvertisingColumns({
+                  onPay: (b) => {
+                    setSelectedBooking(b);
+                    //- Logic lấy paymentId nếu cần
+                    setIsPaymentModalOpen(true);
+                  },
+                  onView: (b) => {
+                    setSelectedBooking(b);
+                    setIsDetailModalOpen(true);
+                  },
+                  onDelete: (b) => {
+                    setSelectedBooking(b);
+                    setIsDeleteModalOpen(true);
+                  },
+                })}
+                data={bookings}
+                meta={
+                  bookingsRes?.data?.meta ?? {
+                    current: 0,
+                    pageSize: 0,
+                    totalPages: 0,
+                    totalItems: 0,
+                  }
+                }
+                setCurrentPage={setCurrentPage}
               />
             </CardContent>
           </Card>
@@ -246,6 +291,29 @@ export default function AdvertisingPage() {
         payment={selectedPayment}
         onSuccess={handlePaymentSuccess}
       />
+
+      {/* DETAIL MODAL */}
+      <AdvertisingDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        data={selectedBooking}
+        isAdmin={false}
+      />
+
+      {/* DELETE CONFIRM MODAL */}
+      {isDeleteModalOpen && (
+        <DeleteConfirmModal
+          title="Xóa đơn quảng cáo"
+          isDeleting={deleteBookingMutation.isPending}
+          onConfirm={handleDeleteBooking}
+          onCancel={() => setIsDeleteModalOpen(false)}
+        >
+          <p className="text-muted-foreground text-sm mt-2">
+            Bạn có chắc chắn muốn xóa đơn quảng cáo này khỏi danh sách? Hành
+            động này sẽ xóa dữ liệu và không thể khôi phục.
+          </p>
+        </DeleteConfirmModal>
+      )}
 
       {/* STATUS MODAL */}
       <StatusModal
