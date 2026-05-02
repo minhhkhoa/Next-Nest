@@ -232,7 +232,7 @@ export class AdBookingService {
           limit: pageSize,
           sort: { createdAt: -1 },
           lean: true,
-          populate: ['recruiterId', 'companyId'],
+          populate: ['recruiterId', 'companyId', 'paymentId'],
         },
       ),
     ]);
@@ -262,7 +262,7 @@ export class AdBookingService {
           skip,
           limit: defaultLimit,
           sort: { createdAt: -1 },
-          populate: ['recruiterId', 'companyId'],
+          populate: ['recruiterId', 'companyId', 'paymentId'],
         },
       ),
     ]);
@@ -279,7 +279,9 @@ export class AdBookingService {
   }
 
   async findOne(id: string, user: UserDecoratorType) {
-    const booking = await this.adBookingRepository.findById(id);
+    const booking = await this.adBookingRepository.findByIdRaw(id, {
+      populate: ['recruiterId', 'companyId', 'paymentId'],
+    });
     if (!booking) {
       throw new NotFoundException('Không tìm thấy đơn đặt quảng cáo');
     }

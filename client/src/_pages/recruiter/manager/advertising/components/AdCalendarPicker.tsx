@@ -7,7 +7,7 @@ import { format, addDays, isWithinInterval, startOfDay } from "date-fns";
 import { Calendar as CalendarIcon, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+import { Calendar, CalendarDayButton } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
@@ -33,8 +33,8 @@ export default function AdCalendarPicker({
   //- Chuyển đổi busyDates sang dạng mảng Interval để dễ kiểm tra
   const disabledIntervals = React.useMemo(() => {
     return busyDates.map((b) => ({
-      start: startOfDay(new Date(b.startAt)),
-      end: startOfDay(new Date(b.endAt)),
+      from: startOfDay(new Date(b.startAt)),
+      to: startOfDay(new Date(b.endAt)),
     }));
   }, [busyDates]);
 
@@ -44,7 +44,7 @@ export default function AdCalendarPicker({
     if (day <= today) return true; //- Không cho chọn ngày quá khứ hoặc hôm nay (cần ít nhất 1 ngày chuẩn bị)
 
     return disabledIntervals.some((interval) =>
-      isWithinInterval(day, interval),
+      isWithinInterval(day, { start: interval.from, end: interval.to }),
     );
   };
 
@@ -60,7 +60,7 @@ export default function AdCalendarPicker({
       const currentDay = addDays(start, i);
       if (
         disabledIntervals.some((interval) =>
-          isWithinInterval(currentDay, interval),
+          isWithinInterval(currentDay, { start: interval.from, end: interval.to }),
         )
       ) {
         return true;
@@ -97,9 +97,45 @@ export default function AdCalendarPicker({
             selected={date}
             onSelect={setDate}
             disabled={isDateDisabled}
+            modifiers={{
+              booked: (day) =>
+                disabledIntervals.some((interval) =>
+                  isWithinInterval(day, {
+                    start: interval.from,
+                    end: interval.to,
+                  }),
+                ),
+            }}
+            components={{
+              DayButton: (props) => {
+                const { modifiers, className, ...rest } = props;
+                return (
+                  <CalendarDayButton
+                    {...rest}
+                    modifiers={modifiers}
+                    className={cn(
+                      className,
+                      modifiers.booked &&
+                        "bg-destructive/20 text-destructive font-bold border border-destructive/30 rounded-md !opacity-100 shadow-sm",
+                    )}
+                  />
+                );
+              },
+            }}
             initialFocus
             locale={vi}
           />
+          {/* Legend */}
+          <div className="flex items-center gap-4 p-3 border-t bg-muted/20">
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 bg-destructive/20 border border-destructive/30 rounded-sm"></div>
+              <span className="text-[10px] font-medium text-muted-foreground">Đã được đặt</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 bg-primary rounded-sm"></div>
+              <span className="text-[10px] font-medium text-muted-foreground">Ngày bạn chọn</span>
+            </div>
+          </div>
         </PopoverContent>
       </Popover>
 

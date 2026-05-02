@@ -41,7 +41,7 @@ export function TableAdvertising({
   return (
     <div className="space-y-4">
       <div className="rounded-md border overflow-hidden">
-        <Table>
+        <Table className="p-2">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="bg-muted/50">
@@ -52,7 +52,7 @@ export function TableAdvertising({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -72,7 +72,7 @@ export function TableAdvertising({
                     <TableCell key={cell.id} className="py-4">
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}

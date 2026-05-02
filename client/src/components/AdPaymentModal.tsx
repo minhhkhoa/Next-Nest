@@ -45,6 +45,14 @@ export default function AdPaymentModal({
   const account = envConfig.NEXT_PUBLIC_SEPAY_ACCOUNT;
   const bank = envConfig.NEXT_PUBLIC_SEPAY_BANK;
 
+  //- Reset trạng thái khi mở modal mới
+  useEffect(() => {
+    if (isOpen) {
+      setIsSuccess(false);
+      setIsCancelled(false);
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     if (!socket || !payment) return;
 

@@ -11,26 +11,6 @@ export const CreateAdBookingBody = z.object({
 
 export type CreateAdBookingBodyType = z.TypeOf<typeof CreateAdBookingBody>;
 
-export const AdBookingRes = z.object({
-  _id: z.string(),
-  companyId: z.string(),
-  recruiterId: z.string(),
-  slotCode: z.string(),
-  adType: z.string(),
-  imageUrl: z.string(),
-  targetUrl: z.string(),
-  startAt: z.string(),
-  endAt: z.string(),
-  status: z.string(),
-  queueNo: z.number().optional(),
-  amount: z.number(),
-  paymentId: z.string().optional(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-});
-
-export type AdBookingResType = z.TypeOf<typeof AdBookingRes>;
-
 export const AdPaymentRes = z.object({
   _id: z.string(),
   bookingId: z.string(),
@@ -46,3 +26,23 @@ export const AdPaymentRes = z.object({
 });
 
 export type AdPaymentResType = z.TypeOf<typeof AdPaymentRes>;
+
+export const AdBookingRes = z.object({
+  _id: z.string(),
+  companyId: z.string(),
+  recruiterId: z.string(),
+  slotCode: z.string(),
+  adType: z.string(),
+  imageUrl: z.string(),
+  targetUrl: z.string(),
+  startAt: z.string(),
+  endAt: z.string(),
+  status: z.string(),
+  queueNo: z.number().optional(),
+  amount: z.number(),
+  paymentId: z.union([z.string(), AdPaymentRes]).optional(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export type AdBookingResType = z.TypeOf<typeof AdBookingRes>;

@@ -23,10 +23,9 @@ import { useGetAdSlotsPublic } from "@/queries/useAdSlot";
 
 //- Components
 import AdPaymentModal from "@/components/AdPaymentModal";
-import StatusModal, { StatusType } from "./components/StatusModal";
 import AdSlotCard from "./components/AdSlotCard";
 import BookingFormDrawer from "./components/BookingFormDrawer";
-import StatsCards from "./components/StatsCards";
+import AdvertisingStats from "./components/AdvertisingStats";
 import AdTermsModal from "./components/AdTermsModal";
 import { getAdvertisingColumns } from "./components/advertisingColumn";
 import { TableAdvertising } from "./components/tableAdvertising";
@@ -56,7 +55,6 @@ export default function AdvertisingPage() {
 
   //- Modals Visibility
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -68,17 +66,6 @@ export default function AdvertisingPage() {
   const [selectedPayment, setSelectedPayment] =
     useState<AdPaymentResType | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<AdSlotResType | null>(null);
-
-  //- Status Modal Config
-  const [statusConfig, setStatusConfig] = useState<{
-    type: StatusType;
-    title: string;
-    description: string;
-  }>({
-    type: "success",
-    title: "",
-    description: "",
-  });
 
   //- Create Form State
   const [formData, setFormData] = useState({
@@ -148,13 +135,6 @@ export default function AdvertisingPage() {
   };
 
   const handlePaymentSuccess = () => {
-    setStatusConfig({
-      type: "success",
-      title: "Thanh toán thành công!",
-      description:
-        "Quảng cáo của bạn đã được ghi nhận và đang chờ hiển thị theo lịch.",
-    });
-    setIsStatusModalOpen(true);
     refetch();
   };
 
@@ -219,7 +199,7 @@ export default function AdvertisingPage() {
           value="my-ads"
           className="animate-in slide-in-from-left duration-500"
         >
-          <Card>
+          <Card className="p-2">
             <CardHeader>
               <CardTitle>Danh sách đơn hàng</CardTitle>
               <CardDescription>
@@ -231,7 +211,10 @@ export default function AdvertisingPage() {
                 columns={getAdvertisingColumns({
                   onPay: (b) => {
                     setSelectedBooking(b);
-                    //- Logic lấy paymentId nếu cần
+                    //- Lấy payment từ booking đã được populate
+                    if (b.paymentId && typeof b.paymentId === "object") {
+                      setSelectedPayment(b.paymentId as any);
+                    }
                     setIsPaymentModalOpen(true);
                   },
                   onView: (b) => {
@@ -260,7 +243,7 @@ export default function AdvertisingPage() {
 
         {/* TAB 3: STATS */}
         <TabsContent value="stats" className="animate-in zoom-in duration-500">
-          <StatsCards bookings={bookings} />
+          <AdvertisingStats bookings={bookings} />
         </TabsContent>
       </Tabs>
 
@@ -314,16 +297,6 @@ export default function AdvertisingPage() {
           </p>
         </DeleteConfirmModal>
       )}
-
-      {/* STATUS MODAL */}
-      <StatusModal
-        isOpen={isStatusModalOpen}
-        onClose={() => setIsStatusModalOpen(false)}
-        type={statusConfig.type}
-        title={statusConfig.title}
-        description={statusConfig.description}
-        actionLabel="Quay lại danh sách đơn"
-      />
     </div>
   );
 }
