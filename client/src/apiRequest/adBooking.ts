@@ -41,6 +41,9 @@ const adBookingApiRequest = {
 
   cancelByAdmin: (id: string) =>
     http.patch<ApiResponse<any>>(`${prefix}/admin/cancel/${id}`, {}),
+
+  getActiveAd: (slotCode: string) =>
+    http.get<ApiResponse<AdBookingResType>>(`${prefix}/active/${slotCode}`),
 };
 
 export default adBookingApiRequest;

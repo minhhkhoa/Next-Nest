@@ -348,4 +348,13 @@ export class AdSlotService {
       throw new BadRequestCustom(error.message);
     }
   }
+
+  //- Tìm slot theo code mục đích để lấy kích thước(width, height) của slot
+  async findByCode(code: string) {
+    const slot = await this.adSlotRepository.findByCode(code.toUpperCase());
+    if (!slot || slot.isDeleted) {
+      throw new BadRequestCustom(`Không tìm thấy slot với mã: ${code}`);
+    }
+    return slot;
+  }
 }

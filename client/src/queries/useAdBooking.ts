@@ -51,3 +51,11 @@ export const useCancelByAdminMutation = () => {
     mutationFn: (id: string) => adBookingApiRequest.cancelByAdmin(id),
   });
 };
+export const useGetActiveAdQuery = (slotCode: string) => {
+  return useQuery({
+    queryKey: ["active-ad", slotCode],
+    queryFn: () => adBookingApiRequest.getActiveAd(slotCode),
+    enabled: !!slotCode,
+    staleTime: 1000 * 60 * 5, //- 5 phút
+  });
+};

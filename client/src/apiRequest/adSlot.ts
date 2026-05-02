@@ -63,6 +63,10 @@ const adSlotApiRequest = {
   //- Khôi phục slot đã xóa (Super_Admin)
   restore: (id: string) =>
     http.patch<ApiResponse<AdSlotResType>>(`${prefix}/restore/${id}`, {}),
+
+  //- Lấy chi tiết slot theo code (Public)
+  findByCode: (code: string) =>
+    http.get<ApiResponse<AdSlotResType>>(`${prefix}/code/${code}`),
 };
 
 export default adSlotApiRequest;

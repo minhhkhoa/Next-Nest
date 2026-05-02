@@ -143,8 +143,8 @@ export function AdSlotModalForm({ onClose, data }: AdSlotModalFormProps) {
                           placeholder="Ví dụ: HOME_TOP"
                           className=" uppercase"
                           //- Nếu edit thì không cho đổi code (để tránh break booking)
-                          readOnly={isEdit}
-                          disabled={isEdit}
+                          // readOnly={isEdit}
+                          // disabled={isEdit}
                         />
                       </FormControl>
                       <FormDescription>

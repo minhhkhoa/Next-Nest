@@ -12,11 +12,11 @@ import {
   Map as MapIcon,
   ChevronDown,
   ChevronUp,
-  Flag, // Import icon
+  Flag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ADHorizontal, ADVertical } from "@/_pages/home/components/ad";
+import { AdBannerInline, AdStandard } from "@/components/ads/AdSlotRenderer";
 import { useGetLang } from "@/hooks/use-get-lang";
 import { IssueDialogForm } from "@/_pages/admin/issue/components/issue-modal-form";
 import { useAppStore } from "@/components/TanstackProvider";
@@ -135,7 +135,7 @@ export default function CompanyInfo({ company }: CompanyInfoProps) {
               </div>
             </div>
 
-            <ADHorizontal />
+            <AdBannerInline slotCode="COMPANY_POPUP" />
           </CardContent>
         </Card>
       </div>
@@ -177,7 +177,7 @@ export default function CompanyInfo({ company }: CompanyInfoProps) {
         </Card>
 
         {/* Advertisement Block */}
-        <ADVertical />
+        <AdStandard slotCode="COMPANY_POPUP" />
       </div>
     </div>
   );

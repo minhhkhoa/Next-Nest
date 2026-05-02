@@ -435,4 +435,40 @@ export class AdBookingService {
       session.endSession();
     }
   }
+
+  async getActiveAdBySlotCode(slotCode: string) {
+    const now = dayjs().startOf('day').toDate();
+    const nextDay = dayjs().endOf('day').toDate();
+
+    //- Tìm booking đang chạy cho slot này
+    const ad = await this.adBookingRepository.findOneRaw(
+      {
+        slotCode: slotCode.toUpperCase(),
+        status: { $in: ['SCHEDULED', 'RUNNING'] },
+        startAt: { $lte: nextDay },
+        endAt: { $gte: now },
+        isDeleted: { $ne: true },
+      },
+      {
+        populate: ['companyId'],
+        lean: true,
+      },
+    );
+
+    if (!ad) return null;
+
+    //- Tự động cập nhật status thành RUNNING nếu đã tới ngày nhưng vẫn đang là SCHEDULED
+    if (
+      ad.status === 'SCHEDULED' &&
+      dayjs().isAfter(dayjs(ad.startAt).startOf('day'))
+    ) {
+      await this.adBookingRepository.updateOneRaw(
+        { _id: ad._id },
+        { status: 'RUNNING' },
+      );
+      ad.status = 'RUNNING';
+    }
+
+    return ad;
+  }
 }

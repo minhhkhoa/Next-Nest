@@ -6,6 +6,7 @@ import CompanyHeader from "./components/CompanyHeader";
 import CompanyInfo from "./components/CompanyInfo";
 import CompanyJobs from "./components/CompanyJobs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AdBannerInline } from "@/components/ads/AdSlotRenderer";
 
 export default function PageDetailCompany({ idCompany }: { idCompany: string }) {
   const {
@@ -47,6 +48,10 @@ export default function PageDetailCompany({ idCompany }: { idCompany: string }) 
 
       <div className="container mx-auto relative z-10">
         <CompanyInfo company={company} />
+
+        <div className="my-10">
+          <AdBannerInline slotCode="COMPANY_DETAIL_BANNER" />
+        </div>
 
         <CompanyJobs companyId={company._id} />
       </div>

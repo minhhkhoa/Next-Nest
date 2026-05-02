@@ -4,7 +4,7 @@ import { useGetJobDetail } from "@/queries/useJob";
 import React from "react";
 import JobDetailInfo from "./components/JobDetailInfo";
 import RelatedJobs from "./components/RelatedJobs";
-import { ADHorizontal } from "@/_pages/home/components/ad";
+import { AdBannerInline } from "@/components/ads/AdSlotRenderer";
 import DetailJobSkeleton from "@/components/skeletons/DetailJob";
 
 export default function PageDetailJob({ idJob }: { idJob: string }) {
@@ -39,7 +39,7 @@ export default function PageDetailJob({ idJob }: { idJob: string }) {
         <JobDetailInfo job={job} />
 
         <div className="my-8">
-          <ADHorizontal />
+          <AdBannerInline slotCode="JOB_INLINE_MID" />
         </div>
 
         <RelatedJobs jobId={job._id} />

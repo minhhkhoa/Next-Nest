@@ -45,6 +45,14 @@ export class AdSlotController {
     return this.adSlotService.findAllPublic();
   }
 
+  @Public()
+  @ResponseMessage('Lấy chi tiết slot quảng cáo thành công')
+  @ApiOperation({ summary: 'Lấy chi tiết slot theo code' })
+  @Get('code/:code')
+  findByCode(@Param('code') code: string) {
+    return this.adSlotService.findByCode(code);
+  }
+
   //- Lấy danh sách slot có lọc/phân trang (Admin)
   @ResponseMessage('Lấy danh sách slot quảng cáo thành công')
   @ApiOperation({ summary: 'Admin lấy danh sách slot có lọc và phân trang' })
@@ -57,10 +65,7 @@ export class AdSlotController {
   @ResponseMessage('Khôi phục slot quảng cáo thành công')
   @ApiOperation({ summary: 'Super_Admin khôi phục slot đã xóa mềm' })
   @Patch('restore/:id')
-  restore(
-    @Param('id') id: string,
-    @userDecorator() user: UserDecoratorType,
-  ) {
+  restore(@Param('id') id: string, @userDecorator() user: UserDecoratorType) {
     return this.adSlotService.restore(id, user);
   }
 
@@ -99,10 +104,7 @@ export class AdSlotController {
   @ResponseMessage('Xóa slot quảng cáo thành công')
   @ApiOperation({ summary: 'Super_Admin xóa mềm slot quảng cáo' })
   @Delete(':id')
-  remove(
-    @Param('id') id: string,
-    @userDecorator() user: UserDecoratorType,
-  ) {
+  remove(@Param('id') id: string, @userDecorator() user: UserDecoratorType) {
     return this.adSlotService.remove(id, user);
   }
 }

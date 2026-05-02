@@ -19,6 +19,7 @@ import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { generateSlugUrl } from "@/lib/utils";
 import { useGetLang } from "@/hooks/use-get-lang";
+import { AdStandard } from "@/components/ads/AdSlotRenderer";
 
 import { IssueDialogForm } from "@/_pages/admin/issue/components/issue-modal-form";
 import { Flag } from "lucide-react";
@@ -151,8 +152,6 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
                       label="Hỏi thêm"
                     />
                   )}
-
-                
 
                 {isLogin && (
                   <Button
@@ -331,6 +330,8 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
               </div>
             </CardContent>
           </Card>
+
+          <AdStandard slotCode="JOB_INLINE_MID" className="mt-6" />
         </div>
       </div>
     </div>

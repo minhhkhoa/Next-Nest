@@ -97,3 +97,12 @@ export function useRestoreAdSlot() {
     },
   });
 }
+//- Hook lấy chi tiết slot theo code (Public)
+export function useGetAdSlotByCode(code: string) {
+  return useQuery({
+    queryKey: ["ad-slot-code", code],
+    queryFn: () => adSlotApiRequest.findByCode(code),
+    enabled: !!code,
+    staleTime: 1000 * 60 * 60, //- Cache 1 tiếng vì cấu hình slot ít thay đổi
+  });
+}
