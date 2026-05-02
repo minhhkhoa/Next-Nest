@@ -73,7 +73,9 @@ export const getAdvertisingColumns = ({
             <span className="font-bold text-primary">
               {booking._id.slice(-8).toUpperCase()}
             </span>
-            <span className="text-sm font-medium">{booking.slotCode}</span>
+            <span className="text-sm font-medium">
+              {booking.slotId?.name || booking.slotId?.code || booking.slotId}
+            </span>
             <span className="text-[10px] text-muted-foreground uppercase">
               {booking.adType === "NON_DISMISSIBLE"
                 ? "Không thể tắt"

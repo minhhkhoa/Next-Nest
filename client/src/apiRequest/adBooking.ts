@@ -4,6 +4,7 @@ import {
   AdBookingResType,
   AdPaymentResType,
   CreateAdBookingBodyType,
+  UnifiedAdResponseType,
 } from "@/schemasvalidation/adBooking";
 
 const prefix = "/ad-booking";
@@ -43,7 +44,7 @@ const adBookingApiRequest = {
     http.patch<ApiResponse<any>>(`${prefix}/admin/cancel/${id}`, {}),
 
   getActiveAd: (slotCode: string) =>
-    http.get<ApiResponse<AdBookingResType>>(`${prefix}/active/${slotCode}`),
+    http.get<ApiResponse<UnifiedAdResponseType>>(`${prefix}/active/${slotCode}`),
 };
 
 export default adBookingApiRequest;

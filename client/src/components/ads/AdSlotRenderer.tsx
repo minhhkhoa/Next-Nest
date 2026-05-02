@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { X } from "lucide-react";
 import { useGetActiveAdQuery } from "@/queries/useAdBooking";
-import { useGetAdSlotByCode } from "@/queries/useAdSlot";
 import { ADHorizontal, ADVertical } from "./ad";
 import { cn } from "@/lib/utils";
 
@@ -28,13 +27,10 @@ export function AdSlotRenderer({
 }: AdSlotRendererProps) {
   const [isDismissed, setIsDismissed] = useState(false);
 
-  //- Lấy cấu hình slot (để lấy width/height)
-  const { data: slotRes } = useGetAdSlotByCode(slotCode);
-  const slot = slotRes?.data;
-
-  //- Lấy quảng cáo đang chạy
-  const { data: adRes, isLoading } = useGetActiveAdQuery(slotCode);
-  const activeAd = adRes?.data;
+  //- Lấy quảng cáo đang chạy và cấu hình slot (Gộp chung 1 API call)
+  const { data: adSlotRes, isLoading } = useGetActiveAdQuery(slotCode);
+  const activeAd = adSlotRes?.data?.ad;
+  const slot = adSlotRes?.data?.slot;
 
   if (isLoading || isDismissed) return null;
 

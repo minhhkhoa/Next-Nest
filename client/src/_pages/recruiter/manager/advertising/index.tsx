@@ -108,7 +108,7 @@ export default function AdvertisingPage() {
     if (!selectedSlot) return;
 
     const payload = {
-      slotCode: selectedSlot.code,
+      slotId: selectedSlot._id,
       adType: formData.adType,
       imageUrl: formData.imageUrl,
       targetUrl: formData.targetUrl,

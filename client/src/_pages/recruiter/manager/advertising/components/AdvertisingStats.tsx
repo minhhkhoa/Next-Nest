@@ -101,7 +101,8 @@ export default function AdvertisingStats({ bookings }: AdvertisingStatsProps) {
   //- 4. Prepare Data for Ad Slot Distribution
   const slotDistribution: Record<string, number> = {};
   bookings.forEach((b) => {
-    slotDistribution[b.slotCode] = (slotDistribution[b.slotCode] || 0) + 1;
+    const slotName = b.slotId?.name || b.slotId?.code || b.slotId || "N/A";
+    slotDistribution[slotName] = (slotDistribution[slotName] || 0) + 1;
   });
 
   const slotData = Object.entries(slotDistribution)

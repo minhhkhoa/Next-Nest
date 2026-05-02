@@ -15,8 +15,8 @@ export class AdBooking {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   recruiterId: Types.ObjectId;
 
-  @Prop({ required: true, uppercase: true, trim: true })
-  slotCode: string;
+  @Prop({ type: Types.ObjectId, ref: 'AdSlot', required: true })
+  slotId: Types.ObjectId;
 
   @Prop({ required: true, enum: AD_TYPE_OPTIONS })
   adType: string;
@@ -70,8 +70,8 @@ export class AdBooking {
 
 export const AdBookingSchema = SchemaFactory.createForClass(AdBooking);
 
-AdBookingSchema.index({ slotCode: 1, status: 1, startAt: 1 });
-AdBookingSchema.index({ slotCode: 1, queueNo: 1 });
+AdBookingSchema.index({ slotId: 1, status: 1, startAt: 1 });
+AdBookingSchema.index({ slotId: 1, queueNo: 1 });
 AdBookingSchema.index({ companyId: 1, createdAt: -1 });
 
 export type AdBookingDocument = HydratedDocument<AdBooking>;

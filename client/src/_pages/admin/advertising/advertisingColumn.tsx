@@ -59,7 +59,13 @@ export const getAdvertisingColumns = (
     id: "slotCode",
     header: "Vị trí",
     cell: ({ row }) => {
-      return <Badge variant="secondary">{row.original.slotCode}</Badge>;
+      return (
+        <Badge variant="secondary">
+          {row.original.slotId?.name ||
+            row.original.slotId?.code ||
+            row.original.slotId}
+        </Badge>
+      );
     },
   },
   {

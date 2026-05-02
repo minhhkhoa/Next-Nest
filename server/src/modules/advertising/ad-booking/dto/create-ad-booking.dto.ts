@@ -26,10 +26,10 @@ export class CreateAdBookingDto {
   @IsMongoId()
   recruiterId?: string;
 
-  @ApiProperty({ example: 'HOME_TOP' })
-  @IsString()
+  @ApiProperty({ example: '6752cc5331e2d424074213d5' })
+  @IsMongoId()
   @IsNotEmpty()
-  slotCode: string;
+  slotId: string;
 
   @ApiProperty({ enum: AD_TYPE_OPTIONS, example: 'NON_DISMISSIBLE' })
   @IsEnum(AD_TYPE_OPTIONS)

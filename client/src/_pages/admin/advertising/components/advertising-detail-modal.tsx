@@ -106,7 +106,7 @@ export function AdvertisingDetailModal({ isOpen, onClose, data, isAdmin = true }
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Vị trí:</span>
               <Badge variant="secondary" className="text-base">
-                {data.slotCode}
+                {data.slotId?.name || data.slotId?.code || data.slotId}
               </Badge>
             </div>
 

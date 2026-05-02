@@ -13,9 +13,9 @@ export class AdBookingRepository extends MongoAbstractRepository<AdBookingDocume
     super(AdBooking, adBookingModel);
   }
 
-  async findBySlotCode(slotCode: string) {
+  async findBySlotId(slotId: string) {
     return this.findRaw(
-      { slotCode: slotCode.toUpperCase() } as any,
+      { slotId: slotId },
       {
         includeDeleted: true,
         lean: true,

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const CreateAdBookingBody = z.object({
-  slotCode: z.string().min(1, "Vui lòng chọn vị trí quảng cáo"),
+  slotId: z.string().min(1, "Vui lòng chọn vị trí quảng cáo"),
   adType: z.string().min(1, "Vui lòng chọn loại quảng cáo"),
   imageUrl: z.string().url("Đường dẫn hình ảnh không hợp lệ"),
   targetUrl: z.string().url("Đường dẫn đích không hợp lệ"),
@@ -29,9 +29,9 @@ export type AdPaymentResType = z.TypeOf<typeof AdPaymentRes>;
 
 export const AdBookingRes = z.object({
   _id: z.string(),
-  companyId: z.string(),
-  recruiterId: z.string(),
-  slotCode: z.string(),
+  companyId: z.any(),
+  recruiterId: z.any(),
+  slotId: z.any(),
   adType: z.string(),
   imageUrl: z.string(),
   targetUrl: z.string(),
@@ -46,3 +46,10 @@ export const AdBookingRes = z.object({
 });
 
 export type AdBookingResType = z.TypeOf<typeof AdBookingRes>;
+
+export const UnifiedAdResponse = z.object({
+  ad: AdBookingRes.nullable(),
+  slot: z.any(),
+});
+
+export type UnifiedAdResponseType = z.TypeOf<typeof UnifiedAdResponse>;

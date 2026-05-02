@@ -48,8 +48,8 @@ export class AdBookingService {
     const companyId = employerInfo.companyID;
 
     //- Lấy thông tin slot quảng cáo
-    const slot = await this.adSlotRepository.findByCode(
-      createAdBookingDto.slotCode,
+    const slot = await this.adSlotRepository.findById(
+      createAdBookingDto.slotId,
     );
     if (!slot) {
       throw new BadRequestException('Slot quảng cáo không tồn tại');
@@ -77,7 +77,7 @@ export class AdBookingService {
     //- KIỂM TRA TRÙNG LỊCH (Overlap check)
     // Tìm bất kỳ booking nào của slot này mà có thời gian chồng lấn và chưa bị hủy
     const overlappingBooking = await this.adBookingRepository.findOneRaw({
-      slotCode: createAdBookingDto.slotCode,
+      slotId: createAdBookingDto.slotId,
       status: { $nin: ['CANCELLED', 'EXPIRED'] },
       $or: [
         {
@@ -187,9 +187,12 @@ export class AdBookingService {
   }
 
   async getBusyDates(slotCode: string) {
+    const slot = await this.adSlotRepository.findByCode(slotCode);
+    if (!slot) return [];
+
     const bookings = await this.adBookingRepository.find({
       filter: {
-        slotCode,
+        slotId: slot._id,
         status: { $nin: ['CANCELLED', 'EXPIRED'] },
         // Lấy các booking từ hôm nay trở đi để tối ưu
         endAt: { $gte: dayjs().startOf('day').toDate() },
@@ -232,7 +235,7 @@ export class AdBookingService {
           limit: pageSize,
           sort: { createdAt: -1 },
           lean: true,
-          populate: ['recruiterId', 'companyId', 'paymentId'],
+          populate: ['recruiterId', 'companyId', 'paymentId', 'slotId'],
         },
       ),
     ]);
@@ -262,7 +265,7 @@ export class AdBookingService {
           skip,
           limit: defaultLimit,
           sort: { createdAt: -1 },
-          populate: ['recruiterId', 'companyId', 'paymentId'],
+          populate: ['recruiterId', 'companyId', 'paymentId', 'slotId'],
         },
       ),
     ]);
@@ -280,13 +283,15 @@ export class AdBookingService {
 
   async findOne(id: string, user: UserDecoratorType) {
     const booking = await this.adBookingRepository.findByIdRaw(id, {
-      populate: ['recruiterId', 'companyId', 'paymentId'],
+      populate: ['recruiterId', 'companyId', 'paymentId', 'slotId'],
     });
     if (!booking) {
       throw new NotFoundException('Không tìm thấy đơn đặt quảng cáo');
     }
 
-    if (booking.companyId.toString() !== user.employerInfo?.companyID) {
+    const bookingCompanyId =
+      booking.companyId?._id?.toString() || booking.companyId?.toString();
+    if (bookingCompanyId !== user.employerInfo?.companyID) {
       throw new ForbiddenException('Bạn không có quyền xem đơn hàng này');
     }
 
@@ -371,7 +376,9 @@ export class AdBookingService {
 
   //- Admin hủy đơn (có quyền cao nhất, hủy ở bất kỳ trạng thái nào)
   async cancelByAdmin(id: string, admin: UserDecoratorType) {
-    const booking = await this.adBookingRepository.findByIdRaw(id);
+    const booking = await this.adBookingRepository.findByIdRaw(id, {
+      populate: ['slotId'],
+    });
 
     if (!booking) {
       throw new NotFoundException('Không tìm thấy đơn quảng cáo');
@@ -403,11 +410,12 @@ export class AdBookingService {
 
       //- Notify Recruiter
       try {
+        const slotName = booking.slotId['name'] || 'N/A';
         this.eventEmitter.emit(NotificationType.AD_CANCELLED, {
           receiverId: booking.recruiterId.toString(),
           senderId: admin.id,
           title: 'Quảng cáo bị hủy',
-          content: `Quảng cáo của bạn (Slot: ${booking.slotCode}) đã bị Ban Quản Trị hệ thống hủy. Nếu bạn đã thanh toán, vui lòng liên hệ CSKH.`,
+          content: `Quảng cáo của bạn (Slot: ${slotName}) đã bị Ban Quản Trị hệ thống hủy. Nếu bạn đã thanh toán, vui lòng liên hệ CSKH.`,
           type: NotificationType.AD_CANCELLED,
           metadata: {
             module: 'ADVERTISING',
@@ -440,25 +448,28 @@ export class AdBookingService {
     const now = dayjs().startOf('day').toDate();
     const nextDay = dayjs().endOf('day').toDate();
 
+    //- Phải tìm slotId trước từ slotCode
+    const slot = await this.adSlotRepository.findByCode(slotCode.toUpperCase());
+    if (!slot) return null;
+
     //- Tìm booking đang chạy cho slot này
     const ad = await this.adBookingRepository.findOneRaw(
       {
-        slotCode: slotCode.toUpperCase(),
+        slotId: slot._id.toString(),
         status: { $in: ['SCHEDULED', 'RUNNING'] },
         startAt: { $lte: nextDay },
         endAt: { $gte: now },
         isDeleted: { $ne: true },
       },
       {
-        populate: ['companyId'],
+        populate: ['companyId', 'slotId'],
         lean: true,
       },
     );
 
-    if (!ad) return null;
-
     //- Tự động cập nhật status thành RUNNING nếu đã tới ngày nhưng vẫn đang là SCHEDULED
     if (
+      ad &&
       ad.status === 'SCHEDULED' &&
       dayjs().isAfter(dayjs(ad.startAt).startOf('day'))
     ) {
@@ -469,6 +480,6 @@ export class AdBookingService {
       ad.status = 'RUNNING';
     }
 
-    return ad;
+    return { ad, slot };
   }
 }
