@@ -58,5 +58,7 @@ deploy_to_server:
     - cp $SERVER_ENV_PROD server/.env.prod
     - echo "Deploying services using Docker Compose..."
     - docker compose up -d --build
+    - echo "Force restarting Nginx to apply new nginx.conf..."
+    - docker compose restart nginx-proxy
     - docker ps
   when: on_success
