@@ -106,10 +106,12 @@ export default function BookingTable({
                     {booking._id.slice(-8).toUpperCase()}
                   </span>
                   <span className="text-sm font-medium">
-                    {booking.slotCode}
+                    {booking.slotId?.code || "N/A"}
                   </span>
                   <span className="text-[10px] text-muted-foreground uppercase">
-                    {booking.adType === "NON_DISMISSIBLE" ? "Không thể tắt" : "Có thể tắt (Skip)"}
+                    {booking.adType === "NON_DISMISSIBLE"
+                      ? "Không thể tắt"
+                      : "Có thể tắt (Skip)"}
                   </span>
                 </div>
               </TableCell>
