@@ -20,8 +20,12 @@ export const useChatSocket = (conversations: Conversation[]) => {
   useEffect(() => {
     if (!isLogin || !user?._id) return;
 
+    const socketUrl = typeof window !== "undefined" && !window.location.hostname.includes("localhost") 
+      ? window.location.origin 
+      : envConfig.NEXT_PUBLIC_API_URL_SERVER_BASE;
+
     const socketInstance = io(
-      `${envConfig.NEXT_PUBLIC_API_URL_SERVER_BASE}/chat`,
+      `${socketUrl}/chat`,
       {
         auth: { token: getAccessTokenFromLocalStorage() },
         transports: ["websocket"],
