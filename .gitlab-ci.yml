@@ -124,11 +124,14 @@ build_frontend:
     - when: never
 
   variables:
-    NEXT_PUBLIC_API_URL: "http://jobhubabc.duckdns.org:2302"
-    NEXT_PUBLIC_API_URL_SERVER: "http://jobhubabc.duckdns.org:2302/api"
-    NEXT_PUBLIC_API_URL_SERVER_TUNNEL: "http://jobhubabc.duckdns.org:2302/api"
-    NEXT_PUBLIC_API_URL_SERVER_BASE: "http://jobhubabc.duckdns.org:2302"
-    NEXT_PUBLIC_API_URL_CLIENT: "http://jobhubabc.duckdns.org:3002"
+    SERVER_IP: "192.168.91.14"
+    BACKEND_PORT: "2302"
+    FRONTEND_PORT: "2303"
+    NEXT_PUBLIC_API_URL: "http://${SERVER_IP}:${BACKEND_PORT}"
+    NEXT_PUBLIC_API_URL_SERVER: "http://${SERVER_IP}:${BACKEND_PORT}/api"
+    NEXT_PUBLIC_API_URL_SERVER_TUNNEL: "http://${SERVER_IP}:${BACKEND_PORT}/api"
+    NEXT_PUBLIC_API_URL_SERVER_BASE: "http://${SERVER_IP}:${BACKEND_PORT}"
+    NEXT_PUBLIC_API_URL_CLIENT: "http://${SERVER_IP}:${FRONTEND_PORT}"
     NEXT_PUBLIC_TOKEN_TEST: "ci_build_token"
     NEXT_PUBLIC_CLOUD_API: "https://api.cloudinary.com/v1_1"
     NEXT_PUBLIC_PAGE_SIZE: "10"
