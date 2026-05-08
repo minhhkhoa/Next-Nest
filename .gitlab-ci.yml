@@ -27,7 +27,7 @@ build_project:
   script:
     - echo "Preparing environment files..."
     - cp $SERVER_ENV_PROD ./server/.env.prod
-    - cp $CLIENT_ENV_PROD ./client/.env.prod
+    - cp $CLIENT_ENV_PROD ./client/.env.production
     - echo "Building Backend..."
     - cd server && npm install && npm run build && cd ..
     - echo "Building Frontend..."
