@@ -44,9 +44,12 @@ export const SocketListener = () => {
     //- 1. Chỉ kết nối khi đã login và có thông tin user
     if (isLogin && user?._id) {
       if (!socket) {
-        //- Cần dùng url base không có /api
-        //- Bắt đầu tạo kết nối tới socket server
-        socket = io(envConfig.NEXT_PUBLIC_API_URL_SERVER_BASE, {
+        //- Tự động nhận diện URL kết nối: Nếu không phải localhost thì dùng luôn domain hiện tại
+        const socketUrl = typeof window !== "undefined" && !window.location.hostname.includes("localhost") 
+          ? window.location.origin 
+          : envConfig.NEXT_PUBLIC_API_URL_SERVER_BASE;
+
+        socket = io(socketUrl, {
           auth: {
             // Lấy token mới nhất từ local storage
             token: getAccessTokenFromLocalStorage(),
