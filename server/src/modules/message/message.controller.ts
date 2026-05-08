@@ -32,11 +32,13 @@ export class MessageController {
     @Param('conversationId') conversationId: string,
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '50',
+    @userDecorator() user: UserDecoratorType,
   ) {
     return this.messageService.findByConversation(
       conversationId,
       +page,
       +limit,
+      user,
     );
   }
 }
