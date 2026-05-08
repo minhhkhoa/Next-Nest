@@ -200,13 +200,13 @@ export default function AdPaymentModal({
                   <div className="flex justify-between items-center border-b pb-2">
                     <span className="text-muted-foreground">Số tài khoản:</span>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold">0387023308</span>
+                      <span className="font-bold">{account}</span>
                       <Button
                         variant="ghost"
                         size="icon"
                         className="h-6 w-6"
                         onClick={() =>
-                          copyToClipboard("0387023308", "số tài khoản")
+                          copyToClipboard(account, "số tài khoản")
                         }
                       >
                         <Copy className="h-3 w-3" />

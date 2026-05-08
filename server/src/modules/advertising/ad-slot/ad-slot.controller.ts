@@ -45,13 +45,13 @@ export class AdSlotController {
     return this.adSlotService.findAllPublic();
   }
 
-  @Public()
-  @ResponseMessage('Lấy chi tiết slot quảng cáo thành công')
-  @ApiOperation({ summary: 'Lấy chi tiết slot theo code' })
-  @Get('code/:code')
-  findByCode(@Param('code') code: string) {
-    return this.adSlotService.findByCode(code);
-  }
+  // @Public()
+  // @ResponseMessage('Lấy chi tiết slot quảng cáo thành công')
+  // @ApiOperation({ summary: 'Lấy chi tiết slot theo code' })
+  // @Get('code/:code')
+  // findByCode(@Param('code') code: string) {
+  //   return this.adSlotService.findByCode(code);
+  // }
 
   //- Lấy danh sách slot có lọc/phân trang (Admin)
   @ResponseMessage('Lấy danh sách slot quảng cáo thành công')

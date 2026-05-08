@@ -31,13 +31,13 @@ export class AdBookingController {
     return this.adBookingService.getBusyDates(slotCode);
   }
 
-  // @Public()
-  // @ResponseMessage('Lấy quảng cáo đang hoạt động thành công')
-  // @ApiOperation({ summary: 'Lấy quảng cáo đang hoạt động theo slot' })
-  // @Get('active/:slotCode')
-  // getActiveAd(@Param('slotCode') slotCode: string) {
-  //   return this.adBookingService.getActiveAdBySlotCode(slotCode);
-  // }
+  @Public()
+  @ResponseMessage('Lấy quảng cáo đang hoạt động thành công')
+  @ApiOperation({ summary: 'Lấy quảng cáo đang hoạt động theo slot' })
+  @Get('active/:slotCode')
+  getActiveAd(@Param('slotCode') slotCode: string) {
+    return this.adBookingService.getActiveAdBySlotCode(slotCode);
+  }
 
   @Post()
   @ResponseMessage('Tạo yêu cầu đặt quảng cáo thành công')

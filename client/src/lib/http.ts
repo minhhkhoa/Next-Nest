@@ -70,7 +70,7 @@ instance.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 //- Interceptor cho response: Xử lý lỗi từ server
@@ -101,7 +101,9 @@ instance.interceptors.response.use(
 
       //- CASE 1: Không có token
       if (!token) {
-        SoftDestructiveSonner("Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.1");
+        SoftDestructiveSonner(
+          "Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.1",
+        );
         removeTokensFromLocalStorage();
         await accessInstance.get("/auth/removeAccessToken");
         setTimeout(() => (window.location.href = "/"), 1000);
@@ -111,12 +113,12 @@ instance.interceptors.response.use(
       try {
         const decoded = jwtDecode(token);
         const now = Date.now();
-        console.log("decodeed: ", decoded)
+        console.log("decodeed: ", decoded);
 
         //- CASE 2: Token còn hạn mà vẫn 401 → có thể bị revoke
         if (decoded.exp && now < decoded.exp * 1000) {
           SoftDestructiveSonner(
-            "Phiên đăng nhập không còn hợp lệ. Vui lòng đăng nhập lại.2"
+            "Phiên đăng nhập không còn hợp lệ. Vui lòng đăng nhập lại.2",
           );
           removeTokensFromLocalStorage();
           await accessInstance.get("/auth/removeAccessToken");
@@ -144,7 +146,9 @@ instance.interceptors.response.use(
             //- gọi lại request cũ bằng íntance gốc
             return instance(originalRequest);
           } catch (refreshError) {
-            SoftDestructiveSonner("Lỗi lấy refresh token. Vui lòng đăng nhập lại.4");
+            SoftDestructiveSonner(
+              "Lỗi lấy refresh token. Vui lòng đăng nhập lại.4",
+            );
             removeTokensFromLocalStorage();
             await accessInstance.get("/auth/removeAccessToken");
             setTimeout(() => (window.location.href = "/login"), 1000);
@@ -183,6 +187,7 @@ instance.interceptors.response.use(
         SoftDestructiveSonner(message);
         break;
       case 404:
+        console.log("error: ", error);
         console.error("Resource not found.");
         break;
       case 500:
@@ -193,7 +198,7 @@ instance.interceptors.response.use(
     }
 
     return Promise.reject(error.response?.data);
-  }
+  },
 );
 
 //- tạo wrapper có generic type
