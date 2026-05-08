@@ -30,6 +30,7 @@ services:
         NEXT_PUBLIC_SEPAY_BASE_URL: "${NEXT_PUBLIC_SEPAY_BASE_URL}"
         NEXT_PUBLIC_SEPAY_ACCOUNT: "${NEXT_PUBLIC_SEPAY_ACCOUNT}"
         NEXT_PUBLIC_SEPAY_BANK: "${NEXT_PUBLIC_SEPAY_BANK}"
+        NEXT_PUBLIC_JWT_SECRET: "${NEXT_PUBLIC_JWT_SECRET}"
     restart: unless-stopped
     environment:
       NODE_ENV: production

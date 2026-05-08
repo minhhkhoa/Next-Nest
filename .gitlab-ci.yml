@@ -53,6 +53,9 @@ deploy_to_server:
   needs:
     - build_project
   script:
+    - echo "Preparing .env file for Docker Compose..."
+    - cp $CLIENT_ENV_PROD .env
+    - cp $SERVER_ENV_PROD server/.env.prod
     - echo "Deploying services using Docker Compose..."
     - docker compose up -d --build
     - docker ps
