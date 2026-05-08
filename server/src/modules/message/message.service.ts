@@ -76,7 +76,12 @@ export class MessageService {
     conversationId: string,
     page: number = 1,
     limit: number = 50,
+    user: UserDecoratorType,
   ) {
+    //- Kiểm tra xem user có quyền truy cập vào conversationId này không
+    //- Hàm findOne của conversationService đã ném lỗi Forbidden nếu không có quyền
+    await this.conversationService.findOne(conversationId, user);
+
     const skip = (page - 1) * limit;
 
     const messages = await this.messageRepository.findByConversationWithPagination(

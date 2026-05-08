@@ -39,9 +39,12 @@ export class ConversationController {
   @Get(':id')
   @ResponseMessage('Lấy thông tin phòng chat thành công')
   @ApiOperation({ summary: 'Lấy thông tin phòng chat' })
-  findOne(@Param('id') id: string) {
+  findOne(
+    @Param('id') id: string,
+    @userDecorator() user: UserDecoratorType,
+  ) {
     //- Api này để lấy thông tin chi tiết của một phòng chat cụ thể, bao gồm cả thông tin về công ty, ứng viên và nhà tuyển dụng (nếu đã được gán). Dùng để hiển thị ở header của trang chat, hoặc khi click vào một phòng chat từ danh sách để xem chi tiết.
-    return this.conversationService.findOne(id);
+    return this.conversationService.findOne(id, user);
   }
 
   @Patch(':id/assign')

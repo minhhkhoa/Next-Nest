@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
 import {
   CreateConversationDto,
   AssignConversationDto,
@@ -97,14 +97,29 @@ export class ConversationService {
         'role_recruiter_admin',
       );
 
+      const superAdminText = this.configService.get<string>('role_super_admin');
+
       if (user.roleCodeName === candidateText) {
         filter.candidateId = new Types.ObjectId(user.id);
       } else if (
         [recruiterText, recruiterAdminText].includes(user.roleCodeName)
       ) {
-        if (user.employerInfo?.companyID) {
+        //- Bắt buộc phải có companyID và trạng thái ACTIVE mới được xem chat
+        if (
+          user.employerInfo?.companyID &&
+          user.employerInfo?.userStatus === 'ACTIVE'
+        ) {
           filter.companyId = new Types.ObjectId(user.employerInfo.companyID);
+        } else {
+          //- Nếu chưa có công ty hoặc chưa được duyệt thì không trả về gì (tránh leak data)
+          return [];
         }
+      } else if (user.roleCodeName === superAdminText) {
+        //- Super Admin có thể xem tất cả (hoặc giới hạn tùy ý)
+        filter = {};
+      } else {
+        //- Các role khác (GUEST, ...) mặc định không thấy gì
+        return [];
       }
 
       return await this.conversationRepository.findAllByFilter(filter);
@@ -113,8 +128,35 @@ export class ConversationService {
     }
   }
 
-  async findOne(id: number | string) {
-    return await this.conversationRepository.findByIdWithDetails(String(id));
+  async findOne(id: string, user: UserDecoratorType) {
+    const conversation = await this.conversationRepository.findByIdWithDetails(
+      id,
+    );
+
+    if (!conversation) {
+      throw new BadRequestException('Không tìm thấy phòng chat');
+    }
+
+    const candidateText = this.configService.get<string>('role_candidate');
+    const superAdminText = this.configService.get<string>('role_super_admin');
+
+    //- Check quyền truy cập
+    const isOwnerCandidate =
+      user.roleCodeName === candidateText &&
+      conversation.candidateId._id.toString() === user.id;
+
+    const isOwnerCompany =
+      user.employerInfo?.companyID &&
+      conversation.companyId._id.toString() ===
+        user.employerInfo.companyID.toString();
+
+    const isSuperAdmin = user.roleCodeName === superAdminText;
+
+    if (!isOwnerCandidate && !isOwnerCompany && !isSuperAdmin) {
+      throw new ForbiddenException('Bạn không có quyền truy cập phòng chat này');
+    }
+
+    return conversation;
   }
 
   async assign(
@@ -122,6 +164,9 @@ export class ConversationService {
     assignDto: AssignConversationDto,
     user: UserDecoratorType,
   ) {
+    //- Đảm bảo user có quyền truy cập vào phòng chat này
+    await this.findOne(id, user);
+
     const recruiterAdminText = this.configService.get<string>(
       'role_recruiter_admin',
     );
@@ -139,6 +184,9 @@ export class ConversationService {
   }
 
   async markAsRead(id: string, user: UserDecoratorType) {
+    //- Đảm bảo user có quyền truy cập vào phòng chat này
+    await this.findOne(id, user);
+
     const candidateText = this.configService.get<string>('role_candidate');
     const isCandidate = user.roleCodeName === candidateText;
 
