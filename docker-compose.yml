@@ -27,6 +27,9 @@ services:
         NEXT_PUBLIC_API_URL_SERVER: "http://${SERVER_IP}:${BACKEND_PORT}/api"
         NEXT_PUBLIC_API_URL_SERVER_BASE: "http://${SERVER_IP}:${BACKEND_PORT}"
         NEXT_PUBLIC_API_URL_CLIENT: "http://${SERVER_IP}:${FRONTEND_PORT}"
+        NEXT_PUBLIC_SEPAY_BASE_URL: "${NEXT_PUBLIC_SEPAY_BASE_URL}"
+        NEXT_PUBLIC_SEPAY_ACCOUNT: "${NEXT_PUBLIC_SEPAY_ACCOUNT}"
+        NEXT_PUBLIC_SEPAY_BANK: "${NEXT_PUBLIC_SEPAY_BANK}"
     restart: unless-stopped
     environment:
       NODE_ENV: production
