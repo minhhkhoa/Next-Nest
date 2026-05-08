@@ -8,16 +8,16 @@ ENV npm_config_update_notifier=false \
 
 FROM base AS deps
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ARG NEXT_PUBLIC_API_URL=http://jobhubabc.duckdns.org:2302
-ARG NEXT_PUBLIC_API_URL_SERVER=http://jobhubabc.duckdns.org:2302/api
-ARG NEXT_PUBLIC_API_URL_SERVER_BASE=http://jobhubabc.duckdns.org:2302
-ARG NEXT_PUBLIC_API_URL_CLIENT=http://jobhubabc.duckdns.org:3002
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_API_URL_SERVER
+ARG NEXT_PUBLIC_API_URL_SERVER_BASE
+ARG NEXT_PUBLIC_API_URL_CLIENT
 
 # Ensure all required NEXT_PUBLIC vars exist at build time.
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
@@ -41,7 +41,7 @@ RUN npm run build
 
 FROM base AS prod-deps
 COPY package*.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm install --production && npm cache clean --force
 
 FROM base AS runner
 ENV NODE_ENV=production
