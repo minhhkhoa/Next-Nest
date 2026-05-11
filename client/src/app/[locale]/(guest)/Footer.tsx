@@ -13,7 +13,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useTranslations } from "next-intl";
 
-
 interface FooterLink {
   title: string;
   links: string[];
@@ -24,7 +23,6 @@ interface SocialLink {
   href: string;
   label: string;
 }
-
 
 export default function Footer() {
   const t = useTranslations("Footer");
@@ -67,7 +65,7 @@ export default function Footer() {
       ],
     },
   ];
-  
+
   const socialLinks: SocialLink[] = [
     {
       icon: <Linkedin size={20} />,
@@ -98,10 +96,10 @@ export default function Footer() {
           {/* Brand section */}
           <div className="col-span-2 md:col-span-1">
             <div className="mb-4">
-              <h2 className="text-2xl font-bold text-primary">{t("brand.title")}</h2>
-              <p className="mt-2 text-sm ">
-                {t("brand.description")}
-              </p>
+              <h2 className="text-2xl font-bold text-primary">
+                {t("brand.title")}
+              </h2>
+              <p className="mt-2 text-sm ">{t("brand.description")}</p>
             </div>
 
             {/* Social icons */}
@@ -170,9 +168,7 @@ export default function Footer() {
             </div>
             <div className="flex items-center gap-2">
               <MapPin size={18} className="text-primary" />
-              <span className="text-sm">
-                {t("contact.address")}
-              </span>
+              <span className="text-sm">{t("contact.address")}</span>
             </div>
           </div>
 
@@ -190,7 +186,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <Separator className="mt-12"/>
+        <Separator className="mt-12" />
 
         {/* Copyright */}
         <div className="text-center text-sm py-5">

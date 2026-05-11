@@ -11,7 +11,7 @@ import {
 import { SkillService } from './skill.service';
 import { CreateSkillDto } from './dto/create-skill.dto';
 import { UpdateSkillDto } from './dto/update-skill.dto';
-import { ResponseMessage } from 'src/common/decorator/customize';
+import { Public, ResponseMessage } from 'src/common/decorator/customize';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { FindSkillQueryDto } from './dto/skillDto.dto';
 
@@ -34,9 +34,10 @@ export class SkillController {
     return this.skillService.findAll();
   }
 
+  @Public()
   @ResponseMessage('pagination + filter theo name + industyID')
   @ApiOperation({ summary: 'Get all by filter' })
-  @Get("filter")
+  @Get('filter')
   findAllByFilter(@Query() query: FindSkillQueryDto) {
     return this.skillService.findAllByFilter(query);
   }

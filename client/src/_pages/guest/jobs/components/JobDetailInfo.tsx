@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,9 +13,12 @@ import {
   Building,
   Globe,
   ArrowRight,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "@/i18n/navigation";
+import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { generateSlugUrl } from "@/lib/utils";
 import { useGetLang } from "@/hooks/use-get-lang";
@@ -57,7 +60,11 @@ function InfoItem({
 export default function JobDetailInfo({ job }: JobDetailInfoProps) {
   const { user, isLogin } = useAppStore();
   const { getLang } = useGetLang();
-  const [reportModalOpen, setReportModalOpen] = React.useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+
+  const [isExpanded, setIsExpanded] = useState(false);
+  const description = getLang(job.description) || "";
+  const shouldTruncate = description.length > 800;
 
   return (
     <div className="space-y-6">
@@ -180,12 +187,43 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
                 <h2 className="text-xl font-bold border-l-4 border-primary pl-3 mb-4 text-foreground">
                   Mô tả công việc
                 </h2>
-                <div
-                  className="prose max-w-none text-muted-foreground dark:prose-invert"
-                  dangerouslySetInnerHTML={{
-                    __html: getLang(job.description) || "",
-                  }}
-                />
+                <div className="relative">
+                  <div
+                    className={cn(
+                      "prose max-w-none text-muted-foreground dark:prose-invert transition-all duration-300 overflow-hidden",
+                      !isExpanded && shouldTruncate
+                        ? "max-h-[400px]"
+                        : "max-h-full",
+                    )}
+                    dangerouslySetInnerHTML={{
+                      __html: description,
+                    }}
+                  />
+                  {!isExpanded && shouldTruncate && (
+                    <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-card to-transparent" />
+                  )}
+                </div>
+
+                {shouldTruncate && (
+                  <div className="flex justify-center mt-4">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsExpanded(!isExpanded)}
+                      className="text-primary hover:text-primary/80 hover:bg-transparent font-semibold flex items-center gap-1"
+                    >
+                      {isExpanded ? (
+                        <>
+                          Thu gọn <ChevronUp size={16} />
+                        </>
+                      ) : (
+                        <>
+                          Xem thêm <ChevronDown size={16} />
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

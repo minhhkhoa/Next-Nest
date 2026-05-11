@@ -79,8 +79,7 @@ function NavItemSheetMobile() {
                 </div>
               </div>
               <AccordionContent className="flex flex-col gap-4 text-balance ml-5">
-                <p>Text1</p>
-                <p>Text2</p>
+                <Link href="/find-jobs">{t("FindJobs")}</Link>
               </AccordionContent>
             </AccordionItem>
           </Accordion>

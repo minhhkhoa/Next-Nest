@@ -82,8 +82,14 @@ export default function NavigationHeaderMenu() {
           </NavigationMenuItem>
 
           <NavigationMenuItem>
-            <NavigationMenuTrigger>{t("Jobs")}</NavigationMenuTrigger>
-            <NavigationMenuContent>
+            {/* <NavigationMenuTrigger>{t("Jobs")}</NavigationMenuTrigger> */}
+            <NavigationMenuLink
+              asChild
+              className={navigationMenuTriggerStyle()}
+            >
+              <Link href="/find-jobs">{t("Jobs")}</Link>
+            </NavigationMenuLink>
+            {/* <NavigationMenuContent>
               <ul className="grid gap-2 sm:w-[400px] md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                 {components.map((component) => (
                   <ListItem
@@ -95,7 +101,7 @@ export default function NavigationHeaderMenu() {
                   </ListItem>
                 ))}
               </ul>
-            </NavigationMenuContent>
+            </NavigationMenuContent> */}
           </NavigationMenuItem>
 
           {isLogin && (

@@ -82,7 +82,7 @@ export default function SearchSection() {
     <div className="bg-background py-16 md:py-24 relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-full bg-cover bg-center opacity-10 pointer-events-none dark:opacity-5"></div>
 
-      <div className="container mx-auto px-4 relative z-10 flex flex-col items-center text-center">
+      <div className="container mx-auto relative z-10 flex flex-col items-center text-center">
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -102,7 +102,7 @@ export default function SearchSection() {
         </motion.p>
 
         <motion.div
-          className="bg-card p-4 rounded-xl shadow-lg w-full max-w-4xl flex flex-col md:flex-row gap-4 md:gap-0 items-center"
+          className="bg-card rounded-xl shadow-lg w-full max-w-4xl flex flex-col md:flex-row gap-4 md:gap-0 items-center p-3"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.4 }}
@@ -176,7 +176,9 @@ export default function SearchSection() {
               </PopoverTrigger>
               <PopoverContent className="w-[300px] p-0">
                 <Command>
-                  <CommandInput placeholder={t("BlockFilter.PlaceholderLocation")} />
+                  <CommandInput
+                    placeholder={t("BlockFilter.PlaceholderLocation")}
+                  />
                   <CommandList>
                     <CommandEmpty>{t("BlockFilter.NoData")}</CommandEmpty>
                     <CommandGroup>

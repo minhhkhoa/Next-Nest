@@ -42,9 +42,9 @@ export default function BlockIssue() {
               <PopoverTrigger asChild>
                 <Button
                   size="icon"
-                  className="h-11 w-11 rounded-full shadow-lg transition-transform hover:scale-110 bg-primary text-primary-foreground hover:bg-primary/90"
+                  className="h-10 w-10 rounded-full shadow-lg transition-transform hover:scale-110 bg-primary text-primary-foreground hover:bg-primary/90"
                 >
-                  <MessageCircleQuestion className="h-6 w-6" />
+                  <MessageCircleQuestion className="h-5 w-5" />
                   <span className="sr-only">Hỗ trợ</span>
                 </Button>
               </PopoverTrigger>

@@ -77,7 +77,7 @@ export default function PageNewsDetail({ idNews }: { idNews: string }) {
             <Spinner />
           </div>
         ) : (
-          <div className="boder rounded-2xl p-3 max-w-[850px] flex flex-col gap-3">
+          <div className="boder rounded-2xl max-w-[850px] flex flex-col gap-3">
             <p className="text-2xl md:text-4xl font-bold text-primary">
               {getLang(newsDetail?.title)}
             </p>

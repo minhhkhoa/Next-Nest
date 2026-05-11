@@ -4,7 +4,13 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import DataTablePagination from "@/components/DataTablePagination";
 import ListJobSkeleton from "@/components/skeletons/list-job";
 import JobCard from "@/_pages/home/components/JobCard";
@@ -16,8 +22,12 @@ import {
   LEVEL_OPTIONS,
 } from "@/lib/constant";
 import FindJobsSearchBar from "./components/FindJobsSearchBar";
-import AdvancedFilterPanel, { FindJobsAdvancedFilters } from "./components/AdvancedFilterPanel";
-import AppliedFilterChips, { AppliedChip } from "./components/AppliedFilterChips";
+import AdvancedFilterPanel, {
+  FindJobsAdvancedFilters,
+} from "./components/AdvancedFilterPanel";
+import AppliedFilterChips, {
+  AppliedChip,
+} from "./components/AppliedFilterChips";
 
 interface FindJobsFilterState {
   keyword: string;
@@ -54,20 +64,13 @@ const parseFiltersFromSearchParams = (
   ].filter(Boolean);
 
   return {
-    keyword:
-      searchParams.get("keyword") ||
-      searchParams.get("title") ||
-      "",
-    location:
-      searchParams.get("location") ||
-      searchParams.get("address") ||
-      "",
+    keyword: searchParams.get("keyword") || searchParams.get("title") || "",
+    location: searchParams.get("location") || searchParams.get("address") || "",
     industryId:
-      searchParams.get("industry") ||
-      searchParams.get("industryIDs") ||
-      "",
+      searchParams.get("industry") || searchParams.get("industryIDs") || "",
     advanced: {
-      company: searchParams.get("company") || searchParams.get("fieldCompany") || "",
+      company:
+        searchParams.get("company") || searchParams.get("fieldCompany") || "",
       level: searchParams.get("level") || "",
       employeeType: searchParams.get("employeeType") || "",
       experience: searchParams.get("experience") || "",
@@ -119,10 +122,7 @@ const toNumberOrUndefined = (value: string) => {
   return Number.isFinite(parsed) ? parsed : undefined;
 };
 
-const findIndustryNameById = (
-  nodes: any[],
-  id: string,
-): string | undefined => {
+const findIndustryNameById = (nodes: any[], id: string): string | undefined => {
   for (const node of nodes || []) {
     if (node._id === id) return node.name?.vi || node.name?.en;
     if (node.children?.length) {
@@ -141,10 +141,12 @@ export default function PageFindJobs() {
   const [filters, setFilters] = useState<FindJobsFilterState>(() =>
     parseFiltersFromSearchParams(searchParams),
   );
-  const [appliedFilters, setAppliedFilters] = useState<FindJobsFilterState>(() =>
-    parseFiltersFromSearchParams(searchParams),
+  const [appliedFilters, setAppliedFilters] = useState<FindJobsFilterState>(
+    () => parseFiltersFromSearchParams(searchParams),
   );
-  const [page, setPage] = useState(() => parsePageFromSearchParams(searchParams));
+  const [page, setPage] = useState(() =>
+    parsePageFromSearchParams(searchParams),
+  );
   const [openMobileFilter, setOpenMobileFilter] = useState(false);
 
   const searchParamsText = searchParams.toString();
@@ -158,7 +160,8 @@ export default function PageFindJobs() {
     setPage(nextPage);
   }, [searchParams, searchParamsText]);
 
-  const { data: industryTreeData, isLoading: isLoadingIndustry } = useGetTreeIndustry({});
+  const { data: industryTreeData, isLoading: isLoadingIndustry } =
+    useGetTreeIndustry({});
 
   const queryParams = useMemo(
     () => ({
@@ -174,7 +177,9 @@ export default function PageFindJobs() {
       minSalary: toNumberOrUndefined(appliedFilters.advanced.minSalary),
       maxSalary: toNumberOrUndefined(appliedFilters.advanced.maxSalary),
       currency: appliedFilters.advanced.currency || undefined,
-      industryIDs: appliedFilters.industryId ? [appliedFilters.industryId] : undefined,
+      industryIDs: appliedFilters.industryId
+        ? [appliedFilters.industryId]
+        : undefined,
       skillIDs:
         appliedFilters.advanced.skillIDs.length > 0
           ? appliedFilters.advanced.skillIDs
@@ -183,7 +188,8 @@ export default function PageFindJobs() {
     [appliedFilters, page],
   );
 
-  const { data: jobsData, isLoading } = useSearchJobsPublicAdvanced(queryParams);
+  const { data: jobsData, isLoading } =
+    useSearchJobsPublicAdvanced(queryParams);
 
   const jobs = jobsData?.data?.result || [];
   const meta = jobsData?.data?.meta || {
@@ -193,18 +199,24 @@ export default function PageFindJobs() {
     totalItems: 0,
   };
 
-  const updateUrl = useCallback((nextFilters: FindJobsFilterState, targetPage: number) => {
-    const params = buildSearchParams(nextFilters, targetPage);
-    const query = params.toString();
-    router.replace(`/find-jobs${query ? `?${query}` : ""}`);
-  }, [router]);
+  const updateUrl = useCallback(
+    (nextFilters: FindJobsFilterState, targetPage: number) => {
+      const params = buildSearchParams(nextFilters, targetPage);
+      const query = params.toString();
+      router.replace(`/find-jobs${query ? `?${query}` : ""}`);
+    },
+    [router],
+  );
 
-  const applyFiltersAndSyncUrl = useCallback((nextFilters: FindJobsFilterState) => {
-    setFilters(nextFilters);
-    setAppliedFilters(nextFilters);
-    setPage(1);
-    updateUrl(nextFilters, 1);
-  }, [updateUrl]);
+  const applyFiltersAndSyncUrl = useCallback(
+    (nextFilters: FindJobsFilterState) => {
+      setFilters(nextFilters);
+      setAppliedFilters(nextFilters);
+      setPage(1);
+      updateUrl(nextFilters, 1);
+    },
+    [updateUrl],
+  );
 
   const handleApplyFilters = () => {
     setAppliedFilters(filters);
@@ -397,12 +409,15 @@ export default function PageFindJobs() {
 
   return (
     <div className="bg-background py-8">
-      <div className="container mx-auto space-y-6 px-4">
+      <div className="container mx-auto space-y-6">
         <div className="space-y-2">
-          <h1 className="text-2xl font-bold text-primary md:text-3xl">Tìm việc làm</h1>
+          <h1 className="text-2xl font-bold text-primary md:text-3xl">
+            Tìm việc làm
+          </h1>
           <p className="text-sm text-muted-foreground md:text-base">
-            Bộ lọc tìm kiếm linh hoạt: hệ thống sẽ ưu tiên công việc khớp nhiều tiêu chí,
-            nhưng vẫn giữ kết quả phù hợp khi bạn kết hợp nhiều điều kiện.
+            Bộ lọc tìm kiếm linh hoạt: hệ thống sẽ ưu tiên công việc khớp nhiều
+            tiêu chí, nhưng vẫn giữ kết quả phù hợp khi bạn kết hợp nhiều điều
+            kiện.
           </p>
         </div>
 
@@ -419,15 +434,16 @@ export default function PageFindJobs() {
             setFilters((prev) => ({ ...prev, location: value }))
           }
           onIndustryChange={(value) =>
-            setFilters((prev) => ({ ...prev, industryId: value, advanced: { ...prev.advanced, skillIDs: [] } }))
+            setFilters((prev) => ({
+              ...prev,
+              industryId: value,
+              advanced: { ...prev.advanced, skillIDs: [] },
+            }))
           }
           onSearch={handleApplyFilters}
         />
 
-        <AppliedFilterChips
-          chips={chips}
-          onClearAll={handleResetFilters}
-        />
+        <AppliedFilterChips chips={chips} onClearAll={handleResetFilters} />
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
           <aside className="hidden self-start h-fit rounded-2xl border border-border bg-card p-4 lg:block">
@@ -445,18 +461,28 @@ export default function PageFindJobs() {
           <section className="space-y-4">
             <div className="flex items-center justify-between rounded-xl border border-border bg-card px-4 py-3">
               <p className="text-sm text-muted-foreground">
-                Tìm thấy <span className="font-semibold text-foreground">{meta.totalItems}</span> công việc phù hợp
+                Tìm thấy{" "}
+                <span className="font-semibold text-foreground">
+                  {meta.totalItems}
+                </span>{" "}
+                công việc phù hợp
               </p>
 
               <div className="lg:hidden">
-                <Sheet open={openMobileFilter} onOpenChange={setOpenMobileFilter}>
+                <Sheet
+                  open={openMobileFilter}
+                  onOpenChange={setOpenMobileFilter}
+                >
                   <SheetTrigger asChild>
                     <Button variant="outline" size="sm" className="gap-2">
                       <SlidersHorizontal className="h-4 w-4" />
                       Bộ lọc
                     </Button>
                   </SheetTrigger>
-                  <SheetContent side="right" className="w-[92vw] overflow-y-auto sm:w-[420px]">
+                  <SheetContent
+                    side="right"
+                    className="w-[92vw] overflow-y-auto sm:w-[420px]"
+                  >
                     <SheetHeader>
                       <SheetTitle>Bộ lọc nâng cao</SheetTitle>
                     </SheetHeader>
@@ -464,7 +490,9 @@ export default function PageFindJobs() {
                     <div className="mt-5 px-3">
                       <AdvancedFilterPanel
                         value={filters.advanced}
-                        industryIDs={filters.industryId ? [filters.industryId] : []}
+                        industryIDs={
+                          filters.industryId ? [filters.industryId] : []
+                        }
                         onChange={(next) =>
                           setFilters((prev) => ({ ...prev, advanced: next }))
                         }
@@ -494,7 +522,10 @@ export default function PageFindJobs() {
                 </div>
 
                 <div className="pt-2">
-                  <DataTablePagination meta={meta} onPageChange={handlePageChange} />
+                  <DataTablePagination
+                    meta={meta}
+                    onPageChange={handlePageChange}
+                  />
                 </div>
               </>
             ) : (
