@@ -1158,6 +1158,20 @@ export class JobsService {
     }
   }
 
+  async getJobContextById(id: string) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new BadRequestCustom('ID không hợp lệ', true);
+    }
+
+    const job = await this.jobsRepository.findOneWithCompanyAndSkills(id);
+
+    if (!job) {
+      throw new BadRequestCustom('Không tìm thấy công việc', true);
+    }
+
+    return job;
+  }
+
   async update(
     id: string,
     updateJobDto: UpdateJobDto,

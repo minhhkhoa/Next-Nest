@@ -33,6 +33,7 @@ import { ConversationModule } from './modules/conversation/conversation.module';
 import { MessageModule } from './modules/message/message.module';
 import { RedisModule } from './common/redis/redis.module';
 import { AdvertisingModule } from './modules/advertising/advertising.module';
+import { AiServiceModule } from './modules/ai-service/ai-service.module';
 
 @Module({
   imports: [
@@ -68,6 +69,8 @@ import { AdvertisingModule } from './modules/advertising/advertising.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+
+    AiServiceModule, // - module cung cấp GeminiChatProvider và các AI service
 
     IndustryModule,
     TranslationModule,
