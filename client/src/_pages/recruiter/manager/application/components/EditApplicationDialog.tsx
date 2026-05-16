@@ -112,7 +112,6 @@ export function EditApplicationDialog({
   };
 
   const currentStatus = form.watch("status");
-  const currentScore = form.watch("score") || 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

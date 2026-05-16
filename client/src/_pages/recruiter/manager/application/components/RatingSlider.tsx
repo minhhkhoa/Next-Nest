@@ -2,13 +2,6 @@
 
 import React, { useState } from "react";
 import { Slider } from "@/components/ui/slider";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-
 interface RatingSliderProps {
   value: number;
   onChange: (val: number | undefined) => void;
