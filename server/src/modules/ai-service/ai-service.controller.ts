@@ -1,5 +1,14 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  Sse,
+  MessageEvent,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Observable } from 'rxjs';
 import {
   PublicPermission,
   ResponseMessage,
@@ -17,11 +26,37 @@ import { JdMatchDto } from './dto/jd-match.dto';
 export class AiServiceController {
   constructor(private readonly aiServiceService: AiServiceService) {}
 
-  @Get('chat')
-  @ApiOperation({ summary: 'Chat AI theo job hien tai' })
-  @ResponseMessage('Chat AI thanh cong')
-  async chat(@Query() query: ChatAiQueryDto) {
-    return this.aiServiceService.chat(query.jobId, query.question);
+  @Sse('chat/stream')
+  @ApiOperation({ summary: 'Chat AI stream theo job hien tai' })
+  chatStream(@Query() query: ChatAiQueryDto): Observable<MessageEvent> {
+    return new Observable((subscriber) => {
+      (async () => {
+        try {
+          const sessionId = query.sessionId || 'default_session';
+          const generator = await this.aiServiceService.chatStream(
+            sessionId,
+            query.jobId,
+            query.question,
+          );
+
+          for await (const chunk of generator) {
+            subscriber.next({ text: chunk } as any);
+          }
+          subscriber.next({ done: true } as any);
+          subscriber.complete();
+        } catch (error) {
+          subscriber.error(error);
+        }
+      })();
+    });
+  }
+
+  @Get('chat/history')
+  @ApiOperation({ summary: 'Lay lich su chat AI' })
+  @ResponseMessage('Lay lich su chat AI thanh cong')
+  async getChatHistory(@Query('sessionId') sessionId: string) {
+    if (!sessionId) return null;
+    return this.aiServiceService.getChatHistory(sessionId);
   }
 
   @Post('cv-score')

@@ -16,13 +16,16 @@ export class AiServiceService {
     private readonly userResumeService: UserResumeService,
   ) {}
 
-  //- lay job va tao context, sau do goi chat ai
-  async chat(jobId: string, question: string): Promise<{ jobId: string; answer: string }> {
+  //- lay job va tao context, sau do goi chat ai stream
+  async chatStream(sessionId: string, jobId: string, question: string): Promise<AsyncGenerator<string, void, unknown>> {
     const job = await this.jobsService.getJobContextById(jobId);
     const jobContext = this.buildJobContext(job);
-    const answer = await this.chatAiService.chat(jobId, jobContext, question);
+    return this.chatAiService.chatStream(sessionId, jobId, jobContext, question);
+  }
 
-    return { jobId, answer };
+  //- lay lich su chat ai
+  async getChatHistory(sessionId: string) {
+    return this.chatAiService.getChatHistory(sessionId);
   }
 
   //- lay cv cua user, tao context va cham diem

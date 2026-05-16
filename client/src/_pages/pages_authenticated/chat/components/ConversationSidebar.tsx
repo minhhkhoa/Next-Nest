@@ -86,7 +86,9 @@ export function ConversationList({
                   ) : null}
                 </div>
                 <span className="text-sm text-gray-500 truncate">
-                  {conv.lastMessage || "Chưa có tin nhắn"}
+                  {typeof conv.lastMessage === "object"
+                    ? conv.lastMessage?.content
+                    : conv.lastMessage || "Chưa có tin nhắn"}
                 </span>
               </div>
             );

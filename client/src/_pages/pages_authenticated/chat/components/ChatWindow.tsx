@@ -245,13 +245,23 @@ export default function ChatWindow({
         <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
           <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
             <AvatarImage
-              src={isCandidate ? hrData?.avatar : candidateData?.avatar}
+              src={
+                activeConversationId === "ai-assistant"
+                  ? "https://cdn-icons-png.flaticon.com/512/8943/8943377.png"
+                  : isCandidate
+                  ? hrData?.avatar
+                  : candidateData?.avatar
+              }
             />
-            <AvatarFallback>CN</AvatarFallback>
+            <AvatarFallback>AI</AvatarFallback>
           </Avatar>
         </div>
         <span className="font-semibold truncate text-sm sm:text-base">
-          {isCandidate ? hrData?.name : candidateData?.name}
+          {activeConversationId === "ai-assistant"
+            ? "AI Assistant"
+            : isCandidate
+            ? hrData?.name
+            : candidateData?.name}
         </span>
       </div>
 
@@ -325,7 +335,11 @@ export default function ChatWindow({
                 variant="outline"
                 size="icon"
                 className="rounded-full shrink-0"
-                disabled={!activeConversationId || isSending}
+                disabled={
+                  !activeConversationId ||
+                  isSending ||
+                  activeConversationId === "ai-assistant"
+                }
                 aria-label="Mở menu đính kèm"
               >
                 <Plus className="w-4 h-4 sm:w-5 sm:h-5" />

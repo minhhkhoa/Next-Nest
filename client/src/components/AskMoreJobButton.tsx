@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useCreateConversationMutation } from "@/queries/useChat";
 import { useAppStore } from "@/components/TanstackProvider";
@@ -8,9 +8,16 @@ import { useRouter } from "next/navigation";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import { envConfig } from "../../config";
 import { JobResType } from "@/schemasvalidation/job";
-import { CircleHelp } from "lucide-react";
+import { CircleHelp, MessageCircle, Bot } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const CHAT_JOB_REFERENCE_DRAFT_STORAGE_KEY = "chat_job_reference_draft";
+export const AI_CHAT_SESSION_STORAGE_KEY = "ai_chat_session_state";
 
 interface AskMoreJobButtonProps extends React.ComponentProps<typeof Button> {
   job: JobResType;
@@ -32,8 +39,9 @@ export default function AskMoreJobButton({
   const router = useRouter();
   const { user } = useAppStore();
   const createConversationMutation = useCreateConversationMutation();
+  const [isOpen, setIsOpen] = useState(false);
 
-  const handleAskMore = async () => {
+  const handleAskMoreHR = async () => {
     if (!user) {
       SoftDestructiveSonner("Bạn cần đăng nhập để thao tác");
       return;
@@ -92,17 +100,57 @@ export default function AskMoreJobButton({
     }
   };
 
+  const handleAskMoreAI = () => {
+    // Generate a unique session ID for the guest or use user ID
+    const sessionId = user?._id || `guest_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    
+    // Save AI session config to localStorage to be picked up by ChatPage
+    const aiSessionState = {
+      sessionId,
+      jobId: job._id,
+      jobTitle,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(AI_CHAT_SESSION_STORAGE_KEY, JSON.stringify(aiSessionState));
+    
+    // Pre-fill a draft similar to HR chat
+    const draftPayload = {
+      conversationId: "ai-assistant",
+      inputText: `Tôi muốn hỏi thêm thông tin về vị trí ${jobTitle}`,
+      type: "TEXT" as const,
+    };
+    sessionStorage.setItem(
+      CHAT_JOB_REFERENCE_DRAFT_STORAGE_KEY,
+      JSON.stringify(draftPayload)
+    );
+
+    router.push(`/chat?ai=true`);
+  };
+
   return (
-    <Button
-      {...props}
-      variant={variant}
-      size={size}
-      className={className}
-      onClick={handleAskMore}
-      disabled={createConversationMutation.isPending || props.disabled}
-    >
-      <CircleHelp className="w-4 h-4" />
-      {createConversationMutation.isPending ? "Đang chuẩn bị..." : label}
-    </Button>
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          {...props}
+          variant={variant}
+          size={size}
+          className={className}
+          disabled={createConversationMutation.isPending || props.disabled}
+        >
+          <CircleHelp className="w-4 h-4 mr-2" />
+          {createConversationMutation.isPending ? "Đang chuẩn bị..." : label}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuItem onClick={handleAskMoreHR} className="cursor-pointer py-3">
+          <MessageCircle className="mr-2 h-4 w-4" />
+          <span>Chat với Nhà tuyển dụng</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleAskMoreAI} className="cursor-pointer py-3">
+          <Bot className="mr-2 h-4 w-4" />
+          <span>Hỏi AI tư vấn</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
