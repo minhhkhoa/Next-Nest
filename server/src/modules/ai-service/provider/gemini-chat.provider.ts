@@ -17,7 +17,7 @@ export const GeminiChatProvider: Provider = {
 
     return new ChatGoogleGenerativeAI({
       apiKey,
-      model: 'gemini-2.5-flash-preview-05-20',
+      model: 'gemini-2.5-flash',
     });
   },
   inject: [ConfigService],
