@@ -40,7 +40,7 @@ export class AiServiceService {
     user: UserDecoratorType,
   ): Promise<JdMatchResult> {
     const [resume, job] = await Promise.all([
-      this.userResumeService.findOne(cvId, user),
+      this.userResumeService.findOneById(cvId),
       this.jobsService.getJobContextById(jobId),
     ]);
 

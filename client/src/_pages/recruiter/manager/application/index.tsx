@@ -24,12 +24,12 @@ export default function RecruiterApplicationPage() {
   const [filtersApplication, setFiltersApplication] = useState<{
     status: string | undefined;
     jobId: string | undefined;
-    minRating: number | undefined;
+    minScore: number | undefined;
     keyword: string | undefined;
   }>({
     status: undefined,
     jobId: undefined,
-    minRating: undefined,
+    minScore: undefined,
     keyword: undefined,
   });
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -51,8 +51,8 @@ export default function RecruiterApplicationPage() {
 
   const [debouncedSearchTitle] = useDebounce(filtersApplication?.keyword, 500);
   const [debouncedSearchStatus] = useDebounce(filtersApplication?.status, 500);
-  const [debouncedSearchMinRating] = useDebounce(
-    filtersApplication?.minRating,
+  const [debouncedSearchMinScore] = useDebounce(
+    filtersApplication?.minScore,
     500,
   );
 
@@ -61,7 +61,7 @@ export default function RecruiterApplicationPage() {
       currentPage,
       pageSize: 8,
       status: debouncedSearchStatus,
-      minRating: debouncedSearchMinRating,
+      minScore: debouncedSearchMinScore,
       keyword: debouncedSearchTitle,
     });
 
@@ -141,9 +141,9 @@ export default function RecruiterApplicationPage() {
 
           {/* Độ tiềm năng - Slider custom */}
           <RatingSlider
-            value={filtersApplication.minRating || 0}
+            value={filtersApplication.minScore || 0}
             onChange={(val) =>
-              setFiltersApplication((prev) => ({ ...prev, minRating: val }))
+              setFiltersApplication((prev) => ({ ...prev, minScore: val }))
             }
           />
 

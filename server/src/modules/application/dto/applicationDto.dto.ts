@@ -47,15 +47,15 @@ export class FindApplicationQueryDto {
   isViewed?: string;
 
   @ApiPropertyOptional({
-    description: 'Lọc theo đánh giá tối thiểu (0-5)',
-    example: 3,
+    description: 'Lọc theo điểm số tối thiểu (0-100)',
+    example: 60,
   })
   @IsOptional()
   @IsNumber()
   @Type(() => Number)
   @Min(0)
-  @Max(5)
-  minRating?: number;
+  @Max(100)
+  minScore?: number;
 
   @ApiPropertyOptional({
     description: 'Tìm kiếm theo từ khóa (email, tên ứng viên...)',

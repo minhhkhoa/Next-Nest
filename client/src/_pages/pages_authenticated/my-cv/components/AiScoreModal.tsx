@@ -16,11 +16,9 @@ import {
   XCircle,
   Lightbulb,
   Loader2,
-  Star,
   Sparkles,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card, CardContent } from "@/components/ui/card";
 
 interface AiScoreModalProps {
   cvId: string | null;

@@ -170,7 +170,7 @@ export class ApplicationService {
         jobId,
         isViewed,
         keyword,
-        minRating,
+        minScore,
         isDeleted,
       } = query;
 
@@ -199,7 +199,7 @@ export class ApplicationService {
       if (isViewed !== undefined && isViewed !== '')
         filter.isViewed = isViewed === 'true';
 
-      if (minRating) filter.rating = { $gte: minRating };
+      if (minScore) filter.score = { $gte: minScore };
 
       //- Lọc theo đã xóa hay chưa
       if (isDeleted === 'true') {
@@ -313,7 +313,7 @@ export class ApplicationService {
               coverLetter: 1,
               status: 1,
               isViewed: 1,
-              rating: 1,
+              score: 1,
               recruiterNote: 1,
               interviewTime: 1,
               rejectionReason: 1,
