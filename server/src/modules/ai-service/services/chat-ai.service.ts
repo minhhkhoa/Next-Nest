@@ -3,9 +3,9 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { chatPromptTemplate } from '../prompts/chat.prompt';
 import { GEMINI_CHAT_MODEL } from '../provider/gemini-chat.provider';
 import { AIMessage, BaseMessage, HumanMessage } from '@langchain/core/messages';
-import { RedisService } from 'src/common/redis/redis.service';
 import { IterableReadableStream } from '@langchain/core/utils/stream';
 import { BaseMessageChunk } from '@langchain/core/messages';
+import { AiChatHistoryRepository } from '../repository/ai-chat-history.repository';
 
 export interface ChatSessionData {
   jobId: string;
@@ -14,32 +14,29 @@ export interface ChatSessionData {
 
 @Injectable()
 export class ChatAiService {
+  //- giới hạn số lượng tin nhắn lịch sử (ngữ cảnh chat) tối đa sẽ được gửi đến AI (Gemini) để tránh vượt quá giới hạn token và chi phí, đồng thời vẫn giữ được ngữ cảnh đủ cho cuộc hội thoại
   private readonly maxHistoryMessages = 6;
-  private readonly CACHE_TTL = 3600000; // 1 hour in ms
 
   constructor(
     @Inject(GEMINI_CHAT_MODEL) private readonly llm: BaseChatModel,
-    private readonly redisService: RedisService,
+    private readonly aiChatHistoryRepository: AiChatHistoryRepository,
   ) {}
 
-  private getRedisKey(sessionId: string): string {
-    return `ai_chat:${sessionId}`;
-  }
-
-  //- tra loi cau hoi theo job hien tai va quan ly lich su qua redis, stream ket qua
+  //- tra loi cau hoi theo job hien tai va quan ly lich su qua db, stream ket qua
   async chatStream(
     sessionId: string,
     jobId: string,
     jobContext: string,
     input: string,
   ): Promise<AsyncGenerator<string, void, unknown>> {
-    const redisKey = this.getRedisKey(sessionId);
-    let sessionData = await this.redisService.get<ChatSessionData>(redisKey);
+    const document = await this.aiChatHistoryRepository.findBySessionId(sessionId);
+    
+    let sessionData: ChatSessionData = { jobId, history: [] };
 
-    if (!sessionData || sessionData.jobId !== jobId) {
+    if (document && document.jobId === jobId) {
       sessionData = {
-        jobId,
-        history: [],
+        jobId: document.jobId,
+        history: document.history as { role: 'human' | 'ai'; content: string }[],
       };
     }
 
@@ -61,16 +58,16 @@ export class ChatAiService {
       stream,
       sessionData,
       input,
-      redisKey,
+      sessionId,
     );
   }
 
-  //- custom generator de hung tung chunk roi tra ve client, xong het thi luu Redis
+  //- custom generator de hung tung chunk roi tra ve client, xong het thi luu db
   private async *createInterceptedGenerator(
     originalStream: IterableReadableStream<BaseMessageChunk>,
     sessionData: ChatSessionData,
     input: string,
-    redisKey: string,
+    sessionId: string,
   ): AsyncGenerator<string, void, unknown> {
     let fullOutput = '';
 
@@ -102,12 +99,20 @@ export class ChatAiService {
       sessionData.history = sessionData.history.slice(-maxEntries);
     }
 
-    await this.redisService.set(redisKey, sessionData, this.CACHE_TTL);
+    await this.aiChatHistoryRepository.createOrUpdate(
+      sessionId,
+      sessionData.jobId,
+      sessionData.history,
+    );
   }
 
   //- lay lich su cho frontend khi load lai trang
   async getChatHistory(sessionId: string): Promise<ChatSessionData | null> {
-    const redisKey = this.getRedisKey(sessionId);
-    return this.redisService.get<ChatSessionData>(redisKey);
+    const data = await this.aiChatHistoryRepository.findBySessionId(sessionId);
+    if (!data) return null;
+    return {
+      jobId: data.jobId,
+      history: data.history,
+    };
   }
 }

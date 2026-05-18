@@ -170,16 +170,16 @@ Pseudo-flow:
 
 ## Lưu trữ dữ liệu (quyết định hiện tại)
 
-- Không lưu phản hồi AI vào DB.
-- Dữ liệu AI chỉ dùng để hiển thị UI hoặc làm input để lưu vào bảng hiện có (VD: lưu điểm chấm CV vào hồ sơ ứng viên nếu cần).
-- Không tạo schema mới cho AI.
+- Lịch sử chat AI được lưu trong bảng (Collection) `AiChatHistory` của database thay vì dùng Redis. Điều này giúp giữ ngữ cảnh theo session và tiện tra cứu sau này.
+- Dữ liệu chấm điểm CV/JD vẫn chỉ dùng để trả về UI hoặc lưu vào bảng hiện có (tùy yêu cầu) và không lưu riêng lẻ.
+- Tạo Schema mới cho AI Chat History với key `sessionId`.
 
 ## Tối ưu token
 
-- Chỉ gửi job_context hiện tại
-- Giới hạn độ dài prompt
-- Không gửi chat history cũ
-- Dùng summary cho CV và JD
+- Chỉ gửi job_context hiện tại.
+- Lọc giới hạn lịch sử chat gửi đi (vd: 6 messages gần nhất).
+- Không gửi lịch sử đoạn chat của job cũ.
+- Dùng summary cho CV và JD.
 
 ## Bảo mật
 

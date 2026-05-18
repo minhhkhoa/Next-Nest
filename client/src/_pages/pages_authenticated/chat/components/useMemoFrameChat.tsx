@@ -117,14 +117,22 @@ export default function useMemoFrameChat({
             <div className="min-w-0 flex-1">
               <div
                 className={cn(
-                  "px-3 py-2 sm:px-4 rounded-2xl text-sm sm:text-base w-full max-w-full [overflow-wrap:anywhere]",
+                  "px-3 py-2 sm:px-4 rounded-2xl text-sm sm:text-base w-full max-w-full break-words",
                   isMe
                     ? "bg-blue-500 text-white rounded-br-none"
                     : "bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-bl-none",
                 )}
               >
                 {msg.type === "TEXT" ? (
-                  <p className="whitespace-pre-wrap break-all">{msg.content}</p>
+                  msg.content ? (
+                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                  ) : (
+                    <div className="flex gap-1.5 py-1.5 px-1 items-center h-[24px]">
+                      <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                  )
                 ) : msg.type === "IMAGE" ? (
                   <div className="space-y-2">
                     {msg.metadata?.imageUrl ? (
@@ -148,7 +156,7 @@ export default function useMemoFrameChat({
                     )}
 
                     {msg.content ? (
-                      <p className="whitespace-pre-wrap break-all text-sm opacity-95">
+                      <p className="whitespace-pre-wrap text-sm opacity-95">
                         {msg.content}
                       </p>
                     ) : null}
@@ -190,7 +198,7 @@ export default function useMemoFrameChat({
                     </a>
 
                     {msg.content ? (
-                      <p className="whitespace-pre-wrap break-all text-sm opacity-95">
+                      <p className="whitespace-pre-wrap text-sm opacity-95">
                         {msg.content}
                       </p>
                     ) : null}
@@ -198,7 +206,7 @@ export default function useMemoFrameChat({
                 ) : msg.type === "CV_SYSTEM" ? (
                   <div className="space-y-2">
                     {msg.content ? (
-                      <p className="whitespace-pre-wrap break-all">{msg.content}</p>
+                      <p className="whitespace-pre-wrap">{msg.content}</p>
                     ) : null}
 
                     <button

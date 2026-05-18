@@ -267,7 +267,7 @@ export default function ChatWindow({
 
       {/* Messages body */}
       <ScrollArea ref={scrollAreaRef} className="flex-1 h-50">
-        <div className="p-3 sm:p-4 flex flex-col gap-2">
+        <div className="p-2 flex flex-col gap-2">
           {messages.length === 0 ? (
             <div className="flex-1 flex items-center justify-center text-gray-400 text-sm py-20">
               Chưa có tin nhắn nào. Hãy gửi lời chào!
