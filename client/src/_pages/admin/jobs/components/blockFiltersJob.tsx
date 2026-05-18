@@ -127,13 +127,13 @@ export function FilterSelect({
   onChange,
 }: FilterSelectProps) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-col md:flex-row gap-2 w-full">
       <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
         {label}
       </span>
 
       <Select value={value ?? ""} onValueChange={onChange}>
-        <SelectTrigger className="w-[150px]">
+        <SelectTrigger className="w-full">
           <SelectValue placeholder="Tất cả" />
         </SelectTrigger>
 

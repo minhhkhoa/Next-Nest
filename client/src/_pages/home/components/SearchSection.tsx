@@ -153,77 +153,79 @@ export default function SearchSection() {
           </div>
 
           {/* Location Select */}
-          <div className="flex-1 w-full flex items-center px-2 relative">
+          <div className="flex-1 w-full flex items-center relative">
             <MapPin className="text-muted-foreground w-5 h-5 mr-2" />
-            <Popover open={openLocation} onOpenChange={setOpenLocation}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="ghost"
-                  role="combobox"
-                  aria-expanded={openLocation}
-                  className={cn(
-                    "w-full justify-between hover:bg-transparent px-2 text-base font-normal border-none shadow-none focus-visible:ring-0 pr-8",
-                    !location && "text-muted-foreground",
-                  )}
-                >
-                  {location && location !== "all"
-                    ? ADDRESS_OPTIONS.find(
-                        (framework) => framework === location,
-                      )
-                    : t("BlockFilter.Location")}
-                  {/* <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /> */}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[300px] p-0">
-                <Command>
-                  <CommandInput
-                    placeholder={t("BlockFilter.PlaceholderLocation")}
-                  />
-                  <CommandList>
-                    <CommandEmpty>{t("BlockFilter.NoData")}</CommandEmpty>
-                    <CommandGroup>
-                      <CommandItem
-                        value="all"
-                        onSelect={() => {
-                          setLocation("");
-                          setOpenLocation(false);
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            location === "" ? "opacity-100" : "opacity-0",
-                          )}
-                        />
-                        {t("BlockFilter.LocationAll")}
-                      </CommandItem>
-                      {ADDRESS_OPTIONS.map((framework) => (
+            <div className="w-full">
+              <Popover open={openLocation} onOpenChange={setOpenLocation}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    role="combobox"
+                    aria-expanded={openLocation}
+                    className={cn(
+                      "w-full justify-between hover:bg-transparent px-2 text-base font-normal border-none shadow-none focus-visible:ring-0 pr-8",
+                      !location && "text-muted-foreground",
+                    )}
+                  >
+                    {location && location !== "all"
+                      ? ADDRESS_OPTIONS.find(
+                          (framework) => framework === location,
+                        )
+                      : t("BlockFilter.Location")}
+                    {/* <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /> */}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[300px] p-0">
+                  <Command>
+                    <CommandInput
+                      placeholder={t("BlockFilter.PlaceholderLocation")}
+                    />
+                    <CommandList>
+                      <CommandEmpty>{t("BlockFilter.NoData")}</CommandEmpty>
+                      <CommandGroup>
                         <CommandItem
-                          key={framework}
-                          value={framework}
+                          value="all"
                           onSelect={() => {
-                            setLocation(
-                              framework === location ? "" : framework,
-                            );
+                            setLocation("");
                             setOpenLocation(false);
                           }}
                         >
                           <Check
                             className={cn(
                               "mr-2 h-4 w-4",
-                              location === framework
-                                ? "opacity-100"
-                                : "opacity-0",
+                              location === "" ? "opacity-100" : "opacity-0",
                             )}
                           />
-                          {framework}
+                          {t("BlockFilter.LocationAll")}
                         </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+                        {ADDRESS_OPTIONS.map((framework) => (
+                          <CommandItem
+                            key={framework}
+                            value={framework}
+                            onSelect={() => {
+                              setLocation(
+                                framework === location ? "" : framework,
+                              );
+                              setOpenLocation(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                location === framework
+                                  ? "opacity-100"
+                                  : "opacity-0",
+                              )}
+                            />
+                            {framework}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
             {location && location !== "all" ? (
               <X
                 className="w-4 h-4 text-muted-foreground absolute right-4 cursor-pointer hover:text-foreground z-10"

@@ -75,11 +75,11 @@ export default function PageAdminCompanyDeleted() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="">
-        <div className="mx-auto max-w-7xl px-6 py-8">
+        <div className="mx-auto max-w-7xl pb-8 md:pt-8 ">
           <div className="flex items-center justify-between">
             <div>
               <Link href="/admin/company">
-                <Button variant="link" className="px-0">
+                <Button variant="link" className="!p-0">
                   <ArrowLeft size={20} />
                   Trở về
                 </Button>
@@ -92,7 +92,7 @@ export default function PageAdminCompanyDeleted() {
         </div>
       </div>
       {/* Main Content */}
-      <div className="mx-auto max-w-7xl px-6">
+      <div className="mx-auto max-w-7xl">
         <div className="mb-6 space-y-4">
           {/* Search section */}
           <div className="flex flex-col md:flex-row gap-3">

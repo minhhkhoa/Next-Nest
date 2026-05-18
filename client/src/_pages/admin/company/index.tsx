@@ -152,7 +152,7 @@ export default function PageAdminCompany() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="">
-        <div className="mx-auto max-w-7xl px-6 py-8">
+        <div className="mx-auto max-w-7xl pb-8 md:pt-8 ">
           <div className="flex items-center justify-between">
             <div>
               <HeaderPage />
@@ -174,7 +174,7 @@ export default function PageAdminCompany() {
         </div>
       </div>
       {/* Main Content */}
-      <div className="mx-auto max-w-7xl px-6">
+      <div className="mx-auto max-w-7xl">
         <div className="mb-6 space-y-4">
           {/* Search section */}
           <div className="flex flex-col md:flex-row gap-3">
@@ -269,44 +269,46 @@ export default function PageAdminCompany() {
 function HeaderPage() {
   return (
     <div>
-      <div className="flex items-center">
-        <p className="text-3xl font-bold text-foreground">Danh sách công ty</p>
+      <h1 className="text-3xl font-bold text-foreground">
+        Danh sách{" "}
+        <span className="inline-flex items-center gap-1.5 whitespace-nowrap align-middle pb-2">
+          công ty
+          <Popover modal={false}>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className="text-muted-foreground hover:text-foreground transition inline-flex items-center"
+              >
+                <InfoIcon className="h-4 w-4" color="yellow" />
+              </button>
+            </PopoverTrigger>
 
-        <Popover modal={false}>
-          <PopoverTrigger asChild>
-            <button
-              type="button"
-              className="ml-2 text-muted-foreground hover:text-foreground transition"
-            >
-              <InfoIcon className="h-4 w-4" color="yellow" />
-            </button>
-          </PopoverTrigger>
+            <PopoverContent className="w-80 font-normal text-base normal-case tracking-normal">
+              <div className="space-y-3">
+                <p className="font-semibold">Thông tin quản lý công ty</p>
 
-          <PopoverContent className="w-80">
-            <div className="space-y-3">
-              <p className="font-semibold">Thông tin quản lý công ty</p>
+                <p className="text-sm text-muted-foreground">
+                  Khu vực này hiển thị các công ty đang hoạt động. Bạn có thể
+                  xem, chỉnh sửa thông tin và quản lý trạng thái công ty.
+                </p>
 
-              <p className="text-sm text-muted-foreground">
-                Khu vực này hiển thị các công ty đang hoạt động. Bạn có thể xem,
-                chỉnh sửa thông tin và quản lý trạng thái công ty.
-              </p>
+                <p className="text-sm text-muted-foreground">
+                  Nếu bạn không tìm thấy công ty mong muốn, có thể công ty đó đã
+                  bị xoá tạm thời.
+                </p>
 
-              <p className="text-sm text-muted-foreground">
-                Nếu bạn không tìm thấy công ty mong muốn, có thể công ty đó đã
-                bị xoá tạm thời.
-              </p>
-
-              <div className="pt-2">
-                <Link href="/admin/company/company-deleted">
-                  <Button variant="link" className="px-0">
-                    Xem danh sách công ty đã xoá →
-                  </Button>
-                </Link>
+                <div className="pt-2">
+                  <Link href="/admin/company/company-deleted">
+                    <Button variant="link" className="px-0">
+                      Xem danh sách công ty đã xoá →
+                    </Button>
+                  </Link>
+                </div>
               </div>
-            </div>
-          </PopoverContent>
-        </Popover>
-      </div>
+            </PopoverContent>
+          </Popover>
+        </span>
+      </h1>
 
       <p className="mt-2 text-sm text-muted-foreground">Quản lý công ty</p>
     </div>

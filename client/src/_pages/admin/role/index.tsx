@@ -72,17 +72,21 @@ export default function PageRole() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="">
-        <div className="mx-auto max-w-7xl px-6 py-8">
+        <div className="mx-auto max-w-7xl pb-8 md:pt-8 ">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-foreground">
-                Quyền hạn hệ thống
+                Vai trò hệ thống
               </h1>
               <p className="mt-2 text-sm text-muted-foreground">
-                Quản lý quyền hạn hệ thống
+                Quản lý vai trò hệ thống
               </p>
             </div>
-            <div className="flex gap-3">
+            <div
+              className={`flex gap-3 ${
+                idDeleteMany.length > 0 ? "flex-col-reverse" : "flex-row"
+              }`}
+            >
               {idDeleteMany.length > 0 && (
                 <Button
                   variant="destructive"
@@ -107,7 +111,7 @@ export default function PageRole() {
         </div>
       </div>
       {/* Main Content */}
-      <div className="mx-auto max-w-7xl px-6">
+      <div className="mx-auto max-w-7xl">
         <div className="mb-6">
           <SearchBar value={filtersName} onChange={setFiltersName} />
         </div>

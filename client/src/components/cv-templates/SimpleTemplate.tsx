@@ -267,7 +267,7 @@ export default function SimpleTemplate({
           )}
         >
           <div className="container mx-auto py-8">
-            <div className="bg-card shadow-lg rounded-lg p-8 sm:p-12 border border-border">
+            <div className="bg-card shadow-lg rounded-lg p-4 border border-border">
               {/* Header Section */}
               <div className="flex flex-col md:flex-row items-center md:items-start gap-6 border-b border-border pb-8 mb-8">
                 {/* Avatar */}
@@ -371,7 +371,7 @@ export default function SimpleTemplate({
                       {...field}
                       className={cn(
                         editableBase,
-                        "min-h-[80px] text-foreground/90 resize-none border-none shadow-none focus-visible:ring-0 px-0",
+                        "min-h-[80px] text-foreground/90 resize-none border-none shadow-none focus-visible:ring-0 px-2",
                       )}
                       placeholder="Tóm tắt về bản thân..."
                     />
@@ -535,7 +535,7 @@ export default function SimpleTemplate({
                             {...field}
                             className={cn(
                               editableBase,
-                              "text-sm text-muted-foreground min-h-[60px] resize-none w-full border-none shadow-none focus-visible:ring-0 px-0",
+                              "text-sm text-muted-foreground min-h-[60px] resize-none w-full border-none shadow-none focus-visible:ring-0 px-2",
                             )}
                             placeholder="Mô tả công việc..."
                           />
@@ -707,7 +707,7 @@ export default function SimpleTemplate({
                             {...field}
                             className={cn(
                               editableBase,
-                              "text-sm text-muted-foreground min-h-[40px] resize-none w-full border-none shadow-none focus-visible:ring-0 px-0",
+                              "text-sm text-muted-foreground min-h-[40px] resize-none w-full border-none shadow-none focus-visible:ring-0 px-2",
                             )}
                             placeholder="Mô tả dự án..."
                           />

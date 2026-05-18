@@ -23,7 +23,7 @@ export function BookmarkNavigationButton() {
             asChild
             variant="outline"
             size="icon"
-            className="h-12 w-12 rounded-full shadow-lg border border-border bg-background hover:bg-accent hover:text-accent-foreground backdrop-blur flex items-center justify-center transition-colors"
+            className="h-10 w-10 rounded-full shadow-lg border border-border bg-background hover:bg-accent hover:text-accent-foreground backdrop-blur flex items-center justify-center transition-colors"
           >
             <Link href="/saved-jobs">
               <BookMarked className="h-5 w-5" />

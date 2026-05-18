@@ -403,7 +403,7 @@ export default function BasicTemplate({
                         {...field}
                         className={cn(
                           editableBase,
-                          "min-h-[100px] leading-relaxed resize-none shadow-none text-muted-foreground",
+                          "min-h-[100px] leading-relaxed resize-none shadow-none  px-2 text-muted-foreground",
                         )}
                         placeholder="Viết một đoạn ngắn giới thiệu về bản thân bạn..."
                       />
@@ -524,7 +524,7 @@ export default function BasicTemplate({
                               {...field}
                               className={cn(
                                 editableBase,
-                                "text-sm text-muted-foreground min-h-[60px] resize-none mt-2 shadow-none",
+                                "text-sm text-muted-foreground min-h-[60px] resize-none mt-2 px-2 shadow-none",
                               )}
                               placeholder="Mô tả công việc..."
                             />
@@ -599,7 +599,7 @@ export default function BasicTemplate({
                               {...field}
                               className={cn(
                                 editableBase,
-                                "text-sm text-muted-foreground bg-transparent border-none p-0 min-h-[40px] resize-none shadow-none",
+                                "text-sm text-muted-foreground bg-transparent border-none px-2 min-h-[40px] resize-none shadow-none",
                               )}
                               placeholder="Mô tả..."
                             />
@@ -725,7 +725,7 @@ export default function BasicTemplate({
                               render={({ field }) => (
                                 <Input
                                   {...field}
-                                  className="w-[40px] bg-transparent border-none p-0 h-auto focus:ring-0 shadow-none"
+                                  className="w-[40px] bg-transparent border-none px-2 h-auto focus:ring-0 shadow-none"
                                   placeholder="Từ"
                                 />
                               )}
@@ -737,7 +737,7 @@ export default function BasicTemplate({
                               render={({ field }) => (
                                 <Input
                                   {...field}
-                                  className="w-[40px] bg-transparent border-none p-0 h-auto focus:ring-0 shadow-none"
+                                  className="w-[40px] bg-transparent border-none px-2 h-auto focus:ring-0 shadow-none"
                                   placeholder="Đến"
                                 />
                               )}

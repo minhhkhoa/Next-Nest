@@ -171,7 +171,7 @@ export default function RecruiterAdminJobsPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="">
-        <div className="mx-auto max-w-7xl px-5 py-8">
+        <div className="mx-auto max-w-7xl pb-8 md:pt-8 ">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-3xl font-bold">Quản lý công việc</p>
@@ -203,7 +203,7 @@ export default function RecruiterAdminJobsPage() {
       </div>
 
       {/* Main Content */}
-      <div className="mx-auto max-w-7xl px-6">
+      <div className="mx-auto max-w-7xl">
         {/* khối lọc */}
         <div>
           <div className="flex flex-col md:flex-row gap-3">

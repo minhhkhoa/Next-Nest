@@ -28,10 +28,8 @@ interface PermissionFilterProps {
 export default function PermissionFilter({
   filters,
   setFilters,
-  listModules
+  listModules,
 }: PermissionFilterProps) {
-
-
   return (
     <Card className="p-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">

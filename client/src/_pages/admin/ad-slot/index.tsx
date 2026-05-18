@@ -147,13 +147,12 @@ export default function PageAdminAdSlot() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="mx-auto max-w-7xl px-5 py-8">
+      <div className="mx-auto max-w-7xl pb-8 md:pt-8 ">
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <LayoutGrid className="h-6 w-6 text-primary" />
               <p className="text-3xl font-bold text-foreground">
-                Vị trí quảng cáo (Ad Slot)
+                Vị trí quảng cáo
               </p>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -172,7 +171,7 @@ export default function PageAdminAdSlot() {
       </div>
 
       {/* Bộ lọc */}
-      <div className="mx-auto max-w-7xl px-5 mb-4">
+      <div className="max-w-7xl mb-4">
         <div className="flex flex-col md:flex-row gap-3">
           {/* Tìm kiếm theo keyword */}
           <div className="relative flex-1">
@@ -234,7 +233,7 @@ export default function PageAdminAdSlot() {
       </div>
 
       {/* Bảng dữ liệu */}
-      <div className="mx-auto max-w-7xl px-5">
+      <div className="max-w-7xl">
         {!isLoading ? (
           <TableAdSlot
             data={listSlot?.data?.result ?? []}

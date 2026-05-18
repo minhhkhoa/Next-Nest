@@ -58,11 +58,11 @@ export default function PageAdminJobDeleted() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="">
-        <div className="mx-auto max-w-7xl px-5 py-8">
+        <div className="mx-auto max-w-7xl pb-8 md:pt-8 ">
           <div className="flex items-center justify-between">
             <div>
               <Link href="/admin/jobs">
-                <Button variant="link" className="px-0">
+                <Button variant="link" className="!p-0">
                   <ArrowLeft size={20} />
                   Trở về
                 </Button>
@@ -75,7 +75,7 @@ export default function PageAdminJobDeleted() {
         </div>
       </div>
       {/* Main Content */}
-      <div className="mx-auto max-w-7xl px-6">
+      <div className="mx-auto max-w-7xl">
         {/* khối lọc */}
         <div className="flex flex-col md:flex-row gap-3 pb-4">
           <div className="flex-1">

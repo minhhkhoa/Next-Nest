@@ -64,10 +64,10 @@ export default function PageMyApplication() {
           }}
           className="w-full sm:w-auto"
         >
-          <TabsList className="w-full flex-wrap h-auto justify-start">
-            <TabsTrigger value="ALL">Tất cả</TabsTrigger>
+          <TabsList className="w-full overflow-x-auto whitespace-nowrap sm:flex-wrap h-auto justify-start">
+            <TabsTrigger className="flex-none mr-2" value="ALL">Tất cả</TabsTrigger>
             {APPLICATION_STATUS.map((status) => (
-              <TabsTrigger key={status.value} value={status.value}>
+              <TabsTrigger key={status.value} className="flex-none mr-2" value={status.value}>
                 {status.label}
               </TabsTrigger>
             ))}
