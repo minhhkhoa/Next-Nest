@@ -1,5 +1,6 @@
 import { Logger, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { OnEvent } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
 import {
   WebSocketGateway,
@@ -24,7 +25,7 @@ export class ChatGateway implements OnGatewayConnection {
     private configService: ConfigService,
   ) {}
 
-  //- được gọi tự động duy nhất 1 lần ngay lúc mà Frontend Next.js khởi tạo lệnh kết nối (vd: io("http://localhost:port/chat", { auth: { token: '...' } }))
+  //- duoc goi tu dong duy nhat 1 lan ngay luc ma Frontend Next.js khoi tao lenh ket noi
   async handleConnection(client: Socket) {
     try {
       const token = client.handshake.auth?.token;
@@ -33,13 +34,23 @@ export class ChatGateway implements OnGatewayConnection {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: this.configService.get<string>('JWT_ACCESS_TOKEN_SECRET'),
       });
-      // Vượt qua xác thực khi bắt tay thì gán thông tin user vào client để các event sau có thể dùng
+      //- Vuot qua xac thuc khi bat tay thi gan thong tin user vao client de cac event sau co the dung
       client.data.user = payload;
       this.logger.log(
         `[Chat] Socket connected: ${client.id} - User: ${payload.email}`,
       );
+
+      //- Neu la recruiter thi tu dong join vao company room de nhan duoc event conversation moi
+      const companyId = payload?.employerInfo?.companyID;
+      if (companyId) {
+        const companyRoom = `company_${companyId}`;
+        client.join(companyRoom);
+        this.logger.log(
+          `[Chat] Recruiter ${payload.email} joined company room: ${companyRoom}`,
+        );
+      }
     } catch (e) {
-      //- lỗi thì đóng kết nối, không cho vào phòng chat
+      //- loi thi dong ket noi, khong cho vao phong chat
       this.logger.error(`[Chat] Connection rejected: ${e.message}`);
       client.disconnect();
     }
@@ -96,6 +107,14 @@ export class ChatGateway implements OnGatewayConnection {
       readerId,
       readAt,
     });
+  }
+
+  //- Emit new_conversation den company room khi co conversation moi duoc tao (triggered boi EventEmitter)
+  @OnEvent('conversation.created')
+  handleConversationCreated(payload: { companyId: string; conversation: any }) {
+    const companyRoom = `company_${payload.companyId}`;
+    this.server.to(companyRoom).emit('new_conversation', payload.conversation);
+    this.logger.log(`[Chat] Emitted new_conversation to room: ${companyRoom}`);
   }
 
   /**

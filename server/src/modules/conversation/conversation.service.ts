@@ -7,12 +7,14 @@ import { Types } from 'mongoose';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { ConfigService } from '@nestjs/config';
 import { ConversationRepository } from './repository/conversation.repository';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class ConversationService {
   constructor(
     private readonly conversationRepository: ConversationRepository,
     private configService: ConfigService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async create(
@@ -82,6 +84,12 @@ export class ConversationService {
         },
       });
 
+      //- Thong bao qua EventEmitter de ChatGateway phat new_conversation den company room
+      this.eventEmitter.emit('conversation.created', {
+        companyId,
+        conversation: newConv,
+      });
+
       return newConv;
     } catch (error) {
       throw new BadRequestException('Không thể tạo phòng chat mới');
@@ -115,8 +123,8 @@ export class ConversationService {
           return [];
         }
       } else if (user.roleCodeName === superAdminText) {
-        //- Super Admin có thể xem tất cả (hoặc giới hạn tùy ý)
-        filter = {};
+        //- Super Admin khong duoc xem conversations cua nguoi khac trong chat sidebar
+        return [];
       } else {
         //- Các role khác (GUEST, ...) mặc định không thấy gì
         return [];

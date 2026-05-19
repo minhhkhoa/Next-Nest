@@ -178,36 +178,44 @@ export default function ChatWindow({
     setSystemCvDialogOpen(true);
   };
 
-  const handleSendSelectedSystemCv = async () => {
-    if (!onSendSystemResume || !selectedSystemCvId) return;
+  const handleSystemCvSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedSystemCvId || isSubmittingSystemCv) return;
 
     const selectedResume = systemResumes.find(
-      (resume) => resume._id === selectedSystemCvId,
+      (r) => r._id === selectedSystemCvId,
     );
-
     if (!selectedResume) return;
 
     setIsSubmittingSystemCv(true);
-    const isSuccess = await onSendSystemResume(selectedResume);
-    setIsSubmittingSystemCv(false);
-
-    if (isSuccess) {
-      setSystemCvDialogOpen(false);
+    try {
+      const success = await onSendSystemResume?.(selectedResume);
+      if (success) {
+        setSystemCvDialogOpen(false);
+      }
+    } catch (error) {
+      console.error("Lỗi gửi CV hệ thống:", error);
+    } finally {
+      setIsSubmittingSystemCv(false);
     }
   };
 
-  //- Cuộn xuống cuối khi load tin nhắn hoặc có tin nhắn mới
+  //- Cuộn xuống khi có tin nhắn mới hoặc đổi cuộc trò chuyện
   useEffect(() => {
-    //- Dùng setTimeout nhỏ để đợi DOM render xong
-    const timer = setTimeout(() => {
+    if (messages.length > 0) {
       scrollToBottom("instant");
-    }, 50);
-    return () => clearTimeout(timer);
-  }, [messages, activeConversationId]);
+    }
+  }, [activeConversationId]);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      scrollToBottom("smooth");
+    }
+  }, [messages.length]);
 
   if (!activeConversationId) {
     return (
-      <div className="flex-1 flex flex-col bg-gray-50 dark:bg-slate-900 border-gray-200 dark:border-slate-800">
+      <div className="flex-1 flex flex-col bg-gray-50 dark:bg-slate-900 border-gray-200 dark:border-slate-800 min-w-0 w-full overflow-hidden">
         {/* Nút mở sidebar trên mobile khi chưa chọn conversation */}
         <div className="md:hidden p-3 border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950">
           <Button
@@ -228,14 +236,13 @@ export default function ChatWindow({
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-gray-50 dark:bg-slate-900 min-w-0">
-      {/* Header Chat */}
-      <div className="h-14 sm:h-16 flex items-center px-3 sm:px-4 border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 shrink-0 gap-2">
-        {/* Nút menu chỉ hiện trên mobile */}
+    <div className="flex-1 flex flex-col h-full bg-slate-50 dark:bg-slate-900 relative min-w-0 w-full overflow-hidden">
+      {/* Chat header */}
+      <div className="h-16 border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex items-center px-4 gap-3 shrink-0">
         <Button
           variant="ghost"
-          size="icon-sm"
-          className="md:hidden shrink-0"
+          size="icon"
+          className="lg:hidden"
           onClick={onOpenMobileSidebar}
           aria-label="Mở danh sách đoạn chat"
         >
@@ -266,8 +273,8 @@ export default function ChatWindow({
       </div>
 
       {/* Messages body */}
-      <ScrollArea ref={scrollAreaRef} className="flex-1 h-50">
-        <div className="p-2 flex flex-col gap-2">
+      <ScrollArea ref={scrollAreaRef} className="flex-1 h-50 [&>div>div]:!block">
+        <div className="p-2 flex flex-col gap-2 w-full max-w-full">
           {messages.length === 0 ? (
             <div className="flex-1 flex items-center justify-center text-gray-400 text-sm py-20">
               Chưa có tin nhắn nào. Hãy gửi lời chào!
@@ -598,7 +605,7 @@ export default function ChatWindow({
             </Button>
             <Button
               type="button"
-              onClick={handleSendSelectedSystemCv}
+              onClick={handleSystemCvSubmit}
               disabled={
                 isSubmittingSystemCv ||
                 !selectedSystemCvId ||
