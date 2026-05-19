@@ -63,7 +63,10 @@ export default function useMemoFrameChat({
   const messageItems = useMemo(
     () =>
       messages.map((msg, index) => {
-        const isMe = msg.senderType === currentUserSenderType;
+        const isMe =
+          msg.conversationId === "ai-assistant"
+            ? msg.senderId?._id !== "ai-bot"
+            : msg.senderType === currentUserSenderType;
         const isLastOwnMessage = isMe && msg._id === lastOwnMessageId;
 
         const nextMessage = messages[index + 1];

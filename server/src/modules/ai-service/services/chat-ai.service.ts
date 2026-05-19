@@ -24,12 +24,12 @@ export class ChatAiService {
 
   //- tra loi cau hoi theo job hien tai va quan ly lich su qua db, stream ket qua
   async chatStream(
-    sessionId: string,
+    userId: string,
     jobId: string,
     jobContext: string,
     input: string,
   ): Promise<AsyncGenerator<string, void, unknown>> {
-    const document = await this.aiChatHistoryRepository.findBySessionId(sessionId);
+    const document = await this.aiChatHistoryRepository.findByUserId(userId);
     
     let sessionData: ChatSessionData = { jobId, history: [] };
 
@@ -58,7 +58,7 @@ export class ChatAiService {
       stream,
       sessionData,
       input,
-      sessionId,
+      userId,
     );
   }
 
@@ -67,7 +67,7 @@ export class ChatAiService {
     originalStream: IterableReadableStream<BaseMessageChunk>,
     sessionData: ChatSessionData,
     input: string,
-    sessionId: string,
+    userId: string,
   ): AsyncGenerator<string, void, unknown> {
     let fullOutput = '';
 
@@ -100,15 +100,15 @@ export class ChatAiService {
     }
 
     await this.aiChatHistoryRepository.createOrUpdate(
-      sessionId,
+      userId,
       sessionData.jobId,
       sessionData.history,
     );
   }
 
   //- lay lich su cho frontend khi load lai trang
-  async getChatHistory(sessionId: string): Promise<ChatSessionData | null> {
-    const data = await this.aiChatHistoryRepository.findBySessionId(sessionId);
+  async getChatHistory(userId: string): Promise<ChatSessionData | null> {
+    const data = await this.aiChatHistoryRepository.findByUserId(userId);
     if (!data) return null;
     return {
       jobId: data.jobId,

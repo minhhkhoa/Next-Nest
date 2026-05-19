@@ -101,19 +101,7 @@ export default function AskMoreJobButton({
   };
 
   const handleAskMoreAI = () => {
-    // Generate a unique session ID for the guest or use user ID
-    const sessionId = user?._id || `guest_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-    
-    // Save AI session config to localStorage to be picked up by ChatPage
-    const aiSessionState = {
-      sessionId,
-      jobId: job._id,
-      jobTitle,
-      timestamp: Date.now()
-    };
-    localStorage.setItem(AI_CHAT_SESSION_STORAGE_KEY, JSON.stringify(aiSessionState));
-    
-    // Pre-fill a draft similar to HR chat
+    //- Chuẩn bị tin nhắn nháp tương tự chat HR
     const draftPayload = {
       conversationId: "ai-assistant",
       inputText: `Tôi muốn hỏi thêm thông tin về vị trí ${jobTitle}`,
@@ -124,7 +112,7 @@ export default function AskMoreJobButton({
       JSON.stringify(draftPayload)
     );
 
-    router.push(`/chat?ai=true`);
+    router.push(`/chat?ai=true&jobId=${job._id}&jobTitle=${encodeURIComponent(jobTitle)}`);
   };
 
   return (

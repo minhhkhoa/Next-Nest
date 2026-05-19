@@ -25,7 +25,6 @@ import ChatWindow, {
 } from "./components/ChatWindow";
 import {
   CHAT_JOB_REFERENCE_DRAFT_STORAGE_KEY,
-  AI_CHAT_SESSION_STORAGE_KEY,
 } from "@/components/AskMoreJobButton";
 import aiApiRequest from "@/apiRequest/ai";
 import { useSearchParams } from "next/navigation";
@@ -337,71 +336,80 @@ export default function ChatPageModule() {
   };
 
   useEffect(() => {
-    const rawSession = localStorage.getItem(AI_CHAT_SESSION_STORAGE_KEY);
-    if (rawSession) {
-      try {
-        const parsed = JSON.parse(rawSession);
-        // Expiry check (1 hour)
-        if (Date.now() - parsed.timestamp < 60 * 60 * 1000) {
-          setAiSession(parsed);
+    //- Luôn gọi API để lấy lịch sử chat AI từ server
+    aiApiRequest
+      .getChatHistory()
+      .then((res) => {
+        const data = res?.data;
+        const queryJobId = searchParams.get("jobId");
+        const queryJobTitle = searchParams.get("jobTitle");
 
-          if (
-            searchParams.get("ai") === "true" ||
-            defaultConversationId === "ai-assistant"
-          ) {
-            setActiveConversationId("ai-assistant");
+        if (data && data.jobId) {
+          //- Có lịch sử trên server
+          setAiSession({
+            sessionId: user?._id || "ai-session",
+            jobId: data.jobId,
+            jobTitle: data.jobTitle || "Vị trí tuyển dụng",
+            timestamp: Date.now(),
+          });
+
+          if (data.history) {
+            const historyMsgs = data.history.map(
+              (msg: any, index: number) => ({
+                _id: `ai_hist_${Date.now()}_${index}`,
+                conversationId: "ai-assistant",
+                senderId:
+                  msg.role === "ai"
+                    ? {
+                        _id: "ai-bot",
+                        name: "AI Assistant",
+                        avatar:
+                          "https://cdn-icons-png.flaticon.com/512/8943/8943377.png",
+                        email: "",
+                      }
+                    : {
+                        _id: user?._id || "guest",
+                        name: user?.name || "You",
+                        avatar: user?.avatar || "",
+                        email: user?.email || "",
+                      },
+                senderType:
+                  msg.role === "ai"
+                    ? envConfig.NEXT_PUBLIC_ROLE_RECRUITER
+                    : envConfig.NEXT_PUBLIC_ROLE_CANDIDATE,
+                type: "TEXT",
+                content: msg.content,
+                isRead: true,
+                createdAt: new Date(
+                  Date.now() - (data.history.length - index) * 1000,
+                ).toISOString(),
+                updatedAt: new Date(
+                  Date.now() - (data.history.length - index) * 1000,
+                ).toISOString(),
+              }),
+            );
+            setAiMessages(historyMsgs);
           }
-
-          // Fetch history
-          aiApiRequest
-            .getChatHistory(parsed.sessionId)
-            .then((data) => {
-              if (data?.data?.history) {
-                const historyMsgs = data.data.history.map(
-                  (msg: any, index: number) => ({
-                    _id: `ai_hist_${Date.now()}_${index}`,
-                    conversationId: "ai-assistant",
-                    senderId:
-                      msg.role === "ai"
-                        ? {
-                            _id: "ai-bot",
-                            name: "AI Assistant",
-                            avatar:
-                              "https://cdn-icons-png.flaticon.com/512/8943/8943377.png",
-                            email: "",
-                          }
-                        : {
-                            _id: user?._id || "guest",
-                            name: user?.name || "You",
-                            avatar: user?.avatar || "",
-                            email: user?.email || "",
-                          },
-                    senderType:
-                      msg.role === "ai"
-                        ? envConfig.NEXT_PUBLIC_ROLE_RECRUITER
-                        : envConfig.NEXT_PUBLIC_ROLE_CANDIDATE,
-                    type: "TEXT",
-                    content: msg.content,
-                    isRead: true,
-                    createdAt: new Date(
-                      parsed.timestamp + index * 1000,
-                    ).toISOString(),
-                    updatedAt: new Date(
-                      parsed.timestamp + index * 1000,
-                    ).toISOString(),
-                  }),
-                );
-                setAiMessages(historyMsgs);
-              }
-            })
-            .catch((e) => console.log("Failed to load AI history", e));
-        } else {
-          localStorage.removeItem(AI_CHAT_SESSION_STORAGE_KEY);
+        } else if (queryJobId && queryJobTitle) {
+          //- Chưa có lịch sử nhưng có thông tin job từ URL (khi click nút "Hỏi thêm")
+          setAiSession({
+            sessionId: user?._id || "ai-session",
+            jobId: queryJobId,
+            jobTitle: decodeURIComponent(queryJobTitle),
+            timestamp: Date.now(),
+          });
+          setAiMessages([]);
         }
-      } catch (e) {
-        console.log("Failed to parse AI session state", e);
-      }
-    }
+
+        //- Nếu URL yêu cầu chat AI hoặc default conversation là ai-assistant
+        if (
+          searchParams.get("ai") === "true" ||
+          defaultConversationId === "ai-assistant"
+        ) {
+          setActiveConversationId("ai-assistant");
+        }
+      })
+      .catch((e) => console.log("Failed to load AI history", e));
   }, [searchParams, defaultConversationId, user]);
 
   useEffect(() => {
@@ -489,7 +497,6 @@ export default function ChatPageModule() {
       const url = new URL(`${baseSSEUrl}/ai/chat/stream`);
       const token = localStorage.getItem("access_token");
       if (token) url.searchParams.append("token", token);
-      url.searchParams.append("sessionId", aiSession.sessionId);
       url.searchParams.append("jobId", aiSession.jobId);
       url.searchParams.append("question", textToSend);
 

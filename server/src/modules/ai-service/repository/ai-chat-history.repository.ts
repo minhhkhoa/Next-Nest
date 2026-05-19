@@ -13,17 +13,17 @@ export class AiChatHistoryRepository {
     private readonly aiChatHistoryModel: Model<AiChatHistoryDocument>,
   ) {}
 
-  async findBySessionId(sessionId: string): Promise<AiChatHistoryDocument | null> {
-    return this.aiChatHistoryModel.findOne({ sessionId }).exec();
+  async findByUserId(userId: string): Promise<AiChatHistoryDocument | null> {
+    return this.aiChatHistoryModel.findOne({ userId }).exec();
   }
 
   async createOrUpdate(
-    sessionId: string,
+    userId: string,
     jobId: string,
     history: { role: 'human' | 'ai'; content: string }[],
   ): Promise<AiChatHistoryDocument> {
     return this.aiChatHistoryModel.findOneAndUpdate(
-      { sessionId },
+      { userId },
       { jobId, history },
       { new: true, upsert: true },
     ).exec();

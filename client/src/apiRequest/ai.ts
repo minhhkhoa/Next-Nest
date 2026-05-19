@@ -20,8 +20,8 @@ const aiApiRequest = {
       timeout: 60000,
     }),
 
-  getChatHistory: (sessionId: string) =>
-    http.get<ApiResponse<any>>(`${prefix}/chat/history?sessionId=${sessionId}`),
+  getChatHistory: () =>
+    http.get<ApiResponse<any>>(`${prefix}/chat/history`),
 };
 
 export default aiApiRequest;

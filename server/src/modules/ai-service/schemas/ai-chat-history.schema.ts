@@ -6,7 +6,7 @@ export type AiChatHistoryDocument = HydratedDocument<AiChatHistory>;
 @Schema({ timestamps: true })
 export class AiChatHistory {
   @Prop({ required: true, index: true })
-  sessionId: string;
+  userId: string;
 
   @Prop({ required: true })
   jobId: string;

@@ -28,13 +28,15 @@ export class AiServiceController {
 
   @Sse('chat/stream')
   @ApiOperation({ summary: 'Chat AI stream theo job hien tai' })
-  chatStream(@Query() query: ChatAiQueryDto): Observable<MessageEvent> {
+  chatStream(
+    @Query() query: ChatAiQueryDto,
+    @userDecorator() user: UserDecoratorType,
+  ): Observable<MessageEvent> {
     return new Observable((subscriber) => {
       (async () => {
         try {
-          const sessionId = query.sessionId || 'default_session';
           const generator = await this.aiServiceService.chatStream(
-            sessionId,
+            user.id,
             query.jobId,
             query.question,
           );
@@ -54,9 +56,8 @@ export class AiServiceController {
   @Get('chat/history')
   @ApiOperation({ summary: 'Lay lich su chat AI' })
   @ResponseMessage('Lay lich su chat AI thanh cong')
-  async getChatHistory(@Query('sessionId') sessionId: string) {
-    if (!sessionId) return null;
-    return this.aiServiceService.getChatHistory(sessionId);
+  async getChatHistory(@userDecorator() user: UserDecoratorType) {
+    return this.aiServiceService.getChatHistory(user.id);
   }
 
   @Post('cv-score')

@@ -17,15 +17,31 @@ export class AiServiceService {
   ) {}
 
   //- lay job va tao context, sau do goi chat ai stream
-  async chatStream(sessionId: string, jobId: string, question: string): Promise<AsyncGenerator<string, void, unknown>> {
+  async chatStream(userId: string, jobId: string, question: string): Promise<AsyncGenerator<string, void, unknown>> {
     const job = await this.jobsService.getJobContextById(jobId);
     const jobContext = this.buildJobContext(job);
-    return this.chatAiService.chatStream(sessionId, jobId, jobContext, question);
+    return this.chatAiService.chatStream(userId, jobId, jobContext, question);
   }
 
   //- lay lich su chat ai
-  async getChatHistory(sessionId: string) {
-    return this.chatAiService.getChatHistory(sessionId);
+  async getChatHistory(userId: string) {
+    const data = await this.chatAiService.getChatHistory(userId);
+    if (!data) return null;
+
+    let jobTitle = 'Vị trí tuyển dụng';
+    try {
+      const job = await this.jobsService.getJobContextById(data.jobId);
+      if (job) {
+        jobTitle = job.title?.vi || job.title?.en || 'Vị trí tuyển dụng';
+      }
+    } catch (e) {
+      console.log('Failed to fetch job context for history', e);
+    }
+
+    return {
+      ...data,
+      jobTitle,
+    };
   }
 
   //- lay cv cua user, tao context va cham diem

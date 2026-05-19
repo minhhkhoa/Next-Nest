@@ -12,7 +12,5 @@ export class ChatAiQueryDto {
   @IsNotEmpty()
   question: string;
 
-  @IsString()
-  @IsOptional()
-  sessionId?: string;
+
 }
