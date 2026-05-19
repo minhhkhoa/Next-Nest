@@ -30,17 +30,14 @@ export class ChatAiService {
     input: string,
   ): Promise<AsyncGenerator<string, void, unknown>> {
     const document = await this.aiChatHistoryRepository.findByUserId(userId);
-    
-    let sessionData: ChatSessionData = { jobId, history: [] };
 
-    if (document && document.jobId === jobId) {
-      sessionData = {
-        jobId: document.jobId,
-        history: document.history as { role: 'human' | 'ai'; content: string }[],
-      };
-    }
+    //- luon load lich su cu bat ke jobId thay doi (cho phep doi chieu nhieu job trong 1 cuoc tro chuyen)
+    const existingHistory = (document?.history as { role: 'human' | 'ai'; content: string }[]) || [];
+    const sessionData: ChatSessionData = { jobId, history: existingHistory };
 
-    const chatHistory: BaseMessage[] = sessionData.history.map((msg) =>
+    //- chi lay N message gan nhat de gui cho AI, tranh vuot qua token limit
+    const historyForContext = existingHistory.slice(-this.maxHistoryMessages * 2);
+    const chatHistory: BaseMessage[] = historyForContext.map((msg) =>
       msg.role === 'human'
         ? new HumanMessage(msg.content)
         : new AIMessage(msg.content),
@@ -52,7 +49,7 @@ export class ChatAiService {
       chat_history: chatHistory,
     });
 
-    //- sử dụng stream để trả về kết quả từng phần cho client render UI đẹp hơn
+    //- su dung stream de tra ve ket qua tung phan cho client render UI dep hon
     const stream = await this.llm.stream(messages);
     return this.createInterceptedGenerator(
       stream,
@@ -94,11 +91,7 @@ export class ChatAiService {
       { role: 'ai', content: fullOutput },
     );
 
-    const maxEntries = this.maxHistoryMessages * 2;
-    if (sessionData.history.length > maxEntries) {
-      sessionData.history = sessionData.history.slice(-maxEntries);
-    }
-
+    //- luu toan bo history (khong trim) de hien thi day du cho user khi quay lai
     await this.aiChatHistoryRepository.createOrUpdate(
       userId,
       sessionData.jobId,

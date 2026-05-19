@@ -50,7 +50,7 @@ export default function ChatPageModule() {
   >(defaultConversationId || null);
 
   const [aiSession, setAiSession] = useState<{
-    sessionId: string;
+    userId: string;
     jobId: string;
     jobTitle: string;
     timestamp: number;
@@ -344,61 +344,67 @@ export default function ChatPageModule() {
         const queryJobId = searchParams.get("jobId");
         const queryJobTitle = searchParams.get("jobTitle");
 
-        if (data && data.jobId) {
-          //- Có lịch sử trên server
-          setAiSession({
-            sessionId: user?._id || "ai-session",
-            jobId: data.jobId,
-            jobTitle: data.jobTitle || "Vị trí tuyển dụng",
-            timestamp: Date.now(),
-          });
+        //- jobId active: uu tien tu URL (user vua click "Hoi them" cho job cu the)
+        //- neu khong co URL params thi dung jobId tu history server
+        const activeJobId = queryJobId || data?.jobId;
+        const activeJobTitle = queryJobTitle
+          ? decodeURIComponent(queryJobTitle)
+          : data?.jobTitle || "Vị trí tuyển dụng";
 
-          if (data.history) {
-            const historyMsgs = data.history.map(
-              (msg: any, index: number) => ({
-                _id: `ai_hist_${Date.now()}_${index}`,
-                conversationId: "ai-assistant",
-                senderId:
-                  msg.role === "ai"
-                    ? {
-                        _id: "ai-bot",
-                        name: "AI Assistant",
-                        avatar:
-                          "https://cdn-icons-png.flaticon.com/512/8943/8943377.png",
-                        email: "",
-                      }
-                    : {
-                        _id: user?._id || "guest",
-                        name: user?.name || "You",
-                        avatar: user?.avatar || "",
-                        email: user?.email || "",
-                      },
-                senderType:
-                  msg.role === "ai"
-                    ? envConfig.NEXT_PUBLIC_ROLE_RECRUITER
-                    : envConfig.NEXT_PUBLIC_ROLE_CANDIDATE,
-                type: "TEXT",
-                content: msg.content,
-                isRead: true,
-                createdAt: new Date(
-                  Date.now() - (data.history.length - index) * 1000,
-                ).toISOString(),
-                updatedAt: new Date(
-                  Date.now() - (data.history.length - index) * 1000,
-                ).toISOString(),
-              }),
-            );
-            setAiMessages(historyMsgs);
-          }
-        } else if (queryJobId && queryJobTitle) {
-          //- Chưa có lịch sử nhưng có thông tin job từ URL (khi click nút "Hỏi thêm")
+        if (activeJobId) {
           setAiSession({
-            sessionId: user?._id || "ai-session",
-            jobId: queryJobId,
-            jobTitle: decodeURIComponent(queryJobTitle),
+            userId: user?._id || "",
+            jobId: activeJobId,
+            jobTitle: activeJobTitle,
             timestamp: Date.now(),
           });
+        }
+
+        //- Luon hien thi toan bo history cu (ca cac job truoc do) de user doi chieu
+        if (data?.history && data.history.length > 0) {
+          const historyMsgs = data.history.map(
+            (msg: any, index: number) => ({
+              _id: `ai_hist_${Date.now()}_${index}`,
+              conversationId: "ai-assistant",
+              senderId:
+                msg.role === "ai"
+                  ? {
+                      _id: "ai-bot",
+                      name: "AI Assistant",
+                      avatar:
+                        "https://cdn-icons-png.flaticon.com/512/8943/8943377.png",
+                      email: "",
+                    }
+                  : {
+                      _id: user?._id || "guest",
+                      name: user?.name || "You",
+                      avatar: user?.avatar || "",
+                      email: user?.email || "",
+                    },
+              senderType:
+                msg.role === "ai"
+                  ? envConfig.NEXT_PUBLIC_ROLE_RECRUITER
+                  : envConfig.NEXT_PUBLIC_ROLE_CANDIDATE,
+              type: "TEXT",
+              content: msg.content,
+              isRead: true,
+              createdAt: new Date(
+                Date.now() - (data.history.length - index) * 1000,
+              ).toISOString(),
+              updatedAt: new Date(
+                Date.now() - (data.history.length - index) * 1000,
+              ).toISOString(),
+            }),
+          );
+          setAiMessages(historyMsgs);
+        } else {
           setAiMessages([]);
+        }
+
+        //- Prefill input chi khi den tu nut "Hoi them" (co queryJobTitle tren URL)
+        if (queryJobId && queryJobTitle) {
+          const decodedTitle = decodeURIComponent(queryJobTitle);
+          setInputText(`Tôi muốn hỏi thêm thông tin về vị trí ${decodedTitle}`);
         }
 
         //- Nếu URL yêu cầu chat AI hoặc default conversation là ai-assistant
