@@ -82,8 +82,10 @@ export default function LoginForm() {
     if (popup) {
       const handleMessage = (event: MessageEvent) => {
         // 1. Chuyển "http://localhost:2302/api" thành "http://localhost:2302"
-        const serverOrigin = new URL(envConfig.NEXT_PUBLIC_API_URL_SERVER)
-          .origin;
+        //- tạo serverorigin, dùng window.location.origin nếu api url là tương đối
+        const serverOrigin = envConfig.NEXT_PUBLIC_API_URL_SERVER.startsWith("http")
+          ? new URL(envConfig.NEXT_PUBLIC_API_URL_SERVER).origin
+          : window.location.origin;
 
         // 2. So sánh origin chuẩn
         if (event.origin !== serverOrigin) {
