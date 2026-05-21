@@ -500,7 +500,10 @@ export default function ChatPageModule() {
         ? envConfig.NEXT_PUBLIC_API_URL_SERVER_TUNNEL
         : envConfig.NEXT_PUBLIC_API_URL_SERVER;
 
-      const url = new URL(`${baseSSEUrl}/ai/chat/stream`);
+      //- tạo url kết nối sse, dùng window.location.origin nếu url tương đối
+      const url = baseSSEUrl.startsWith("http")
+        ? new URL(`${baseSSEUrl}/ai/chat/stream`)
+        : new URL(`${baseSSEUrl}/ai/chat/stream`, window.location.origin);
       const token = localStorage.getItem("access_token");
       if (token) url.searchParams.append("token", token);
       url.searchParams.append("jobId", aiSession.jobId);
