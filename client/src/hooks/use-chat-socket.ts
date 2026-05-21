@@ -58,6 +58,13 @@ export const useChatSocket = (conversations: Conversation[]) => {
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
     });
 
+    //- Lang nghe khi co conversation moi duoc tao (recruiter nhan duoc khi candidate nhan tin lan dau)
+    socketInstance.on("new_conversation", (conversation: any) => {
+      console.log("New conversation created:", conversation);
+      //- Invalidate de sidebar load lai danh sach conversation moi nhat
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+    });
+
     socketInstance.on(
       "messages_read",
       (payload: {

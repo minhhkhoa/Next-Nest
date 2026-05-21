@@ -144,12 +144,16 @@ export default function PageAdminJob() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="">
-        <div className="mx-auto max-w-7xl px-5 py-8">
+        <div className="mx-auto max-w-7xl pb-8 md:pt-8 ">
           <div className="flex items-center justify-between">
             <div>
               <HeaderPage />
             </div>
-            <div className="flex gap-3">
+            <div
+              className={`flex gap-3 ${
+                idDeleteMany.length > 0 ? "flex-col-reverse" : "flex-row"
+              }`}
+            >
               {idDeleteMany.length > 0 && (
                 <Button
                   variant="destructive"
@@ -166,7 +170,7 @@ export default function PageAdminJob() {
         </div>
       </div>
       {/* Main Content */}
-      <div className="mx-auto max-w-7xl px-6">
+      <div className="mx-auto max-w-7xl">
         {/* khối lọc */}
         <div>
           <BlockFiltersJob
@@ -223,46 +227,46 @@ export default function PageAdminJob() {
 function HeaderPage() {
   return (
     <div>
-      <div className="flex items-center">
-        <p className="text-3xl font-bold text-foreground">
-          Danh sách công việc
-        </p>
+      <h1 className="text-3xl font-bold text-foreground">
+        Danh sách công{" "}
+        <span className="inline-flex items-center gap-1.5 whitespace-nowrap align-middle pb-2">
+          việc
+          <Popover modal={false}>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className="text-muted-foreground hover:text-foreground transition inline-flex items-center"
+              >
+                <InfoIcon className="h-4 w-4" color="yellow" />
+              </button>
+            </PopoverTrigger>
 
-        <Popover modal={false}>
-          <PopoverTrigger asChild>
-            <button
-              type="button"
-              className="ml-2 text-muted-foreground hover:text-foreground transition"
-            >
-              <InfoIcon className="h-4 w-4" color="yellow" />
-            </button>
-          </PopoverTrigger>
+            <PopoverContent className="w-80 font-normal text-base normal-case tracking-normal">
+              <div className="space-y-3">
+                <p className="font-semibold">Thông tin quản lý công việc</p>
 
-          <PopoverContent className="w-80">
-            <div className="space-y-3">
-              <p className="font-semibold">Thông tin quản lý công việc</p>
+                <p className="text-sm text-muted-foreground">
+                  Khu vực này hiển thị các công việc đang hoạt động. Bạn có thể
+                  xem, chỉnh sửa thông tin và quản lý trạng thái công việc.
+                </p>
 
-              <p className="text-sm text-muted-foreground">
-                Khu vực này hiển thị các công việc đang hoạt động. Bạn có thể
-                xem, chỉnh sửa thông tin và quản lý trạng thái công việc.
-              </p>
+                <p className="text-sm text-muted-foreground">
+                  Nếu bạn không tìm thấy công việc mong muốn, có thể công việc
+                  đó đã bị xoá tạm thời.
+                </p>
 
-              <p className="text-sm text-muted-foreground">
-                Nếu bạn không tìm thấy công việc mong muốn, có thể công việc đó
-                đã bị xoá tạm thời.
-              </p>
-
-              <div className="pt-2">
-                <Link href="/admin/jobs/job-deleted">
-                  <Button variant="link" className="px-0">
-                    Xem danh sách công việc đã xoá →
-                  </Button>
-                </Link>
+                <div className="pt-2">
+                  <Link href="/admin/jobs/job-deleted">
+                    <Button variant="link" className="px-0">
+                      Xem danh sách công việc đã xoá →
+                    </Button>
+                  </Link>
+                </div>
               </div>
-            </div>
-          </PopoverContent>
-        </Popover>
-      </div>
+            </PopoverContent>
+          </Popover>
+        </span>
+      </h1>
 
       <p className="mt-2 text-sm text-muted-foreground">Quản lý công việc</p>
     </div>

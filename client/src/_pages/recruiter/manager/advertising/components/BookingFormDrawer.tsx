@@ -173,7 +173,7 @@ export default function BookingFormDrawer({
             >
               <SelectTrigger
                 className={
-                  selectedSlot.adModeAllowed !== "BOTH" ? "bg-muted/50" : "h-11"
+                  selectedSlot.adModeAllowed !== "BOTH" ? "bg-muted/50 w-full" : "h-11 w-full"
                 }
               >
                 <SelectValue placeholder="Chọn loại quảng cáo" />
@@ -194,7 +194,8 @@ export default function BookingFormDrawer({
           </div>
 
           {/* Lịch và Thời gian */}
-          <div className="grid grid-cols-2 gap-4">
+          {/*- Trên mobile mỗi input 1 dòng, từ sm trở lên hiển thị 2 cột */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label className="text-sm font-semibold">Ngày bắt đầu</Label>
               <AdCalendarPicker

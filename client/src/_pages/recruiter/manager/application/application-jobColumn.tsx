@@ -108,16 +108,28 @@ export const getApplicationColumns = (
     },
   },
 
-  //- Chủ sở hữu
+  //- Điểm số
   {
-    id: "rating",
-    header: "Mức độ tiềm năng",
+    id: "score",
+    header: "Điểm số",
     cell: ({ row }) => {
-      const rating = row.original.rating!;
-      return rating > 1 ? (
-        generateStarRating(rating)
+      const score = row.original.score || 0;
+      let colorClass = "bg-slate-100 text-slate-800"; //- Mặc định hoặc 0
+
+      if (score >= 80) colorClass = "bg-green-100 text-green-800 border border-green-200";
+      else if (score >= 65) colorClass = "bg-blue-100 text-blue-800 border border-blue-200";
+      else if (score >= 50) colorClass = "bg-yellow-100 text-yellow-800 border border-yellow-200";
+      else if (score > 0) colorClass = "bg-red-100 text-red-800 border border-red-200";
+
+      return score > 0 ? (
+        <div className="flex items-center gap-2">
+          <span className={`inline-flex items-center justify-center rounded-full px-2.5 py-0.5 text-xs font-bold ${colorClass}`}>
+            {score}
+          </span>
+          <span className="text-[10px] text-muted-foreground font-medium">/ 100</span>
+        </div>
       ) : (
-        <span className="text-sm text-muted-foreground">Chưa đánh giá</span>
+        <span className="text-xs text-muted-foreground italic">Chưa chấm</span>
       );
     },
   },
@@ -216,34 +228,3 @@ export const generateStatusOptions = (status: string) => {
   }
 };
 
-export const generateStarRating = (rating: number) => {
-  const stars = [];
-  for (let i = 1; i <= 5; i++) {
-    if (i <= rating) {
-      stars.push(
-        <svg
-          key={i}
-          xmlns="http://www.w3.org/2000/svg"
-          fill="currentColor"
-          viewBox="0 0 24 24"
-          className="w-4 h-4 text-yellow-400"
-        >
-          <path d="M12 .587l3.668 7.431L24 9.748l-6 5.847L19.335 24 12 20.201 4.665 24 6 15.595 0 9.748l8.332-1.73z" />
-        </svg>,
-      );
-    } else {
-      stars.push(
-        <svg
-          key={i}
-          xmlns="http://www.w3.org/2000/svg"
-          fill="currentColor"
-          viewBox="0 0 24 24"
-          className="w-4 h-4 text-gray-300"
-        >
-          <path d="M12 .587l3.668 7.431L24 9.748l-6 5.847L19.335 24 12 20.201 4.665 24 6 15.595 0 9.748l8.332-1.73z" />
-        </svg>,
-      );
-    }
-  }
-  return <div className="flex">{stars}</div>;
-};

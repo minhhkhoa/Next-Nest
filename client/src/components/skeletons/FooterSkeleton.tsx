@@ -4,7 +4,7 @@ import { Separator } from "@/components/ui/separator";
 export function FooterSkeleton() {
   return (
     <footer className="bg-primary/5 dark:bg-primary-dark/5 mt-auto">
-      <div className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl pt-8 sm:px-6">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-5">
           {/* Brand section */}
           <div className="col-span-2 md:col-span-1">

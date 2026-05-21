@@ -23,7 +23,10 @@ import ChatWindow, {
   ChatPendingLocalFile,
   ChatUploadingAttachment,
 } from "./components/ChatWindow";
-import { CHAT_JOB_REFERENCE_DRAFT_STORAGE_KEY } from "@/components/AskMoreJobButton";
+import {
+  CHAT_JOB_REFERENCE_DRAFT_STORAGE_KEY,
+} from "@/components/AskMoreJobButton";
+import aiApiRequest from "@/apiRequest/ai";
 import { useSearchParams } from "next/navigation";
 import {
   Sheet,
@@ -45,6 +48,15 @@ export default function ChatPageModule() {
   const [activeConversationId, setActiveConversationId] = useState<
     string | null
   >(defaultConversationId || null);
+
+  const [aiSession, setAiSession] = useState<{
+    userId: string;
+    jobId: string;
+    jobTitle: string;
+    timestamp: number;
+  } | null>(null);
+  const [aiMessages, setAiMessages] = useState<ChatMessage[]>([]);
+  const [isAiStreaming, setIsAiStreaming] = useState(false);
 
   const [inputText, setInputText] = useState("");
   const [pendingJobReference, setPendingJobReference] = useState<{
@@ -78,9 +90,13 @@ export default function ChatPageModule() {
     return conversationsData?.data || [];
   }, [conversationsData]);
 
-  const { data: messagesData } = useGetMessages(activeConversationId);
+  const { data: messagesData } = useGetMessages(
+    activeConversationId === "ai-assistant" ? null : activeConversationId,
+  );
   const { data: userResumesData, isLoading: isLoadingSystemResumes } =
-    useGetUserResumes(!!activeConversationId);
+    useGetUserResumes(
+      !!activeConversationId && activeConversationId !== "ai-assistant",
+    );
 
   const messages: ChatMessage[] = useMemo(() => {
     return messagesData?.data?.messages || [];
@@ -143,6 +159,42 @@ export default function ChatPageModule() {
       previewUrl: item.previewUrl,
     }));
   }, [activePendingLocalFiles]);
+
+  const aiConversation: Conversation | null = useMemo(() => {
+    if (!aiSession) return null;
+    return {
+      _id: "ai-assistant",
+      companyId: {
+        _id: "ai-bot",
+        name: "AI Assistant",
+        logo: "https://cdn-icons-png.flaticon.com/512/8943/8943377.png",
+      },
+      candidateId: user?._id || "guest",
+      jobId: {
+        _id: aiSession.jobId,
+        title: { vi: aiSession.jobTitle, en: aiSession.jobTitle },
+      },
+      lastMessage:
+        aiMessages.length > 0 ? aiMessages[aiMessages.length - 1] : null,
+      unreadCompany: 0,
+      unreadCandidate: 0,
+      createdAt: new Date(aiSession.timestamp).toISOString(),
+      updatedAt:
+        aiMessages.length > 0
+          ? aiMessages[aiMessages.length - 1].createdAt
+          : new Date(aiSession.timestamp).toISOString(),
+    } as any;
+  }, [aiSession, aiMessages, user]);
+
+  const allConversations = useMemo(() => {
+    if (aiConversation) return [aiConversation, ...conversations];
+    return conversations;
+  }, [aiConversation, conversations]);
+
+  const currentWindowMessages = useMemo(() => {
+    if (activeConversationId === "ai-assistant") return aiMessages;
+    return displayMessages;
+  }, [activeConversationId, aiMessages, displayMessages]);
 
   const getCurrentSenderType = (): ChatMessage["senderType"] => {
     return user?.roleCodeName === envConfig.NEXT_PUBLIC_ROLE_CANDIDATE
@@ -284,6 +336,89 @@ export default function ChatPageModule() {
   };
 
   useEffect(() => {
+    //- Luôn gọi API để lấy lịch sử chat AI từ server
+    aiApiRequest
+      .getChatHistory()
+      .then((res) => {
+        const data = res?.data;
+        const queryJobId = searchParams.get("jobId");
+        const queryJobTitle = searchParams.get("jobTitle");
+
+        //- jobId active: uu tien tu URL (user vua click "Hoi them" cho job cu the)
+        //- neu khong co URL params thi dung jobId tu history server
+        const activeJobId = queryJobId || data?.jobId;
+        const activeJobTitle = queryJobTitle
+          ? decodeURIComponent(queryJobTitle)
+          : data?.jobTitle || "Vị trí tuyển dụng";
+
+        if (activeJobId) {
+          setAiSession({
+            userId: user?._id || "",
+            jobId: activeJobId,
+            jobTitle: activeJobTitle,
+            timestamp: Date.now(),
+          });
+        }
+
+        //- Luon hien thi toan bo history cu (ca cac job truoc do) de user doi chieu
+        if (data?.history && data.history.length > 0) {
+          const historyMsgs = data.history.map(
+            (msg: any, index: number) => ({
+              _id: `ai_hist_${Date.now()}_${index}`,
+              conversationId: "ai-assistant",
+              senderId:
+                msg.role === "ai"
+                  ? {
+                      _id: "ai-bot",
+                      name: "AI Assistant",
+                      avatar:
+                        "https://cdn-icons-png.flaticon.com/512/8943/8943377.png",
+                      email: "",
+                    }
+                  : {
+                      _id: user?._id || "guest",
+                      name: user?.name || "You",
+                      avatar: user?.avatar || "",
+                      email: user?.email || "",
+                    },
+              senderType:
+                msg.role === "ai"
+                  ? envConfig.NEXT_PUBLIC_ROLE_RECRUITER
+                  : envConfig.NEXT_PUBLIC_ROLE_CANDIDATE,
+              type: "TEXT",
+              content: msg.content,
+              isRead: true,
+              createdAt: new Date(
+                Date.now() - (data.history.length - index) * 1000,
+              ).toISOString(),
+              updatedAt: new Date(
+                Date.now() - (data.history.length - index) * 1000,
+              ).toISOString(),
+            }),
+          );
+          setAiMessages(historyMsgs);
+        } else {
+          setAiMessages([]);
+        }
+
+        //- Prefill input chi khi den tu nut "Hoi them" (co queryJobTitle tren URL)
+        if (queryJobId && queryJobTitle) {
+          const decodedTitle = decodeURIComponent(queryJobTitle);
+          setInputText(`Tôi muốn hỏi thêm thông tin về vị trí ${decodedTitle}`);
+        }
+
+        //- Nếu URL yêu cầu chat AI hoặc default conversation là ai-assistant
+        if (
+          searchParams.get("ai") === "true" ||
+          defaultConversationId === "ai-assistant"
+        ) {
+          setActiveConversationId("ai-assistant");
+        }
+      })
+      .catch((e) => console.log("Failed to load AI history", e));
+  }, [searchParams, defaultConversationId, user]);
+
+  useEffect(() => {
     if (!activeConversationId || typeof window === "undefined") return;
 
     const rawDraft = sessionStorage.getItem(
@@ -308,6 +443,98 @@ export default function ChatPageModule() {
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeConversationId) return;
+
+    if (activeConversationId === "ai-assistant" && aiSession) {
+      const trimmedText = inputText.trim();
+      if (!trimmedText && !pendingJobReference) return;
+      const textToSend =
+        trimmedText ||
+        `Tôi muốn biết thêm thông tin về vị trí ${aiSession.jobTitle}`;
+      setInputText("");
+      setPendingJobReference(null);
+
+      const userMsg: ChatMessage = {
+        _id: `msg_${Date.now()}`,
+        conversationId: "ai-assistant",
+        senderId: {
+          _id: user?._id || "guest",
+          name: user?.name || "You",
+          avatar: user?.avatar || "",
+          email: user?.email || "",
+        },
+        senderType: (envConfig.NEXT_PUBLIC_ROLE_CANDIDATE ||
+          "role_candidate") as any,
+        type: "TEXT",
+        content: textToSend,
+        isRead: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      const aiMsgId = `ai_msg_${Date.now()}`;
+      const aiMsg: ChatMessage = {
+        _id: aiMsgId,
+        conversationId: "ai-assistant",
+        senderId: {
+          _id: "ai-bot",
+          name: "AI Assistant",
+          avatar: "https://cdn-icons-png.flaticon.com/512/8943/8943377.png",
+          email: "",
+        },
+        senderType: (envConfig.NEXT_PUBLIC_ROLE_RECRUITER ||
+          "role_company") as any,
+        type: "TEXT",
+        content: "",
+        isRead: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      setAiMessages((prev) => [...prev, userMsg, aiMsg]);
+      setIsAiStreaming(true);
+
+      const isTunnel =
+        typeof window !== "undefined" &&
+        window.location.hostname.includes("devtunnels.ms");
+      const baseSSEUrl = isTunnel
+        ? envConfig.NEXT_PUBLIC_API_URL_SERVER_TUNNEL
+        : envConfig.NEXT_PUBLIC_API_URL_SERVER;
+
+      const url = new URL(`${baseSSEUrl}/ai/chat/stream`);
+      const token = localStorage.getItem("access_token");
+      if (token) url.searchParams.append("token", token);
+      url.searchParams.append("jobId", aiSession.jobId);
+      url.searchParams.append("question", textToSend);
+
+      const eventSource = new EventSource(url.toString());
+
+      eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.done) {
+          eventSource.close();
+          setIsAiStreaming(false);
+        } else if (data.text) {
+          setAiMessages((prev) => {
+            const newMsgs = [...prev];
+            const lastIdx = newMsgs.length - 1;
+            if (newMsgs[lastIdx]._id === aiMsgId) {
+              newMsgs[lastIdx] = {
+                ...newMsgs[lastIdx],
+                content: newMsgs[lastIdx].content + data.text,
+              };
+            }
+            return newMsgs;
+          });
+        }
+      };
+
+      eventSource.onerror = () => {
+        eventSource.close();
+        setIsAiStreaming(false);
+        SoftDestructiveSonner("Đã có lỗi xảy ra khi chat với AI.");
+      };
+      return;
+    }
 
     const trimmedText = inputText.trim();
     const hasPendingLocalFiles = activePendingLocalFiles.length > 0;
@@ -507,7 +734,7 @@ export default function ChatPageModule() {
     <div className="flex h-[calc(100vh-100px)] w-full bg-white dark:bg-slate-900 border rounded-xl overflow-hidden shadow-sm">
       {/* Desktop Sidebar - ẩn trên mobile */}
       <ConversationSidebar
-        conversations={conversations}
+        conversations={allConversations}
         activeConversationId={activeConversationId}
         onSelectConversation={handleSelectConversation}
         userRole={user?.roleCodeName}
@@ -525,7 +752,7 @@ export default function ChatPageModule() {
             <SheetTitle>Danh sách đoạn chat</SheetTitle>
           </SheetHeader>
           <ConversationList
-            conversations={conversations}
+            conversations={allConversations}
             activeConversationId={activeConversationId}
             onSelectConversation={handleSelectConversation}
             userRole={user?.roleCodeName}
@@ -537,12 +764,16 @@ export default function ChatPageModule() {
 
       {/* Chat Window - full width trên mobile */}
       <ChatWindow
-        messages={displayMessages}
+        messages={currentWindowMessages}
         activeConversationId={activeConversationId}
         inputText={inputText}
         onInputChange={setInputText}
         onSendMessage={handleSendMessage}
-        isSending={sendMessageMutation.isPending || isSendingPendingFiles}
+        isSending={
+          sendMessageMutation.isPending ||
+          isSendingPendingFiles ||
+          isAiStreaming
+        }
         pendingJobReference={pendingJobReference}
         onClearPendingJobReference={() => setPendingJobReference(null)}
         onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}

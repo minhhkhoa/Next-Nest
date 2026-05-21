@@ -35,8 +35,8 @@ import { useUpdateApplication } from "@/queries/useApplication";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import { APPLICATION_STATUS } from "@/lib/constant";
-import { Star } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Slider } from "@/components/ui/slider";
 
 interface EditApplicationDialogProps {
   open: boolean;
@@ -55,7 +55,7 @@ export function EditApplicationDialog({
     resolver: zodResolver(updateApplicationSchema),
     defaultValues: {
       status: "PENDING",
-      rating: 0,
+      score: 0,
       recruiterNote: "",
       interviewTime: "",
       rejectionReason: "",
@@ -66,7 +66,7 @@ export function EditApplicationDialog({
     if (application && open) {
       form.reset({
         status: application.status,
-        rating: application.rating || 0,
+        score: (application as any).score || 0,
         recruiterNote:
           typeof application.recruiterNote === "object"
             ? application.recruiterNote?.vi
@@ -112,7 +112,6 @@ export function EditApplicationDialog({
   };
 
   const currentStatus = form.watch("status");
-  const currentRating = form.watch("rating") || 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -206,23 +205,33 @@ export function EditApplicationDialog({
 
                   <FormField
                     control={form.control}
-                    name="rating"
+                    name="score"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Đánh giá (Mức độ tiềm năng)</FormLabel>
-                        <div className="flex items-center gap-1 pt-2">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Star
-                              key={star}
-                              className={`w-6 h-6 cursor-pointer hover:text-yellow-400 transition-colors ${
-                                star <= currentRating
-                                  ? "fill-yellow-400 text-yellow-400"
-                                  : "text-gray-300"
-                              }`}
-                              onClick={() => field.onChange(star)}
+                        <FormLabel>Điểm đánh giá (0-100)</FormLabel>
+                        <FormControl>
+                          <div className="flex items-center gap-4 pt-2">
+                            <Input
+                              type="number"
+                              min={0}
+                              max={100}
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value))
+                              }
+                              className="w-20 h-9 font-bold text-center"
                             />
-                          ))}
-                        </div>
+                            <div className="flex-1 h-9 flex items-center">
+                              <Slider
+                                max={100}
+                                step={1}
+                                value={[field.value || 0]}
+                                onValueChange={(val) => field.onChange(val[0])}
+                                className="w-full"
+                              />
+                            </div>
+                          </div>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}

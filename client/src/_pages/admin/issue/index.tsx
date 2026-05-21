@@ -137,7 +137,7 @@ export default function PageIssueAdmin() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="">
-        <div className="mx-auto max-w-7xl px-6 py-8">
+        <div className="mx-auto max-w-7xl pb-8 md:pt-8 ">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-foreground">
@@ -166,7 +166,7 @@ export default function PageIssueAdmin() {
         </div>
       </div>
       {/* Main Content */}
-      <div className="mx-auto max-w-7xl px-6">
+      <div className="mx-auto max-w-7xl">
         <div className="mb-6 flex flex-col md:flex-row md:items-center gap-4">
           <div className="flex-1">
             <SearchBar
@@ -188,7 +188,7 @@ export default function PageIssueAdmin() {
                 })
               }
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Loại vấn đề" />
               </SelectTrigger>
               <SelectContent>
@@ -210,7 +210,7 @@ export default function PageIssueAdmin() {
                 })
               }
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Trạng thái" />
               </SelectTrigger>
               <SelectContent>

@@ -151,7 +151,7 @@ export default function AdvertisingPage() {
   };
 
   return (
-    <div className="p-4 space-y-8 max-w-7xl mx-auto">
+    <div className="py-4 space-y-8 max-w-7xl">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>

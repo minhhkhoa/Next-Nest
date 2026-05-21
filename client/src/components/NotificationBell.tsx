@@ -144,7 +144,7 @@ export default function NotificationBell() {
             variant="link"
             size="sm"
             className="w-full text-xs"
-            onClick={() => router.push("/admin/notifications")}
+            // onClick={() => router.push("/admin/notifications")}
           >
             {t("ViewAll")}
           </Button>

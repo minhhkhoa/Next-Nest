@@ -238,7 +238,8 @@ export class UserService {
         'employerInfo.companyID': companyID,
       };
 
-      const result = await this.userRepository.findMembersByCompanyID(companyID);
+      const result =
+        await this.userRepository.findMembersByCompanyID(companyID);
 
       return result;
     } catch (error) {
@@ -739,10 +740,7 @@ export class UserService {
             session,
           );
 
-          await this.userRepository.reactivateEmployerStatus(
-            id,
-            session,
-          );
+          await this.userRepository.reactivateEmployerStatus(id, session);
         } else {
           // CASE 2: Là nhân viên quay lại(bao cả chủ cũ về nhân viên) -> Chỉ kích hoạt nếu công ty đang hoạt động
           const company = await this.companyService.findOneForInternal(
@@ -751,10 +749,7 @@ export class UserService {
           );
 
           if (company && !company.isDeleted) {
-            await this.userRepository.reactivateEmployerStatus(
-              id,
-              session,
-            );
+            await this.userRepository.reactivateEmployerStatus(id, session);
           }
         }
       }
@@ -849,6 +844,16 @@ export class UserService {
         id,
         session,
       );
+      const super_admin = this.configService.get<string>('role_super_admin');
+      const findUser = await this.findOne(id);
+      // const getRoleSuperAdmin = await this.getUserByRoleSuperAdmin(
+      //   super_admin!,
+      // );
+
+      if (findUser?.roleID.name.vi === super_admin) {
+        throw new BadRequestCustom('Không thể khóa tài khoản Super Admin');
+      }
+
       if (!userToDelete || userToDelete.isDeleted) {
         throw new Error('Người dùng không tồn tại hoặc đã bị xóa');
       }

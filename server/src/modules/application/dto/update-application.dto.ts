@@ -32,16 +32,16 @@ export class UpdateApplicationDto extends PartialType(CreateApplicationDto) {
   isViewed?: boolean;
 
   @ApiProperty({
-    description: 'Đánh giá ứng viên (0-5 sao)',
+    description: 'Đánh giá ứng viên (0-100 điểm)',
     required: false,
     minimum: 0,
-    maximum: 5,
+    maximum: 100,
   })
   @IsOptional()
   @IsNumber()
   @Min(0)
-  @Max(5)
-  rating?: number;
+  @Max(100)
+  score?: number;
 
   @ApiProperty({ description: 'Ghi chú nội bộ của recruiter', required: false })
   @IsOptional()

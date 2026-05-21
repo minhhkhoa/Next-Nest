@@ -27,7 +27,6 @@ const TEMPLATE_COMPONENTS: Record<string, React.ElementType> = {
   [CV_TEMPLATES.simpleTemplate]: SimpleTemplate,
 };
 
-
 const formatFileSize = (size?: number) => {
   if (!size || Number.isNaN(size)) return "";
   if (size < 1024) return `${size} B`;
@@ -63,7 +62,10 @@ export default function useMemoFrameChat({
   const messageItems = useMemo(
     () =>
       messages.map((msg, index) => {
-        const isMe = msg.senderType === currentUserSenderType;
+        const isMe =
+          msg.conversationId === "ai-assistant"
+            ? msg.senderId?._id !== "ai-bot"
+            : msg.senderType === currentUserSenderType;
         const isLastOwnMessage = isMe && msg._id === lastOwnMessageId;
 
         const nextMessage = messages[index + 1];
@@ -78,6 +80,7 @@ export default function useMemoFrameChat({
           (msg.senderType === envConfig.NEXT_PUBLIC_ROLE_CANDIDATE
             ? candidateData?.avatar
             : hrData?.avatar);
+
         const jobReferenceSlug =
           msg.metadata?.jobSlug || msg.metadata?.jobTitle || "chi-tiet-job";
         const jobReferenceLink = msg.metadata?.jobId
@@ -93,7 +96,7 @@ export default function useMemoFrameChat({
           <div
             key={msg._id}
             className={cn(
-              "flex max-w-[calc(100%-2.75rem)] sm:max-w-[70%] gap-2 items-end",
+              "flex max-w-[calc(100%-2.75rem)] sm:max-w-[70%] gap-2 items-end min-w-0",
               isMe ? "flex-row-reverse self-end " : "flex-row self-start",
             )}
           >
@@ -117,14 +120,31 @@ export default function useMemoFrameChat({
             <div className="min-w-0 flex-1">
               <div
                 className={cn(
-                  "px-3 py-2 sm:px-4 rounded-2xl text-sm sm:text-base w-full max-w-full [overflow-wrap:anywhere]",
+                  "px-3 py-2 sm:px-4 rounded-2xl text-sm sm:text-base w-full max-w-full break-words",
                   isMe
                     ? "bg-blue-500 text-white rounded-br-none"
                     : "bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-bl-none",
                 )}
               >
                 {msg.type === "TEXT" ? (
-                  <p className="whitespace-pre-wrap break-all">{msg.content}</p>
+                  msg.content ? (
+                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                  ) : (
+                    <div className="flex gap-1.5 py-1.5 px-1 items-center h-[24px]">
+                      <div
+                        className="w-2 h-2 bg-current rounded-full animate-bounce"
+                        style={{ animationDelay: "0ms" }}
+                      />
+                      <div
+                        className="w-2 h-2 bg-current rounded-full animate-bounce"
+                        style={{ animationDelay: "150ms" }}
+                      />
+                      <div
+                        className="w-2 h-2 bg-current rounded-full animate-bounce"
+                        style={{ animationDelay: "300ms" }}
+                      />
+                    </div>
+                  )
                 ) : msg.type === "IMAGE" ? (
                   <div className="space-y-2">
                     {msg.metadata?.imageUrl ? (
@@ -144,11 +164,13 @@ export default function useMemoFrameChat({
                         />
                       </a>
                     ) : (
-                      <p className="text-xs italic opacity-80">Không có ảnh để hiển thị</p>
+                      <p className="text-xs italic opacity-80">
+                        Không có ảnh để hiển thị
+                      </p>
                     )}
 
                     {msg.content ? (
-                      <p className="whitespace-pre-wrap break-all text-sm opacity-95">
+                      <p className="whitespace-pre-wrap text-sm opacity-95">
                         {msg.content}
                       </p>
                     ) : null}
@@ -174,10 +196,14 @@ export default function useMemoFrameChat({
 
                       <div className="min-w-0 flex-1">
                         <p className="font-semibold truncate">
-                          {msg.metadata?.fileName || msg.content || "Tệp đính kèm"}
+                          {msg.metadata?.fileName ||
+                            msg.content ||
+                            "Tệp đính kèm"}
                         </p>
                         <p className="text-xs opacity-80 truncate">
-                          {msg.metadata?.mimeType || msg.metadata?.fileExt || "File"}
+                          {msg.metadata?.mimeType ||
+                            msg.metadata?.fileExt ||
+                            "File"}
                           {msg.metadata?.fileSize
                             ? ` • ${formatFileSize(msg.metadata.fileSize)}`
                             : ""}
@@ -190,7 +216,7 @@ export default function useMemoFrameChat({
                     </a>
 
                     {msg.content ? (
-                      <p className="whitespace-pre-wrap break-all text-sm opacity-95">
+                      <p className="whitespace-pre-wrap text-sm opacity-95">
                         {msg.content}
                       </p>
                     ) : null}
@@ -198,7 +224,7 @@ export default function useMemoFrameChat({
                 ) : msg.type === "CV_SYSTEM" ? (
                   <div className="space-y-2">
                     {msg.content ? (
-                      <p className="whitespace-pre-wrap break-all">{msg.content}</p>
+                      <p className="whitespace-pre-wrap">{msg.content}</p>
                     ) : null}
 
                     <button
@@ -229,7 +255,9 @@ export default function useMemoFrameChat({
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <p className="font-semibold truncate">
-                              {msg.metadata?.cvName || msg.content || "CV hệ thống"}
+                              {msg.metadata?.cvName ||
+                                msg.content ||
+                                "CV hệ thống"}
                             </p>
                             {msg.metadata?.isDefault ? (
                               <span className="text-[10px] px-2 py-0.5 rounded-full border border-current/40">
@@ -246,7 +274,10 @@ export default function useMemoFrameChat({
 
                           {msg.metadata?.updatedAt ? (
                             <p className="text-xs opacity-80 truncate">
-                              Cập nhật: {new Date(msg.metadata.updatedAt).toLocaleDateString("vi-VN")}
+                              Cập nhật:{" "}
+                              {new Date(
+                                msg.metadata.updatedAt,
+                              ).toLocaleDateString("vi-VN")}
                             </p>
                           ) : null}
 
@@ -258,7 +289,7 @@ export default function useMemoFrameChat({
                     </button>
                   </div>
                 ) : msg.type === "JOB_REFERENCE" ? (
-                  <div className="space-y-2">
+                  <div className="space-y-2 w-full min-w-0">
                     {msg.content ? (
                       <p className="whitespace-pre-wrap break-all">
                         {msg.content}
@@ -268,19 +299,19 @@ export default function useMemoFrameChat({
                     {jobReferenceLink ? (
                       <Link
                         href={jobReferenceLink}
-                        className="block"
+                        className="block w-full min-w-0"
                         aria-label="Mở chi tiết công việc"
                       >
                         <div
                           className={cn(
-                            "rounded-xl transition hover:opacity-90",
+                            "rounded-xl transition hover:opacity-90 w-full min-w-0",
                             isMe
                               ? "border-blue-200 bg-blue-400/20"
                               : "border-gray-200 bg-gray-50 dark:bg-slate-900 dark:border-slate-700",
                           )}
                         >
-                          <Card className="flex items-center gap-3 dark:!bg-black/80">
-                            <CardContent className="flex items-center gap-3 p-3">
+                          <Card className="w-full min-w-0 dark:!bg-black/80">
+                            <CardContent className="flex items-center gap-3 p-3 min-w-0 w-full">
                               {jobReferenceImage && (
                                 <Image
                                   src={jobReferenceImage}
@@ -290,7 +321,7 @@ export default function useMemoFrameChat({
                                   className="h-10 w-10 rounded-md object-cover shrink-0"
                                 />
                               )}
-                              <div className="min-w-0">
+                              <div className="min-w-0 flex-1">
                                 <p className="font-semibold truncate underline-offset-2 text-bl hover:underline">
                                   {msg.metadata?.jobTitle ||
                                     "Công việc tham chiếu"}
@@ -314,7 +345,7 @@ export default function useMemoFrameChat({
                             : "border-gray-200 bg-gray-50 dark:bg-slate-900 dark:border-slate-700",
                         )}
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 w-full min-w-0">
                           {jobReferenceImage && (
                             <Image
                               src={jobReferenceImage}
@@ -324,7 +355,7 @@ export default function useMemoFrameChat({
                               className="h-10 w-10 rounded-md object-cover shrink-0"
                             />
                           )}
-                          <div className="min-w-0">
+                          <div className="min-w-0 flex-1">
                             <p className="font-semibold truncate">
                               {msg.metadata?.jobTitle || "Công việc tham chiếu"}
                             </p>
@@ -371,7 +402,8 @@ export default function useMemoFrameChat({
   );
 
   const previewTemplateId =
-    previewCvMessage?.metadata?.templateID || previewCvMessage?.metadata?.templateId;
+    previewCvMessage?.metadata?.templateID ||
+    previewCvMessage?.metadata?.templateId;
   const previewResumeContent = previewCvMessage?.metadata?.resumeContent;
   const PreviewTemplateComponent = previewTemplateId
     ? TEMPLATE_COMPONENTS[previewTemplateId]

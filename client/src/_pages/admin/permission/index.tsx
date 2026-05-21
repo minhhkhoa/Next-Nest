@@ -63,9 +63,8 @@ export default function PagePermission() {
     isPending: isDeletePermission,
   } = useDeletePermission();
 
-  const {
-    mutateAsync: deleteManyPermissionMutation,
-  } = useDeleteManyPermission();
+  const { mutateAsync: deleteManyPermissionMutation } =
+    useDeleteManyPermission();
 
   const handleDeleteManyPermission = async () => {
     try {
@@ -93,7 +92,7 @@ export default function PagePermission() {
 
   const columns = getPermissionColumns(
     handleOpenEditModal,
-    handleOpenDeleteModal
+    handleOpenDeleteModal,
   );
 
   const handleConfirmDelete = async () => {
@@ -114,7 +113,7 @@ export default function PagePermission() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="">
-        <div className="mx-auto max-w-7xl px-6 py-8">
+        <div className="mx-auto max-w-7xl pb-8 md:pt-8 ">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-foreground">
@@ -124,7 +123,11 @@ export default function PagePermission() {
                 Quản lý quyền hạn hệ thống
               </p>
             </div>
-            <div className="flex gap-3">
+            <div
+              className={`flex gap-3 ${
+                idDeleteMany.length > 0 ? "flex-col-reverse" : "flex-row"
+              }`}
+            >
               {idDeleteMany.length > 0 && (
                 <Button
                   variant="destructive"
@@ -149,7 +152,7 @@ export default function PagePermission() {
         </div>
       </div>
       {/* Main Content */}
-      <div className="mx-auto max-w-7xl px-6">
+      <div className="mx-auto max-w-7xl">
         <div className="mb-6">
           <PermissionFilter
             filters={filters}

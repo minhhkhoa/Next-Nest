@@ -12,14 +12,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { useGetUserResumes } from "@/queries/useUserResume";
 import { listTemplateMetadata } from "../cv-templates/ListTemplate";
 import ListCvSkeleton from "@/components/skeletons/list-cv-skeleton";
 import { generateSlugUrl } from "@/lib/utils";
+import AiScoreModal from "./components/AiScoreModal";
 
 export default function PageMyListCv() {
   const { data: listMyCvFetch, isLoading } = useGetUserResumes();
+  const [selectedCvId, setSelectedCvId] = React.useState<string | null>(null);
 
   //- vì response trả về không có field image và title nên ta sẽ thêm vào và dùng listTemplateMetadata để map theo listMyCvFetch.templateID === listTemplateMetadata.id để lấy image và title tương ứng
   const listMyCv = listMyCvFetch?.data?.map((template) => {
@@ -72,13 +74,21 @@ export default function PageMyListCv() {
                   className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                  <Button variant="default" className="rounded-full" asChild>
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2 flex-col px-4">
+                  <Button variant="default" className="rounded-full w-full" asChild>
                     <Link
                       href={`/my-cv/${generateSlugUrl({ name: template.templateID, id: template._id })}?edit=true`}
                     >
                       Xem chi tiết
                     </Link>
+                  </Button>
+                  <Button 
+                    variant="secondary" 
+                    className="rounded-full w-full bg-white/20 hover:bg-white/30 text-white border-white/20 backdrop-blur-md"
+                    onClick={() => setSelectedCvId(template._id)}
+                  >
+                    <Sparkles className="mr-2 h-4 w-4 text-yellow-400 fill-yellow-400" />
+                    Chấm điểm AI
                   </Button>
                 </div>
               </div>
@@ -95,7 +105,7 @@ export default function PageMyListCv() {
                 </CardDescription>
               </CardContent>
 
-              <CardFooter className="pt-0">
+              <CardFooter className="pt-0 flex flex-col gap-2">
                 <Button className="w-full group/btn" variant="outline" asChild>
                   <Link
                     href={`/my-cv/${generateSlugUrl({ name: template.templateID, id: template._id })}?edit=true`}
@@ -109,6 +119,12 @@ export default function PageMyListCv() {
           ))
         )}
       </div>
+
+      <AiScoreModal 
+        cvId={selectedCvId} 
+        isOpen={!!selectedCvId} 
+        onClose={() => setSelectedCvId(null)} 
+      />
     </div>
   );
 }

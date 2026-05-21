@@ -29,7 +29,7 @@ export default function WrapDetailTemplate({
     return <div>Không có dữ liệu để hiển thị</div>;
 
   return (
-    <div className="p-4">
+    <div>
       {!isLoading && resumeData?.data && (
         <PageTemplateDetail templateId={templateId} data={resumeData.data} />
       )}

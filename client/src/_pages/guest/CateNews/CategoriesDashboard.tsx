@@ -99,7 +99,7 @@ function BlockNewsHot({
   };
 
   return (
-    <div className="my-8 md:my-12 lg:my-16 px-4 md:px-6">
+    <div className="my-8 md:my-12 lg:my-16">
       {/* Header */}
       <div className="mb-6 md:mb-8">
         <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-primary text-balance">

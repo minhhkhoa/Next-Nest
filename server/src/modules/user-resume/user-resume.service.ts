@@ -63,6 +63,27 @@ export class UserResumeService {
     }
   }
 
+  async findOneById(id: string) {
+    try {
+      //- check id
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new BadRequestCustom('ID CV không đúng định dạng', true);
+      }
+
+      const resume = await this.userResumeRepository.findOne({
+        filter: { _id: id, isDeleted: false },
+      });
+
+      if (!resume) {
+        throw new BadRequestCustom('Không tìm thấy bản CV yêu cầu', true);
+      }
+
+      return resume;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
   async update(
     id: string,
     updateDto: UpdateUserResumeDto,

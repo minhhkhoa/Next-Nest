@@ -84,7 +84,7 @@ export default function AdvertisingAdminPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="">
-        <div className="mx-auto max-w-7xl px-6 py-8">
+        <div className="mx-auto max-w-7xl pb-8 md:pt-8 ">
           <div className="flex items-center justify-between">
             <div>
               <HeaderPage />
@@ -94,7 +94,7 @@ export default function AdvertisingAdminPage() {
       </div>
 
       {/* Main Content */}
-      <div className="mx-auto max-w-7xl px-6">
+      <div className="mx-auto max-w-7xl">
         {/* Table */}
         {!isLoading ? (
           <TableAdvertising
@@ -141,31 +141,34 @@ export default function AdvertisingAdminPage() {
 function HeaderPage() {
   return (
     <div>
-      <div className="flex items-center">
-        <p className="text-3xl font-bold text-foreground">Quản lý Quảng Cáo</p>
+      <h1 className="text-3xl font-bold text-foreground">
+        Quản lý{" "}
+        <span className="inline-flex items-center gap-1.5 whitespace-nowrap align-middle pb-2">
+          Quảng Cáo
+          <Popover modal={false}>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className="text-muted-foreground hover:text-foreground transition inline-flex items-center"
+              >
+                <InfoIcon className="h-4 w-4" color="yellow" />
+              </button>
+            </PopoverTrigger>
 
-        <Popover modal={false}>
-          <PopoverTrigger asChild>
-            <button
-              type="button"
-              className="ml-2 text-muted-foreground hover:text-foreground transition"
-            >
-              <InfoIcon className="h-4 w-4" color="yellow" />
-            </button>
-          </PopoverTrigger>
+            <PopoverContent className="w-80 font-normal text-base normal-case tracking-normal">
+              <div className="space-y-3">
+                <p className="font-semibold">Thông tin quản lý quảng cáo</p>
 
-          <PopoverContent className="w-80">
-            <div className="space-y-3">
-              <p className="font-semibold">Thông tin quản lý quảng cáo</p>
-
-              <p className="text-sm text-muted-foreground">
-                Khu vực này hiển thị các đơn đặt chỗ quảng cáo trên hệ thống.
-                Bạn có thể xem chi tiết, quản lý trạng thái và hủy đơn nếu cần.
-              </p>
-            </div>
-          </PopoverContent>
-        </Popover>
-      </div>
+                <p className="text-sm text-muted-foreground">
+                  Khu vực này hiển thị các đơn đặt chỗ quảng cáo trên hệ thống.
+                  Bạn có thể xem chi tiết, quản lý trạng thái và hủy đơn nếu
+                  cần.
+                </p>
+              </div>
+            </PopoverContent>
+          </Popover>
+        </span>
+      </h1>
 
       <p className="mt-2 text-sm text-muted-foreground">
         Theo dõi và quản lý các đơn đặt chỗ quảng cáo trên hệ thống.

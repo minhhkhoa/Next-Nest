@@ -11,13 +11,16 @@ import { useSidebar } from "@/components/ui/sidebar";
 import { handleInitName, removeTokensFromLocalStorage } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { LogOut, Settings, User, UserPlus } from "lucide-react";
+import { LogOut, Settings, User, UserPlus, Sun, Moon } from "lucide-react";
 import { useLogoutMutation } from "@/queries/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQueryClient } from "@tanstack/react-query";
 import { useIsMobile } from "@/hooks/use-mobile";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import { Link, useRouter } from "@/i18n/navigation";
+import { useTheme } from "next-themes";
+import { Switch } from "@/components/ui/switch";
+import { useEffect, useState } from "react";
 
 export default function PopoverAdmin() {
   const router = useRouter();
@@ -27,6 +30,12 @@ export default function PopoverAdmin() {
   const { state } = useSidebar();
   const sortName = handleInitName(user.name);
   const isMobile = useIsMobile();
+  const { setTheme, theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const openSidebar = state !== "collapsed";
 
@@ -134,6 +143,27 @@ export default function PopoverAdmin() {
             <UserPlus className="mr-2 h-4 w-4" />
             <span className="line-clamp-1">Đăng nhập tài khoản khác</span>
           </div>
+
+          {/* Chế độ sáng tối */}
+          {mounted && (
+            <div
+              className="flex items-center justify-between mt-2 pl-3 pr-2 rounded-xl h-8 hover:bg-accent/50 cursor-pointer select-none"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            >
+              <div className="flex items-center text-sm text-foreground">
+                {theme === "dark" ? (
+                  <Moon className="mr-2 h-4 w-4" />
+                ) : (
+                  <Sun className="mr-2 h-4 w-4" />
+                )}
+                <span>Chế độ tối</span>
+              </div>
+              <Switch
+                checked={theme === "dark"}
+                className="pointer-events-none"
+              />
+            </div>
+          )}
 
           {/* logout */}
           {isLogin && (

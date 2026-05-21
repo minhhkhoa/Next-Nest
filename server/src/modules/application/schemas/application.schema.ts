@@ -100,9 +100,9 @@ export class Application {
   @Prop({ default: false })
   isViewed: boolean;
 
-  //- HR chấm điểm ứng viên (0-5 sao)
-  @Prop({ min: 0, max: 5, default: 0 })
-  rating: number;
+  //- Nhà tuyển dụng chấm điểm ứng viên (0-100 điểm)
+  @Prop({ min: 0, max: 100, default: 0 })
+  score: number;
 
   //- Ghi chú riêng tư của HR
   @Prop({ type: MultiLang })

@@ -23,7 +23,7 @@ export function BookmarkNavigationButton() {
             asChild
             variant="outline"
             size="icon"
-            className="h-12 w-12 rounded-full shadow-lg border border-border bg-background hover:bg-accent hover:text-accent-foreground backdrop-blur flex items-center justify-center transition-colors"
+            className="h-10 w-10 rounded-full shadow-lg border border-border bg-background hover:bg-accent hover:text-accent-foreground backdrop-blur flex items-center justify-center transition-colors"
           >
             <Link href="/saved-jobs">
               <BookMarked className="h-5 w-5" />
@@ -48,10 +48,10 @@ export function MyApplicationNavigationButton() {
             asChild
             variant="outline"
             size="icon"
-            className="h-12 w-12 rounded-full shadow-lg border border-border bg-background hover:bg-accent hover:text-accent-foreground backdrop-blur flex items-center justify-center transition-colors"
+            className="h-10 w-10 rounded-full shadow-lg border border-border bg-background hover:bg-accent hover:text-accent-foreground backdrop-blur flex items-center justify-center transition-colors"
           >
             <Link href="/my-application">
-              <BriefcaseBusiness className="h-5 w-5" />
+              <BriefcaseBusiness className="h-4 w-4" />
               <span className="sr-only">Theo dõi đơn ứng tuyển</span>
             </Link>
           </Button>
@@ -145,7 +145,7 @@ export function FloatButton() {
         <Button
           onClick={toggleOpen}
           size="icon"
-          className="h-12 w-12 rounded-full shadow-xl bg-primary hover:bg-primary/90 text-primary-foreground focus-visible:ring-0 focus-visible:ring-offset-0 relative overflow-hidden group"
+          className="h-10 w-10 rounded-full shadow-xl bg-primary hover:bg-primary/90 text-primary-foreground focus-visible:ring-0 focus-visible:ring-offset-0 relative overflow-hidden group"
         >
           <motion.div
             initial={false}
@@ -153,7 +153,7 @@ export function FloatButton() {
             className="absolute inset-0 flex items-center justify-center"
             transition={{ duration: 0.2 }}
           >
-            <Settings2 className="h-6 w-6 transition-transform group-hover:rotate-90 duration-300" />
+            <Settings2 className="h-5 w-5 transition-transform group-hover:rotate-90 duration-300" />
           </motion.div>
 
           <motion.div
@@ -162,7 +162,7 @@ export function FloatButton() {
             className="absolute inset-0 flex items-center justify-center"
             transition={{ duration: 0.2 }}
           >
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5" />
           </motion.div>
 
           <span className="sr-only">Toggle menu</span>

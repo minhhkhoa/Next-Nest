@@ -48,9 +48,12 @@ export const getJobColumns = (
       const nameCompany = row?.original?.company?.name;
       const mst = row?.original?.company?.taxCode;
       return (
-        <p className="text-sm font-medium text-foreground max-w-[200px] whitespace-normal">
-          {nameCompany} {mst ? `(MST: ${mst})` : ""}
-        </p>
+        <div>
+          <p className="text-sm font-medium truncate max-w-[180px]">
+            {nameCompany}
+          </p>
+          <p className="text-sm">{mst ? `(MST: ${mst})` : ""}</p>
+        </div>
       );
     },
   },
@@ -61,7 +64,7 @@ export const getJobColumns = (
     header: () => <span className="!ml-5">Tiêu đề công việc</span>,
     cell: ({ row }) => {
       return (
-        <span className="text-sm text-foreground truncate max-w-[180px] !ml-5">
+        <span className="block text-sm text-foreground truncate max-w-[200px] !ml-5">
           {row.original.title.vi}
         </span>
       );

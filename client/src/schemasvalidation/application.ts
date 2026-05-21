@@ -29,7 +29,15 @@ export const ApplicationHistory = z.object({
 
 export const apiApplicationRes = z.object({
   _id: z.string(),
-  userId: z.union([z.string(), ActionBy]), // ID or Populated User
+  userId: z.union([
+    z.string(),
+    z.object({
+      _id: z.string(),
+      name: z.string(),
+      email: z.string(),
+      avatar: z.string().optional(),
+    }),
+  ]),
   jobId: z.union([
     z.string(),
     z.object({
@@ -49,24 +57,28 @@ export const apiApplicationRes = z.object({
     }),
   ]).optional(),
   email: z.string(),
-  resumeType: z.enum(RESUME_TYPE.map((type) => type.value) as [string, ...string[]]),
+  resumeType: z.enum(
+    RESUME_TYPE.map((type) => type.value) as [string, ...string[]],
+  ),
   cvUrl: z.string().optional(),
   systemCvData: SystemCvData.optional(),
   coverLetter: z.union([z.string(), MultiLang]).optional(),
-  status: z.enum(APPLICATION_STATUS.map((status) => status.value) as [string, ...string[]]),
+  status: z.enum(
+    APPLICATION_STATUS.map((status) => status.value) as [string, ...string[]],
+  ),
   isViewed: z.boolean(),
-  rating: z.number().min(0).max(5).optional(),
+  score: z.number().min(0).max(100).optional(),
   recruiterNote: z.union([z.string(), MultiLang]).optional(),
   interviewTime: z.date().or(z.string()).optional(),
   rejectionReason: z.union([z.string(), MultiLang]).optional(),
   history: z.array(ApplicationHistory).optional(),
-  isDeleted: z.boolean(),
+  isDeleted: z.boolean().optional().default(false),
   createdBy: ActionBy.optional(),
   updatedBy: ActionBy.optional(),
   deletedBy: ActionBy.optional(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-  deletedAt: z.date().optional(),
+  createdAt: z.union([z.string(), z.date()]),
+  updatedAt: z.union([z.string(), z.date()]),
+  deletedAt: z.union([z.string(), z.date()]).optional(),
 });
 
 export type ApplicationResType = z.infer<typeof apiApplicationRes>;
@@ -107,7 +119,7 @@ export type CreateApplicationType = z.infer<typeof createApplicationSchema>;
 export const updateApplicationSchema = z.object({
   status: z.enum(APPLICATION_STATUS.map((status) => status.value)).optional(),
   isViewed: z.boolean().optional(),
-  rating: z.number().min(0).max(5).optional(),
+  score: z.number().min(0).max(100).optional(),
   recruiterNote: z.string().optional(),
   interviewTime: z.date().or(z.string()).optional(),
   rejectionReason: z.string().optional(),
@@ -122,7 +134,7 @@ export const findApplicationFilterSchema = z.object({
   status: z.enum(APPLICATION_STATUS.map((status) => status.value)).optional(),
   jobId: z.string().optional(),
   isViewed: z.boolean().optional(),
-  minRating: z.number().min(0).max(5).optional(),
+  minScore: z.number().min(0).max(100).optional(),
   keyword: z.string().optional(),
   isDeleted: z.boolean().optional(),
 });

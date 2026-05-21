@@ -22,14 +22,14 @@ import {
   CalendarClock,
   FileText,
   ClipboardList,
+  Sparkles,
 } from "lucide-react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import {
-  generateStarRating,
-  generateStatusOptions,
-} from "../application-jobColumn";
+import { generateStatusOptions } from "../application-jobColumn";
 import StartChatButton from "@/components/StartChatButton";
+import AiMatchModal from "./AiMatchModal";
+import { Button } from "@/components/ui/button";
 
 export const TEMPLATE_COMPONENTS: Record<string, React.ElementType> = {
   [CV_TEMPLATES.basicTemplate]: BasicTemplate,
@@ -53,6 +53,8 @@ export function ViewApplicationSheet({
     applicationId || "",
     open && !!applicationId,
   );
+
+  const [isAiMatchOpen, setIsAiMatchOpen] = React.useState(false);
 
   const application: ApplicationResType | undefined = qData?.data;
 
@@ -179,19 +181,35 @@ export function ViewApplicationSheet({
                 </div>
                 <div>
                   <p className="text-[11px] font-medium uppercase text-muted-foreground mb-1.5">
-                    Độ tiềm năng
+                    Điểm số
                   </p>
                   <div>
-                    {application.rating && application.rating > 0 ? (
-                      generateStarRating(application.rating)
+                    {application.score && application.score > 0 ? (
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-xl font-bold text-primary">
+                          {application.score}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground font-medium">
+                          / 100
+                        </span>
+                      </div>
                     ) : (
-                      <span className="text-sm font-medium text-muted-foreground">
-                        Chưa đánh giá
+                      <span className="text-sm font-medium text-muted-foreground italic">
+                        Chưa chấm
                       </span>
                     )}
                   </div>
                 </div>
               </div>
+
+              {/* AI Assessment Button */}
+              <Button
+                onClick={() => setIsAiMatchOpen(true)}
+                className="w-full gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white border-none shadow-lg shadow-purple-500/20 font-bold h-11"
+              >
+                <Sparkles className="w-4 h-4 fill-white animate-pulse" />
+                Đánh giá mức độ phù hợp với AI
+              </Button>
 
               {/* Job Info */}
               <div className="space-y-4 p-4 rounded-xl border border-border/50 bg-card">
@@ -280,6 +298,22 @@ export function ViewApplicationSheet({
             </div>
           </div>
         )}
+        <AiMatchModal
+          isOpen={isAiMatchOpen}
+          onClose={() => setIsAiMatchOpen(false)}
+          cvId={
+            application?.resumeType === "SYSTEM_CV"
+              ? typeof application?.systemCvData?.userResumeId === "object"
+                ? (application?.systemCvData?.userResumeId as any)?._id || null
+                : application?.systemCvData?.userResumeId || null
+              : null
+          }
+          jobId={
+            typeof application?.jobId === "object"
+              ? application?.jobId?._id || null
+              : (application?.jobId as any) || null
+          }
+        />
       </SheetContent>
     </Sheet>
   );

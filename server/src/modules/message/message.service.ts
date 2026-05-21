@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { Types } from 'mongoose';
 import { ConversationService } from '../conversation/conversation.service';
@@ -20,6 +20,12 @@ export class MessageService {
     try {
       //- Xác định người gửi
       const candidateText = this.configService.get<string>('role_candidate');
+      const superAdminText = this.configService.get<string>('role_super_admin');
+
+      //- Super Admin khong duoc gui tin nhan, chi co Candidate va Recruiter moi co quyen
+      if (user.roleCodeName === superAdminText) {
+        throw new ForbiddenException('Super Admin không được phép gửi tin nhắn trong cuộc trò chuyện');
+      }
 
       const senderType =
         user.roleCodeName === candidateText ? 'CANDIDATE' : 'RECRUITER';

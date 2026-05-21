@@ -70,7 +70,7 @@ export const ConversationSchema = z.object({
       avatar: z.string().optional(),
     })
     .optional(),
-  lastMessage: z.string(),
+  lastMessage: z.any(),
   lastMessageAt: z.string(),
   unreadCandidate: z.number().default(0),
   unreadCompany: z.number().default(0),
