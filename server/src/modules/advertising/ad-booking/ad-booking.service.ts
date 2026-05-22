@@ -192,7 +192,7 @@ export class AdBookingService {
 
     const bookings = await this.adBookingRepository.find({
       filter: {
-        slotId: slot._id,
+        slotId: slot._id.toString(),
         status: { $nin: ['CANCELLED', 'EXPIRED'] },
         // Lấy các booking từ hôm nay trở đi để tối ưu
         endAt: { $gte: dayjs().startOf('day').toDate() },

@@ -38,14 +38,10 @@ export default function AdCalendarPicker({
     }));
   }, [busyDates]);
 
-  //- Kiểm tra một ngày cụ thể có bị bận không
+  //- Kiểm tra một ngày cụ thể có bị vô hiệu hóa không (chỉ vô hiệu hóa ngày quá khứ/hôm nay)
   const isDateDisabled = (day: Date) => {
     const today = startOfDay(new Date());
-    if (day <= today) return true; //- Không cho chọn ngày quá khứ hoặc hôm nay (cần ít nhất 1 ngày chuẩn bị)
-
-    return disabledIntervals.some((interval) =>
-      isWithinInterval(day, { start: interval.from, end: interval.to }),
-    );
+    return day <= today; //- Không cho chọn ngày quá khứ hoặc hôm nay (cần ít nhất 1 ngày chuẩn bị)
   };
 
   //- Kiểm tra xem nếu chọn ngày này thì khoảng thời gian 'duration' ngày tiếp theo có bị trùng không

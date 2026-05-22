@@ -55,6 +55,42 @@ export class AdPaymentService {
     //- Lấy thông tin booking để biết recruiterId cần gửi socket
     const booking = await this.adBookingRepository.findById(payment.bookingId);
 
+    //- Kiểm tra số tiền thực chuyển so với hóa đơn (phải bằng khớp 100%)
+    if (payload.transferAmount !== payment.amount) {
+      this.logger.error(
+        `Payment amount mismatch. Expected: ${payment.amount}, Received: ${payload.transferAmount}. Payment ID: ${payment._id}`,
+      );
+
+      //- Cập nhật trạng thái Payment thành FAILED
+      await this.adPaymentRepository.updateOneRaw(
+        { _id: payment._id },
+        {
+          status: 'FAILED',
+          paidAt: new Date(payload.transactionDate),
+          webhookPayload: payload,
+        },
+      );
+
+      //- Cập nhật trạng thái Booking thành CANCELLED do sai lệch số tiền
+      await this.adBookingRepository.updateOneRaw(
+        { _id: payment.bookingId },
+        { status: 'CANCELLED' },
+      );
+
+      //- Bắn Socket thông báo thất bại/hủy cho client
+      if (booking?.recruiterId) {
+        this.notificationsGateway.emitPaymentCancelled(
+          booking.recruiterId.toString(),
+          payment._id.toString(),
+        );
+      }
+
+      return {
+        status: 'error',
+        message: `Amount mismatch. Expected ${payment.amount} but received ${payload.transferAmount}`,
+      };
+    }
+
     //- Cập nhật trạng thái Payment thành PAID
     await this.adPaymentRepository.updateOneRaw(
       { _id: payment._id },
@@ -91,11 +127,45 @@ export class AdPaymentService {
   }
 
   findAll() {
-    return this.adPaymentRepository.find();
+    //- Tìm tất cả giao dịch thanh toán và populate thông tin booking, recruiter và company
+    return this.adPaymentRepository.findRaw(
+      {},
+      {
+        populate: {
+          path: 'bookingId',
+          populate: [
+            {
+              path: 'recruiterId',
+              select: 'name email phoneNumber',
+            },
+            {
+              path: 'companyId',
+              select: 'name taxCode logo',
+            },
+          ],
+        },
+        sort: { createdAt: -1 },
+      },
+    );
   }
 
   findOne(id: string) {
-    return this.adPaymentRepository.findById(id);
+    //- Tìm chi tiết giao dịch thanh toán kèm thông tin booking, recruiter và company
+    return this.adPaymentRepository.findByIdRaw(id, {
+      populate: {
+        path: 'bookingId',
+        populate: [
+          {
+            path: 'recruiterId',
+            select: 'name email phoneNumber',
+          },
+          {
+            path: 'companyId',
+            select: 'name taxCode logo',
+          },
+        ],
+      },
+    });
   }
 
   update(id: string, updateAdPaymentDto: UpdateAdPaymentDto) {
