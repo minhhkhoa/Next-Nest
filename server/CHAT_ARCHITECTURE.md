@@ -18,7 +18,7 @@ Lưu trữ thông tin tổng quan của một cuộc trò chuyện giữa 2 bên
 - `lastMessage`: String (Nội dung tin nhắn cuối cùng để hiển thị rút gọn ngoài Sidebar)
 - `lastMessageAt`: Date (Thời gian gửi tin mới nhất để sắp xếp Conversation nào lên đầu)
 - `unreadCandidate`: Number (Số tin nhắn chưa đọc đối với Candidates)
-- `unreadCompany`: Number (Số tin nhắn chưa đọc đối với HR)
+- `unreadCompany`: Number (Số tin nhắn chưa đọc đối với HR).
 - `jobReferenceId` (Optional): ObjectId (Lưu lại UI context xem cuộc trò chuyện này xuất phát từ công việc nào, giúp Nhà tuyển dụng dễ định hướng support ứng viên)
 
 ### 1.2. Collection `Messages` (Tin nhắn trực tiếp)
