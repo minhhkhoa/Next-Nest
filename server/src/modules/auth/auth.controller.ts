@@ -265,6 +265,7 @@ export class AuthController {
         'google',
       );
       const access_token = loginGoogle.access_token;
+      const clientUrl = this.configService.get<string>('FRONTEND_URL') as string;
 
       const html = `
       <html>
@@ -272,7 +273,7 @@ export class AuthController {
           <script>
             window.opener.postMessage(
               { token: "${access_token}" },
-              "http://localhost:3000"
+              "${clientUrl}"
             );
             window.close();
           </script>
