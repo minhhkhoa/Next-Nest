@@ -9,13 +9,28 @@ import {
 import { jwtDecode } from "jwt-decode";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 
-const isTunnel =
-  typeof window !== "undefined" &&
-  window.location.hostname.includes("devtunnels.ms");
+//- lấy server url tương ứng dựa trên môi trường ngrok hoặc thông thường
+export const getBaseServerUrl = () => {
+  if (typeof window === "undefined") {
+    return envConfig.NEXT_PUBLIC_API_URL_SERVER;
+  }
 
-const baseURL = isTunnel
-  ? envConfig.NEXT_PUBLIC_API_URL_SERVER_TUNNEL
-  : envConfig.NEXT_PUBLIC_API_URL_SERVER;
+  const hostname = window.location.hostname;
+
+  //- nếu dùng ngrok hoặc chạy production qua nginx (cùng domain)
+  if (
+    hostname.includes("ngrok-free.dev") ||
+    hostname.includes("ngrok.io") ||
+    (!hostname.includes("localhost") && !hostname.startsWith("192.168."))
+  ) {
+    //- nếu cùng domain qua nginx reverse proxy thì api url chính là /api
+    return `${window.location.origin}/api`;
+  }
+
+  return envConfig.NEXT_PUBLIC_API_URL_SERVER;
+};
+
+const baseURL = getBaseServerUrl();
 
 //- Tạo instance Axios
 const instance = axios.create({

@@ -166,6 +166,15 @@ export class AuthController {
   @Get('facebook/callback')
   @UseGuards(FacebookAuthGuard)
   async facebookLoginCallback(@Req() req, @Res() response: Response) {
+    const state = req.query?.state as string;
+    const clientUrl = this.configService.get<string>('FRONTEND_URL') || '';
+    let clientOrigin = state || clientUrl;
+    try {
+      clientOrigin = new URL(clientOrigin).origin;
+    } catch (e) {
+      //- lấy clientUrl làm fallback
+    }
+
     try {
       const idRoleUser = req.user.roleID.toString();
       const roleSchema = await this.roleService.findOne(idRoleUser);
@@ -188,9 +197,6 @@ export class AuthController {
         'facebook',
       );
       const access_token = loginUser.access_token;
-      const clientUrl = this.configService.get<string>(
-        'FRONTEND_URL',
-      ) as string;
 
       const html = `
       <html>
@@ -198,7 +204,7 @@ export class AuthController {
           <script>
             window.opener.postMessage(
               { token: "${access_token}" },
-              "${clientUrl}"
+              "${clientOrigin}"
             );
             window.close();
           </script>
@@ -219,7 +225,7 @@ export class AuthController {
                           error: "${message}",
                           status: "FORBIDDEN" 
                         },
-                        "${this.configService.get('FRONTEND_URL')}"
+                        "${clientOrigin}"
                       );
                       window.close();
                     </script>
@@ -242,6 +248,15 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
   async googleLoginCallback(@Req() req, @Res() res: Response) {
+    const state = req.query?.state as string;
+    const clientUrl = this.configService.get<string>('FRONTEND_URL') || '';
+    let clientOrigin = state || clientUrl;
+    try {
+      clientOrigin = new URL(clientOrigin).origin;
+    } catch (e) {
+      //- lấy clientUrl làm fallback
+    }
+
     try {
       const idRoleUser = req.user.roleID.toString();
       const roleSchema = await this.roleService.findOne(idRoleUser);
@@ -265,7 +280,6 @@ export class AuthController {
         'google',
       );
       const access_token = loginGoogle.access_token;
-      const clientUrl = this.configService.get<string>('FRONTEND_URL') as string;
 
       const html = `
       <html>
@@ -273,7 +287,7 @@ export class AuthController {
           <script>
             window.opener.postMessage(
               { token: "${access_token}" },
-              "${clientUrl}"
+              "${clientOrigin}"
             );
             window.close();
           </script>
@@ -294,7 +308,7 @@ export class AuthController {
                           error: "${message}",
                           status: "FORBIDDEN" 
                         },
-                        "${this.configService.get('FRONTEND_URL')}"
+                        "${clientOrigin}"
                       );
                       window.close();
                     </script>

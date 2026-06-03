@@ -4,6 +4,16 @@ import { ExecutionContext } from '@nestjs/common';
 
 @Injectable()
 export class GoogleAuthGuard extends AuthGuard('google') {
+  getAuthenticateOptions(context: ExecutionContext) {
+    const request = context.switchToHttp().getRequest();
+    const origin = request.query.origin;
+    if (origin) {
+      return {
+        state: origin,
+      };
+    }
+    return {};
+  }
 
   handleRequest<TUser = any>(
     err: any,

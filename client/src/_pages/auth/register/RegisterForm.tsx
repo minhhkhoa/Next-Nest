@@ -31,8 +31,8 @@ import { setAccessTokenToLocalStorage } from "@/lib/utils";
 import { useAppStore } from "@/components/TanstackProvider";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
-import { envConfig } from "../../../../config";
 import { Link, useRouter } from "@/i18n/navigation";
+import { getBaseServerUrl } from "@/lib/http";
 
 export default function RegisterForm() {
   const { setLogin } = useAppStore();
@@ -81,15 +81,31 @@ export default function RegisterForm() {
     const left = window.screenX + (window.innerWidth - width) / 2;
     const top = window.screenY + (window.innerHeight - height) / 2;
 
+    const baseURL = getBaseServerUrl();
     const popup = window.open(
-      `${envConfig.NEXT_PUBLIC_API_URL_SERVER}/auth/${provider}`,
+      `${baseURL}/auth/${provider}?origin=${window.location.origin}`,
       "SocialLogin",
       `width=${width},height=${height},left=${left},top=${top}`,
     );
 
     if (popup) {
       const handleMessage = (event: MessageEvent) => {
-        if (event.origin !== envConfig.NEXT_PUBLIC_API_URL_SERVER) return;
+        //- chuyển url server thành origin chuẩn
+        //- tạo serverorigin, dùng window.location.origin nếu api url là tương đối
+        const serverOrigin = baseURL.startsWith("http")
+          ? new URL(baseURL).origin
+          : window.location.origin;
+
+        //- so sánh origin chuẩn
+        if (event.origin !== serverOrigin) {
+          console.warn(
+            "Origin không khớp:",
+            event.origin,
+            "kỳ vọng:",
+            serverOrigin
+          );
+          return;
+        }
         const { token, error } = event.data;
 
         if (token) {
