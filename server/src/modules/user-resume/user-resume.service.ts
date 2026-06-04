@@ -102,26 +102,24 @@ export class UserResumeService {
 
       //- Nếu cập nhật này đặt làm mặc định, reset các bản CV khác thành không mặc định
       if (updateDto.isDefault) {
-        await this.userResumeRepository.resetOtherDefaultsByUser(
-          user.id,
-          id,
-        );
+        await this.userResumeRepository.resetOtherDefaultsByUser(user.id, id);
       }
 
       //- Cập nhật nội dung
-      const updatedResume = await this.userResumeRepository.findOneAndUpdateByIdAndUser(
-        id,
-        user.id,
-        {
-          ...updateDto,
-          updatedBy: {
-            _id: user.id,
-            name: user.name,
-            email: user.email,
-            avatar: user.avatar,
+      const updatedResume =
+        await this.userResumeRepository.findOneAndUpdateByIdAndUser(
+          id,
+          user.id,
+          {
+            ...updateDto,
+            updatedBy: {
+              _id: user.id,
+              name: user.name,
+              email: user.email,
+              avatar: user.avatar,
+            },
           },
-        },
-      );
+        );
 
       if (!updatedResume) {
         throw new BadRequestCustom(
@@ -205,4 +203,3 @@ export class UserResumeService {
     return resume;
   }
 }
-

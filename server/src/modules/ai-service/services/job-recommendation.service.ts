@@ -12,6 +12,7 @@ import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { RedisService } from 'src/common/redis/redis.service';
 import { OnEvent } from '@nestjs/event-emitter';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
+import { ElasticsearchService } from 'src/modules/elasticsearch/elasticsearch.service';
 
 //- schema trích xuất tiêu chí tìm kiếm từ gemini
 const JobSearchCriteriaSchema = z.object({
@@ -34,6 +35,7 @@ export class JobRecommendationService {
     private readonly jobsService: JobsService,
     private readonly skillService: SkillService,
     private readonly redisService: RedisService,
+    private readonly elasticsearchService: ElasticsearchService,
   ) {}
 
   //- hàm chính xử lý lấy gợi ý việc làm từ Redis (trả về lập tức)
@@ -121,6 +123,60 @@ export class JobRecommendationService {
       //- gửi ngữ cảnh cho gemini trích xuất tiêu chí tìm kiếm dạng json
       const criteria = await this.extractSearchCriteria(profileContext);
 
+      //- trích xuất thủ công các kỹ năng từ hồ sơ và cv nếu ai không trả về kết quả
+      if (!criteria.skills || criteria.skills.length === 0) {
+        criteria.skills = [];
+        if (profile && profile.skillID && Array.isArray(profile.skillID)) {
+          profile.skillID.forEach((s: any) => {
+            const name = s.name?.vi || s.name?.en || s.name;
+            if (name && !criteria.skills.includes(name)) {
+              criteria.skills.push(name);
+            }
+          });
+        }
+        if (resumes && Array.isArray(resumes)) {
+          resumes.forEach((resume) => {
+            if (resume.content && Array.isArray(resume.content.skills)) {
+              resume.content.skills.forEach((s: any) => {
+                const name = s.value || s;
+                if (typeof name === 'string' && !criteria.skills.includes(name)) {
+                  criteria.skills.push(name);
+                }
+              });
+            }
+          });
+        }
+      }
+
+      //- trích xuất thủ công các từ khóa chức danh từ kinh nghiệm làm việc
+      if (!criteria.titleKeywords || criteria.titleKeywords.length === 0) {
+        criteria.titleKeywords = [];
+        if (profile && profile.level) {
+          criteria.titleKeywords.push(profile.level);
+        }
+        if (resumes && Array.isArray(resumes)) {
+          resumes.forEach((resume) => {
+            if (resume.content && Array.isArray(resume.content.experience)) {
+              resume.content.experience.forEach((exp: any) => {
+                if (exp.position && !criteria.titleKeywords.includes(exp.position)) {
+                  criteria.titleKeywords.push(exp.position);
+                }
+              });
+            }
+          });
+        }
+      }
+
+      //- trích xuất cấp bậc từ thông tin hồ sơ
+      if (!criteria.level && profile && profile.level) {
+        criteria.level = profile.level;
+      }
+
+      //- trích xuất địa điểm từ thông tin hồ sơ
+      if (!criteria.location && profile && profile.address) {
+        criteria.location = profile.address;
+      }
+
       //- ánh xạ tên kỹ năng dạng chữ sang skill object ids trong database
       const skillIDs = await this.mapSkillNamesToIds(criteria.skills);
 
@@ -135,108 +191,43 @@ export class JobRecommendationService {
         });
       }
 
-      //- ghép mảng từ khóa thành regex title query để tìm kiếm rộng hơn
-      const titleQuery =
-        criteria.titleKeywords && criteria.titleKeywords.length > 0
-          ? criteria.titleKeywords
-              .map((k) => k.trim())
-              .filter(Boolean)
-              .join('|')
-          : undefined;
+      //- tìm kiếm nhanh các jobs phù hợp trên elasticsearch
+      const matchedJobIds = await this.elasticsearchService.searchJobs({
+        titleKeywords: criteria.titleKeywords,
+        skills: criteria.skills,
+        level: criteria.level,
+        location: criteria.location,
+        industryIDs: industryIDs,
+        skillIDs: skillIDs,
+      });
 
-      //- tìm kiếm công việc thông qua api tìm nâng cao có sẵn (lấy 40 jobs để tăng độ phủ cho AI lọc)
-      const searchResult = await this.jobsService.searchJobsPublicAdvanced(
-        {
-          currentPage: 1,
-          pageSize: 40,
-          title: titleQuery || undefined,
-          address: criteria.location || undefined,
-          skillIDs: skillIDs.length > 0 ? skillIDs : undefined,
-          industryIDs: industryIDs.length > 0 ? industryIDs : undefined,
-        },
-        user,
-      );
-
-      let jobs = searchResult?.result || [];
-
-      //- nếu kết quả tìm kiếm quá ít hoặc không có, thực hiện truy vấn dự phòng rộng hơn (chỉ theo tiêu đề)
-      if (jobs.length < 10) {
-        const fallbackResult = await this.jobsService.searchJobsPublicAdvanced(
-          {
-            currentPage: 1,
-            pageSize: 40,
-            title: titleQuery || undefined,
-          },
-          user,
-        );
-
-        const fallbackJobs = fallbackResult?.result || [];
-        //- gộp kết quả và loại bỏ trùng lặp
-        const jobIds = new Set(jobs.map((j) => j._id.toString()));
-        for (const job of fallbackJobs) {
-          if (!jobIds.has(job._id.toString())) {
-            jobs.push(job);
-          }
-        }
+      let jobs: any[] = [];
+      if (matchedJobIds.length > 0) {
+        const rawJobs = await this.jobsService.findByIds(matchedJobIds);
+        //- sắp xếp các công việc theo đúng thứ tự relevance score trả về từ elasticsearch
+        const jobMap = new Map(rawJobs.map((j) => [j._id.toString(), j]));
+        jobs = matchedJobIds.map((id) => jobMap.get(id)).filter(Boolean);
       }
 
-      //- nếu vẫn không tìm thấy bất kỳ job nào phù hợp, lấy các job hot/ứng tuyển nhiều làm dự phòng
-      if (jobs.length === 0) {
-        jobs = await this.jobsService.findHotOrAppliedJobs(20);
-      }
-
-      //- gửi toàn bộ danh sách jobs tìm thấy sang gemini để lọc và chấm điểm phù hợp (ranking stage)
-      const explanations = await this.generateMatchExplanations(
-        profileContext,
-        jobs,
-      );
-
-      //- đính kèm lời giải thích vào thông tin job trả về cho client và lọc bỏ các job không phù hợp chuyên ngành
-      const recommendations: any[] = [];
-      for (const job of jobs) {
-        const jobId = job._id.toString();
-        const explanation = explanations[jobId];
-
-        //- nếu AI không trả về giải thích, hoặc trả về null, hoặc ghi không phù hợp thì loại bỏ
-        if (!explanation || explanation === 'null') {
-          continue;
+      //- chuyển đổi mongoose document sang plain object và chuẩn hóa thông tin công ty
+      const finalRecommendations = jobs.map((job) => {
+        const jobObject = typeof job.toObject === 'function' ? job.toObject() : job;
+        const company = jobObject.companyID;
+        if (company && typeof company === 'object' && '_id' in company) {
+          jobObject.companyID = (company as any)._id;
+          (jobObject as any).company = company;
         }
-
-        const lowerExpl = explanation.toLowerCase();
-        if (
-          lowerExpl.includes('không phù hợp') ||
-          lowerExpl.includes('không tương thích') ||
-          lowerExpl.includes('lệch chuyên môn') ||
-          lowerExpl.includes('không đáp ứng')
-        ) {
-          continue;
-        }
-
-        recommendations.push({
-          ...job,
-          aiExplanation: explanation,
-        });
-      }
-
-      //- giới hạn tối đa 15 công việc tốt nhất sau khi lọc
-      const finalRecommendations = recommendations.slice(0, 15);
-
-      //- nếu sau khi lọc không còn job nào phù hợp, lấy các job nổi bật làm dự phòng
-      if (finalRecommendations.length === 0) {
-        const defaultJobs = await this.jobsService.findHotOrAppliedJobs(10);
-        for (const job of defaultJobs) {
-          finalRecommendations.push({
-            ...job,
-            aiExplanation:
-              'Công việc đang nổi bật trên hệ thống (chưa tìm thấy công việc khớp chuyên môn của bạn).',
-          });
-        }
-      }
+        return {
+          ...jobObject,
+          aiExplanation: 'Công việc phù hợp với kỹ năng và định hướng hồ sơ của bạn.',
+        };
+      });
 
       const data = {
         hasProfile: true,
-        message:
-          'AI đã phân tích hồ sơ và CV của bạn để đưa ra những gợi ý việc làm tốt nhất dưới đây.',
+        message: finalRecommendations.length > 0 
+          ? 'AI đã phân tích hồ sơ và CV của bạn để đưa ra những gợi ý việc làm tốt nhất dưới đây.'
+          : 'Hiện tại chưa có công việc nào hoàn toàn phù hợp với hồ sơ của bạn. Hãy thử cập nhật thêm kỹ năng hoặc chờ các cơ hội mới nhé.',
         recommendations: finalRecommendations,
       };
 
@@ -249,15 +240,11 @@ export class JobRecommendationService {
       return data;
     } catch (error) {
       console.error('Lỗi khi gợi ý công việc bằng AI:', error);
-      const defaultJobs = await this.jobsService.findHotOrAppliedJobs(6);
       const errorData = {
         hasProfile: true,
         message:
-          'Hệ thống gợi ý AI đang bận, dưới đây là một số việc làm đang tuyển dụng nổi bật dành cho bạn.',
-        recommendations: defaultJobs.map((job) => ({
-          ...job,
-          aiExplanation: 'Công việc đang nổi bật trên hệ thống.',
-        })),
+          'Hệ thống gợi ý AI đang bận. Vui lòng thử lại sau.',
+        recommendations: [],
       };
       //- lưu cache tạm 5 phút khi hệ thống lỗi hoặc quá tải để tránh spam api liên tục
       try {

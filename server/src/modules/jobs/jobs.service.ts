@@ -31,6 +31,7 @@ import { IndustryService } from '../industry/industry.service';
 import { LEVEL_OPTIONS } from 'src/common/constants/company-const';
 import { JobsRepository } from './repository/jobs.repository';
 import { RedisService } from 'src/common/redis/redis.service';
+import { ElasticsearchService } from '../elasticsearch/elasticsearch.service';
 
 @Injectable()
 export class JobsService {
@@ -47,6 +48,7 @@ export class JobsService {
     @Inject(forwardRef(() => BookmarkService))
     private readonly bookmarkService: BookmarkService,
     private readonly industryService: IndustryService,
+    private readonly elasticsearchService: ElasticsearchService,
   ) {}
 
   private buildLocationRegexPattern(address: string) {
@@ -270,6 +272,9 @@ export class JobsService {
           avatar: user.avatar,
         },
       });
+
+      //- đồng bộ job mới tạo sang elasticsearch
+      await this.elasticsearchService.indexJob(newJob);
 
       //- Bắn thông báo (nếu không phải admin tạo)
       if (!isAdminCreating && recruiterAdmin) {
@@ -976,6 +981,25 @@ export class JobsService {
     }
   }
 
+  //- truy vấn danh sách jobs theo danh sách ids và tự động populate các liên kết liên quan
+  async findByIds(ids: string[]) {
+    try {
+      const objectIds = ids.map((id) => new mongoose.Types.ObjectId(id));
+      return await this.jobsRepository.findRaw(
+        {
+          _id: { $in: objectIds },
+          isDeleted: false,
+        },
+        {
+          populate: ['companyID', 'industryID', 'skills'],
+          includeDeleted: true,
+        },
+      );
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
   async handleVerifyJob(
     verifyDto: RecruiteAdminApproveJobDto,
     recruiter_admin: UserDecoratorType,
@@ -1052,6 +1076,9 @@ export class JobsService {
       if (!updatedJob) {
         throw new BadRequestCustom('Cập nhật không thành công', true);
       }
+
+      //- đồng bộ việc duyệt job sang elasticsearch
+      await this.elasticsearchService.updateJob(jobId, updatedJob);
 
       return {
         _id: updatedJob._id,
@@ -1279,6 +1306,9 @@ export class JobsService {
         throw new BadRequestCustom('Cập nhật công việc thất bại', true);
       }
 
+      //- đồng bộ job cập nhật sang elasticsearch
+      await this.elasticsearchService.updateJob(id, updatedJob);
+
       //- Thông báo cho Recruiter_Admin nếu Recruiter thường cập nhật
       if (isNormalRecruiter) {
         try {
@@ -1343,7 +1373,7 @@ export class JobsService {
       }
 
       //- Thực hiện khôi phục
-      return await this.jobsRepository.updateOneRaw(
+      const restoreResult = await this.jobsRepository.updateOneRaw(
         { _id: id },
         {
           $set: {
@@ -1362,6 +1392,14 @@ export class JobsService {
           },
         },
       );
+
+      //- đồng bộ việc khôi phục job sang elasticsearch
+      const restoredJob = await this.jobsRepository.findByIdRaw(id);
+      if (restoredJob) {
+        await this.elasticsearchService.indexJob(restoredJob);
+      }
+
+      return restoreResult;
     } catch (error) {
       if (error instanceof ForbiddenException) throw error;
       throw new BadRequestCustom(error.message, !!error.message);
@@ -1490,7 +1528,7 @@ export class JobsService {
         );
       }
 
-      return await this.jobsRepository.updateOneRaw(
+      const deleteResult = await this.jobsRepository.updateOneRaw(
         { _id: id },
         {
           isDeleted: true,
@@ -1503,6 +1541,11 @@ export class JobsService {
           },
         },
       );
+
+      //- xóa job khỏi elasticsearch
+      await this.elasticsearchService.deleteJob(id);
+
+      return deleteResult;
     } catch (error) {
       if (error instanceof ForbiddenException) throw error;
       throw new BadRequestCustom(error.message, !!error.message);

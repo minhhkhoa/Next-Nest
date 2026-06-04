@@ -34,9 +34,9 @@ graph TD
         Worker -->|1. Thu thập dữ liệu| Context["Profile + CV Context"]
         Context -->|2. Phân tích AI| LLM["Google Gemini API"]
         LLM -->|3. Trích xuất Tiêu chí| Criteria["Tìm kiếm Nâng cao"]
-        Criteria -->|4. Tìm kiếm Database| DB[("MongoDB")]
-        DB -->|5. Đánh giá độ khớp| Explanation["Match Explanations LLM"]
-        Explanation -->|6. Lưu dữ liệu gợi ý| Redis[("Redis Cache")]
+        Criteria -->|4. Tìm kiếm nhanh| ES[("Elasticsearch")]
+        ES -->|5. Truy vấn bằng IDs| DB[("MongoDB")]
+        DB -->|6. Lưu dữ liệu gợi ý| Redis[("Redis Cache")]
     end
 
     subgraph UserFlow["Luồng Người dùng (User Flow)"]
@@ -75,18 +75,13 @@ Hệ thống sử dụng decorator `@OnEvent(event_name, { async: true })` để
     - Sử dụng Prompt Template `job-recommendation.prompt.ts` gửi toàn bộ dữ liệu ngữ cảnh ứng viên tới Gemini LLM.
     - Gemini phân tích chuyên sâu và trích xuất cấu trúc dữ liệu JSON gồm: `title` (vị trí công việc), `skills` (danh sách kỹ năng chính), `level` (cấp bậc tương ứng), và `location` (địa điểm làm việc).
     - Ánh xạ (Mapping) danh sách kỹ năng chữ thành Skill IDs tương thích trong cơ sở dữ liệu thông qua `SkillService`.
-3.  **Truy vấn Cơ sở dữ liệu thông minh:**
-    - Gọi hàm tìm kiếm nâng cao có sẵn `searchJobsPublicAdvanced` với các tham số đã trích xuất ở trên để lấy ra tối đa 20 công việc.
-    - Nếu danh sách trả về ít hơn 5 công việc, hệ thống tự động thực hiện truy vấn dự phòng rộng hơn (chỉ theo tiêu đề công việc) và tiến hành gộp kết quả, loại bỏ trùng lặp.
-    - Nếu vẫn không có việc làm nào phù hợp, hệ thống lấy danh sách công việc nổi bật trên toàn sàn để đảm bảo không trả về danh sách trống.
-4.  **So khớp & Lọc bỏ công việc không phù hợp (AI Matching & Filtering):**
-    - Gửi danh sách 15 công việc tốt nhất cùng ngữ cảnh ứng viên sang Gemini LLM thông qua Prompt Template `job-matching-explanation.prompt.ts`.
-    - Gemini phân tích mức độ tương thích và trả về lời giải thích phù hợp cho từng công việc. Nếu công việc hoàn toàn lệch chuyên môn (ví dụ: ứng viên IT nhưng công việc là Sales, Admin...), Gemini sẽ gán giá trị của công việc đó là `null`.
-    - Backend tiến hành lọc bỏ tất cả các công việc có giá trị `null` hoặc nội dung chứa các cụm từ "không phù hợp", "không tương thích", "lệch chuyên môn" để đảm bảo danh sách gợi ý luôn chuẩn xác.
-    - Trường hợp sau khi lọc không còn công việc nào phù hợp, hệ thống tự động tải 10 công việc nổi bật trên hệ thống làm phương án dự phòng và đính kèm lời thích rõ ràng: "Công việc đang nổi bật trên hệ thống (chưa tìm thấy công việc khớp chuyên môn của bạn)".
-5.  **Lưu cache Redis:**
-    - Đóng gói dữ liệu gồm: Trạng thái hồ sơ (`hasProfile`), Thông điệp hướng dẫn (`message`), và danh sách gợi ý đã qua chọn lọc kỹ càng từ AI.
-    - Lưu trữ vào Redis cache với khóa `recommendations:${userId}`. TTL (Time To Live) được cài đặt là **24 giờ** đối với hồ sơ hoàn chỉnh.
+3.  **Truy vấn Elasticsearch & MongoDB thông minh (Mô hình Retrieval):**
+    - Gọi `elasticsearchService.searchJobs` với các tham số đã trích xuất ở trên để thực hiện tìm kiếm mờ, so khớp nhanh các công việc phù hợp nhất trên Elasticsearch và trả về danh sách IDs.
+    - Gọi `jobsService.findByIds` để lấy thông tin Job chi tiết và tự động populate các thực thể liên quan (Company, Skills, Industries) từ MongoDB.
+4.  **Đóng gói kết quả & Lưu cache Redis:**
+    - Đóng gói danh sách tối đa 15 công việc hàng đầu tìm được từ Elasticsearch, tự động đính kèm thông báo phù hợp mặc định (`aiExplanation: 'Công việc phù hợp với kỹ năng và định hướng hồ sơ của bạn.'`).
+    - Trường hợp không tìm thấy công việc nào phù hợp, hệ thống sẽ trả về thông báo: "Hiện tại chưa có công việc nào hoàn toàn phù hợp với hồ sơ của bạn. Hãy thử cập nhật thêm kỹ năng hoặc chờ các cơ hội mới nhé." và trả về danh sách rỗng.
+    - Lưu trữ toàn bộ gói dữ liệu (gồm trạng thái hồ sơ `hasProfile`, thông điệp `message` và danh sách gợi ý `recommendations`) vào Redis cache với khóa `recommendations:${userId}` có thời hạn lưu trữ (TTL) là **24 giờ** đối với hồ sơ hoàn chỉnh.
 
 ---
 
@@ -102,6 +97,7 @@ sequenceDiagram
     participant Controller as [server] ai-service.controller.ts
     participant Service as [server] job-recommendation.service.ts
     participant LLM as [server] Google Gemini API
+    participant ES as [server] Elasticsearch
     participant DB as [server] MongoDB
 
     User->>FE: Truy cập trang hoặc nhấn "Cập nhật gợi ý"
@@ -121,16 +117,13 @@ sequenceDiagram
             Service->>LLM: Gọi với prompt jobRecommendationPromptTemplate
             LLM->>Service: Trả về JSON { titleKeywords, skills, level, location }
 
-            Note over Service: 3. Truy vấn tìm kiếm thô ở DB
-            Service->>DB: searchJobsPublicAdvanced(title: titleQuery, skills, industries, location)
-            DB->>Service: Trả về danh sách tối đa 40 jobs khớp thô
+            Note over Service: 3. Truy vấn tìm kiếm nhanh ở ES
+            Service->>ES: searchJobs({ titleKeywords, skills, level, location, industryIDs, skillIDs })
+            ES->>Service: Trả về danh sách IDs phù hợp
+            Service->>DB: findByIds(matchedJobIds)
+            DB->>Service: Trả về danh sách jobs đầy đủ thông tin
 
-            Note over Service: 4. Gọi LLM lọc tinh và viết giải thích phù hợp
-            Service->>LLM: Gọi với prompt jobMatchingExplanationPromptTemplate
-            LLM->>Service: Trả về JSON { jobId_1: "giải thích...", jobId_2: null }
-
-            Note over Service: 5. Lọc bỏ các job bị gán null, lấy top 15
-            Service->>Service: Lọc và lưu kết quả vào Redis cache (24h)
+            Note over Service: 4. Đóng gói và lưu kết quả vào Redis cache (24h)
         end
 
         Service->>Controller: Trả về dữ liệu gợi ý hoàn chỉnh
@@ -157,8 +150,8 @@ sequenceDiagram
     - **Hàm:** `computeAndCacheRecommendations(userId, user)`:
       - Gọi `buildProfileContext(profile, resumes)`: Sử dụng `formatResumeContent` để định dạng CV thành text Markdown.
       - Gọi `extractSearchCriteria(profileContext)`: Gửi prompt [server/src/modules/ai-service/prompts/job-recommendation.prompt.ts] sang LLM để trích xuất `titleKeywords`.
-      - Gọi `mapSkillNamesToIds(skills)`: Ánh xạ tên skill sang ObjectId.
-      - Gọi `jobsService.searchJobsPublicAdvanced(...)`: Tìm kiếm tối đa 40 công việc từ DB.
+      - Gọi `elasticsearchService.searchJobs(...)`: Tìm kiếm mờ nhanh chóng các công việc phù hợp nhất trên Elasticsearch để lấy danh sách IDs.
+      - Gọi `jobsService.findByIds(...)`: Truy vấn chi tiết thông tin công việc bằng danh sách IDs từ MongoDB.
       - Gọi `generateMatchExplanations(profileContext, jobs)`: Gửi prompt [server/src/modules/ai-service/prompts/job-matching-explanation.prompt.ts] sang LLM để lọc tinh và lấy lời giải thích độ phù hợp.
       - Lọc kết quả, loại bỏ các job bị gán `null`, lấy tối đa 15 job, lưu vào Redis cache và trả về.
 

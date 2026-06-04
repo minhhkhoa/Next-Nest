@@ -34,6 +34,7 @@ import { MessageModule } from './modules/message/message.module';
 import { RedisModule } from './common/redis/redis.module';
 import { AdvertisingModule } from './modules/advertising/advertising.module';
 import { AiServiceModule } from './modules/ai-service/ai-service.module';
+import { ElasticsearchModule } from './modules/elasticsearch/elasticsearch.module';
 
 @Module({
   imports: [
@@ -71,6 +72,7 @@ import { AiServiceModule } from './modules/ai-service/ai-service.module';
     }),
 
     AiServiceModule, // - module cung cấp GeminiChatProvider và các AI service
+    ElasticsearchModule, //- đăng ký module elasticsearch toàn cục
 
     IndustryModule,
     TranslationModule,
