@@ -22,6 +22,11 @@ const aiApiRequest = {
 
   getChatHistory: () =>
     http.get<ApiResponse<any>>(`${prefix}/chat/history`),
+
+  getRecommendJobs: (force = false) =>
+    http.get<ApiResponse<any>>(`${prefix}/recommend-jobs${force ? '?force=true' : ''}`, {
+      timeout: 60000,
+    }),
 };
 
 export default aiApiRequest;

@@ -17,5 +17,6 @@ import { SkillRepository } from './repository/skill.repository';
   ],
   controllers: [SkillController],
   providers: [SkillService, SkillRepository],
+  exports: [SkillService],
 })
 export class SkillModule {}

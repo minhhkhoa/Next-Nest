@@ -8,17 +8,26 @@ import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 import mongoose from 'mongoose';
 import { FindUserQueryDto } from 'src/modules/user/dto/userDto.dto';
 import { DetailProfileRepository } from './repository/detail-profile.repository';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class DetailProfileService {
   constructor(
     private readonly detailProfileRepository: DetailProfileRepository,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
   async create(createDetailProfileDto: CreateDetailProfileDto) {
     try {
       const detailProfile = await this.detailProfileRepository.create(
         createDetailProfileDto,
       );
+
+      //- bắn sự kiện cập nhật profile để re-compute gợi ý việc làm ai chạy nền
+      if (detailProfile && detailProfile.userID) {
+        this.eventEmitter.emit('candidate.profile.updated', {
+          userId: detailProfile.userID.toString(),
+        });
+      }
 
       return {
         _id: detailProfile._id,
@@ -278,6 +287,14 @@ export class DetailProfileService {
 
       if (result.modifiedCount === 0)
         throw new BadRequestCustom('Lỗi sửa detailProfile', !!id);
+
+      //- bắn sự kiện cập nhật profile để re-compute gợi ý việc làm ai chạy nền
+      if (detailProfile && detailProfile.userID) {
+        this.eventEmitter.emit('candidate.profile.updated', {
+          userId: detailProfile.userID.toString(),
+        });
+      }
+
       return result;
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);

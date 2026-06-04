@@ -141,7 +141,28 @@ Tài liệu này mô tả chi tiết các chức năng, luồng nghiệp vụ, A
   1.  Tại mục quản lý CV, chọn "Chấm điểm CV" $\rightarrow$ Gửi yêu cầu `POST /api/ai/cv-score` kèm `cvId`.
   2.  BE lấy dữ liệu chi tiết của CV (kỹ năng, kinh nghiệm, dự án...), gửi tới Gemini LLM yêu cầu đánh giá.
   3.  Gemini trả về kết quả định dạng JSON chuẩn gồm: Điểm số (0-100), Danh sách điểm mạnh (strengths), Danh sách điểm yếu cần khắc phục (weaknesses) và Các đề xuất cải thiện (suggestions) $\rightarrow$ FE hiển thị báo cáo chi tiết.
----
+
+#### C. Gợi ý công việc bằng AI (AI Job Recommendation)
+
+- **Mô tả**: Sử dụng AI phân tích hồ sơ và CV để gợi ý việc làm tương thích, tối ưu tốc độ phản hồi bằng Redis cache và chạy nền.
+- **Luồng hoạt động**:
+  1.  Tại trang Tìm việc (`/find-jobs`), hệ thống kiểm tra trạng thái đăng nhập. Nếu chưa đăng nhập, nút/thẻ giới thiệu tính năng AI sẽ bị ẩn.
+  2.  Khi ứng viên đã đăng nhập và nhấn "AI gợi ý công việc", FE điều hướng tới trang `/ai-recommendations` (hỗ trợ hiển thị đầy đủ giao diện, có responsive).
+  3.  Tại trang `/ai-recommendations`, FE gọi API `GET /api/ai/recommend-jobs` để lấy dữ liệu.
+  4.  BE kiểm tra trong Redis cache:
+      - **Trường hợp đã có cache**: Trả về dữ liệu lập tức (<10ms), đảm bảo trải nghiệm tức thời.
+      - **Trường hợp chưa có cache (hoặc cache hết hạn)**: Thực hiện tính toán đồng bộ lập tức và lưu vào Redis.
+  5.  Tại FE, người dùng xem danh sách gợi ý kèm theo:
+      - **Lý do phù hợp từ AI**: Mỗi công việc có đính kèm phần giải thích chi tiết (`aiExplanation`) được sinh bởi Gemini.
+      - **Bộ lọc cơ bản**: Lọc nhanh trên client theo Từ khóa (Tên job/Công ty), Địa điểm (Tỉnh/Thành phố), Cấp bậc.
+      - **Phân trang client**: Phân trang mượt mà (6 jobs/trang) sử dụng component `DataTablePagination`.
+- **Cơ chế tính toán và cập nhật cache chạy nền (Pre-warming & Background Compute)**:
+  - Khi đăng nhập thành công hoặc tải thông tin profile ứng viên, BE kích hoạt sự kiện `candidate.profile.warmup` chạy nền để tính toán sẵn cache trước khi ứng viên click nút.
+  - Khi ứng viên thêm/sửa/xóa CV hoặc cập nhật thông tin hồ sơ chi tiết, hệ thống phát ra sự kiện `candidate.cv.updated` hoặc `candidate.profile.updated` để tính toán lại gợi ý mới và cập nhật cache Redis hoàn toàn bất đồng bộ, không gây nghẽn luồng xử lý API chính của người dùng.
+- **Quy tắc nghiệp vụ**:
+  - Ẩn toàn bộ giao diện giới thiệu/sử dụng đối với người dùng chưa đăng nhập.
+  - Nếu ứng viên đã đăng nhập nhưng hồ sơ trống/chưa có CV: Hệ thống hiển thị cảnh báo hướng dẫn và nút dẫn tới `/profile`, đồng thời đề xuất danh sách các công việc HOT / được ứng tuyển nhiều nhất làm phương án dự phòng.
+  - Thời gian tồn tại của dữ liệu (TTL cache) là 24 giờ đối với hồ sơ đầy đủ thông tin và 1 giờ đối với hồ sơ trống thông tin.
 
 ### 2.7. Nhóm chức năng: Bookmark (Lưu trữ nhanh)
 

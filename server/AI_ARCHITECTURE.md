@@ -168,6 +168,24 @@ Pseudo-flow:
 - Gọi prompt jd-match.prompt.ts
 - llm.invoke() -> parse kết quả theo JSON
 
+### 5) Job recommendation service (job-recommendation.service.ts)
+
+- **Cơ chế hoạt động**: Không cần memory trong luồng chat. Dữ liệu được lưu cache và tính toán nền để tối ưu hiệu năng.
+- **Quy trình trích xuất & So khớp**:
+  - Khi cần tính toán, service tập hợp ngữ cảnh từ `DetailProfile` và tất cả các `UserResume` (CV) thành chuỗi thông tin ứng viên.
+  - Gọi prompt `job-recommendation.prompt.ts` để nhờ Gemini trích xuất tiêu chí tìm việc dạng JSON (tiêu đề, kỹ năng, cấp bậc, địa điểm).
+  - Ánh xạ danh sách kỹ năng chữ sang Skill IDs tương ứng trong cơ sở dữ liệu.
+  - Gọi `searchJobsPublicAdvanced` truy vấn danh sách tối đa 20 công việc phù hợp (hỗ trợ cả fallback lấy job hot/nhiều lượt ứng tuyển nếu danh sách trống).
+  - Gọi prompt `job-matching-explanation.prompt.ts` để nhờ Gemini sinh lời giải thích mức độ phù hợp (`aiExplanation`) cho tối đa 15 công việc hàng đầu.
+- **Tối ưu hóa hiệu năng bằng Redis Caching**:
+  - Dữ liệu gợi ý được lưu vào Redis cache với key `recommendations:${userId}` và TTL là 24 giờ (đối với tài khoản đã điền hồ sơ) hoặc 1 giờ (đối với tài khoản trống thông tin).
+  - Khi người dùng truy cập trang gợi ý việc làm, hệ thống lấy dữ liệu trực tiếp từ Redis trong <10ms, loại bỏ hoàn toàn độ trễ 5-10s gọi API Gemini.
+- **Cơ chế Pre-warming (Làm nóng cache chạy nền)**:
+  - Sử dụng NestJS `EventEmitter` để kích hoạt các tiến trình tính toán chạy nền không đồng bộ (`@OnEvent('...', { async: true })`), không chặn các API chính.
+  - Sự kiện `candidate.profile.warmup` phát ra khi đăng nhập thành công hoặc khi lấy profile ban đầu. Service kiểm tra xem cache đã tồn tại chưa; nếu chưa, nó sẽ chạy nền tạo cache sẵn.
+  - Sự kiện `candidate.profile.updated` phát ra khi ứng viên cập nhật thông tin cá nhân. Cache cũ bị ghi đè bằng cache mới tính toán nền.
+  - Sự kiện `candidate.cv.updated` phát ra khi ứng viên thêm/sửa/xóa CV. Kích hoạt tính toán nền để cập nhật gợi ý mới nhất.
+
 ## Lưu trữ dữ liệu (quyết định hiện tại)
 
 - Lịch sử chat AI được lưu trong bảng (Collection) `AiChatHistory` của database thay vì dùng Redis. Điều này giúp giữ ngữ cảnh theo session và tiện tra cứu sau này.
@@ -191,6 +209,7 @@ Pseudo-flow:
 - GET /ai/chat?jobId=...&question=...
 - POST /ai/cv-score { cvId }
 - POST /ai/jd-match { cvId, jobId }
+- GET /ai/recommend-jobs (Gợi ý công việc bằng AI, hỗ trợ cả khách vả người dùng đã đăng nhập)
 
 ## Mô hình dữ liệu
 

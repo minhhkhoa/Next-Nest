@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { SlidersHorizontal } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { SlidersHorizontal, Sparkles, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -11,6 +11,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Link, useRouter } from "@/i18n/navigation";
+import { useAppStore } from "@/components/TanstackProvider";
 import DataTablePagination from "@/components/DataTablePagination";
 import ListJobSkeleton from "@/components/skeletons/list-job";
 import JobCard from "@/_pages/home/components/JobCard";
@@ -137,6 +139,7 @@ const findIndustryNameById = (nodes: any[], id: string): string | undefined => {
 export default function PageFindJobs() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { isLogin } = useAppStore();
 
   const [filters, setFilters] = useState<FindJobsFilterState>(() =>
     parseFiltersFromSearchParams(searchParams),
@@ -444,6 +447,46 @@ export default function PageFindJobs() {
         />
 
         <AppliedFilterChips chips={chips} onClearAll={handleResetFilters} />
+
+        {/* Card AI gợi ý công việc - chỉ hiện khi đã đăng nhập */}
+        {isLogin && (
+          <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-r from-violet-500/10 via-indigo-500/10 to-blue-500/10 p-5 md:p-6 shadow-sm backdrop-blur-sm">
+            <div className="absolute right-0 top-0 -mr-6 -mt-6 h-24 w-24 rounded-full bg-primary/10 blur-2xl"></div>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/20 text-primary">
+                    <Sparkles className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                  </span>
+                  <h3 className="text-lg font-bold text-foreground">
+                    AI Gợi ý việc làm phù hợp
+                  </h3>
+                </div>
+                <p className="text-sm text-muted-foreground max-w-2xl">
+                  Công nghệ AI sẽ tự động phân tích Hồ sơ cá nhân và các CV của
+                  bạn để đề xuất những vị trí tuyển dụng tương thích nhất.
+                  <span className="block mt-1 text-xs text-muted-foreground/80">
+                    * Để có kết quả tốt nhất, hãy cập nhật đầy đủ thông tin tại{" "}
+                    <Link
+                      href="/profile"
+                      className="font-semibold text-primary underline hover:text-primary/80"
+                    >
+                      Hồ sơ cá nhân
+                    </Link>{" "}
+                    hoặc viết/tải lên CV của bạn.
+                  </span>
+                </p>
+              </div>
+              <Button
+                onClick={() => router.push("/ai-recommendations")}
+                className="h-11 px-6 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-medium shadow-md shadow-indigo-500/10 transition-all hover:scale-[1.02] active:scale-[0.98] gap-2 shrink-0 self-start sm:self-center"
+              >
+                <Brain className="h-5 w-5" />
+                AI gợi ý công việc
+              </Button>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
           <aside className="hidden self-start h-fit rounded-2xl border border-border bg-card p-4 lg:block">

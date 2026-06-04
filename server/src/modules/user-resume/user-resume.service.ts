@@ -5,11 +5,13 @@ import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { BadRequestCustom } from 'src/common/customExceptions/BadRequestCustom';
 import mongoose from 'mongoose';
 import { UserResumeRepository } from './repository/user-resume.repository';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class UserResumeService {
   constructor(
     private readonly userResumeRepository: UserResumeRepository,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async create(createDto: CreateUserResumeDto, user: UserDecoratorType) {
@@ -30,6 +32,9 @@ export class UserResumeService {
           avatar: user.avatar,
         },
       });
+
+      //- bắn sự kiện cập nhật CV để re-compute gợi ý việc làm ai chạy nền
+      this.eventEmitter.emit('candidate.cv.updated', { userId: user.id, user });
 
       return newResume;
     } catch (error) {
@@ -125,6 +130,9 @@ export class UserResumeService {
         );
       }
 
+      //- bắn sự kiện cập nhật CV để re-compute gợi ý việc làm ai chạy nền
+      this.eventEmitter.emit('candidate.cv.updated', { userId: user.id, user });
+
       return updatedResume;
     } catch (error) {
       throw new BadRequestCustom(error.message, !!error.message);
@@ -171,6 +179,9 @@ export class UserResumeService {
           );
         }
       }
+
+      //- bắn sự kiện cập nhật CV để re-compute gợi ý việc làm ai chạy nền
+      this.eventEmitter.emit('candidate.cv.updated', { userId: user.id, user });
 
       return { message: 'Xóa bản CV thành công' };
     } catch (error) {

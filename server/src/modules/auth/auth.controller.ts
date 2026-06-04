@@ -28,6 +28,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ConfigService } from '@nestjs/config';
 import { RolesService } from '../roles/roles.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -36,6 +37,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
     private roleService: RolesService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   @Public()
@@ -60,7 +62,15 @@ export class AuthController {
       roleCodeName: roleCodeName,
       employerInfo: req.user.employerInfo,
     };
-    return this.authService.login(user, response);
+    const result = await this.authService.login(user, response);
+    
+    //- nếu là ứng viên, phát sự kiện chạy nền để làm nóng cache gợi ý AI
+    const roleCandidate = this.configService.get<string>('role_candidate');
+    if (roleCodeName === roleCandidate) {
+      this.eventEmitter.emit('candidate.profile.updated', { userId: user.id, user });
+    }
+
+    return result;
   }
 
   @Public()
@@ -92,6 +102,12 @@ export class AuthController {
       const idRoleUser = userProfile?.roleID?._id.toString();
       const roleSchema = await this.roleService.findOne(idRoleUser);
       const roleCodeName = roleSchema.name.vi;
+
+      //- nếu là ứng viên, phát sự kiện chạy nền kiểm tra và tải trước cache gợi ý AI
+      const roleCandidate = this.configService.get<string>('role_candidate');
+      if (roleCodeName === roleCandidate) {
+        this.eventEmitter.emit('candidate.profile.warmup', { userId: id, user });
+      }
 
       return {
         user: {
@@ -152,6 +168,10 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
     @userDecorator() user: UserResponse,
   ) {
+    //- phát sự kiện logout để các module khác xoá cache nếu cần
+    if (user && user.id) {
+      this.eventEmitter.emit('candidate.logout', { userId: user.id });
+    }
     return this.authService.logout(response, user);
   }
 
@@ -197,6 +217,12 @@ export class AuthController {
         'facebook',
       );
       const access_token = loginUser.access_token;
+
+      //- nếu là ứng viên, phát sự kiện chạy nền để làm nóng cache gợi ý AI
+      const roleCandidate = this.configService.get<string>('role_candidate');
+      if (roleCodeName === roleCandidate) {
+        this.eventEmitter.emit('candidate.profile.updated', { userId: user.id, user });
+      }
 
       const html = `
       <html>
@@ -280,6 +306,12 @@ export class AuthController {
         'google',
       );
       const access_token = loginGoogle.access_token;
+
+      //- nếu là ứng viên, phát sự kiện chạy nền để làm nóng cache gợi ý AI
+      const roleCandidate = this.configService.get<string>('role_candidate');
+      if (roleCodeName === roleCandidate) {
+        this.eventEmitter.emit('candidate.profile.updated', { userId: user.id, user });
+      }
 
       const html = `
       <html>

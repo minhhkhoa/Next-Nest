@@ -10,12 +10,14 @@ import {
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
 import {
+  Public,
   PublicPermission,
   ResponseMessage,
   userDecorator,
 } from 'src/common/decorator/customize';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { AiServiceService } from './ai-service.service';
+import { JobRecommendationService } from './services/job-recommendation.service';
 import { ChatAiQueryDto } from './dto/chat-ai.query.dto';
 import { CvScoreDto } from './dto/cv-score.dto';
 import { JdMatchDto } from './dto/jd-match.dto';
@@ -24,7 +26,21 @@ import { JdMatchDto } from './dto/jd-match.dto';
 @Controller('ai')
 @PublicPermission()
 export class AiServiceController {
-  constructor(private readonly aiServiceService: AiServiceService) {}
+  constructor(
+    private readonly aiServiceService: AiServiceService,
+    private readonly jobRecommendationService: JobRecommendationService,
+  ) {}
+
+  @Public()
+  @Get('recommend-jobs')
+  @ApiOperation({ summary: 'Gợi ý công việc bằng AI' })
+  @ResponseMessage('Gợi ý công việc bằng AI thành công')
+  async recommendJobs(
+    @userDecorator() user: UserDecoratorType,
+    @Query('force') force?: string,
+  ) {
+    return this.jobRecommendationService.recommendJobs(user, force === 'true');
+  }
 
   @Sse('chat/stream')
   @ApiOperation({ summary: 'Chat AI stream theo job hien tai' })

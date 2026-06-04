@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { Plus, LayoutGrid } from "lucide-react";
+import { Plus } from "lucide-react";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import { DeleteConfirmModal } from "../NewsCategory/components/modals/delete-confirm-modal";

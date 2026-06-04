@@ -1582,6 +1582,42 @@ export class JobsService {
     }
   }
 
+  //- tìm các công việc hot hoặc được ứng tuyển nhiều nhất để làm gợi ý mặc định
+  async findHotOrAppliedJobs(limit = 12) {
+    try {
+      const query = {
+        isActive: true,
+        status: 'active',
+        isDeleted: false,
+      };
+
+      const jobs = await this.jobsRepository.findRaw(query, {
+        limit,
+        sort: {
+          'isHot.isHotJob': -1,
+          totalApplied: -1,
+          createdAt: -1,
+        },
+        populate: ['companyID', 'skills', 'industryID'],
+        includeDeleted: true,
+      });
+
+      const result = jobs.map((job) => {
+        const jobObject = job.toObject();
+        const company = jobObject.companyID;
+        if (company && typeof company === 'object' && '_id' in company) {
+          jobObject.companyID = (company as any)._id;
+          (jobObject as any).company = company;
+        }
+        return jobObject;
+      });
+
+      return result;
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
   async validateJobForApplication(jobId: string) {
     try {
       if (!mongoose.Types.ObjectId.isValid(jobId)) {

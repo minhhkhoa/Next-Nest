@@ -24,6 +24,7 @@ const safeFormatDate = (dateStr: any, formatStr: string = "dd/MM/yyyy") => {
     if (isNaN(date.getTime())) return "N/A";
     return format(date, formatStr);
   } catch (error) {
+    console.log("error: ", error);
     return "N/A";
   }
 };
@@ -45,9 +46,10 @@ export const getAdPaymentColumns = (): ColumnDef<AdPaymentDetailResType>[] => [
     header: "Khách Hàng (Doanh nghiệp)",
     cell: ({ row }) => {
       const booking = row.original.bookingId;
-      
+
       //- Kiểm tra an toàn booking có phải object đã được populate hay không
-      const isBookingObject = booking && typeof booking === "object" && "_id" in booking;
+      const isBookingObject =
+        booking && typeof booking === "object" && "_id" in booking;
       const company = isBookingObject ? (booking as any).companyId : null;
       const recruiter = isBookingObject ? (booking as any).recruiterId : null;
 
@@ -83,7 +85,11 @@ export const getAdPaymentColumns = (): ColumnDef<AdPaymentDetailResType>[] => [
       const status = row.original.status;
 
       if (!webhookPayload) {
-        return <span className="text-sm text-muted-foreground">Chưa có giao dịch</span>;
+        return (
+          <span className="text-sm text-muted-foreground">
+            Chưa có giao dịch
+          </span>
+        );
       }
 
       const transferAmount = webhookPayload.transferAmount;
@@ -120,19 +126,28 @@ export const getAdPaymentColumns = (): ColumnDef<AdPaymentDetailResType>[] => [
       switch (status) {
         case "PENDING":
           return (
-            <Badge variant="outline" className="text-yellow-600 bg-yellow-50 border-yellow-200">
+            <Badge
+              variant="outline"
+              className="text-yellow-600 bg-yellow-50 border-yellow-200"
+            >
               Chờ thanh toán
             </Badge>
           );
         case "PAID":
           return (
-            <Badge variant="outline" className="text-green-600 bg-green-50 border-green-200">
+            <Badge
+              variant="outline"
+              className="text-green-600 bg-green-50 border-green-200"
+            >
               Khớp tiền (Thành công)
             </Badge>
           );
         case "FAILED":
           return (
-            <Badge variant="outline" className="text-red-600 bg-red-50 border-red-200 animate-pulse">
+            <Badge
+              variant="outline"
+              className="text-red-600 bg-red-50 border-red-200 animate-pulse"
+            >
               Sai tiền (Thất bại)
             </Badge>
           );
@@ -158,18 +173,22 @@ export const getAdPaymentColumns = (): ColumnDef<AdPaymentDetailResType>[] => [
     header: "Liên Hệ Nhà Tuyển Dụng",
     cell: ({ row }) => {
       const booking = row.original.bookingId;
-      
+
       //- Kiểm tra an toàn booking có phải object đã được populate hay không
-      const isBookingObject = booking && typeof booking === "object" && "_id" in booking;
+      const isBookingObject =
+        booking && typeof booking === "object" && "_id" in booking;
       const recruiter = isBookingObject ? (booking as any).recruiterId : null;
 
-      if (!recruiter) return <span className="text-xs text-muted-foreground">N/A</span>;
+      if (!recruiter)
+        return <span className="text-xs text-muted-foreground">N/A</span>;
 
       return (
         <div className="space-y-0.5 text-xs">
           <div className="text-muted-foreground">{recruiter.email}</div>
           {recruiter.phoneNumber && (
-            <div className="font-medium text-foreground">{recruiter.phoneNumber}</div>
+            <div className="font-medium text-foreground">
+              {recruiter.phoneNumber}
+            </div>
           )}
         </div>
       );
