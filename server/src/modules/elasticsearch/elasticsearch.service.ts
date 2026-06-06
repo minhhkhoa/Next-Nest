@@ -301,10 +301,15 @@ export class ElasticsearchService implements OnModuleInit {
       });
     }
 
-    //- lọc theo cấp bậc
+    //- lọc theo cấp bậc (để ở should để ưu tiên cấp bậc của ứng viên, không bắt buộc lọc cứng)
     if (level) {
-      must.push({
-        term: { level },
+      should.push({
+        term: {
+          level: {
+            value: level,
+            boost: 2,
+          },
+        },
       });
     }
 
