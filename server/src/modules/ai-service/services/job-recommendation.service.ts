@@ -7,7 +7,6 @@ import { SkillService } from 'src/modules/skill/skill.service';
 import { IndustryService } from 'src/modules/industry/industry.service';
 import { GEMINI_CHAT_MODEL } from '../provider/gemini-chat.provider';
 import { jobRecommendationPromptTemplate } from '../prompts/job-recommendation.prompt';
-import { jobMatchingExplanationPromptTemplate } from '../prompts/job-matching-explanation.prompt';
 import { z } from 'zod';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { RedisService } from 'src/common/redis/redis.service';
@@ -482,37 +481,6 @@ export class JobRecommendationService {
     return industryIds;
   }
 
-  //- gọi gemini để viết lời giải thích vì sao công việc phù hợp với ứng viên
-  private async generateMatchExplanations(
-    profileContext: string,
-    jobs: any[],
-  ): Promise<Record<string, string>> {
-    try {
-      //- rút gọn danh sách job đưa vào prompt để tối ưu token
-      const jobsContext = jobs
-        .map((job) => {
-          const title = job.title?.vi || job.title?.en || job.title || '';
-          const companyName = job.company?.name || job.companyID?.name || '';
-          const description =
-            job.description?.vi || job.description?.en || job.description || '';
-          return `ID: ${job._id.toString()}\nTiêu đề: ${title}\nCông ty: ${companyName}\nMô tả: ${description.substring(0, 300)}...`;
-        })
-        .join('\n\n');
-
-      const messages =
-        await jobMatchingExplanationPromptTemplate.formatMessages({
-          profile_context: profileContext,
-          jobs_context: jobsContext,
-        });
-
-      const response = await this.llm.invoke(messages);
-      const rawText = this.extractTextContent(response);
-      return this.safeJsonParse(rawText) as Record<string, string>;
-    } catch (e) {
-      console.error('Lỗi sinh lời giải thích độ phù hợp công việc từ AI:', e);
-      return {};
-    }
-  }
 
   //- ánh xạ tên kỹ năng viết bằng chữ sang IDs trong cơ sở dữ liệu
   private async mapSkillNamesToIds(skillNames: string[]): Promise<string[]> {
