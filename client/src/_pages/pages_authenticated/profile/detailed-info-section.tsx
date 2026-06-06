@@ -22,7 +22,7 @@ import {
   useUpdateDetailProfileMutate,
 } from "@/queries/useDetailProfile";
 import { ADDRESS_OPTIONS, GENDER_OPTIONS, LEVEL_OPTIONS } from "@/lib/constant";
-import { useGetDetaiSkill } from "@/queries/useSkill";
+import { useGetSkillFilter } from "@/queries/useSkill";
 import { SkillResType } from "@/schemasvalidation/skill";
 import { useGetDetaiIndustry } from "@/queries/useIndustry";
 import { CustomizeSelect } from "../../components/CustomizeSelect";
@@ -32,13 +32,22 @@ import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonn
 export function DetailedInfoSection() {
   const { user } = useAppStore();
   const { data: detailProfileData } = useGetDetailProfile({ id: user?._id });
-  const { data: skillData } = useGetDetaiSkill();
   const { data: industryData } = useGetDetaiIndustry();
   const { mutateAsync: updateDetailProfileMutate } =
     useUpdateDetailProfileMutate();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(detailProfileData?.data);
   const [validateForm, setValidateForm] = useState(false);
+
+  const selectedIndustryIds = Array.isArray(formData?.industryID)
+    ? formData?.industryID.map((ind: any) => ind?._id).filter(Boolean)
+    : [];
+
+  const { data: skillData } = useGetSkillFilter({
+    currentPage: 1,
+    pageSize: 200,
+    industryIDs: selectedIndustryIds,
+  });
 
   const handleChange = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev!, [field]: value }));
@@ -296,13 +305,13 @@ export function DetailedInfoSection() {
           {isEditing ? (
             <MultiSelect
               options={
-                Array.isArray(skillData?.data)
-                  ? fomatDataSkill(skillData?.data)
+                Array.isArray(skillData?.data?.result)
+                  ? fomatDataSkill(skillData?.data?.result)
                   : []
               }
               selected={
                 formData?.skillID?.map((item) => {
-                  // console.log("item: ", item);
+                  //- item: _id, name
                   return {
                     label: item.name,
                     value: item._id,
@@ -310,13 +319,10 @@ export function DetailedInfoSection() {
                 }) || []
               }
               onChange={(options) => {
-                const skillDataArray = Array.isArray(skillData?.data)
-                  ? skillData?.data
-                  : [];
-                const selectedSkills =
-                  skillDataArray.filter((skill) =>
-                    options.some((option) => option.value === skill._id)
-                  ) ?? [];
+                const selectedSkills = options.map((option) => ({
+                  _id: option.value,
+                  name: option.label,
+                }));
 
                 handleChange("skillID", selectedSkills);
               }}
