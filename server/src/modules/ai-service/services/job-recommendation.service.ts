@@ -4,6 +4,7 @@ import { DetailProfileService } from 'src/modules/detail-profile/detail-profile.
 import { UserResumeService } from 'src/modules/user-resume/user-resume.service';
 import { JobsService } from 'src/modules/jobs/jobs.service';
 import { SkillService } from 'src/modules/skill/skill.service';
+import { IndustryService } from 'src/modules/industry/industry.service';
 import { GEMINI_CHAT_MODEL } from '../provider/gemini-chat.provider';
 import { jobRecommendationPromptTemplate } from '../prompts/job-recommendation.prompt';
 import { jobMatchingExplanationPromptTemplate } from '../prompts/job-matching-explanation.prompt';
@@ -18,6 +19,7 @@ import { ElasticsearchService } from 'src/modules/elasticsearch/elasticsearch.se
 const JobSearchCriteriaSchema = z.object({
   titleKeywords: z.array(z.string()).default([]),
   skills: z.array(z.string()).default([]),
+  industries: z.array(z.string()).default([]),
   level: z.string().optional().default(''),
   location: z.string().optional().default(''),
 });
@@ -36,6 +38,7 @@ export class JobRecommendationService {
     private readonly skillService: SkillService,
     private readonly redisService: RedisService,
     private readonly elasticsearchService: ElasticsearchService,
+    private readonly industryService: IndustryService,
   ) {}
 
   //- hàm chính xử lý lấy gợi ý việc làm từ Redis (trả về lập tức)
@@ -187,6 +190,16 @@ export class JobRecommendationService {
           const idStr = ind._id?.toString() || ind.toString();
           if (idStr) {
             industryIDs.push(idStr);
+          }
+        });
+      }
+
+      //- ánh xạ tên ngành nghề dạng chữ do AI trích xuất sang industry IDs trong database
+      if (criteria.industries && criteria.industries.length > 0) {
+        const aiIndustryIDs = await this.mapIndustryNamesToIds(criteria.industries);
+        aiIndustryIDs.forEach((id) => {
+          if (!industryIDs.includes(id)) {
+            industryIDs.push(id);
           }
         });
       }
@@ -444,8 +457,29 @@ export class JobRecommendationService {
       return this.parseAndValidateCriteria(rawText);
     } catch (e) {
       console.error('Lỗi trích xuất tiêu chí tìm kiếm từ AI:', e);
-      return { titleKeywords: [], skills: [], level: '', location: '' };
+      return { titleKeywords: [], skills: [], industries: [], level: '', location: '' };
     }
+  }
+
+  //- ánh xạ tên ngành nghề viết bằng chữ sang IDs trong cơ sở dữ liệu
+  private async mapIndustryNamesToIds(industryNames: string[]): Promise<string[]> {
+    if (!industryNames || industryNames.length === 0) return [];
+
+    const industryIds: string[] = [];
+
+    for (const name of industryNames.slice(0, 5)) {
+      try {
+        const result = await this.industryService.findAll(1, 1, name);
+
+        if (result?.result && result.result.length > 0) {
+          industryIds.push(result.result[0]._id.toString());
+        }
+      } catch (e) {
+        //- bỏ qua nếu không tìm thấy industry tương thích trong hệ thống
+      }
+    }
+
+    return industryIds;
   }
 
   //- gọi gemini để viết lời giải thích vì sao công việc phù hợp với ứng viên
@@ -534,7 +568,7 @@ export class JobRecommendationService {
       return result.data;
     }
 
-    return { titleKeywords: [], skills: [], level: '', location: '' };
+    return { titleKeywords: [], skills: [], industries: [], level: '', location: '' };
   }
 
   //- helper an toàn phân tích chuỗi thành json

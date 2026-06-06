@@ -276,7 +276,7 @@ export class ElasticsearchService implements OnModuleInit {
       should.push({
         terms: {
           skills: skillIDs,
-          boost: 8,
+          boost: 20,
         },
       });
     }
@@ -286,7 +286,7 @@ export class ElasticsearchService implements OnModuleInit {
       should.push({
         terms: {
           industryID: industryIDs,
-          boost: 2,
+          boost: 15,
         },
       });
     }

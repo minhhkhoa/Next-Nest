@@ -10,6 +10,7 @@ import { JobsModule } from '../jobs/jobs.module';
 import { UserResumeModule } from '../user-resume/user-resume.module';
 import { DetailProfileModule } from '../detail-profile/detail-profile.module';
 import { SkillModule } from '../skill/skill.module';
+import { IndustryModule } from '../industry/industry.module';
 import { AiServiceService } from './ai-service.service';
 import { AiChatHistory, AiChatHistorySchema } from './schemas/ai-chat-history.schema';
 import { AiChatHistoryRepository } from './repository/ai-chat-history.repository';
@@ -22,6 +23,7 @@ import { AiChatHistoryRepository } from './repository/ai-chat-history.repository
     UserResumeModule,
     DetailProfileModule,
     SkillModule,
+    IndustryModule,
   ],
   controllers: [AiServiceController],
   providers: [
