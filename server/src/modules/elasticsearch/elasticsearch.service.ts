@@ -271,12 +271,11 @@ export class ElasticsearchService implements OnModuleInit {
       });
     }
 
-    //- lọc theo kỹ năng (chính xác theo skill ids)
+    //- lọc theo kỹ năng (chính xác theo skill ids) - chuyển sang must để bắt buộc Job phải có ít nhất một kỹ năng của ứng viên
     if (skillIDs && skillIDs.length > 0) {
-      should.push({
+      must.push({
         terms: {
           skills: skillIDs,
-          boost: 20,
         },
       });
     }
