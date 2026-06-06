@@ -17,8 +17,8 @@ import { ElasticsearchService } from 'src/modules/elasticsearch/elasticsearch.se
 //- schema trích xuất tiêu chí tìm kiếm từ gemini
 const JobSearchCriteriaSchema = z.object({
   titleKeywords: z.array(z.string()).default([]),
-  skills: z.array(z.string()).default([]),
-  industries: z.array(z.string()).default([]),
+  skillIDs: z.array(z.string()).default([]),
+  industryIDs: z.array(z.string()).default([]),
   level: z.string().optional().default(''),
   location: z.string().optional().default(''),
 });
@@ -122,33 +122,29 @@ export class JobRecommendationService {
       //- xây dựng ngữ cảnh ứng viên để gửi tới gemini
       const profileContext = this.buildProfileContext(profile, resumes);
 
-      //- gửi ngữ cảnh cho gemini trích xuất tiêu chí tìm kiếm dạng json
-      const criteria = await this.extractSearchCriteria(profileContext);
+      //- lấy tất cả kỹ năng trong hệ thống (chỉ lấy id và tên để tối ưu token)
+      const skillsFromDb = await this.skillService.findAll();
+      const systemSkills = skillsFromDb.map((s: any) => ({
+        id: s._id.toString(),
+        name: s.name?.vi || s.name?.en || s.name,
+      }));
 
-      //- trích xuất thủ công các kỹ năng từ hồ sơ và cv nếu ai không trả về kết quả
-      if (!criteria.skills || criteria.skills.length === 0) {
-        criteria.skills = [];
-        if (profile && profile.skillID && Array.isArray(profile.skillID)) {
-          profile.skillID.forEach((s: any) => {
-            const name = s.name?.vi || s.name?.en || s.name;
-            if (name && !criteria.skills.includes(name)) {
-              criteria.skills.push(name);
-            }
-          });
-        }
-        if (resumes && Array.isArray(resumes)) {
-          resumes.forEach((resume) => {
-            if (resume.content && Array.isArray(resume.content.skills)) {
-              resume.content.skills.forEach((s: any) => {
-                const name = s.value || s;
-                if (typeof name === 'string' && !criteria.skills.includes(name)) {
-                  criteria.skills.push(name);
-                }
-              });
-            }
-          });
-        }
-      }
+      //- lấy tất cả ngành nghề trong hệ thống (chỉ lấy id và tên)
+      const industriesFromDb = await this.industryService.findAllActiveFlat();
+      const systemIndustries = industriesFromDb.map((i: any) => ({
+        id: i._id.toString(),
+        name: i.name?.vi || i.name?.en || i.name,
+      }));
+
+      const systemSkillsStr = JSON.stringify(systemSkills);
+      const systemIndustriesStr = JSON.stringify(systemIndustries);
+
+      //- gửi ngữ cảnh cho gemini trích xuất tiêu chí tìm kiếm dạng json (bao gồm nhặt ID chuẩn của skill và industry)
+      const criteria = await this.extractSearchCriteria(
+        profileContext,
+        systemSkillsStr,
+        systemIndustriesStr,
+      );
 
       //- trích xuất thủ công các từ khóa chức danh từ kinh nghiệm làm việc
       if (!criteria.titleKeywords || criteria.titleKeywords.length === 0) {
@@ -179,10 +175,25 @@ export class JobRecommendationService {
         criteria.location = profile.address;
       }
 
-      //- ánh xạ tên kỹ năng dạng chữ sang skill object ids trong database
-      const skillIDs = await this.mapSkillNamesToIds(criteria.skills);
+      //- gộp skill IDs từ profile và do AI tự động mapping từ hệ thống
+      const skillIDs: string[] = [];
+      if (profile && profile.skillID && profile.skillID.length > 0) {
+        profile.skillID.forEach((s: any) => {
+          const idStr = s._id?.toString() || s.toString();
+          if (idStr) {
+            skillIDs.push(idStr);
+          }
+        });
+      }
+      if (criteria.skillIDs && criteria.skillIDs.length > 0) {
+        criteria.skillIDs.forEach((id) => {
+          if (id && !skillIDs.includes(id)) {
+            skillIDs.push(id);
+          }
+        });
+      }
 
-      //- ánh xạ industry IDs từ profile của ứng viên
+      //- gộp industry IDs từ profile và do AI tự động mapping từ hệ thống
       const industryIDs: string[] = [];
       if (profile && profile.industryID && profile.industryID.length > 0) {
         profile.industryID.forEach((ind: any) => {
@@ -192,12 +203,9 @@ export class JobRecommendationService {
           }
         });
       }
-
-      //- ánh xạ tên ngành nghề dạng chữ do AI trích xuất sang industry IDs trong database
-      if (criteria.industries && criteria.industries.length > 0) {
-        const aiIndustryIDs = await this.mapIndustryNamesToIds(criteria.industries);
-        aiIndustryIDs.forEach((id) => {
-          if (!industryIDs.includes(id)) {
+      if (criteria.industryIDs && criteria.industryIDs.length > 0) {
+        criteria.industryIDs.forEach((id) => {
+          if (id && !industryIDs.includes(id)) {
             industryIDs.push(id);
           }
         });
@@ -206,7 +214,7 @@ export class JobRecommendationService {
       //- tìm kiếm nhanh các jobs phù hợp trên elasticsearch
       const matchedJobIds = await this.elasticsearchService.searchJobs({
         titleKeywords: criteria.titleKeywords,
-        skills: criteria.skills,
+        skills: [],
         level: criteria.level,
         location: criteria.location,
         industryIDs: industryIDs,
@@ -445,10 +453,14 @@ export class JobRecommendationService {
   //- gọi gemini để phân tích hồ sơ và trích xuất tiêu chí tìm kiếm việc
   private async extractSearchCriteria(
     profileContext: string,
+    systemSkills: string,
+    systemIndustries: string,
   ): Promise<JobSearchCriteria> {
     try {
       const messages = await jobRecommendationPromptTemplate.formatMessages({
         profile_context: profileContext,
+        system_skills: systemSkills,
+        system_industries: systemIndustries,
       });
 
       const response = await this.llm.invoke(messages);
@@ -456,56 +468,8 @@ export class JobRecommendationService {
       return this.parseAndValidateCriteria(rawText);
     } catch (e) {
       console.error('Lỗi trích xuất tiêu chí tìm kiếm từ AI:', e);
-      return { titleKeywords: [], skills: [], industries: [], level: '', location: '' };
+      return { titleKeywords: [], skillIDs: [], industryIDs: [], level: '', location: '' };
     }
-  }
-
-  //- ánh xạ tên ngành nghề viết bằng chữ sang IDs trong cơ sở dữ liệu
-  private async mapIndustryNamesToIds(industryNames: string[]): Promise<string[]> {
-    if (!industryNames || industryNames.length === 0) return [];
-
-    const industryIds: string[] = [];
-
-    for (const name of industryNames.slice(0, 5)) {
-      try {
-        const result = await this.industryService.findAll(1, 1, name);
-
-        if (result?.result && result.result.length > 0) {
-          industryIds.push(result.result[0]._id.toString());
-        }
-      } catch (e) {
-        //- bỏ qua nếu không tìm thấy industry tương thích trong hệ thống
-      }
-    }
-
-    return industryIds;
-  }
-
-
-  //- ánh xạ tên kỹ năng viết bằng chữ sang IDs trong cơ sở dữ liệu
-  private async mapSkillNamesToIds(skillNames: string[]): Promise<string[]> {
-    if (!skillNames || skillNames.length === 0) return [];
-
-    const skillIds: string[] = [];
-
-    //- duyệt qua tối đa 10 kỹ năng được trích xuất để tránh bỏ sót các kỹ năng quan trọng phía sau
-    for (const name of skillNames.slice(0, 10)) {
-      try {
-        const result = await this.skillService.findAllByFilter({
-          currentPage: 1,
-          pageSize: 1,
-          name,
-        });
-
-        if (result?.result && result.result.length > 0) {
-          skillIds.push(result.result[0]._id.toString());
-        }
-      } catch (e) {
-        //- bỏ qua nếu không tìm thấy skill tương thích trong hệ thống
-      }
-    }
-
-    return skillIds;
   }
 
   //- phụ trợ lấy text thô từ langchain response
@@ -536,7 +500,7 @@ export class JobRecommendationService {
       return result.data;
     }
 
-    return { titleKeywords: [], skills: [], industries: [], level: '', location: '' };
+    return { titleKeywords: [], skillIDs: [], industryIDs: [], level: '', location: '' };
   }
 
   //- helper an toàn phân tích chuỗi thành json

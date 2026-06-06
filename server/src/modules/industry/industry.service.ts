@@ -35,6 +35,21 @@ export class IndustryService {
     }
   }
 
+  async findAllActiveFlat() {
+    try {
+      return this.industryRepository.findRaw(
+        { isDeleted: false },
+        {
+          projection: 'name',
+          lean: true,
+          includeDeleted: true,
+        },
+      );
+    } catch (error) {
+      throw new BadRequestCustom(error.message, !!error.message);
+    }
+  }
+
   //- start for skill.service.ts
   //- Hàm tìm tất cả các Gốc từ một danh sách ID bất kỳ
   async findRootIds(industryIds: string[]): Promise<string[]> {
