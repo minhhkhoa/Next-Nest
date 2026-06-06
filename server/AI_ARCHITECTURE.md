@@ -173,10 +173,14 @@ Pseudo-flow:
 - **Cơ chế hoạt động**: Không cần memory trong luồng chat. Dữ liệu được lưu cache và tính toán nền để tối ưu hiệu năng.
 - **Quy trình trích xuất & So khớp**:
   - Khi cần tính toán, service tập hợp ngữ cảnh từ `DetailProfile` và tất cả các `UserResume` (CV) thành chuỗi thông tin ứng viên.
-  - Gọi prompt `job-recommendation.prompt.ts` để nhờ Gemini trích xuất tiêu chí tìm việc dạng JSON (tiêu đề, kỹ năng, cấp bậc, địa điểm).
-  - Ánh xạ danh sách kỹ năng chữ sang Skill IDs tương ứng trong cơ sở dữ liệu.
-  - Gọi `searchJobsPublicAdvanced` truy vấn danh sách tối đa 20 công việc phù hợp (hỗ trợ cả fallback lấy job hot/nhiều lượt ứng tuyển nếu danh sách trống).
-  - Gọi prompt `job-matching-explanation.prompt.ts` để nhờ Gemini sinh lời giải thích mức độ phù hợp (`aiExplanation`) cho tối đa 15 công việc hàng đầu.
+  - Lấy danh sách kỹ năng và ngành nghề dạng phẳng từ cơ sở dữ liệu và gửi kèm lên LLM.
+  - Gọi prompt `job-recommendation.prompt.ts` để nhờ Gemini đối chiếu ngữ nghĩa và trích xuất trực tiếp mã `skillIDs` và `industryIDs` chuẩn có sẵn trong hệ thống (loại bỏ bước ánh xạ thủ công ở backend).
+  - Gộp ID kỹ năng/ngành nghề trích xuất từ AI với các ID sẵn có trong hồ sơ ứng viên.
+  - Gọi `elasticsearchService.searchJobs` để tìm kiếm nhanh các công việc phù hợp:
+    - Bắt buộc phải khớp ít nhất một ngành nghề hoặc kỹ năng (`must` match với `industryIDs` và `skillIDs`).
+    - Lọc ưu tiên địa điểm làm việc (`should` match với `location`).
+    - Loại bỏ hoàn toàn bộ lọc cấp bậc (`level`) để mở rộng cơ hội gợi ý.
+  - Sau khi lấy danh sách công việc từ Elasticsearch và chi tiết từ MongoDB, hệ thống đính kèm lời giải thích phù hợp mặc định (`aiExplanation`) dạng tĩnh để tiết kiệm token và triệt tiêu độ trễ gọi AI lần 2 (loại bỏ hoàn toàn prompt `job-matching-explanation.prompt.ts`).
 - **Tối ưu hóa hiệu năng bằng Redis Caching**:
   - Dữ liệu gợi ý được lưu vào Redis cache với key `recommendations:${userId}` và TTL là 24 giờ (đối với tài khoản đã điền hồ sơ) hoặc 1 giờ (đối với tài khoản trống thông tin).
   - Khi người dùng truy cập trang gợi ý việc làm, hệ thống lấy dữ liệu trực tiếp từ Redis trong <10ms, loại bỏ hoàn toàn độ trễ 5-10s gọi API Gemini.

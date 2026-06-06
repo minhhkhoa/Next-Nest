@@ -71,15 +71,18 @@ Hệ thống sử dụng decorator `@OnEvent(event_name, { async: true })` để
     - Truy vấn chi tiết thông tin hồ sơ `DetailProfile` (Tóm tắt, Kỹ năng, Cấp bậc mong muốn, Học vấn, Mức lương...).
     - Thu thập tất cả các CV hiện có của ứng viên (`UserResume` gồm CV tải lên và CV thiết kế trên hệ thống).
     - Trường hợp hồ sơ trống hoàn toàn và chưa có CV: Hệ thống kích hoạt chế độ **Fallback** - tự động trả về danh sách các công việc HOT / được ứng tuyển nhiều nhất kèm theo thông báo nhắc nhở cập nhật hồ sơ, lưu cache ngắn hạn (TTL 1 giờ).
-2.  **Trích xuất Tiêu chí Tìm kiếm bằng AI:**
-    - Sử dụng Prompt Template `job-recommendation.prompt.ts` gửi toàn bộ dữ liệu ngữ cảnh ứng viên tới Gemini LLM.
-    - Gemini phân tích chuyên sâu và trích xuất cấu trúc dữ liệu JSON gồm: `title` (vị trí công việc), `skills` (danh sách kỹ năng chính), `level` (cấp bậc tương ứng), và `location` (địa điểm làm việc).
-    - Ánh xạ (Mapping) danh sách kỹ năng chữ thành Skill IDs tương thích trong cơ sở dữ liệu thông qua `SkillService`.
+2.  **Trích xuất Tiêu chí Tìm kiếm bằng AI (Nhặt ID trực tiếp):**
+    - Lấy danh sách kỹ năng (`skills`) và ngành nghề (`industries`) phẳng từ cơ sở dữ liệu (dưới dạng tối giản `{id, name}`) để gửi kèm làm catalog ngữ nghĩa cho AI.
+    - Sử dụng Prompt Template `job-recommendation.prompt.ts` gửi dữ liệu ngữ cảnh ứng viên cùng danh mục kỹ năng và ngành nghề hệ thống tới Gemini LLM.
+    - Gemini phân tích hồ sơ và CV để so khớp trực tiếp với catalog kỹ năng, ngành nghề hệ thống, trả về JSON chứa trực tiếp các mã `skillIDs` và `industryIDs` chuẩn xác, cùng với `titleKeywords`, `level` và `location`. Giải pháp này giúp triệt tiêu hoàn toàn lỗi lệch từ khóa (mismatch) và giảm tải cho backend.
 3.  **Truy vấn Elasticsearch & MongoDB thông minh (Mô hình Retrieval):**
-    - Gọi `elasticsearchService.searchJobs` với các tham số đã trích xuất ở trên để thực hiện tìm kiếm mờ, so khớp nhanh các công việc phù hợp nhất trên Elasticsearch và trả về danh sách IDs.
-    - Gọi `jobsService.findByIds` để lấy thông tin Job chi tiết và tự động populate các thực thể liên quan (Company, Skills, Industries) từ MongoDB.
+    - Gọi `elasticsearchService.searchJobs` với các tham số trích xuất được. Ở tầng Elasticsearch, câu query được cải tiến:
+      - Các mã `industryIDs` và `skillIDs` được đưa vào mảng `must` (bắt buộc khớp ít nhất một ngành nghề hoặc kỹ năng).
+      - `location` được đưa vào mảng `should` để tăng điểm ưu tiên hiển thị.
+      - Loại bỏ hoàn toàn bộ lọc `level` khỏi câu query Elasticsearch để mở rộng phạm vi công việc đề xuất (không giới hạn cấp bậc).
+    - Gọi `jobsService.findByIds` để lấy thông tin Job chi tiết và tự động populate các thực thể liên quan (Company, Skills, Industries) từ MongoDB theo đúng thứ tự điểm số từ Elasticsearch.
 4.  **Đóng gói kết quả & Lưu cache Redis:**
-    - Đóng gói danh sách tối đa 15 công việc hàng đầu tìm được từ Elasticsearch, tự động đính kèm thông báo phù hợp mặc định (`aiExplanation: 'Công việc phù hợp với kỹ năng và định hướng hồ sơ của bạn.'`).
+    - Đóng gói danh sách tối đa 15 công việc hàng đầu tìm được từ Elasticsearch, tự động đính kèm thông báo phù hợp mặc định (`aiExplanation: 'Công việc phù hợp với kỹ năng và định hướng hồ sơ của bạn.'`). Cách tiếp cận này loại bỏ việc gọi Gemini lần hai để viết nhận xét, tối ưu hóa đáng kể thời gian phản hồi và giảm 90% chi phí token.
     - Trường hợp không tìm thấy công việc nào phù hợp, hệ thống sẽ trả về thông báo: "Hiện tại chưa có công việc nào hoàn toàn phù hợp với hồ sơ của bạn. Hãy thử cập nhật thêm kỹ năng hoặc chờ các cơ hội mới nhé." và trả về danh sách rỗng.
     - Lưu trữ toàn bộ gói dữ liệu (gồm trạng thái hồ sơ `hasProfile`, thông điệp `message` và danh sách gợi ý `recommendations`) vào Redis cache với khóa `recommendations:${userId}` có thời hạn lưu trữ (TTL) là **24 giờ** đối với hồ sơ hoàn chỉnh.
 
@@ -96,9 +99,9 @@ sequenceDiagram
     participant FE as [client] ai-recommendations/index.tsx
     participant Controller as [server] ai-service.controller.ts
     participant Service as [server] job-recommendation.service.ts
+    participant DB as [server] MongoDB (Skills/Industries/Jobs)
     participant LLM as [server] Google Gemini API
     participant ES as [server] Elasticsearch
-    participant DB as [server] MongoDB
 
     User->>FE: Truy cập trang hoặc nhấn "Cập nhật gợi ý"
     Note over FE: handleRefresh() kích hoạt mutation force refresh
@@ -113,24 +116,30 @@ sequenceDiagram
         rect rgb(240, 240, 240)
             Note over Service: 1. Thu thập dữ liệu profile & CV
             Service->>Service: buildProfileContext(profile, resumes)
-            Note over Service: 2. Gọi LLM trích xuất từ khóa tiêu đề & kỹ năng
-            Service->>LLM: Gọi với prompt jobRecommendationPromptTemplate
-            LLM->>Service: Trả về JSON { titleKeywords, skills, level, location }
+            
+            Note over Service: 2. Lấy danh mục Skills & Industries từ DB để tối ưu token
+            Service->>DB: Lấy danh sách kỹ năng & ngành nghề dạng phẳng
+            DB->>Service: Trả về [{id, name}]
+            
+            Note over Service: 3. Gọi LLM trích xuất & nhặt trực tiếp ID hệ thống
+            Service->>LLM: Gọi với prompt (truyền system_skills và system_industries)
+            LLM->>Service: Trả về JSON { titleKeywords, skillIDs, industryIDs, level, location }
 
-            Note over Service: 3. Truy vấn tìm kiếm nhanh ở ES
+            Note over Service: 4. Truy vấn tìm kiếm nhanh ở ES (Must: skillIDs, industryIDs; Should: location; No Level filter)
             Service->>ES: searchJobs({ titleKeywords, skills, level, location, industryIDs, skillIDs })
-            ES->>Service: Trả về danh sách IDs phù hợp
+            ES->>Service: Trả về danh sách IDs công việc phù hợp
+            
             Service->>DB: findByIds(matchedJobIds)
-            DB->>Service: Trả về danh sách jobs đầy đủ thông tin
-
-            Note over Service: 4. Đóng gói và lưu kết quả vào Redis cache (24h)
+            DB->>Service: Trả về danh sách jobs chi tiết
+            
+            Note over Service: 5. Gán aiExplanation tĩnh, lưu kết quả vào Redis cache (24h)
         end
 
         Service->>Controller: Trả về dữ liệu gợi ý hoàn chỉnh
     end
 
     Controller->>FE: Trả về Response JSON
-    FE->>User: Render giao diện kèm lời giải thích phù hợp từ AI
+    FE->>User: Render giao diện kèm lời giải thích phù hợp mặc định từ AI
 ```
 
 #### Chi tiết các hàm & Tệp tin:
