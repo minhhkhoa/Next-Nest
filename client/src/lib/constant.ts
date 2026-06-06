@@ -81,9 +81,7 @@ export const ADDRESS_OPTIONS = [
 
 export const HTTP_METHODS = ["GET", "POST", "PUT", "DELETE", "PATCH"];
 
-export const BreadcrumbNameMap = (
-  locales: string,
-) => ({
+export const BreadcrumbNameMap = (locales: string) => ({
   // -start page public
   "cate-news": locales === "vi" ? "Hành trang nghề nghiệp" : "Career Path",
   news: locales === "vi" ? "Tin tức" : "News",
@@ -98,6 +96,9 @@ export const BreadcrumbNameMap = (
   "my-application":
     locales === "vi" ? "Lịch sử ứng tuyển" : "Application History",
   // - end page public
+
+  "impressive-template": locales === "vi" ? "Mẫu CV ấn tượng" : "Impressive CV",
+  "ai-score": locales === "vi" ? "Chấm điểm CV" : "CV Score",
 });
 
 //- start enum notification

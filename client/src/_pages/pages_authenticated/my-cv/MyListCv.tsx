@@ -17,11 +17,9 @@ import { useGetUserResumes } from "@/queries/useUserResume";
 import { listTemplateMetadata } from "../cv-templates/ListTemplate";
 import ListCvSkeleton from "@/components/skeletons/list-cv-skeleton";
 import { generateSlugUrl } from "@/lib/utils";
-import AiScoreModal from "./components/AiScoreModal";
 
 export default function PageMyListCv() {
   const { data: listMyCvFetch, isLoading } = useGetUserResumes();
-  const [selectedCvId, setSelectedCvId] = React.useState<string | null>(null);
 
   //- vì response trả về không có field image và title nên ta sẽ thêm vào và dùng listTemplateMetadata để map theo listMyCvFetch.templateID === listTemplateMetadata.id để lấy image và title tương ứng
   const listMyCv = listMyCvFetch?.data?.map((template) => {
@@ -85,10 +83,14 @@ export default function PageMyListCv() {
                   <Button 
                     variant="secondary" 
                     className="rounded-full w-full bg-white/20 hover:bg-white/30 text-white border-white/20 backdrop-blur-md"
-                    onClick={() => setSelectedCvId(template._id)}
+                    asChild
                   >
-                    <Sparkles className="mr-2 h-4 w-4 text-yellow-400 fill-yellow-400" />
-                    Chấm điểm AI
+                    <Link
+                      href={`/my-cv/${generateSlugUrl({ name: template.templateID, id: template._id })}/ai-score`}
+                    >
+                      <Sparkles className="mr-2 h-4 w-4 text-yellow-400 fill-yellow-400" />
+                      Chấm điểm AI
+                    </Link>
                   </Button>
                 </div>
               </div>
@@ -119,12 +121,7 @@ export default function PageMyListCv() {
           ))
         )}
       </div>
-
-      <AiScoreModal 
-        cvId={selectedCvId} 
-        isOpen={!!selectedCvId} 
-        onClose={() => setSelectedCvId(null)} 
-      />
     </div>
   );
 }
+
