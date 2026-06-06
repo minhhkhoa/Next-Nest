@@ -301,18 +301,6 @@ export class ElasticsearchService implements OnModuleInit {
       });
     }
 
-    //- lọc theo cấp bậc (để ở should để ưu tiên cấp bậc của ứng viên, không bắt buộc lọc cứng)
-    if (level) {
-      should.push({
-        term: {
-          level: {
-            value: level,
-            boost: 2,
-          },
-        },
-      });
-    }
-
     const query: any = {
       bool: {
         must,
