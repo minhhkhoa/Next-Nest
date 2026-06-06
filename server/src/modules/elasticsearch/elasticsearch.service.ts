@@ -281,17 +281,16 @@ export class ElasticsearchService implements OnModuleInit {
       });
     }
 
-    //- lọc theo ngành nghề (chính xác theo industry ids)
+    //- lọc theo ngành nghề (chính xác theo industry ids) - chuyển sang must để bắt buộc đúng ngành
     if (industryIDs && industryIDs.length > 0) {
-      should.push({
+      must.push({
         terms: {
           industryID: industryIDs,
-          boost: 15,
         },
       });
     }
 
-    //- tìm kiếm mờ theo địa điểm
+    //- tìm kiếm mờ theo địa điểm (để ở should để ưu tiên địa điểm mong muốn, không bắt buộc)
     if (location) {
       should.push({
         match: {
