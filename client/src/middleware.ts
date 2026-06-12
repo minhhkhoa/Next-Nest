@@ -9,7 +9,7 @@ const SECRET_KEY = new TextEncoder().encode(envConfig.NEXT_PUBLIC_JWT_SECRET);
 
 const intlMiddleware = createMiddleware(routing);
 
-// 1. Cấu hình nhóm Route protected
+//- Cấu hình nhóm Route protected
 const protectedPaths = [
   "/cv-templates",
   "/issue",
@@ -22,7 +22,7 @@ const protectedPaths = [
   "/chat",
 ];
 
-// 2. Cấu hình nhóm Role
+//- Cấu hình nhóm Role
 const SYSTEM_ADMIN_ROLES = [
   envConfig.NEXT_PUBLIC_ROLE_SUPER_ADMIN,
   envConfig.NEXT_PUBLIC_ROLE_CONTENT_MANAGER,
@@ -86,29 +86,33 @@ export async function middleware(request: NextRequest) {
       const { payload } = await jwtVerify(token, SECRET_KEY);
       const role = payload.roleCodeName as string;
 
-    const locale = pathname.match(/^\/(vi|en)/)?.[1] || routing.defaultLocale;
+      const locale = pathname.match(/^\/(vi|en)/)?.[1] || routing.defaultLocale;
 
-    //- cho phép nhà tuyển dụng vào trang welcome dù chưa có role
-    // Check pathWithoutLocale thay vì path
-    if (RECRUITER_BYPASS_PATHS.includes(pathWithoutLocale)) {
-      return intlResponse;
-    }
-
-    //- bảo vệ route /admin
-    if (isAdminRoute) {
-      //- chỉ cho phép nhóm System Admin vào
-      if (!SYSTEM_ADMIN_ROLES.includes(role)) {
-        return NextResponse.rewrite(new URL(`/${locale}${FORBIDDEN_PATH}`, request.url));
+      //- cho phép nhà tuyển dụng vào trang welcome dù chưa có role
+      // Check pathWithoutLocale thay vì path
+      if (RECRUITER_BYPASS_PATHS.includes(pathWithoutLocale)) {
+        return intlResponse;
       }
-    }
 
-    //- bảo vệ route /recruiter
-    if (isRecruiterRoute) {
-      //- chỉ cho phép nhóm Recruiter vào
-      if (!RECRUITER_ROLES.includes(role)) {
-        return NextResponse.rewrite(new URL(`/${locale}${FORBIDDEN_PATH}`, request.url));
+      //- bảo vệ route /admin
+      if (isAdminRoute) {
+        //- chỉ cho phép nhóm System Admin vào
+        if (!SYSTEM_ADMIN_ROLES.includes(role)) {
+          return NextResponse.rewrite(
+            new URL(`/${locale}${FORBIDDEN_PATH}`, request.url),
+          );
+        }
       }
-    }
+
+      //- bảo vệ route /recruiter
+      if (isRecruiterRoute) {
+        //- chỉ cho phép nhóm Recruiter vào
+        if (!RECRUITER_ROLES.includes(role)) {
+          return NextResponse.rewrite(
+            new URL(`/${locale}${FORBIDDEN_PATH}`, request.url),
+          );
+        }
+      }
 
       //- bảo vệ các route protected
       // Nếu đã login và verify thành công thì luôn cho phép vào protectedPaths

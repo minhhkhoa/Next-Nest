@@ -126,6 +126,27 @@ export default function PopoverAdmin() {
             <span>Hồ sơ cá nhân</span>
           </Link>
 
+          {/* Chế độ sáng tối */}
+          {mounted && (
+            <div
+              className="flex items-center justify-between mt-2 pl-3 pr-2 rounded-xl h-8 hover:bg-accent/50 cursor-pointer select-none"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            >
+              <div className="flex items-center text-sm text-foreground">
+                {theme === "dark" ? (
+                  <Moon className="mr-2 h-4 w-4" />
+                ) : (
+                  <Sun className="mr-2 h-4 w-4" />
+                )}
+                <span className="ml-2">Chế độ tối</span>
+              </div>
+              <Switch
+                checked={theme === "dark"}
+                className="pointer-events-none"
+              />
+            </div>
+          )}
+
           {/* cai dat tai khoan */}
           <Link
             href="/settings"
@@ -143,27 +164,6 @@ export default function PopoverAdmin() {
             <UserPlus className="mr-2 h-4 w-4" />
             <span className="line-clamp-1">Đăng nhập tài khoản khác</span>
           </div>
-
-          {/* Chế độ sáng tối */}
-          {mounted && (
-            <div
-              className="flex items-center justify-between mt-2 pl-3 pr-2 rounded-xl h-8 hover:bg-accent/50 cursor-pointer select-none"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            >
-              <div className="flex items-center text-sm text-foreground">
-                {theme === "dark" ? (
-                  <Moon className="mr-2 h-4 w-4" />
-                ) : (
-                  <Sun className="mr-2 h-4 w-4" />
-                )}
-                <span>Chế độ tối</span>
-              </div>
-              <Switch
-                checked={theme === "dark"}
-                className="pointer-events-none"
-              />
-            </div>
-          )}
 
           {/* logout */}
           {isLogin && (

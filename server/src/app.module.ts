@@ -35,6 +35,7 @@ import { RedisModule } from './common/redis/redis.module';
 import { AdvertisingModule } from './modules/advertising/advertising.module';
 import { AiServiceModule } from './modules/ai-service/ai-service.module';
 import { ElasticsearchModule } from './modules/elasticsearch/elasticsearch.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -96,6 +97,7 @@ import { ElasticsearchModule } from './modules/elasticsearch/elasticsearch.modul
     ConversationModule,
     MessageModule,
     AdvertisingModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [
