@@ -39,17 +39,23 @@ export default function BlockIssue() {
         <Popover>
           <Tooltip>
             <TooltipTrigger asChild>
-              <PopoverTrigger asChild>
-                <Button
-                  size="icon"
-                  className="h-10 w-10 rounded-full shadow-lg transition-transform hover:scale-110 bg-primary text-primary-foreground hover:bg-primary/90"
-                >
-                  <MessageCircleQuestion className="h-5 w-5" />
-                  <span className="sr-only">Hỗ trợ</span>
-                </Button>
-              </PopoverTrigger>
+              <div className="flex items-center gap-2 pointer-events-auto">
+                {/*- nhãn hiển thị bên cạnh icon trên mobile giúp người dùng dễ nhận biết do không có hover */}
+                <span className="px-2 py-1 rounded bg-black/80 dark:bg-slate-900/90 text-white text-[11px] font-medium shadow-md pointer-events-none sm:hidden whitespace-nowrap">
+                  Hỗ trợ & Đóng góp
+                </span>
+                <PopoverTrigger asChild>
+                  <Button
+                    size="icon"
+                    className="h-10 w-10 rounded-full shadow-lg transition-transform hover:scale-110 bg-primary text-primary-foreground hover:bg-primary/90 shrink-0"
+                  >
+                    <MessageCircleQuestion className="h-5 w-5" />
+                    <span className="sr-only">Hỗ trợ</span>
+                  </Button>
+                </PopoverTrigger>
+              </div>
             </TooltipTrigger>
-            <TooltipContent side="left">
+            <TooltipContent side="left" className="hidden sm:block">
               <p>Hỗ trợ & Đóng góp</p>
             </TooltipContent>
           </Tooltip>

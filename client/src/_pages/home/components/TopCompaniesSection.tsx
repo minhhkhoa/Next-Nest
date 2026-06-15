@@ -16,7 +16,7 @@ export default function TopCompaniesSection() {
 
   const { data: listCompanies, isLoading } = useGetCompanies({
     page: 1,
-    pageSize: 8,
+    pageSize: 20,
   });
   const companies = listCompanies?.data?.result || [];
 
@@ -28,9 +28,7 @@ export default function TopCompaniesSection() {
             <h2 className="text-3xl font-bold text-primary pl-4 border-l-4 border-primary">
               {t("Title")}
             </h2>
-            <p className="text-muted-foreground">
-              {t("Description")}
-            </p>
+            <p className="text-muted-foreground">{t("Description")}</p>
           </div>
 
           <Link href="/company">

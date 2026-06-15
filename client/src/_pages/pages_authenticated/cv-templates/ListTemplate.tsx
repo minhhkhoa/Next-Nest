@@ -50,7 +50,7 @@ export const listTemplateMetadata = [
 
 export default function PageListTemplate() {
   return (
-    <div className="container mx-auto py-10 px-4">
+    <div className="container mx-auto py-10">
       <div className="flex flex-col text-center mb-12 space-y-4">
         <h1 className="text-3xl md:text-4xl font-bold text-foreground">
           Danh sách mẫu CV chuyên nghiệp

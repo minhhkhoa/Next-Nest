@@ -12,9 +12,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card } from "@/components/ui/card";
-import { Edit2, Check, X } from "lucide-react";
+import { Edit2, Check, X, GraduationCap, Calendar, Award } from "lucide-react";
 import { MultiSelect } from "../../components/multi-select";
+
+//- helper định dạng lại ngày tháng học vấn dạng mm/yyyy an toàn
+const formatEducationDate = (dateStr: string) => {
+  if (!dateStr) return "chưa cập nhật";
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return dateStr;
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${month}/${year}`;
+};
 import { EducationForm } from "./education-form";
 import { useAppStore } from "@/components/TanstackProvider";
 import {
@@ -102,7 +111,7 @@ export function DetailedInfoSection() {
 
     const res = await updateDetailProfileMutate({ id: idUserUpdate, payload });
 
-    if(res.isError) return;
+    if (res.isError) return;
 
     SoftSuccessSonner(res.message);
     setIsEditing(false);
@@ -266,13 +275,13 @@ export function DetailedInfoSection() {
               }
               onChange={(options) => {
                 const industryDataArray = Array.isArray(
-                  industryData?.data?.result
+                  industryData?.data?.result,
                 )
                   ? industryData?.data?.result
                   : [];
                 const selectedIndustries =
                   industryDataArray?.filter((industry) =>
-                    options.some((option) => option.value === industry._id)
+                    options.some((option) => option.value === industry._id),
                   ) ?? [];
 
                 handleChange("industryID", selectedIndustries);
@@ -397,7 +406,9 @@ export function DetailedInfoSection() {
 
         {/* Education */}
         <div>
-          <Label className="text-sm font-medium mb-3 block">Học vấn</Label>
+          <Label className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4 block">
+            Học vấn
+          </Label>
           {isEditing ? (
             <EducationForm
               education={formData?.education || []}
@@ -405,22 +416,45 @@ export function DetailedInfoSection() {
               setValidateForm={setValidateForm}
             />
           ) : (
-            <div className="space-y-3">
+            <div className="pl-3">
               {formData?.education && formData?.education?.length > 0 ? (
-                formData?.education.map((edu, index) => (
-                  <Card key={index} className="p-4 bg-muted">
-                    <p className="font-medium text-foreground">{edu.school}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {edu.degree}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {new Date(edu.startDate).toLocaleDateString("vi-VN")} -{" "}
-                      {new Date(edu.endDate).toLocaleDateString("vi-VN")}
-                    </p>
-                  </Card>
-                ))
+                <div className="relative border-l border-slate-200/80 dark:border-slate-800/80 space-y-6 py-1">
+                  {formData?.education.map((edu, index) => (
+                    <div key={index} className="relative pl-6 group">
+                      {/*- chấm tròn biểu thị mốc thời gian trên timeline */}
+                      <div className="absolute left-0 -translate-x-1/2 top-1.5 flex h-7 w-7 items-center justify-center rounded-full border border-primary/30 bg-white dark:bg-slate-900 text-primary shadow-xs transition-colors group-hover:border-primary group-hover:bg-primary/5">
+                        <GraduationCap className="h-4 w-4" />
+                      </div>
+
+                      {/*- thông tin chi tiết học vấn */}
+                      <div className="space-y-1">
+                        <h4 className="font-bold text-slate-800 dark:text-slate-100 text-base leading-tight tracking-tight group-hover:text-primary transition-colors">
+                          {edu.school || "Trường học chưa cập nhật"}
+                        </h4>
+
+                        <p className="text-sm text-slate-600 dark:text-slate-400 font-medium flex items-center gap-1.5">
+                          <Award className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" />
+                          <span>{edu.degree || "Bằng cấp chưa cập nhật"}</span>
+                        </p>
+
+                        <p className="text-xs text-slate-500 dark:text-slate-500 flex items-center gap-1.5 pt-0.5">
+                          <Calendar className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
+                          <span>
+                            {formatEducationDate(edu.startDate)} —{" "}
+                            {formatEducationDate(edu.endDate)}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               ) : (
-                <p className="text-muted-foreground">Chưa cập nhật</p>
+                <div className="text-center py-6 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/30 dark:bg-transparent">
+                  <GraduationCap className="w-8 h-8 text-slate-300 dark:text-slate-700 mx-auto mb-2" />
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Chưa có thông tin học vấn
+                  </p>
+                </div>
               )}
             </div>
           )}

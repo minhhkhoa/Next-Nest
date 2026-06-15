@@ -12,7 +12,7 @@ import {
   ResultListNewsType,
 } from "@/schemasvalidation/NewsCategory";
 import { formatDateInput, generateSlugUrl } from "@/lib/utils";
-import { ArrowRight, PenIcon } from "lucide-react";
+import { ArrowRight, PenIcon, Sparkles } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import SlideCateNews from "./components/SlideCateNews";
@@ -109,99 +109,110 @@ function BlockNewsHot({
       </div>
 
       {/* Main Container - Split Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 lg:gap-8">
-        {/* Block Left - Featured News */}
-        <div className="flex flex-col rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 bg-white border border-gray-100">
-          <Link
-            href={`/news/${generateSlugUrl({
-              name: firstNews.slugNews.vi,
-              id: firstNews._id,
-            })}`}
-            className="flex-1 flex flex-col"
-          >
-            <div className="relative overflow-hidden bg-slate-200 h-64 md:h-72 lg:h-80">
-              <Image
-                src={firstNews.image || "/placeholder.svg"}
-                alt={firstNews.title.vi}
-                fill
-                className="object-cover w-full h-full transform transition-transform duration-300 hover:scale-110"
-              />
-            </div>
-
-            {/* Content Section */}
-            <div className="p-4 md:p-6 flex flex-col flex-1 bg-white">
-              <p className="text-xs md:text-sm font-semibold text-primary uppercase tracking-wide mb-2">
-                {firstNews.cateNewsID[0]?.name.vi || "News"}
-              </p>
-              <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 line-clamp-3 mb-3 hover:text-primary transition-colors">
-                {firstNews.title.vi}
-              </h3>
-
-              <p className="text-xs md:text-sm text-gray-500 mb-3 flex items-center gap-1">
-                <PenIcon className="inline-block w-3 h-3 md:w-4 md:h-4 mr-1 mb-0.5" />
-                {firstNews.createdBy.name} •{" "}
-                {formatDateInput(firstNews.createdAt)}
-              </p>
-
-              <p className="text-sm md:text-base text-gray-700 line-clamp-2 mb-4 flex-1">
-                {firstNews.summary.vi}
-              </p>
-
-              <div className="flex items-center gap-1 text-primary font-semibold hover:gap-2 transition-all text-sm md:text-base">
-                Đọc thêm
-                <ArrowRight size={16} className="md:w-5 md:h-5" />
-              </div>
-            </div>
-          </Link>
-        </div>
-
-        {/* Block Right - News List */}
-        <div className="flex flex-col gap-3 md:gap-4">
-          {restNews.map((newsItem) => (
+      {/*- đồng bộ container và card giống BlockNewsNice của CategoryNews */}
+      <div className="px-5 py-6 md:p-8 rounded-3xl bg-gradient-to-br from-primary/50 via-primary/20 to-indigo-50/30 border border-primary/20 shadow-sm">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+          {/* Block Left - Featured News */}
+          <div className="flex flex-col rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-slate-950/60 hover:bg-slate-950/80 backdrop-blur-sm border border-white/10 hover:border-indigo-500/30">
             <Link
-              key={newsItem._id}
               href={`/news/${generateSlugUrl({
-                name: newsItem.slugNews.vi,
-                id: newsItem._id,
+                name: firstNews.slugNews.vi,
+                id: firstNews._id,
               })}`}
-              className="group bg-white rounded-xl p-4 md:p-5 shadow-sm hover:shadow-md hover:bg-white transition-all duration-200 border border-gray-100 hover:border-primary/50 hover:border-4 flex gap-4"
+              className="flex-1 flex flex-col group"
             >
-              {/* Text Content */}
-              <div className="flex-1 flex flex-col min-w-0">
-                <p className="text-xs md:text-sm font-semibold text-primary uppercase tracking-wide mb-1">
-                  {newsItem.cateNewsID[0]?.name.vi || "News"}
-                </p>
-                <h4 className="text-base md:text-lg font-bold text-gray-900 line-clamp-2 mb-2 transition-colors">
-                  {newsItem.title.vi}
-                </h4>
-
-                <p className="text-xs md:text-sm text-gray-500 mb-2 flex items-center gap-1">
-                  <PenIcon className="inline-block w-3 h-3 md:w-4 md:h-4 mr-1 mb-0.5" />
-                  {newsItem.createdBy.name} •{" "}
-                  {formatDateInput(newsItem.createdAt)}
-                </p>
-
-                <p className="text-sm text-gray-600 line-clamp-2 mb-3 flex-1">
-                  {newsItem.summary.vi}
-                </p>
-
-                <div className="flex items-center gap-1 text-black font-semibold text-xs md:text-sm group-hover:gap-2 transition-all">
-                  Đọc thêm
-                  <ArrowRight size={14} className="md:w-4 md:h-4" />
+              <div className="relative overflow-hidden bg-slate-200 h-64 md:h-72 lg:h-80">
+                <Image
+                  src={firstNews.image || "/placeholder.svg"}
+                  alt={firstNews.title.vi || "Tin tức nổi bật"}
+                  fill
+                  className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute top-4 left-4 z-10 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg shadow-indigo-500/20 flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 fill-white animate-pulse" />
+                  Tiêu điểm
                 </div>
               </div>
 
-              {/* Image */}
-              <div className="relative w-24 md:w-28 lg:w-32 h-24 md:h-28 lg:h-32 flex-shrink-0 rounded-lg overflow-hidden bg-slate-200">
-                <Image
-                  src={newsItem.image || "/placeholder.svg"}
-                  alt={newsItem.title.vi}
-                  fill
-                  className="object-cover w-full h-full transform transition-transform duration-300 group-hover:scale-110"
-                />
+              {/* Content Section */}
+              <div className="p-5 md:p-6 flex flex-col flex-1">
+                <p className="text-xs md:text-sm font-semibold text-indigo-400 uppercase tracking-wide mb-2">
+                  {firstNews.cateNewsID[0]?.name.vi || "News"}
+                </p>
+                <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white line-clamp-2 mb-3 group-hover:text-indigo-300 transition-colors leading-snug">
+                  {firstNews.title.vi}
+                </h3>
+
+                <p className="text-xs md:text-sm text-slate-400 mb-3 flex items-center gap-1.5">
+                  <PenIcon className="inline-block w-3.5 h-3.5 mr-0.5 text-slate-500" />
+                  <span className="font-medium text-slate-300">{firstNews.createdBy.name}</span>
+                  <span className="text-slate-500">•</span>
+                  <span>{formatDateInput(firstNews.createdAt)}</span>
+                </p>
+
+                <p className="text-sm md:text-base text-slate-300 line-clamp-3 mb-4 flex-1 leading-relaxed">
+                  {firstNews.summary.vi}
+                </p>
+
+                <div className="flex items-center gap-1 text-indigo-400 font-bold text-sm md:text-base group-hover:text-indigo-300 transition-all">
+                  Đọc bài viết
+                  <ArrowRight size={16} className="md:w-5 md:h-5 transition-transform" />
+                </div>
               </div>
             </Link>
-          ))}
+          </div>
+
+          {/* Block Right - News List */}
+          <div className="flex flex-col gap-4">
+            {restNews.map((newsItem) => (
+              <Link
+                key={newsItem._id}
+                href={`/news/${generateSlugUrl({
+                  name: newsItem.slugNews.vi,
+                  id: newsItem._id,
+                })}`}
+                className="group bg-slate-950/60 hover:bg-slate-950/80 backdrop-blur-sm rounded-2xl p-4 md:p-5 shadow-sm hover:shadow-xl hover:border-indigo-500/30 hover:-translate-y-1 transition-all duration-300 border border-white/10 flex gap-4"
+              >
+                {/* Text Content */}
+                <div className="flex-1 flex flex-col min-w-0 justify-between">
+                  <div>
+                    <p className="text-xs md:text-sm font-semibold text-indigo-400 uppercase tracking-wide mb-1">
+                      {newsItem.cateNewsID[0]?.name.vi || "News"}
+                    </p>
+                    <h4 className="text-base md:text-lg font-bold text-white line-clamp-2 mb-2 group-hover:text-indigo-300 transition-colors leading-snug">
+                      {newsItem.title.vi}
+                    </h4>
+
+                    <p className="text-xs md:text-sm text-slate-400 mb-2.5 flex items-center gap-1.5">
+                      <PenIcon className="inline-block w-3.5 h-3.5 mr-0.5 text-slate-550" />
+                      <span className="font-medium text-slate-300">{newsItem.createdBy.name}</span>
+                      <span className="text-slate-500">•</span>
+                      <span>{formatDateInput(newsItem.createdAt)}</span>
+                    </p>
+
+                    <p className="text-xs md:text-sm text-slate-300 line-clamp-2 mb-3 leading-relaxed">
+                      {newsItem.summary.vi}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-1 text-indigo-400 font-bold text-xs md:text-sm group-hover:text-indigo-300 transition-all">
+                    Đọc thêm
+                    <ArrowRight size={14} className="transition-transform" />
+                  </div>
+                </div>
+
+                {/* Image */}
+                <div className="relative w-24 md:w-28 lg:w-32 h-24 md:h-28 lg:h-32 flex-shrink-0 rounded-lg overflow-hidden bg-slate-200">
+                  <Image
+                    src={newsItem.image || "/placeholder.svg"}
+                    alt={newsItem.title.vi}
+                    fill
+                    className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </div>

@@ -9,7 +9,11 @@ import { DateRange } from "react-day-picker";
 import { useGetRecruiterStats } from "@/queries/useRecruiterDashboard";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { Spinner } from "@/components/ui/spinner";
@@ -30,7 +34,12 @@ export default function PageRecruiterDashboard() {
   const endDateStr = date?.to ? format(date.to, "yyyy-MM-dd") : undefined;
 
   //- gọi api lấy dữ liệu thống kê từ server dành cho recruiter
-  const { data: statsData, isLoading, refetch, isFetching } = useGetRecruiterStats(startDateStr, endDateStr);
+  const {
+    data: statsData,
+    isLoading,
+    refetch,
+    isFetching,
+  } = useGetRecruiterStats(startDateStr, endDateStr);
 
   //- định nghĩa fallback cho các trường dữ liệu kpi
   const kpis = statsData?.data?.kpis || {
@@ -42,7 +51,8 @@ export default function PageRecruiterDashboard() {
   };
 
   const applicationsTrend = statsData?.data?.applicationsTrend || [];
-  const applicationsStatusDistribution = statsData?.data?.applicationsStatusDistribution || [];
+  const applicationsStatusDistribution =
+    statsData?.data?.applicationsStatusDistribution || [];
   const jobsPerformance = statsData?.data?.jobsPerformance || [];
   const recentApplications = statsData?.data?.recentApplications || [];
 
@@ -52,14 +62,16 @@ export default function PageRecruiterDashboard() {
       <div className="flex h-[80vh] items-center justify-center">
         <div className="text-center space-y-4">
           <Spinner className="w-10 h-10 mx-auto text-primary" />
-          <p className="text-muted-foreground font-medium animate-pulse">Đang tải số liệu thống kê tuyển dụng...</p>
+          <p className="text-muted-foreground font-medium animate-pulse">
+            Đang tải số liệu thống kê tuyển dụng...
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="py-6 space-y-6">
       {/* phần tiêu đề chính & date filter */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
@@ -67,7 +79,8 @@ export default function PageRecruiterDashboard() {
             Thống Kê Tuyển Dụng
           </h1>
           <p className="text-muted-foreground mt-1">
-            Theo dõi hiệu suất tin tuyển dụng và xu hướng ứng tuyển của doanh nghiệp.
+            Theo dõi hiệu suất tin tuyển dụng và xu hướng ứng tuyển của doanh
+            nghiệp.
           </p>
         </div>
 
@@ -79,14 +92,15 @@ export default function PageRecruiterDashboard() {
                 variant="outline"
                 className={cn(
                   "w-[260px] justify-start text-left font-normal border-indigo-200/60 shadow-sm hover:bg-indigo-50/50 hover:text-indigo-600 transition-colors",
-                  !date && "text-muted-foreground"
+                  !date && "text-muted-foreground",
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4 text-indigo-500" />
                 {date?.from ? (
                   date.to ? (
                     <>
-                      {format(date.from, "dd/MM/yyyy")} - {format(date.to, "dd/MM/yyyy")}
+                      {format(date.from, "dd/MM/yyyy")} -{" "}
+                      {format(date.to, "dd/MM/yyyy")}
                     </>
                   ) : (
                     format(date.from, "dd/MM/yyyy")
@@ -116,7 +130,9 @@ export default function PageRecruiterDashboard() {
             disabled={isFetching}
             className="border-indigo-200/60 text-indigo-600 shadow-sm"
           >
-            <RefreshCw className={cn("h-4 w-4", isFetching && "animate-spin")} />
+            <RefreshCw
+              className={cn("h-4 w-4", isFetching && "animate-spin")}
+            />
           </Button>
         </div>
       </div>
@@ -124,8 +140,18 @@ export default function PageRecruiterDashboard() {
       {/* thanh tab chuyển đổi giữa các màn hình chi tiết */}
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="grid w-full grid-cols-1 md:grid-cols-2 bg-muted/80 p-1 rounded-xl h-auto md:h-11">
-          <TabsTrigger value="overview" className="rounded-lg font-medium py-2 md:py-0">Tổng Quan Hoạt Động</TabsTrigger>
-          <TabsTrigger value="jobsPerformance" className="rounded-lg font-medium py-2 md:py-0">Hiệu Quả Tin Tuyển Dụng</TabsTrigger>
+          <TabsTrigger
+            value="overview"
+            className="rounded-lg font-medium py-2 md:py-0"
+          >
+            Tổng Quan Hoạt Động
+          </TabsTrigger>
+          <TabsTrigger
+            value="jobsPerformance"
+            className="rounded-lg font-medium py-2 md:py-0"
+          >
+            Hiệu Quả Tin Tuyển Dụng
+          </TabsTrigger>
         </TabsList>
 
         {/* Tab 1: Tổng quan */}
@@ -140,12 +166,9 @@ export default function PageRecruiterDashboard() {
 
         {/* Tab 2: Hiệu quả tin tuyển dụng */}
         <TabsContent value="jobsPerformance" className="outline-none">
-          <JobsPerformanceTab
-            jobsPerformance={jobsPerformance}
-          />
+          <JobsPerformanceTab jobsPerformance={jobsPerformance} />
         </TabsContent>
       </Tabs>
     </div>
   );
 }
-

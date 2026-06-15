@@ -30,6 +30,7 @@ import { generateStatusOptions } from "../application-jobColumn";
 import StartChatButton from "@/components/StartChatButton";
 import AiMatchModal from "./AiMatchModal";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export const TEMPLATE_COMPONENTS: Record<string, React.ElementType> = {
   [CV_TEMPLATES.basicTemplate]: BasicTemplate,
@@ -55,6 +56,8 @@ export function ViewApplicationSheet({
   );
 
   const [isAiMatchOpen, setIsAiMatchOpen] = React.useState(false);
+  //- state chuyển đổi tab thông tin và cv trên mobile
+  const [mobileTab, setMobileTab] = React.useState<"info" | "cv">("info");
 
   const application: ApplicationResType | undefined = qData?.data;
 
@@ -103,9 +106,10 @@ export function ViewApplicationSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
+      {/*- tăng z-index của nút đóng x để không bị che bởi header */}
       <SheetContent
         side="right"
-        className="w-[100vw] sm:max-w-6xl p-0 flex flex-col h-full ring-0 focus-visible:outline-none"
+        className="w-[100vw] sm:max-w-6xl p-0 flex flex-col h-full ring-0 focus-visible:outline-none [&>button]:z-50"
       >
         <SheetHeader className="p-4 border-b shrink-0 flex flex-row items-center justify-between shadow-sm bg-background z-10 w-full relative">
           <SheetTitle className="text-lg grow text-center">
@@ -123,9 +127,39 @@ export function ViewApplicationSheet({
             </span>
           </div>
         ) : (
-          <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
-            {/* Sidebar Details */}
-            <div className="w-full md:w-1/3 xl:w-[400px] border-b md:border-b-0 md:border-r bg-background overflow-y-auto outline-none p-5 flex flex-col gap-6">
+          <>
+            {/*- thanh chuyển đổi tab trên mobile */}
+            <div className="flex md:hidden border-b bg-background p-2 gap-2 shrink-0">
+              <Button
+                variant={mobileTab === "info" ? "default" : "ghost"}
+                className={cn(
+                  "flex-1 h-9 rounded-lg text-sm font-medium transition-all duration-200",
+                  mobileTab === "info" && "bg-primary text-primary-foreground shadow-sm"
+                )}
+                onClick={() => setMobileTab("info")}
+              >
+                Thông tin ứng viên
+              </Button>
+              <Button
+                variant={mobileTab === "cv" ? "default" : "ghost"}
+                className={cn(
+                  "flex-1 h-9 rounded-lg text-sm font-medium transition-all duration-200",
+                  mobileTab === "cv" && "bg-primary text-primary-foreground shadow-sm"
+                )}
+                onClick={() => setMobileTab("cv")}
+              >
+                Chi tiết CV
+              </Button>
+            </div>
+
+            <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
+              {/* Sidebar Details */}
+              <div
+                className={cn(
+                  "w-full md:w-1/3 xl:w-[400px] border-b md:border-b-0 md:border-r bg-background overflow-y-auto outline-none p-5 flex flex-col gap-6",
+                  mobileTab === "info" ? "flex" : "hidden md:flex"
+                )}
+              >
               {/* User Info */}
               <div className="flex items-center gap-4">
                 <Avatar className="w-16 h-16 border">
@@ -293,11 +327,17 @@ export function ViewApplicationSheet({
             </div>
 
             {/* CV Section Main */}
-            <div className="flex-1 flex flex-col h-full bg-muted/30 relative">
+            <div
+              className={cn(
+                "flex-1 flex flex-col h-full bg-muted/30 relative",
+                mobileTab === "cv" ? "flex" : "hidden md:flex"
+              )}
+            >
               {renderCV()}
             </div>
           </div>
-        )}
+        </>
+      )}
         <AiMatchModal
           isOpen={isAiMatchOpen}
           onClose={() => setIsAiMatchOpen(false)}

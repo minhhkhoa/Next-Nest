@@ -120,10 +120,10 @@ export default function useMemoFrameChat({
             <div className="min-w-0 flex-1">
               <div
                 className={cn(
-                  "px-3 py-2 sm:px-4 rounded-2xl text-sm sm:text-base w-full max-w-full break-words",
+                  "px-3 py-2 sm:px-4 rounded-2xl text-sm sm:text-base w-full max-w-full break-words shadow-xs",
                   isMe
-                    ? "bg-blue-500 text-white rounded-br-none"
-                    : "bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-bl-none",
+                    ? "bg-primary/10 text-primary dark:bg-primary/25 dark:text-primary-foreground border border-primary/20 rounded-br-none"
+                    : "bg-white/60 dark:bg-slate-900/60 border border-slate-200/40 dark:border-slate-800/40 rounded-bl-none backdrop-blur-xs",
                 )}
               >
                 {msg.type === "TEXT" ? (
@@ -184,7 +184,7 @@ export default function useMemoFrameChat({
                       className={cn(
                         "flex items-center gap-3 rounded-xl border p-3 transition hover:opacity-90",
                         isMe
-                          ? "border-blue-200 bg-blue-400/20"
+                          ? "border-primary/20 bg-primary/10"
                           : "border-gray-200 bg-gray-50 dark:bg-slate-900 dark:border-slate-700",
                         !msg.metadata?.link && "pointer-events-none opacity-70",
                       )}
@@ -233,7 +233,7 @@ export default function useMemoFrameChat({
                       className={cn(
                         "w-full rounded-xl border p-3 text-left transition hover:opacity-90",
                         isMe
-                          ? "border-blue-200 bg-blue-400/20"
+                          ? "border-primary/20 bg-primary/10"
                           : "border-gray-200 bg-gray-50 dark:bg-slate-900 dark:border-slate-700",
                       )}
                     >
@@ -306,7 +306,7 @@ export default function useMemoFrameChat({
                           className={cn(
                             "rounded-xl transition hover:opacity-90 w-full min-w-0",
                             isMe
-                              ? "border-blue-200 bg-blue-400/20"
+                              ? "border-primary/20 bg-primary/10"
                               : "border-gray-200 bg-gray-50 dark:bg-slate-900 dark:border-slate-700",
                           )}
                         >
@@ -338,12 +338,12 @@ export default function useMemoFrameChat({
                       </Link>
                     ) : (
                       <div
-                        className={cn(
-                          "rounded-xl border p-2 sm:p-3",
-                          isMe
-                            ? "border-blue-200 bg-blue-400/20"
-                            : "border-gray-200 bg-gray-50 dark:bg-slate-900 dark:border-slate-700",
-                        )}
+                          className={cn(
+                            "rounded-xl border p-2 sm:p-3",
+                            isMe
+                              ? "border-primary/20 bg-primary/10"
+                              : "border-gray-200 bg-gray-50 dark:bg-slate-900 dark:border-slate-700",
+                          )}
                       >
                         <div className="flex items-center gap-3 w-full min-w-0">
                           {jobReferenceImage && (
@@ -376,17 +376,17 @@ export default function useMemoFrameChat({
                 )}
               </div>
               {isLastOwnMessage ? (
-                <>
-                  <span className="text-[11px] text-gray-400 mt-1">
+                //- căn phải phần thời gian và trạng thái tin nhắn cho tin nhắn cuối của mình
+                <div className="flex justify-end items-center gap-1.5 mt-1 text-[11px] text-gray-400 select-none">
+                  <span>
                     {new Date(msg.createdAt).toLocaleTimeString([], {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
                   </span>
-                  <span className="text-[11px] text-gray-400 ml-2">
-                    {msg.isRead ? "Đã xem" : "Đã gửi"}
-                  </span>
-                </>
+                  <span>•</span>
+                  <span>{msg.isRead ? "Đã xem" : "Đã gửi"}</span>
+                </div>
               ) : null}
             </div>
           </div>

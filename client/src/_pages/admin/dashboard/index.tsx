@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { format, subDays } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Calendar as CalendarIcon, RefreshCw } from "lucide-react";
@@ -11,7 +11,11 @@ import { useAdminVerifyCompany } from "@/queries/useCompany";
 import { useAdminReplyIssue } from "@/queries/useIssue";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
@@ -34,6 +38,28 @@ const CHART_COLORS = [
 ];
 
 export default function PageAdminDashboard() {
+  //- ref quản lý vùng cuộn ngang của tab list
+  const tabsListRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = tabsListRef.current;
+    if (!el) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      //- chỉ cuộn ngang bằng chuột khi có phần tử bị tràn
+      if (
+        (e.deltaY > 0 && el.scrollLeft + el.clientWidth < el.scrollWidth) ||
+        (e.deltaY < 0 && el.scrollLeft > 0)
+      ) {
+        e.preventDefault();
+        el.scrollLeft += e.deltaY;
+      }
+    };
+
+    el.addEventListener("wheel", handleWheel, { passive: false });
+    return () => el.removeEventListener("wheel", handleWheel);
+  }, []);
+
   //- bộ lọc khoảng ngày mặc định 30 ngày gần đây
   const [date, setDate] = useState<DateRange | undefined>({
     from: subDays(new Date(), 30),
@@ -45,20 +71,32 @@ export default function PageAdminDashboard() {
   const endDateStr = date?.to ? format(date.to, "yyyy-MM-dd") : undefined;
 
   //- gọi api lấy dữ liệu thống kê từ server
-  const { data: statsData, isLoading, refetch, isFetching } = useGetAdminStats(startDateStr, endDateStr);
+  const {
+    data: statsData,
+    isLoading,
+    refetch,
+    isFetching,
+  } = useGetAdminStats(startDateStr, endDateStr);
 
   //- các mutations phê duyệt nhanh
   const { mutateAsync: verifyCompany } = useAdminVerifyCompany();
   const { mutateAsync: replyIssue } = useAdminReplyIssue();
 
   //- duyệt công ty nhanh
-  const handleVerifyCompany = async (companyId: string, action: "ACCEPT" | "REJECT") => {
+  const handleVerifyCompany = async (
+    companyId: string,
+    action: "ACCEPT" | "REJECT",
+  ) => {
     try {
       const res = await verifyCompany({ companyID: companyId, action });
       if (res.isError) {
         SoftDestructiveSonner(res.message || "Xử lý duyệt công ty thất bại");
       } else {
-        SoftSuccessSonner(action === "ACCEPT" ? "Phê duyệt công ty thành công!" : "Từ chối công ty thành công!");
+        SoftSuccessSonner(
+          action === "ACCEPT"
+            ? "Phê duyệt công ty thành công!"
+            : "Từ chối công ty thành công!",
+        );
         refetch();
       }
     } catch (err) {
@@ -73,7 +111,8 @@ export default function PageAdminDashboard() {
       await replyIssue({
         id: issueId,
         status: "RESOLVED",
-        adminReply: "Yêu cầu đã được xử lý và giải quyết trực tiếp từ trang Dashboard Admin.",
+        adminReply:
+          "Yêu cầu đã được xử lý và giải quyết trực tiếp từ trang Dashboard Admin.",
       });
       SoftSuccessSonner("Giải quyết yêu cầu hỗ trợ thành công!");
       refetch();
@@ -99,13 +138,13 @@ export default function PageAdminDashboard() {
   const registrationTrends = statsData?.data?.registrationTrends || [];
   const revenueTrends = statsData?.data?.revenueTrends?.trends || [];
   const revenueByProvider = statsData?.data?.revenueTrends?.byProvider || [];
-  
+
   const companyStats = statsData?.data?.companyStats || {
     statusDistribution: [],
     topCompaniesByJobs: [],
     topCompaniesByBookings: [],
   };
-  
+
   const jobStats = statsData?.data?.jobStats || {
     statusDistribution: [],
     byIndustry: [],
@@ -113,7 +152,7 @@ export default function PageAdminDashboard() {
     topViewedJobs: [],
     topAppliedJobs: [],
   };
-  
+
   const quickApprovals = statsData?.data?.quickApprovals || {
     pendingCompanies: [],
     pendingIssues: [],
@@ -133,14 +172,16 @@ export default function PageAdminDashboard() {
       <div className="flex h-[80vh] items-center justify-center">
         <div className="text-center space-y-4">
           <Spinner className="w-10 h-10 mx-auto text-primary" />
-          <p className="text-muted-foreground font-medium animate-pulse">Đang tải số liệu dashboard...</p>
+          <p className="text-muted-foreground font-medium animate-pulse">
+            Đang tải số liệu dashboard...
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="py-6 space-y-6">
       {/* phần tiêu đề chính & date filter */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
@@ -148,7 +189,8 @@ export default function PageAdminDashboard() {
             Dashboard Quản Trị
           </h1>
           <p className="text-muted-foreground mt-1">
-            Theo dõi hiệu suất hệ thống, doanh thu quảng cáo và các phê duyệt khẩn cấp.
+            Theo dõi hiệu suất hệ thống, doanh thu quảng cáo và các phê duyệt
+            khẩn cấp.
           </p>
         </div>
 
@@ -160,14 +202,15 @@ export default function PageAdminDashboard() {
                 variant="outline"
                 className={cn(
                   "w-[260px] justify-start text-left font-normal border-indigo-200/60 shadow-sm hover:bg-indigo-50/50 hover:text-indigo-600 transition-colors",
-                  !date && "text-muted-foreground"
+                  !date && "text-muted-foreground",
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4 text-indigo-500" />
                 {date?.from ? (
                   date.to ? (
                     <>
-                      {format(date.from, "dd/MM/yyyy")} - {format(date.to, "dd/MM/yyyy")}
+                      {format(date.from, "dd/MM/yyyy")} -{" "}
+                      {format(date.to, "dd/MM/yyyy")}
                     </>
                   ) : (
                     format(date.from, "dd/MM/yyyy")
@@ -197,19 +240,46 @@ export default function PageAdminDashboard() {
             disabled={isFetching}
             className="border-indigo-200/60 text-indigo-600 shadow-sm"
           >
-            <RefreshCw className={cn("h-4 w-4", isFetching && "animate-spin")} />
+            <RefreshCw
+              className={cn("h-4 w-4", isFetching && "animate-spin")}
+            />
           </Button>
         </div>
       </div>
 
-      {/* tab list phân chia khu vực */}
+      {/*- danh sách tab cuộn ngang trên mobile để tránh vỡ giao diện */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 bg-muted/80 p-1 rounded-xl h-11">
-          <TabsTrigger value="overview" className="rounded-lg font-medium">Tổng Quan</TabsTrigger>
-          <TabsTrigger value="revenue" className="rounded-lg font-medium">Doanh Thu Quảng Cáo</TabsTrigger>
-          <TabsTrigger value="companies" className="rounded-lg font-medium">Thống Kê Doanh Nghiệp</TabsTrigger>
-          <TabsTrigger value="jobs" className="rounded-lg font-medium">Thống Kê Việc Làm</TabsTrigger>
-        </TabsList>
+        <div
+          ref={tabsListRef}
+          className="w-full bg-muted/80 p-1 rounded-xl h-11 overflow-x-auto overflow-y-hidden whitespace-nowrap [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:bg-indigo-500/20 hover:[&::-webkit-scrollbar-thumb]:bg-indigo-500/40 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent"
+        >
+          <TabsList className="flex w-fit min-w-full justify-start items-center h-full bg-transparent p-0 rounded-none lg:grid lg:grid-cols-4 lg:w-full">
+            <TabsTrigger
+              value="overview"
+              className="rounded-lg font-medium shrink-0 px-3"
+            >
+              Tổng Quan
+            </TabsTrigger>
+            <TabsTrigger
+              value="revenue"
+              className="rounded-lg font-medium shrink-0 px-3"
+            >
+              Doanh Thu Quảng Cáo
+            </TabsTrigger>
+            <TabsTrigger
+              value="companies"
+              className="rounded-lg font-medium shrink-0 px-3"
+            >
+              Thống Kê Doanh Nghiệp
+            </TabsTrigger>
+            <TabsTrigger
+              value="jobs"
+              className="rounded-lg font-medium shrink-0 px-3"
+            >
+              Thống Kê Việc Làm
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* Tab 1: Tổng quan */}
         <TabsContent value="overview" className="outline-none">

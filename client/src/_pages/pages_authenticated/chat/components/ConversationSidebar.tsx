@@ -29,7 +29,8 @@ export function ConversationList({
 
   return (
     <>
-      <div className="p-4 border-b border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-950 flex justify-between items-center shrink-0">
+      {/*- nền header danh sách chat bán trong suốt */}
+      <div className="p-4 border-b border-gray-200 dark:border-slate-800 bg-gray-50/40 dark:bg-slate-950/40 backdrop-blur-sm flex justify-between items-center shrink-0">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           Đoạn chat{" "}
           {isConnected ? (
@@ -69,9 +70,9 @@ export function ConversationList({
                 key={conv._id}
                 onClick={() => onSelectConversation(conv._id)}
                 className={cn(
-                  "flex flex-col gap-1 p-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-800 border-b border-gray-100 dark:border-slate-800 transition-colors",
+                  "flex flex-col gap-1 p-3 cursor-pointer hover:bg-gray-200/30 dark:hover:bg-slate-800/40 border-b border-gray-100 dark:border-slate-800 transition-colors",
                   activeConversationId === conv._id &&
-                    "bg-blue-50 dark:bg-slate-800 border-l-4 border-l-blue-500",
+                    "bg-blue-500/10 dark:bg-indigo-500/20 border-l-4 border-l-primary",
                 )}
               >
                 <div className="flex justify-between items-center">
@@ -102,7 +103,8 @@ export function ConversationList({
 //- Desktop sidebar - ẩn trên mobile
 export default function ConversationSidebar(props: ConversationSidebarProps) {
   return (
-    <div className="hidden md:flex w-1/3 lg:w-1/4 border-r flex-col border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+    <div className="hidden md:flex w-1/3 lg:w-1/4 border-r flex-col border-gray-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 backdrop-blur-sm">
+      {/*- nền container sidebar bán trong suốt */}
       <ConversationList {...props} />
     </div>
   );

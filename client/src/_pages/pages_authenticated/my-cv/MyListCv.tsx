@@ -40,7 +40,7 @@ export default function PageMyListCv() {
   }
 
   return (
-    <div className="container mx-auto py-10 px-4">
+    <div className="container mx-auto py-10">
       <div className="flex flex-col text-center mb-12 space-y-4">
         <h1 className="text-3xl md:text-4xl font-bold text-foreground">
           Danh sách mẫu CV của tôi
@@ -72,16 +72,20 @@ export default function PageMyListCv() {
                   className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2 flex-col px-4">
-                  <Button variant="default" className="rounded-full w-full" asChild>
+                <div className="hidden sm:flex absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 items-center justify-center gap-2 flex-col px-4">
+                  <Button
+                    variant="default"
+                    className="rounded-full w-full"
+                    asChild
+                  >
                     <Link
                       href={`/my-cv/${generateSlugUrl({ name: template.templateID, id: template._id })}?edit=true`}
                     >
                       Xem chi tiết
                     </Link>
                   </Button>
-                  <Button 
-                    variant="secondary" 
+                  <Button
+                    variant="secondary"
                     className="rounded-full w-full bg-white/20 hover:bg-white/30 text-white border-white/20 backdrop-blur-md"
                     asChild
                   >
@@ -108,7 +112,30 @@ export default function PageMyListCv() {
               </CardContent>
 
               <CardFooter className="pt-0 flex flex-col gap-2">
-                <Button className="w-full group/btn" variant="outline" asChild>
+                {/*- hiển thị nhóm nút chỉnh sửa và chấm điểm ai trực tiếp trên mobile */}
+                <div className="flex flex-col gap-2 w-full sm:hidden">
+                  <Button className="w-full" variant="outline" asChild>
+                    <Link
+                      href={`/my-cv/${generateSlugUrl({ name: template.templateID, id: template._id })}?edit=true`}
+                    >
+                      Chỉnh sửa
+                    </Link>
+                  </Button>
+                  <Button
+                    className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white gap-2 font-medium"
+                    asChild
+                  >
+                    <Link
+                      href={`/my-cv/${generateSlugUrl({ name: template.templateID, id: template._id })}/ai-score`}
+                    >
+                      <Sparkles className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      Chấm điểm AI
+                    </Link>
+                  </Button>
+                </div>
+
+                {/*- hiển thị nút chỉnh sửa mặc định trên desktop */}
+                <Button className="w-full group/btn hidden sm:flex" variant="outline" asChild>
                   <Link
                     href={`/my-cv/${generateSlugUrl({ name: template.templateID, id: template._id })}?edit=true`}
                   >
@@ -124,4 +151,3 @@ export default function PageMyListCv() {
     </div>
   );
 }
-

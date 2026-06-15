@@ -25,7 +25,6 @@ import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 
 export default function NotificationBell() {
-
   const t = useTranslations("Header.Bell");
   const router = useRouter();
   const { isLogin } = useAppStore();
@@ -68,7 +67,11 @@ export default function NotificationBell() {
         </div>
       </PopoverTrigger>
 
-      <PopoverContent className="w-[380px] p-0" align="end">
+      {/*- responsive chiều ngang cho mobile tránh bị tràn viền màn hình */}
+      <PopoverContent
+        className="w-[calc(100vw-2rem)] sm:w-[380px] p-0"
+        align="center"
+      >
         <div className="flex items-center justify-between border-b p-4">
           <h4 className="font-bold text-lg">{t("Title")}</h4>
           <Button

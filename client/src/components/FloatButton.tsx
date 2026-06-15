@@ -19,19 +19,25 @@ export function BookmarkNavigationButton() {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button
-            asChild
-            variant="outline"
-            size="icon"
-            className="h-10 w-10 rounded-full shadow-lg border border-border bg-background hover:bg-accent hover:text-accent-foreground backdrop-blur flex items-center justify-center transition-colors"
-          >
-            <Link href="/saved-jobs">
-              <BookMarked className="h-5 w-5" />
-              <span className="sr-only">Việc làm đã lưu</span>
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2 pointer-events-auto">
+            {/*- nhãn hiển thị bên cạnh icon trên mobile giúp người dùng dễ nhận biết do không có hover */}
+            <span className="px-2 py-1 rounded bg-black/80 dark:bg-slate-900/90 text-white text-[11px] font-medium shadow-md pointer-events-none sm:hidden whitespace-nowrap">
+              Việc làm đã lưu
+            </span>
+            <Button
+              asChild
+              variant="outline"
+              size="icon"
+              className="h-10 w-10 rounded-full shadow-lg border border-border bg-background hover:bg-accent hover:text-accent-foreground backdrop-blur flex items-center justify-center transition-colors shrink-0"
+            >
+              <Link href="/saved-jobs">
+                <BookMarked className="h-5 w-5" />
+                <span className="sr-only">Việc làm đã lưu</span>
+              </Link>
+            </Button>
+          </div>
         </TooltipTrigger>
-        <TooltipContent side="left">
+        <TooltipContent side="left" className="hidden sm:block">
           <p>Việc làm & công ty đã lưu</p>
         </TooltipContent>
       </Tooltip>
@@ -44,19 +50,25 @@ export function MyApplicationNavigationButton() {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button
-            asChild
-            variant="outline"
-            size="icon"
-            className="h-10 w-10 rounded-full shadow-lg border border-border bg-background hover:bg-accent hover:text-accent-foreground backdrop-blur flex items-center justify-center transition-colors"
-          >
-            <Link href="/my-application">
-              <BriefcaseBusiness className="h-4 w-4" />
-              <span className="sr-only">Theo dõi đơn ứng tuyển</span>
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2 pointer-events-auto">
+            {/*- nhãn hiển thị bên cạnh icon trên mobile giúp người dùng dễ nhận biết do không có hover */}
+            <span className="px-2 py-1 rounded bg-black/80 dark:bg-slate-900/90 text-white text-[11px] font-medium shadow-md pointer-events-none sm:hidden whitespace-nowrap">
+              Đơn ứng tuyển
+            </span>
+            <Button
+              asChild
+              variant="outline"
+              size="icon"
+              className="h-10 w-10 rounded-full shadow-lg border border-border bg-background hover:bg-accent hover:text-accent-foreground backdrop-blur flex items-center justify-center transition-colors shrink-0"
+            >
+              <Link href="/my-application">
+                <BriefcaseBusiness className="h-4 w-4" />
+                <span className="sr-only">Theo dõi đơn ứng tuyển</span>
+              </Link>
+            </Button>
+          </div>
         </TooltipTrigger>
-        <TooltipContent side="left">
+        <TooltipContent side="left" className="hidden sm:block">
           <p>Theo dõi đơn ứng tuyển</p>
         </TooltipContent>
       </Tooltip>

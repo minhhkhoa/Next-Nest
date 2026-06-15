@@ -1,8 +1,5 @@
 # BÁO CÁO CHI TIẾT TÍNH NĂNG: GỢI Ý CÔNG VIỆC BẰNG CÔNG NGHỆ AI
 
-**Hệ thống:** Next-Nest (Job Board Platform)  
-**Tác giả:** Đội ngũ Phát triển AI (Antigravity)
-
 ---
 
 ## 1. Giới thiệu chung
@@ -116,22 +113,22 @@ sequenceDiagram
         rect rgb(240, 240, 240)
             Note over Service: 1. Thu thập dữ liệu profile & CV
             Service->>Service: buildProfileContext(profile, resumes)
-            
+
             Note over Service: 2. Lấy danh mục Skills & Industries từ DB để tối ưu token
             Service->>DB: Lấy danh sách kỹ năng & ngành nghề dạng phẳng
             DB->>Service: Trả về [{id, name}]
-            
+
             Note over Service: 3. Gọi LLM trích xuất & nhặt trực tiếp ID hệ thống
             Service->>LLM: Gọi với prompt (truyền system_skills và system_industries)
             LLM->>Service: Trả về JSON { titleKeywords, skillIDs, industryIDs, level, location }
 
-            Note over Service: 4. Truy vấn tìm kiếm nhanh ở ES (Must: skillIDs, industryIDs; Should: location; No Level filter)
+            Note over Service: 4. Truy vấn tìm kiếm nhanh ở ES (Must: skillIDs, industryIDs, Should: location, No Level filter)
             Service->>ES: searchJobs({ titleKeywords, skills, level, location, industryIDs, skillIDs })
             ES->>Service: Trả về danh sách IDs công việc phù hợp
-            
+
             Service->>DB: findByIds(matchedJobIds)
             DB->>Service: Trả về danh sách jobs chi tiết
-            
+
             Note over Service: 5. Gán aiExplanation tĩnh, lưu kết quả vào Redis cache (24h)
         end
 

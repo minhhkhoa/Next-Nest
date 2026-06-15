@@ -66,7 +66,9 @@ function NavItemSheetMobile() {
 
   return (
     <div>
-      <Link href="/">{t("Home")}</Link>
+      <div className="h-9">
+        <Link href="/">{t("Home")}</Link>
+      </div>
       <div className="mr-5">
         {/* viec lam */}
         <div className="">

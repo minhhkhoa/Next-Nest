@@ -68,8 +68,7 @@ interface ChatWindowProps {
     companyName?: string;
     location?: string;
   } | null;
-  onInputChange: (val: string) => void;
-  onSendMessage: (e: React.FormEvent) => void;
+  onSendMessage: (e: React.FormEvent, text?: string) => void;
   onClearPendingJobReference?: () => void;
   isSending: boolean;
   onOpenMobileSidebar?: () => void;
@@ -87,7 +86,6 @@ export default function ChatWindow({
   activeConversationId,
   inputText,
   pendingJobReference,
-  onInputChange,
   onSendMessage,
   onClearPendingJobReference,
   isSending,
@@ -107,6 +105,13 @@ export default function ChatWindow({
   const [selectedSystemCvId, setSelectedSystemCvId] = useState("");
   const [isSubmittingSystemCv, setIsSubmittingSystemCv] = useState(false);
   const [attachmentMenuOpen, setAttachmentMenuOpen] = useState(false);
+
+  //- sử dụng state cục bộ cho input nhằm tránh re-render toàn bộ Chat page gây lag khi gõ phím
+  const [localText, setLocalText] = useState(inputText);
+
+  React.useEffect(() => {
+    setLocalText(inputText);
+  }, [inputText]);
 
   //- Hàm cuộn viewport của ScrollArea xuống cuối
   const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
@@ -215,7 +220,7 @@ export default function ChatWindow({
 
   if (!activeConversationId) {
     return (
-      <div className="flex-1 flex flex-col bg-gray-50 dark:bg-slate-900 border-gray-200 dark:border-slate-800 min-w-0 w-full overflow-hidden">
+      <div className="flex-1 flex flex-col bg-transparent min-w-0 w-full overflow-hidden">
         {/* Nút mở sidebar trên mobile khi chưa chọn conversation */}
         <div className="md:hidden p-3 border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950">
           <Button
@@ -236,9 +241,10 @@ export default function ChatWindow({
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-slate-50 dark:bg-slate-900 relative min-w-0 w-full overflow-hidden">
+    <div className="flex-1 flex flex-col h-full bg-transparent relative min-w-0 w-full overflow-hidden">
+      {/*- làm nền cửa sổ chat trong suốt để lộ gradient phía sau */}
       {/* Chat header */}
-      <div className="h-16 border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex items-center px-4 gap-3 shrink-0">
+      <div className="h-16 border-b border-gray-200 dark:border-slate-800 bg-white/40 dark:bg-slate-950/40 backdrop-blur-sm flex items-center px-4 gap-3 shrink-0">
         <Button
           variant="ghost"
           size="icon"
@@ -286,9 +292,9 @@ export default function ChatWindow({
       </ScrollArea>
 
       {/* Input Box */}
-      <div className="p-2 sm:p-4 bg-white dark:bg-slate-950 border-t border-gray-200 dark:border-slate-800 shrink-0">
+      <div className="p-2 sm:p-4 bg-white/40 dark:bg-slate-950/40 backdrop-blur-sm border-t border-gray-200 dark:border-slate-800 shrink-0">
         {pendingJobReference && (
-          <div className="mb-2 rounded-lg border border-blue-200 bg-blue-50 dark:bg-slate-900 dark:border-slate-700 px-3 py-2">
+          <div className="mb-2 rounded-lg border border-primary/20 bg-primary/5 dark:bg-slate-900 dark:border-slate-800 px-3 py-2">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-3 min-w-0">
                 {pendingJobReference.jobImage ? (
@@ -322,7 +328,13 @@ export default function ChatWindow({
           </div>
         )}
 
-        <form onSubmit={onSendMessage} className="flex gap-2 items-center">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            onSendMessage(e, localText);
+          }}
+          className="flex gap-2 items-center"
+        >
           <input
             ref={localFileInputRef}
             type="file"
@@ -384,20 +396,20 @@ export default function ChatWindow({
 
           <input
             type="text"
-            value={inputText}
-            onChange={(e) => onInputChange(e.target.value)}
+            value={localText}
+            onChange={(e) => setLocalText(e.target.value)}
             placeholder={
               pendingLocalFiles.length > 0
                 ? "Nhập mô tả cho ảnh/file (tuỳ chọn)..."
                 : "Nhập tin nhắn..."
             }
-            className="flex-1 min-w-0 bg-gray-100 dark:bg-slate-900 border-none rounded-full px-4 py-2 text-sm sm:text-base focus:ring-2 focus:ring-blue-500 outline-none"
+            className="flex-1 min-w-0 bg-gray-100 dark:bg-slate-900 border-none rounded-full px-4 py-2 text-sm sm:text-base focus:ring-2 focus:ring-primary/40 outline-none"
           />
           {pendingLocalFiles.length > 0 ? (
             <Button
               type="submit"
               disabled={isSending}
-              className="rounded-full bg-blue-500 hover:bg-blue-600 shrink-0 px-4"
+              className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shrink-0 px-4"
             >
               {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
               Xác nhận
@@ -405,9 +417,9 @@ export default function ChatWindow({
           ) : (
             <Button
               type="submit"
-              disabled={(!inputText.trim() && !pendingJobReference) || isSending}
+              disabled={(!localText.trim() && !pendingJobReference) || isSending}
               size="icon"
-              className="rounded-full bg-blue-500 hover:bg-blue-600 shrink-0"
+              className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shrink-0"
             >
               <Send className="w-4 h-4 sm:w-5 sm:h-[18px]" />
             </Button>
@@ -544,8 +556,8 @@ export default function ChatWindow({
                       htmlFor={`chat-system-cv-${resume._id}`}
                       className={`group rounded-2xl border p-3 sm:p-4 cursor-pointer transition ${
                         isActive
-                          ? "border-blue-500 bg-blue-50 dark:bg-blue-950/20"
-                          : "border-slate-200 hover:border-blue-300 dark:border-slate-700"
+                          ? "border-primary bg-primary/5 dark:bg-primary/20"
+                          : "border-slate-200 hover:border-primary/50 dark:border-slate-700"
                       }`}
                     >
                       <div className="flex items-start gap-3">

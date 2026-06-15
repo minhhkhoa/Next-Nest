@@ -489,7 +489,8 @@ export default function PageFindJobs() {
         )}
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
-          <aside className="hidden self-start h-fit rounded-2xl border border-border bg-card p-4 lg:block">
+          {/*- giữ bộ lọc dính cố định khi cuộn trang trên màn hình lớn */}
+          <aside className="hidden lg:block lg:sticky lg:top-6 self-start h-fit rounded-2xl border border-border bg-card p-4">
             <AdvancedFilterPanel
               value={filters.advanced}
               industryIDs={filters.industryId ? [filters.industryId] : []}

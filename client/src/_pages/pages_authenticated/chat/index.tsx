@@ -440,12 +440,15 @@ export default function ChatPageModule() {
     }
   }, [activeConversationId]);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
+  //- nhận textOverride từ ChatWindow gửi lên để tránh lag re-render khi gõ phím
+  const handleSendMessage = async (e: React.FormEvent, textOverride?: string) => {
     e.preventDefault();
     if (!activeConversationId) return;
 
+    const currentInputText = textOverride !== undefined ? textOverride : inputText;
+
     if (activeConversationId === "ai-assistant" && aiSession) {
-      const trimmedText = inputText.trim();
+      const trimmedText = currentInputText.trim();
       if (!trimmedText && !pendingJobReference) return;
       const textToSend =
         trimmedText ||
@@ -539,7 +542,7 @@ export default function ChatPageModule() {
       return;
     }
 
-    const trimmedText = inputText.trim();
+    const trimmedText = currentInputText.trim();
     const hasPendingLocalFiles = activePendingLocalFiles.length > 0;
 
     if (hasPendingLocalFiles) {
@@ -734,7 +737,8 @@ export default function ChatPageModule() {
   ]);
 
   return (
-    <div className="flex h-[calc(100vh-100px)] w-full bg-white dark:bg-slate-900 border rounded-xl overflow-hidden shadow-sm">
+    <div className="flex h-[calc(100vh-100px)] w-full bg-gradient-to-br from-primary/15 via-primary/5 to-indigo-50/20 border border-primary/10 rounded-xl overflow-hidden shadow-sm">
+      {/*- đặt nền gradient giống khối tin tức nổi bật cho toàn bộ khung chat */}
       {/* Desktop Sidebar - ẩn trên mobile */}
       <ConversationSidebar
         conversations={allConversations}
@@ -770,7 +774,6 @@ export default function ChatPageModule() {
         messages={currentWindowMessages}
         activeConversationId={activeConversationId}
         inputText={inputText}
-        onInputChange={setInputText}
         onSendMessage={handleSendMessage}
         isSending={
           sendMessageMutation.isPending ||
