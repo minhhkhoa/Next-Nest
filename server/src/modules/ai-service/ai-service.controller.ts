@@ -6,6 +6,7 @@ import {
   Query,
   Sse,
   MessageEvent,
+  Header,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
@@ -43,6 +44,7 @@ export class AiServiceController {
   }
 
   @Sse('chat/stream')
+  @Header('X-Accel-Buffering', 'no')
   @ApiOperation({ summary: 'Chat AI stream theo job hien tai' })
   chatStream(
     @Query() query: ChatAiQueryDto,
