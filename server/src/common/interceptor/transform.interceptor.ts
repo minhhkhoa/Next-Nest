@@ -27,13 +27,11 @@ export class TransformInterceptor<T>
     context: ExecutionContext,
     next: CallHandler,
   ): Observable<Response<T>> {
-    
     const response = context.switchToHttp().getResponse();
     const message =
       this.reflector.get<string>(RESPONSE_MESSAGE, context.getHandler()) ?? '';
 
-
-      //- chạy tới đây tức là đã thực hiện song controller rồi
+    //- chạy tới đây tức là đã thực hiện song controller rồi
     return next.handle().pipe(
       //- data trong hàm map của rxJs lấy giá trị return của endpoint tương ứng ở controller
       map((data: T) => {

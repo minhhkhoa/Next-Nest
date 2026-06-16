@@ -111,7 +111,7 @@ export default function ChatWindow({
 
   React.useEffect(() => {
     setLocalText(inputText);
-  }, [inputText]);
+  }, [inputText, activeConversationId]);
 
   //- Hàm cuộn viewport của ScrollArea xuống cuối
   const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
@@ -212,11 +212,13 @@ export default function ChatWindow({
     }
   }, [activeConversationId]);
 
+  const lastMessageContent = messages[messages.length - 1]?.content;
+
   useEffect(() => {
     if (messages.length > 0) {
       scrollToBottom("smooth");
     }
-  }, [messages.length]);
+  }, [messages.length, lastMessageContent]);
 
   if (!activeConversationId) {
     return (
@@ -331,7 +333,9 @@ export default function ChatWindow({
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            onSendMessage(e, localText);
+            const textToSubmit = localText;
+            setLocalText("");
+            onSendMessage(e, textToSubmit);
           }}
           className="flex gap-2 items-center"
         >

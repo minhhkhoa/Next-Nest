@@ -23,9 +23,7 @@ import ChatWindow, {
   ChatPendingLocalFile,
   ChatUploadingAttachment,
 } from "./components/ChatWindow";
-import {
-  CHAT_JOB_REFERENCE_DRAFT_STORAGE_KEY,
-} from "@/components/AskMoreJobButton";
+import { CHAT_JOB_REFERENCE_DRAFT_STORAGE_KEY } from "@/components/AskMoreJobButton";
 import aiApiRequest from "@/apiRequest/ai";
 import { useSearchParams } from "next/navigation";
 import {
@@ -330,6 +328,7 @@ export default function ChatPageModule() {
       if (activeConversationId) {
         clearPendingLocalFilesByConversation(activeConversationId);
       }
+      setInputText("");
     }
     setActiveConversationId(id);
     setIsMobileSidebarOpen(false);
@@ -362,40 +361,38 @@ export default function ChatPageModule() {
 
         //- Luon hien thi toan bo history cu (ca cac job truoc do) de user doi chieu
         if (data?.history && data.history.length > 0) {
-          const historyMsgs = data.history.map(
-            (msg: any, index: number) => ({
-              _id: `ai_hist_${Date.now()}_${index}`,
-              conversationId: "ai-assistant",
-              senderId:
-                msg.role === "ai"
-                  ? {
-                      _id: "ai-bot",
-                      name: "AI Assistant",
-                      avatar:
-                        "https://cdn-icons-png.flaticon.com/512/8943/8943377.png",
-                      email: "",
-                    }
-                  : {
-                      _id: user?._id || "guest",
-                      name: user?.name || "You",
-                      avatar: user?.avatar || "",
-                      email: user?.email || "",
-                    },
-              senderType:
-                msg.role === "ai"
-                  ? envConfig.NEXT_PUBLIC_ROLE_RECRUITER
-                  : envConfig.NEXT_PUBLIC_ROLE_CANDIDATE,
-              type: "TEXT",
-              content: msg.content,
-              isRead: true,
-              createdAt: new Date(
-                Date.now() - (data.history.length - index) * 1000,
-              ).toISOString(),
-              updatedAt: new Date(
-                Date.now() - (data.history.length - index) * 1000,
-              ).toISOString(),
-            }),
-          );
+          const historyMsgs = data.history.map((msg: any, index: number) => ({
+            _id: `ai_hist_${Date.now()}_${index}`,
+            conversationId: "ai-assistant",
+            senderId:
+              msg.role === "ai"
+                ? {
+                    _id: "ai-bot",
+                    name: "AI Assistant",
+                    avatar:
+                      "https://cdn-icons-png.flaticon.com/512/8943/8943377.png",
+                    email: "",
+                  }
+                : {
+                    _id: user?._id || "guest",
+                    name: user?.name || "You",
+                    avatar: user?.avatar || "",
+                    email: user?.email || "",
+                  },
+            senderType:
+              msg.role === "ai"
+                ? envConfig.NEXT_PUBLIC_ROLE_RECRUITER
+                : envConfig.NEXT_PUBLIC_ROLE_CANDIDATE,
+            type: "TEXT",
+            content: msg.content,
+            isRead: true,
+            createdAt: new Date(
+              Date.now() - (data.history.length - index) * 1000,
+            ).toISOString(),
+            updatedAt: new Date(
+              Date.now() - (data.history.length - index) * 1000,
+            ).toISOString(),
+          }));
           setAiMessages(historyMsgs);
         } else {
           setAiMessages([]);
@@ -441,11 +438,15 @@ export default function ChatPageModule() {
   }, [activeConversationId]);
 
   //- nhận textOverride từ ChatWindow gửi lên để tránh lag re-render khi gõ phím
-  const handleSendMessage = async (e: React.FormEvent, textOverride?: string) => {
+  const handleSendMessage = async (
+    e: React.FormEvent,
+    textOverride?: string,
+  ) => {
     e.preventDefault();
     if (!activeConversationId) return;
 
-    const currentInputText = textOverride !== undefined ? textOverride : inputText;
+    const currentInputText =
+      textOverride !== undefined ? textOverride : inputText;
 
     if (activeConversationId === "ai-assistant" && aiSession) {
       const trimmedText = currentInputText.trim();
