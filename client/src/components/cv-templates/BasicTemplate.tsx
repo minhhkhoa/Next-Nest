@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { cn, formatDateForTemplate, uploadToCloudinary } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import {
   useCreateUserResumeMutate,
   useUpdateUserResumeMutate,
@@ -34,9 +34,23 @@ export default function BasicTemplate({
   isEdit,
   isView,
   resumeId,
+  resumeName: initialResumeName,
 }: TemplateProps) {
   const { mutate: updateResume, isPending: isUpdating } =
     useUpdateUserResumeMutate();
+  const { mutate: saveResume, isPending: isSaving } =
+    useCreateUserResumeMutate();
+
+  const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+  //- khoi tao ten cv hien tai tu db truyen qua props
+  const [resumeName, setResumeName] = useState(initialResumeName || "Basic Resume");
+
+  //- dong bo ten cv khi co du lieu resumeName tu api tra ve
+  useEffect(() => {
+    if (initialResumeName) {
+      setResumeName(initialResumeName);
+    }
+  }, [initialResumeName]);
 
   const handleUpdateCV = () => {
     const formData = form.getValues();
@@ -46,11 +60,13 @@ export default function BasicTemplate({
       {
         id: resumeId,
         body: {
+          resumeName, //- cap nhat ten moi cua cv
           content: formData,
         },
       },
       {
         onSuccess: () => {
+          setIsSaveDialogOpen(false); //- dong dialog sau khi cap nhat thanh cong
           SoftSuccessSonner("Cập nhật CV thành công!");
         },
         onError: () => {
@@ -163,10 +179,6 @@ export default function BasicTemplate({
     mode: "onChange",
   });
 
-  const { mutate: saveResume, isPending: isSaving } =
-    useCreateUserResumeMutate();
-  const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
-  const [resumeName, setResumeName] = useState("Basic Resume");
 
   const handleSaveCV = () => {
     const formData = form.getValues();
@@ -788,9 +800,10 @@ export default function BasicTemplate({
           {isEdit && (
             <div className="flex justify-end mt-2">
               <Button
+                type="button"
                 className="shadow-xl"
                 size="lg"
-                onClick={handleUpdateCV}
+                onClick={() => setIsSaveDialogOpen(true)} //- mo dialog dat ten khi click luu
                 disabled={isUpdating}
               >
                 {isUpdating ? (
@@ -805,14 +818,15 @@ export default function BasicTemplate({
         </form>
       </Form>
 
-      {!isEdit && !isView && (
+      {!isView && (
         <SaveResumeDialog
           open={isSaveDialogOpen}
           onOpenChange={setIsSaveDialogOpen}
           resumeName={resumeName}
           onResumeNameChange={setResumeName}
-          onSave={handleSaveCV}
-          isSaving={isSaving}
+          onSave={isEdit ? handleUpdateCV : handleSaveCV}
+          isSaving={isEdit ? isUpdating : isSaving}
+          showTrigger={!isEdit}
         />
       )}
     </>

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Trash2, PencilLine, Upload, Save } from "lucide-react";
 import { cn, formatDateForTemplate, uploadToCloudinary } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import {
   useCreateUserResumeMutate,
   useUpdateUserResumeMutate,
@@ -25,9 +25,23 @@ export default function ModernTemplate({
   isEdit,
   isView,
   resumeId,
+  resumeName: initialResumeName,
 }: TemplateProps) {
   const { mutate: updateResume, isPending: isUpdating } =
     useUpdateUserResumeMutate();
+  const { mutate: saveResume, isPending: isSaving } =
+    useCreateUserResumeMutate();
+
+  const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+  //- khai bao state ten cv o dau component de cac ham phia duoi co the su dung
+  const [resumeName, setResumeName] = useState(initialResumeName || "CV chưa đặt tên");
+
+  //- dong bo ten cv khi co du lieu resumeName tu api tra ve
+  useEffect(() => {
+    if (initialResumeName) {
+      setResumeName(initialResumeName);
+    }
+  }, [initialResumeName]);
 
   const handleUpdateCV = () => {
     const formData = form.getValues();
@@ -37,11 +51,13 @@ export default function ModernTemplate({
       {
         id: resumeId,
         body: {
+          resumeName, //- cap nhat ten moi cua cv
           content: formData,
         },
       },
       {
         onSuccess: () => {
+          setIsSaveDialogOpen(false); //- dong dialog hoi ten cv
           SoftSuccessSonner("Cập nhật CV thành công!");
         },
         onError: () => {
@@ -125,10 +141,6 @@ export default function ModernTemplate({
     mode: "onChange",
   });
 
-  const { mutate: saveResume, isPending: isSaving } =
-    useCreateUserResumeMutate();
-  const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
-  const [resumeName, setResumeName] = useState("CV chưa đặt tên");
 
   const handleSaveCV = () => {
     const formData = form.getValues();
@@ -777,9 +789,10 @@ export default function ModernTemplate({
           {isEdit && (
             <div className="flex justify-end mt-2">
               <Button
+                type="button"
                 className="shadow-xl"
                 size="lg"
-                onClick={handleUpdateCV}
+                onClick={() => setIsSaveDialogOpen(true)} //- mo dialog dat ten khi click luu
                 disabled={isUpdating}
               >
                 {isUpdating ? (
@@ -794,14 +807,15 @@ export default function ModernTemplate({
         </form>
       </Form>
 
-      {!isEdit && !isView && (
+      {!isView && (
         <SaveResumeDialog
           open={isSaveDialogOpen}
           onOpenChange={setIsSaveDialogOpen}
           resumeName={resumeName}
           onResumeNameChange={setResumeName}
-          onSave={handleSaveCV}
-          isSaving={isSaving}
+          onSave={isEdit ? handleUpdateCV : handleSaveCV}
+          isSaving={isEdit ? isUpdating : isSaving}
+          showTrigger={!isEdit}
         />
       )}
     </>

@@ -79,6 +79,10 @@ interface ChatWindowProps {
   uploadingAttachments?: ChatUploadingAttachment[];
   pendingLocalFiles?: ChatPendingLocalFile[];
   onRemovePendingLocalFile?: (id: string) => void;
+  //- các props moi de ho tro dinh kem cv he thong vao chat ai
+  pendingCvAttachment?: UserResumeResponseType | null;
+  onClearPendingCvAttachment?: () => void;
+  onAttachSystemCv?: (resume: UserResumeResponseType) => void;
 }
 
 export default function ChatWindow({
@@ -97,6 +101,10 @@ export default function ChatWindow({
   uploadingAttachments = [],
   pendingLocalFiles = [],
   onRemovePendingLocalFile,
+  //- nhan cac props moi xuong component
+  pendingCvAttachment,
+  onClearPendingCvAttachment,
+  onAttachSystemCv,
 }: ChatWindowProps) {
   //- Ref tới ScrollArea để cuộn xuống cuối
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -191,6 +199,13 @@ export default function ChatWindow({
       (r) => r._id === selectedSystemCvId,
     );
     if (!selectedResume) return;
+
+    if (activeConversationId === "ai-assistant") {
+      //- neu la chat ai thi chi dinh kem vao hang cho chu khong gui ngay lap tuc
+      onAttachSystemCv?.(selectedResume);
+      setSystemCvDialogOpen(false);
+      return;
+    }
 
     setIsSubmittingSystemCv(true);
     try {
@@ -330,6 +345,46 @@ export default function ChatWindow({
           </div>
         )}
 
+        {/*- giao dien hien thi cv he thong dang cho gui */}
+        {pendingCvAttachment && (
+          <div className="mb-2 rounded-lg border border-primary/20 bg-primary/5 dark:bg-slate-900 dark:border-slate-800 px-3 py-2">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-3 min-w-0">
+                {(pendingCvAttachment as any).previewImage || (pendingCvAttachment as any).image ? (
+                  <Image
+                    src={(pendingCvAttachment as any).previewImage || (pendingCvAttachment as any).image}
+                    alt={pendingCvAttachment.resumeName || "CV image"}
+                    width={36}
+                    height={36}
+                    className="h-9 w-9 rounded-md object-cover shrink-0"
+                  />
+                ) : (
+                  <div className="h-9 w-9 rounded-md border bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                    <FileText className="h-4 w-4 text-slate-500" />
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-500">Đang đính kèm CV hệ thống</p>
+                  <p className="text-sm font-medium truncate">
+                    {pendingCvAttachment.resumeName || "CV chưa đặt tên"}
+                  </p>
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                onClick={onClearPendingCvAttachment}
+                className="shrink-0"
+                aria-label="Xóa CV đính kèm"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -360,8 +415,7 @@ export default function ChatWindow({
                 className="rounded-full shrink-0"
                 disabled={
                   !activeConversationId ||
-                  isSending ||
-                  activeConversationId === "ai-assistant"
+                  isSending
                 }
                 aria-label="Mở menu đính kèm"
               >
@@ -370,18 +424,20 @@ export default function ChatWindow({
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="start" className="w-56">
-              <DropdownMenuItem
-                onSelect={(e) => {
-                  e.preventDefault();
-                  setAttachmentMenuOpen(false);
-                  setTimeout(() => {
-                    handleOpenLocalFilePicker();
-                  }, 0);
-                }}
-              >
-                <Paperclip className="w-4 h-4" />
-                Chọn file từ máy
-              </DropdownMenuItem>
+              {activeConversationId !== "ai-assistant" && (
+                <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    setAttachmentMenuOpen(false);
+                    setTimeout(() => {
+                      handleOpenLocalFilePicker();
+                    }, 0);
+                  }}
+                >
+                  <Paperclip className="w-4 h-4" />
+                  Chọn file từ máy
+                </DropdownMenuItem>
+              )}
 
               <DropdownMenuItem
                 onSelect={(e) => {
@@ -421,7 +477,7 @@ export default function ChatWindow({
           ) : (
             <Button
               type="submit"
-              disabled={(!localText.trim() && !pendingJobReference) || isSending}
+              disabled={(!localText.trim() && !pendingJobReference && !pendingCvAttachment) || isSending}
               size="icon"
               className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shrink-0"
             >
@@ -631,7 +687,7 @@ export default function ChatWindow({
               {isSubmittingSystemCv ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : null}
-              Gửi CV đã chọn
+              {activeConversationId === "ai-assistant" ? "Đính kèm CV" : "Gửi CV đã chọn"}
             </Button>
           </DialogFooter>
         </DialogContent>

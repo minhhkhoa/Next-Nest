@@ -1,6 +1,9 @@
 import { cn, generateSlugUrl } from "@/lib/utils";
 import { ChatMessage } from "@/schemasvalidation/chat";
 import React, { useMemo, useState } from "react";
+//- import thu vien render markdown va plugin gfm ho tro table, checklist
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { envConfig } from "../../../../../config";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "@/i18n/navigation";
@@ -33,6 +36,17 @@ const formatFileSize = (size?: number) => {
   if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
   return `${(size / 1024 / 1024).toFixed(2)} MB`;
 };
+
+//- component su dung thu vien react-markdown de hien thi toan bo case tu ai assistant
+function MarkdownRenderer({ content }: { content: string }) {
+  if (!content) return null;
+
+  return (
+    <div className="prose dark:prose-invert max-w-none text-sm sm:text-base leading-relaxed break-words text-slate-800 dark:text-slate-200">
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+    </div>
+  );
+}
 
 interface UseMemoFrameChatProps {
   messages: ChatMessage[];
@@ -128,7 +142,13 @@ export default function useMemoFrameChat({
               >
                 {msg.type === "TEXT" ? (
                   msg.content ? (
-                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                    //- su dung component markdown renderer khi tin nhan la tu ai assistant
+                    msg.conversationId === "ai-assistant" &&
+                    msg.senderId?._id === "ai-bot" ? (
+                      <MarkdownRenderer content={msg.content} />
+                    ) : (
+                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                    )
                   ) : (
                     <div className="flex gap-1.5 py-1.5 px-1 items-center h-[24px]">
                       <div
@@ -338,12 +358,12 @@ export default function useMemoFrameChat({
                       </Link>
                     ) : (
                       <div
-                          className={cn(
-                            "rounded-xl border p-2 sm:p-3",
-                            isMe
-                              ? "border-primary/20 bg-primary/10"
-                              : "border-gray-200 bg-gray-50 dark:bg-slate-900 dark:border-slate-700",
-                          )}
+                        className={cn(
+                          "rounded-xl border p-2 sm:p-3",
+                          isMe
+                            ? "border-primary/20 bg-primary/10"
+                            : "border-gray-200 bg-gray-50 dark:bg-slate-900 dark:border-slate-700",
+                        )}
                       >
                         <div className="flex items-center gap-3 w-full min-w-0">
                           {jobReferenceImage && (

@@ -53,7 +53,9 @@ export default function AskMoreJobButton({
 
     const companyId = job.company?._id || job.companyID;
     if (!companyId) {
-      SoftDestructiveSonner("Không tìm thấy công ty để bắt đầu cuộc trò chuyện");
+      SoftDestructiveSonner(
+        "Không tìm thấy công ty để bắt đầu cuộc trò chuyện",
+      );
       return;
     }
 
@@ -106,13 +108,24 @@ export default function AskMoreJobButton({
       conversationId: "ai-assistant",
       inputText: `Tôi muốn hỏi thêm thông tin về vị trí ${jobTitle}`,
       type: "TEXT" as const,
+      metadata: {
+        jobId: job._id,
+        jobTitle,
+        jobSlug,
+        salary: `${job.salary.min.toLocaleString()} - ${job.salary.max.toLocaleString()} ${job.salary.currency}`,
+        jobImage: job.company?.logo || "",
+        companyName: job.company?.name || "",
+        location: job.location || "",
+      },
     };
     sessionStorage.setItem(
       CHAT_JOB_REFERENCE_DRAFT_STORAGE_KEY,
-      JSON.stringify(draftPayload)
+      JSON.stringify(draftPayload),
     );
 
-    router.push(`/chat?ai=true&jobId=${job._id}&jobTitle=${encodeURIComponent(jobTitle)}`);
+    router.push(
+      `/chat?ai=true&jobId=${job._id}&jobTitle=${encodeURIComponent(jobTitle)}`,
+    );
   };
 
   return (
@@ -130,11 +143,17 @@ export default function AskMoreJobButton({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuItem onClick={handleAskMoreHR} className="cursor-pointer py-3">
+        <DropdownMenuItem
+          onClick={handleAskMoreHR}
+          className="cursor-pointer py-3"
+        >
           <MessageCircle className="mr-2 h-4 w-4" />
           <span>Chat với Nhà tuyển dụng</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleAskMoreAI} className="cursor-pointer py-3">
+        <DropdownMenuItem
+          onClick={handleAskMoreAI}
+          className="cursor-pointer py-3"
+        >
           <Bot className="mr-2 h-4 w-4" />
           <span>Hỏi AI tư vấn</span>
         </DropdownMenuItem>

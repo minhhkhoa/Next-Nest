@@ -107,19 +107,20 @@ export default function PageAdminDashboard() {
 
   //- giải quyết sự cố báo cáo nhanh
   const handleResolveIssue = async (issueId: string) => {
-    try {
-      await replyIssue({
-        id: issueId,
-        status: "RESOLVED",
-        adminReply:
-          "Yêu cầu đã được xử lý và giải quyết trực tiếp từ trang Dashboard Admin.",
-      });
-      SoftSuccessSonner("Giải quyết yêu cầu hỗ trợ thành công!");
-      refetch();
-    } catch (err) {
-      console.error(err);
-      SoftDestructiveSonner("Đã xảy ra lỗi khi giải quyết yêu cầu hỗ trợ");
-    }
+    console.log(issueId);
+    // try {
+    //   await replyIssue({
+    //     id: issueId,
+    //     status: "RESOLVED",
+    //     adminReply:
+    //       "Yêu cầu đã được xử lý và giải quyết trực tiếp từ trang Dashboard Admin.",
+    //   });
+    //   SoftSuccessSonner("Giải quyết yêu cầu hỗ trợ thành công!");
+    //   refetch();
+    // } catch (err) {
+    //   console.error(err);
+    //   SoftDestructiveSonner("Đã xảy ra lỗi khi giải quyết yêu cầu hỗ trợ");
+    // }
   };
 
   //- định nghĩa fallback cho các trường dữ liệu

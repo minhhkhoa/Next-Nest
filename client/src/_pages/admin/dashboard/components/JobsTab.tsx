@@ -4,6 +4,8 @@ import React from "react";
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -133,22 +135,25 @@ export default function JobsTab({ jobStats }: JobsTabProps) {
         </CardHeader>
         <CardContent className="p-0">
           {jobStats.topViewedJobs.length > 0 ? (
-            <div className="divide-y">
-              {jobStats.topViewedJobs.map((job: any) => (
-                <div
-                  key={job.id}
-                  className="flex items-center justify-between p-4 hover:bg-accent/50 transition-colors border-b border-border last:border-0"
-                >
-                  <div className="space-y-1">
-                    <p className="text-sm font-semibold text-foreground">{job.title?.vi || job.title?.en || "N/A"}</p>
-                    <p className="text-xs text-muted-foreground">{job.companyName}</p>
+            //- sử dụng scrollarea giới hạn chiều cao tối đa là 350px và hỗ trợ cuộn cho khối công việc được xem nhiều nhất
+            <ScrollArea className="max-h-[350px]">
+              <div className="divide-y">
+                {jobStats.topViewedJobs.map((job: any) => (
+                  <div
+                    key={job.id}
+                    className="flex items-center justify-between p-4 hover:bg-accent/50 transition-colors border-b border-border last:border-0"
+                  >
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold text-foreground">{job.title?.vi || job.title?.en || "N/A"}</p>
+                      <p className="text-xs text-muted-foreground">{job.companyName}</p>
+                    </div>
+                    <Badge className="bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border-none font-bold py-1 px-2.5">
+                      {job.views.toLocaleString()} lượt xem
+                    </Badge>
                   </div>
-                  <Badge className="bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border-none font-bold py-1 px-2.5">
-                    {job.views.toLocaleString()} lượt xem
-                  </Badge>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </ScrollArea>
           ) : (
             <div className="p-8 text-center text-muted-foreground italic text-sm">Chưa có số liệu hiển thị</div>
           )}
@@ -163,22 +168,25 @@ export default function JobsTab({ jobStats }: JobsTabProps) {
         </CardHeader>
         <CardContent className="p-0">
           {jobStats.topAppliedJobs.length > 0 ? (
-            <div className="divide-y border-border">
-              {jobStats.topAppliedJobs.map((job: any) => (
-                <div
-                  key={job.id}
-                  className="flex items-center justify-between p-4 hover:bg-accent/50 transition-colors border-b border-border last:border-0"
-                >
-                  <div className="space-y-1">
-                    <p className="text-sm font-semibold text-foreground">{job.title?.vi || job.title?.en || "N/A"}</p>
-                    <p className="text-xs text-muted-foreground">{job.companyName}</p>
+            //- sử dụng scrollarea giới hạn chiều cao tối đa là 350px và hỗ trợ cuộn cho khối công việc được nộp đơn nhiều nhất
+            <ScrollArea className="max-h-[350px]">
+              <div className="divide-y border-border">
+                {jobStats.topAppliedJobs.map((job: any) => (
+                  <div
+                    key={job.id}
+                    className="flex items-center justify-between p-4 hover:bg-accent/50 transition-colors border-b border-border last:border-0"
+                  >
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold text-foreground">{job.title?.vi || job.title?.en || "N/A"}</p>
+                      <p className="text-xs text-muted-foreground">{job.companyName}</p>
+                    </div>
+                    <Badge className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border-none font-bold py-1 px-2.5">
+                      {job.applied.toLocaleString()} đơn nộp
+                    </Badge>
                   </div>
-                  <Badge className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border-none font-bold py-1 px-2.5">
-                    {job.applied.toLocaleString()} đơn nộp
-                  </Badge>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </ScrollArea>
           ) : (
             <div className="p-8 text-center text-muted-foreground italic text-sm">
               Chưa có đơn ứng tuyển nào được nộp

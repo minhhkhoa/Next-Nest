@@ -19,6 +19,7 @@ interface SaveResumeDialogProps {
   onResumeNameChange: (name: string) => void;
   onSave: () => void;
   isSaving: boolean;
+  showTrigger?: boolean;
 }
 
 export function SaveResumeDialog({
@@ -28,16 +29,19 @@ export function SaveResumeDialog({
   onResumeNameChange,
   onSave,
   isSaving,
+  showTrigger = true,
 }: SaveResumeDialogProps) {
   return (
     <div className="flex justify-end mt-6 print:hidden">
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogTrigger asChild>
-          <Button size="lg" className="rounded-full shadow-lg min-w-[200px]">
-            <Save className="mr-2 h-4 w-4" />
-            Lưu hồ sơ CV
-          </Button>
-        </DialogTrigger>
+        {showTrigger && (
+          <DialogTrigger asChild>
+            <Button size="lg" className="rounded-full shadow-lg min-w-[200px]">
+              <Save className="mr-2 h-4 w-4" />
+              Lưu hồ sơ CV
+            </Button>
+          </DialogTrigger>
+        )}
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Lưu hồ sơ CV</DialogTitle>

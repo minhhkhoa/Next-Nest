@@ -42,6 +42,7 @@ export default function PageDetailCv({ id }: { id: string }) {
             data={detailCvFetch?.data?.content}
             isEdit={isEdit}
             resumeId={detailCvFetch?.data?._id}
+            resumeName={detailCvFetch?.data?.resumeName}
           />
         );
       case CV_TEMPLATES.impressiveTemplate:
@@ -50,6 +51,7 @@ export default function PageDetailCv({ id }: { id: string }) {
             data={detailCvFetch?.data?.content}
             isEdit={isEdit}
             resumeId={detailCvFetch?.data?._id}
+            resumeName={detailCvFetch?.data?.resumeName}
           />
         );
       case CV_TEMPLATES.modernTemplate:
@@ -58,6 +60,7 @@ export default function PageDetailCv({ id }: { id: string }) {
             data={detailCvFetch?.data?.content}
             isEdit={isEdit}
             resumeId={detailCvFetch?.data?._id}
+            resumeName={detailCvFetch?.data?.resumeName}
           />
         );
       case CV_TEMPLATES.simpleTemplate:
@@ -66,6 +69,7 @@ export default function PageDetailCv({ id }: { id: string }) {
             data={detailCvFetch?.data?.content}
             isEdit={isEdit}
             resumeId={detailCvFetch?.data?._id}
+            resumeName={detailCvFetch?.data?.resumeName}
           />
         );
       default:

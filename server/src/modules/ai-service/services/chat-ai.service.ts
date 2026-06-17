@@ -28,6 +28,7 @@ export class ChatAiService {
     jobId: string,
     jobContext: string,
     input: string,
+    cvContext: string = '',
   ): Promise<AsyncGenerator<string, void, unknown>> {
     const document = await this.aiChatHistoryRepository.findByUserId(userId);
 
@@ -46,6 +47,7 @@ export class ChatAiService {
     const messages = await chatPromptTemplate.formatMessages({
       input,
       job_context: jobContext,
+      cv_context: cvContext || 'Không có CV đính kèm.',
       chat_history: chatHistory,
     });
 

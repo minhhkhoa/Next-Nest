@@ -57,6 +57,7 @@ export class AiServiceController {
             user.id,
             query.jobId,
             query.question,
+            query.cvId,
           );
 
           for await (const chunk of generator) {
