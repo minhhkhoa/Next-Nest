@@ -15,6 +15,8 @@ import { ApplicationModule } from '../application/application.module';
 import { BookmarkModule } from '../bookmark/bookmark.module';
 import { IndustryModule } from '../industry/industry.module';
 import { JobsRepository } from './repository/jobs.repository';
+import { MailModule } from '../mail/mail.module';
+import { AiServiceModule } from '../ai-service/ai-service.module';
 
 @BusinessModule()
 @Module({
@@ -27,6 +29,8 @@ import { JobsRepository } from './repository/jobs.repository';
     forwardRef(() => ApplicationModule),
     forwardRef(() => BookmarkModule),
     IndustryModule,
+    MailModule,
+    forwardRef(() => AiServiceModule),
   ],
   controllers: [JobsController],
   providers: [JobsService, JobCronService, CompanyStatusGuard, JobsRepository],

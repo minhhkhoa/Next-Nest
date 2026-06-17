@@ -1,0 +1,50 @@
+<html lang='vi'>
+  <head>
+    <meta charset='UTF-8' />
+    <style>
+      body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+      .container { padding: 30px; border: 1px solid #eee; border-radius: 8px; max-width: 600px; margin: 20px auto; background-color: #fbfbfb; }
+      .header { color: #4f46e5; border-bottom: 2px solid #4f46e5; padding-bottom: 15px; margin-bottom: 20px; }
+      .job-card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+      .job-title { font-size: 1.1em; font-weight: bold; color: #1e1b4b; margin: 0 0 6px 0; text-decoration: none; display: inline-block; }
+      .job-title:hover { color: #4f46e5; }
+      .company-name { font-size: 0.9em; color: #4b5563; margin: 0 0 8px 0; font-weight: 500; }
+      .job-meta { font-size: 0.85em; color: #6b7280; margin-bottom: 8px; }
+      .ai-box { background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); border: 1px solid #ddd6fe; border-radius: 6px; padding: 10px 12px; margin-top: 8px; font-size: 0.85em; color: #5b21b6; }
+      .btn-view { display: inline-block; background-color: #4f46e5; color: #ffffff !important; text-decoration: none; padding: 8px 16px; font-size: 0.9em; font-weight: bold; border-radius: 6px; margin-top: 10px; }
+      .btn-view:hover { background-color: #4338ca; }
+      .footer { margin-top: 30px; border-top: 1px solid #e5e7eb; padding-top: 15px; font-size: 0.8em; color: #777; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <h2 class='header'>Gợi Ý Việc Làm Phù Hợp Dành Cho Bạn</h2>
+      <p>Xin chào <strong>{{name}}</strong>,</p>
+      <p>Dựa trên hồ sơ năng lực và CV của bạn, trợ lý AI của chúng tôi đã tìm thấy các vị trí tuyển dụng rất phù hợp dưới đây:</p>
+      
+      <div class='job-list'>
+        {{#each jobs}}
+          <div class='job-card'>
+            <a href='{{jobLink}}' class='job-title' target='_blank'>{{title}}</a>
+            <div class='company-name'>🏢 {{companyName}}</div>
+            <div class='job-meta'>
+              📍 {{location}} | 💰 {{salary}}
+            </div>
+            <div class='ai-box'>
+              ✨ <strong>Đánh giá từ AI:</strong> {{aiExplanation}}
+            </div>
+            <a href='{{jobLink}}' class='btn-view' target='_blank'>Xem chi tiết & Ứng tuyển</a>
+          </div>
+        {{/each}}
+      </div>
+      
+      <p>Chúc bạn sớm tìm được công việc ưng ý!</p>
+      <p>Trân trọng,<br />Đội ngũ Next-Nest</p>
+      
+      <div class='footer'>
+        <p>Đây là email tự động từ hệ thống gợi ý việc làm của Next-Nest. Bạn nhận được email này vì đã đăng ký tài khoản ứng viên.</p>
+        <p>Nếu không muốn nhận các email gợi ý này nữa, bạn có thể thiết lập lại trong trang cá nhân.</p>
+      </div>
+    </div>
+  </body>
+</html>

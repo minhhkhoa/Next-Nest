@@ -71,4 +71,21 @@ export class MailService {
       console.error('Lỗi gửi mail thông báo phản hồi Admin:', error);
     }
   }
+
+  //- gửi email gợi ý việc làm phù hợp cho ứng viên
+  async sendJobRecommendationsMail(to: string, userName: string, jobs: any[]) {
+    try {
+      await this.mailerService.sendMail({
+        to,
+        subject: '[JobHub] Danh sách công việc phù hợp nhất dành cho bạn',
+        template: 'job-recommendations',
+        context: {
+          name: userName,
+          jobs: jobs,
+        },
+      });
+    } catch (error) {
+      console.error('Lỗi gửi mail gợi ý việc làm:', error);
+    }
+  }
 }

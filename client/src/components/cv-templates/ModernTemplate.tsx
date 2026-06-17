@@ -82,7 +82,12 @@ export default function ModernTemplate({
     skills:
       data?.skills && data.skills.length > 0
         ? data.skills.map((s: any) => ({
-            value: (s as any).value,
+            //- đồng bộ các định dạng kỹ năng từ dữ liệu hệ thống (object hoặc string)
+            value:
+              (s as any).value ||
+              (s as any).name?.vi ||
+              (s as any).name ||
+              (typeof s === "string" ? s : ""),
           }))
         : [{ value: "Kỹ năng 1" }, { value: "Kỹ năng 2" }],
     education:
