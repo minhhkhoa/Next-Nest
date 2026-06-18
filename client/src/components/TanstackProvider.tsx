@@ -32,6 +32,10 @@ interface AppStoreType {
   //- config socket
   socket: Socket | null;
   setSocket: (socket: Socket | null) => void;
+
+  //- ID phòng chat đang mở
+  activeChatId: string | null;
+  setActiveChatId: (value: string | null) => void;
 }
 
 export const useAppStore = create<AppStoreType>((set) => ({
@@ -42,6 +46,9 @@ export const useAppStore = create<AppStoreType>((set) => ({
 
   socket: null,
   setSocket: (value) => set({ socket: value }),
+
+  activeChatId: null,
+  setActiveChatId: (value) => set({ activeChatId: value }),
 }));
 
 export default function TanstackProvider({

@@ -18,6 +18,9 @@ const chatApiRequest = {
   getConversationById: (id: string) =>
     http.get<ApiResponse<Conversation>>(`${conversationPrefix}/${id}`),
 
+  getUnreadMessagesCount: () =>
+    http.get<ApiResponse<{ count: number }>>(`${conversationPrefix}/unread-count`),
+
   createConversation: (payload: CreateConversationPayload) =>
     http.post<ApiResponse<Conversation>>(conversationPrefix, payload),
 

@@ -36,6 +36,13 @@ export class ConversationController {
     return this.conversationService.findAll(user);
   }
 
+  @Get('unread-count')
+  @ResponseMessage('Lấy tổng số tin nhắn chưa đọc thành công')
+  @ApiOperation({ summary: 'Lấy tổng số tin nhắn chưa đọc của người dùng' })
+  getUnreadCount(@userDecorator() user: UserDecoratorType) {
+    return this.conversationService.countUnreadMessages(user);
+  }
+
   @Get(':id')
   @ResponseMessage('Lấy thông tin phòng chat thành công')
   @ApiOperation({ summary: 'Lấy thông tin phòng chat' })

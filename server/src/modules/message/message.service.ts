@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { Injectable, BadRequestException, ForbiddenException, Inject, forwardRef } from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { Types } from 'mongoose';
 import { ConversationService } from '../conversation/conversation.service';
@@ -6,6 +6,9 @@ import { UserDecoratorType } from 'src/utils/typeSchemas';
 import { ConfigService } from '@nestjs/config';
 import { ChatGateway } from './chat.gateway';
 import { MessageRepository } from './repository/message.repository';
+import { UserService } from '../user/user.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { NotificationType } from 'src/common/constants/notification-type.enum';
 
 @Injectable()
 export class MessageService {
@@ -14,6 +17,9 @@ export class MessageService {
     private conversationService: ConversationService,
     private configService: ConfigService,
     private chatGateway: ChatGateway, // Inject ChatGateway
+    @Inject(forwardRef(() => UserService))
+    private userService: UserService, //- inject user service để tìm danh sách recruiter
+    private eventEmitter: EventEmitter2, //- dùng event emitter để phát tin nhắn mới
   ) {}
 
   async create(createMessageDto: CreateMessageDto, user: UserDecoratorType) {
@@ -65,6 +71,56 @@ export class MessageService {
         lastMsgText,
         user.roleCodeName,
       );
+
+      //- Lấy thông tin cuộc trò chuyện để tìm người nhận tin nhắn
+      const conversation = await this.conversationService.findOne(
+        createMessageDto.conversationId,
+        user,
+      );
+
+      //- Xác định danh sách ID người nhận thông báo tin nhắn mới
+      const receivers: string[] = [];
+      if (senderType === 'CANDIDATE') {
+        //- ứng viên gửi -> người nhận là tất cả recruiter thuộc công ty
+        try {
+          const companyId = conversation.companyId?._id?.toString() || conversation.companyId?.toString();
+          if (companyId) {
+            const recruiters = await this.userService.findRecruitersByCompany(companyId);
+            recruiters.forEach((r) => {
+              receivers.push(r._id.toString());
+            });
+          }
+        } catch (err) {
+          console.error(`[Message Service - Find Recruiters Error]: ${err.message}`);
+        }
+      } else {
+        //- recruiter gửi -> người nhận là ứng viên
+        const candidateId = conversation.candidateId?._id?.toString() || conversation.candidateId?.toString();
+        if (candidateId) {
+          receivers.push(candidateId);
+        }
+      }
+
+      //- Bắn sự kiện thông báo tin nhắn mới tới các người nhận
+      try {
+        receivers.forEach((receiverId) => {
+          this.eventEmitter.emit(NotificationType.NEW_MESSAGE, {
+            receiverId,
+            senderId: user.id,
+            title: 'Tin nhắn mới',
+            content: senderType === 'CANDIDATE'
+              ? `Ứng viên ${user.name} đã gửi tin nhắn mới`
+              : `Nhà tuyển dụng ${user.name} đã gửi tin nhắn mới`,
+            type: NotificationType.NEW_MESSAGE,
+            metadata: {
+              module: 'CHAT',
+              resourceId: createMessageDto.conversationId,
+            },
+          });
+        });
+      } catch (err) {
+        console.error(`[Message Service - Emit NEW_MESSAGE Error]: ${err.message}`);
+      }
 
       //- Phát sự kiện realtime gửi xuống cho các Client đang trong room conversationId
       this.chatGateway.emitMessageToConversation(

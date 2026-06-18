@@ -38,7 +38,7 @@ import { uploadToCloudinary } from "@/lib/utils";
 import { UserResumeResponseType } from "@/schemasvalidation/user-resume";
 
 export default function ChatPageModule() {
-  const { user } = useAppStore();
+  const { user, setActiveChatId } = useAppStore();
   const searchParams = useSearchParams();
   const defaultConversationId = searchParams.get("conversationId");
   const queryClient = useQueryClient();
@@ -46,6 +46,14 @@ export default function ChatPageModule() {
   const [activeConversationId, setActiveConversationId] = useState<
     string | null
   >(defaultConversationId || null);
+
+  //- Đồng bộ hóa ID phòng chat đang mở lên Zustand store toàn cục
+  useEffect(() => {
+    setActiveChatId(activeConversationId);
+    return () => {
+      setActiveChatId(null);
+    };
+  }, [activeConversationId, setActiveChatId]);
 
   const [aiSession, setAiSession] = useState<{
     userId: string;

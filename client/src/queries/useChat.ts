@@ -14,6 +14,15 @@ export const useGetConversations = (enabled = true) => {
   });
 };
 
+//--- Lấy tổng số tin nhắn chưa đọc ---
+export const useGetUnreadMessagesCount = (enabled = true) => {
+  return useQuery({
+    queryKey: ["unread-messages-count"],
+    queryFn: () => chatApiRequest.getUnreadMessagesCount(),
+    enabled,
+  });
+};
+
 //--- Lấy chi tiết một đoạn chat ---
 export const useGetConversationById = (id: string | null) => {
   return useQuery({
@@ -61,6 +70,9 @@ export const useMarkAsReadMutation = () => {
     onSuccess: (response, id) => {
       const updatedConversation = response.data;
       if (!updatedConversation) return;
+
+      //- Invalidate tổng số lượng tin nhắn chưa đọc trên Header
+      queryClient.invalidateQueries({ queryKey: ["unread-messages-count"] });
 
       queryClient.setQueryData(["conversations"], (oldData: any) => {
         if (!oldData?.data || !Array.isArray(oldData.data)) {

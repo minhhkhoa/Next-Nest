@@ -129,4 +129,19 @@ export class ConversationRepository extends MongoAbstractRepository<Conversation
       },
     );
   }
+
+  //- tính tổng số lượng tin nhắn chưa đọc của người dùng
+  async countUnreadMessages(filter: any, isCandidate: boolean): Promise<number> {
+    const unreadField = isCandidate ? 'unreadCandidate' : 'unreadCompany';
+    const result = await this.conversationModel.aggregate([
+      { $match: filter },
+      {
+        $group: {
+          _id: null,
+          totalUnread: { $sum: `$${unreadField}` },
+        },
+      },
+    ]);
+    return result[0]?.totalUnread || 0;
+  }
 }

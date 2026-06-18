@@ -25,6 +25,9 @@ export enum NotificationType {
   //- Module News
   NEWS_CREATED = 'NEWS_CREATED', // Admin nhận: Có tin mới
 
+  //- Module Chat
+  NEW_MESSAGE = 'NEW_MESSAGE', //- Người nhận: Có tin nhắn mới
+
   //- Module System
   SYSTEM_ANNOUNCEMENT = 'SYSTEM_ANNOUNCEMENT',
 

@@ -15,9 +15,12 @@ import { getAccessTokenFromLocalStorage } from "@/lib/utils";
 import SheetMobile from "./SheetMobile";
 import { Link } from "@/i18n/navigation";
 import { MessageCircleMoreIcon } from "lucide-react";
+import { useGetUnreadMessagesCount } from "@/queries/useChat";
 
 export default function HeaderClient() {
   const { isLogin } = useAppStore();
+  const { data: unreadCountData } = useGetUnreadMessagesCount(isLogin);
+  const unreadCount = unreadCountData?.data?.count || 0;
 
   const token = React.useMemo(
     () =>
@@ -57,8 +60,13 @@ export default function HeaderClient() {
         <div className="flex items-center gap-2 mr-3 md:mr-10">
           {isLogin && <NotificationBell />}
           {isLogin && (
-            <Link href="/chat">
+            <Link href="/chat" className="relative p-1 flex items-center justify-center">
               <MessageCircleMoreIcon className="w-5 h-5 cursor-pointer" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white animate-pulse">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
             </Link>
           )}
           {!isLogin && <UserSection />}

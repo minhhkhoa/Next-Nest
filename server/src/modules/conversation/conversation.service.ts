@@ -216,4 +216,44 @@ export class ConversationService {
       isCandidate,
     );
   }
+
+  //- lấy tổng số tin nhắn chưa đọc của người dùng hiện tại
+  async countUnreadMessages(user: UserDecoratorType) {
+    try {
+      const candidateText = this.configService.get<string>('role_candidate');
+      const recruiterText = this.configService.get<string>('role_recruiter');
+      const recruiterAdminText = this.configService.get<string>(
+        'role_recruiter_admin',
+      );
+
+      let filter: any = {};
+      let isCandidate = false;
+
+      if (user.roleCodeName === candidateText) {
+        filter.candidateId = new Types.ObjectId(user.id);
+        isCandidate = true;
+      } else if (
+        [recruiterText, recruiterAdminText].includes(user.roleCodeName)
+      ) {
+        if (
+          user.employerInfo?.companyID &&
+          user.employerInfo?.userStatus === 'ACTIVE'
+        ) {
+          filter.companyId = new Types.ObjectId(user.employerInfo.companyID);
+        } else {
+          return { count: 0 };
+        }
+      } else {
+        return { count: 0 };
+      }
+
+      const count = await this.conversationRepository.countUnreadMessages(
+        filter,
+        isCandidate,
+      );
+      return { count };
+    } catch (error) {
+      throw new BadRequestException('Không thể lấy tổng số tin nhắn chưa đọc');
+    }
+  }
 }

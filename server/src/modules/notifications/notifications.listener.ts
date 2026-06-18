@@ -159,4 +159,10 @@ export class NotificationsListener {
   handleAdCancelled(payload: CreateNotificationDto) {
     return this.processNotification(payload, NotificationType.AD_CANCELLED);
   }
+
+  //- tin nhắn mới
+  @OnEvent(NotificationType.NEW_MESSAGE)
+  handleNewMessage(payload: CreateNotificationDto) {
+    return this.processNotification(payload, NotificationType.NEW_MESSAGE);
+  }
 }

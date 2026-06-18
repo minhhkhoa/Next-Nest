@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation";
 let socket: Socket | null = null;
 
 export const SocketListener = () => {
-  const { isLogin, user, setSocket, setLogin } = useAppStore();
+  const { isLogin, user, setSocket, setLogin, activeChatId } = useAppStore();
   const queryClient = useQueryClient();
   const { mutateAsync: mutationLogout } = useLogoutMutation();
   const router = useRouter();
@@ -41,13 +41,15 @@ export const SocketListener = () => {
   };
 
   useEffect(() => {
-    //- 1. Chỉ kết nối khi đã login và có thông tin user
+    //- Chỉ kết nối khi đã login và có thông tin user
     if (isLogin && user?._id) {
       if (!socket) {
         //- Tự động nhận diện URL kết nối: Nếu không phải localhost thì dùng luôn domain hiện tại
-        const socketUrl = typeof window !== "undefined" && !window.location.hostname.includes("localhost") 
-          ? window.location.origin 
-          : envConfig.NEXT_PUBLIC_API_URL_SERVER_BASE;
+        const socketUrl =
+          typeof window !== "undefined" &&
+          !window.location.hostname.includes("localhost")
+            ? window.location.origin
+            : envConfig.NEXT_PUBLIC_API_URL_SERVER_BASE;
 
         socket = io(socketUrl, {
           auth: {
@@ -66,16 +68,33 @@ export const SocketListener = () => {
         setSocket(socket);
       }
 
-      //- 2. Lắng nghe sự kiện kết nối thành công
+      //- Lắng nghe sự kiện kết nối thành công
       socket.on("connect", () => {
         console.log("✅ Socket connected:", socket?.id);
       });
 
-      //- 3. Lắng nghe sự kiện thông báo mới từ NestJS
+      //- Lắng nghe sự kiện thông báo mới từ NestJS
       socket.on("new-notification", (data) => {
         console.log("📩 Receive new notification:", data);
 
         //- làm mới 1 số api, chỉ hoạt động khi tính năng có ping thì client mới có biến 'data' trên kia để làm.
+
+        //- xử lý thông báo tin nhắn mới thời gian thực
+        if (data.type === "NEW_MESSAGE") {
+          //- nếu đang mở đúng phòng chat đó thì không làm gì (tin nhắn hiển thị realtime qua socket chat rồi)
+          if (activeChatId === data.metadata.resourceId) {
+            return;
+          }
+
+          SoftSuccessSonner(data.content || "Bạn có một tin nhắn mới!");
+          queryClient.invalidateQueries({
+            queryKey: ["unread-messages-count"],
+          });
+          queryClient.invalidateQueries({ queryKey: ["conversations"] });
+          queryClient.invalidateQueries({
+            queryKey: ["messages", data.metadata.resourceId],
+          });
+        }
 
         //- start issue
         if (data.metadata.module === "ISSUE") {
@@ -109,7 +128,7 @@ export const SocketListener = () => {
           }
         }
 
-        if (data.metadata.module !== "COMPANY") {
+        if (data.type !== "NEW_MESSAGE" && data.metadata.module !== "COMPANY") {
           SoftSuccessSonner("Bạn có một thông báo mới!");
         }
 
