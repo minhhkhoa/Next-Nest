@@ -14,6 +14,7 @@ import { useLogoutMutation } from "@/queries/useAuth";
 import { NotificationType } from "@/lib/constant";
 import { useRouter } from "next/navigation";
 
+
 //- Biến instance bên ngoài để tránh khởi tạo lại khi re-render
 let socket: Socket | null = null;
 
@@ -86,7 +87,12 @@ export const SocketListener = () => {
             return;
           }
 
-          SoftSuccessSonner(data.content || "Bạn có một tin nhắn mới!");
+          //- chỉ hiển thị thông báo toast khi người dùng không ở trang chat
+          const isChatPage = typeof window !== "undefined" && window.location.pathname.includes("/chat");
+          if (!isChatPage) {
+            SoftSuccessSonner("Bạn có một tin nhắn mới!");
+          }
+
           queryClient.invalidateQueries({
             queryKey: ["unread-messages-count"],
           });

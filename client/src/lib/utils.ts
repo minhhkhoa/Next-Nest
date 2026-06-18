@@ -208,6 +208,15 @@ export const handleNotificationNavigation = (
       router.push(`/notifications/${item._id}`);
       break;
 
+    case NotificationType.NEW_MESSAGE:
+      //- điều hướng sang trang chat kèm id cuộc trò chuyện
+      if (item.metadata?.resourceId) {
+        router.push(`/chat?conversationId=${item.metadata.resourceId}`);
+      } else {
+        router.push(`/chat`);
+      }
+      break;
+
     default:
       console.warn("Unhandled notification type:", type);
       break;

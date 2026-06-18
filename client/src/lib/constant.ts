@@ -128,6 +128,9 @@ export enum NotificationType {
 
   //- Module System
   SYSTEM_ANNOUNCEMENT = "SYSTEM_ANNOUNCEMENT",
+
+  //- Module Chat
+  NEW_MESSAGE = "NEW_MESSAGE",
 }
 
 //- các roles được phép vào trang quản trị của chúng
