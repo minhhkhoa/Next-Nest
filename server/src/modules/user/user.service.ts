@@ -986,4 +986,21 @@ export class UserService {
       throw new BadRequestCustom(error.message, !!error.message);
     }
   }
+
+  //- tìm tất cả ứng viên đang hoạt động trong hệ thống
+  async findAllCandidates() {
+    try {
+      const nameRole = this.configService.get<string>('role_candidate') as string;
+      const role = await this.roleService.getRoleByName(nameRole);
+      if (!role) return [];
+      
+      return this.userRepository.findRaw({
+        roleID: role._id,
+        isDeleted: false,
+      });
+    } catch (error) {
+      console.error('Lỗi lấy danh sách ứng viên:', error);
+      return [];
+    }
+  }
 }

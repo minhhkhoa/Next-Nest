@@ -31,6 +31,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/navigation";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -368,53 +370,56 @@ export default function OverviewTab({
           </CardHeader>
           <CardContent className="p-0">
             {quickApprovals.pendingCompanies.length > 0 ? (
-              <div className="divide-y">
-                {quickApprovals.pendingCompanies.map((company: any) => (
-                  <div
-                    key={company.id}
-                    className="flex items-center justify-between p-4 hover:bg-accent/50 transition-colors border-b border-border last:border-0"
-                  >
-                    <div className="space-y-1">
-                      <Link href="/admin/company?statusFilterCompany=PENDING" className="hover:underline hover:text-primary">
-                        <p className="text-sm font-semibold">
-                          {company.name}
-                        </p>
-                      </Link>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>MST: {company.taxCode}</span>
-                        <span>•</span>
-                        <span>
-                          {format(
-                            new Date(company.createdAt),
-                            "dd/MM/yyyy HH:mm",
-                          )}
-                        </span>
+              //- sử dụng scrollarea giới hạn chiều cao tối đa là 350px và hỗ trợ cuộn cho khối doanh nghiệp chờ duyệt
+              <ScrollArea className="max-h-[350px]">
+                <div className="divide-y">
+                  {quickApprovals.pendingCompanies.map((company: any) => (
+                    <div
+                      key={company.id}
+                      className="flex items-center justify-between p-4 hover:bg-accent/50 transition-colors border-b border-border last:border-0"
+                    >
+                      <div className="space-y-1">
+                        <Link href="/admin/company?statusFilterCompany=PENDING" className="hover:underline hover:text-primary">
+                          <p className="text-sm font-semibold">
+                            {company.name}
+                          </p>
+                        </Link>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>MST: {company.taxCode}</span>
+                          <span>•</span>
+                          <span>
+                            {format(
+                              new Date(company.createdAt),
+                              "dd/MM/yyyy HH:mm",
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-red-500 hover:text-red-600 hover:bg-red-500/10 text-xs px-2.5 h-8 border-destructive/30"
+                          onClick={() =>
+                            handleVerifyCompany(company.id, "REJECT")
+                          }
+                        >
+                          Từ chối
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-2.5 h-8"
+                          onClick={() =>
+                            handleVerifyCompany(company.id, "ACCEPT")
+                          }
+                        >
+                          Duyệt
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-red-500 hover:text-red-600 hover:bg-red-500/10 text-xs px-2.5 h-8 border-destructive/30"
-                        onClick={() =>
-                          handleVerifyCompany(company.id, "REJECT")
-                        }
-                      >
-                        Từ chối
-                      </Button>
-                      <Button
-                        size="sm"
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-2.5 h-8"
-                        onClick={() =>
-                          handleVerifyCompany(company.id, "ACCEPT")
-                        }
-                      >
-                        Duyệt
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              </ScrollArea>
             ) : (
               <div className="p-8 text-center text-muted-foreground italic text-sm">
                 Không có doanh nghiệp nào đang chờ duyệt
@@ -445,48 +450,51 @@ export default function OverviewTab({
           </CardHeader>
           <CardContent className="p-0">
             {quickApprovals.pendingIssues.length > 0 ? (
-              <div className="divide-y border-border">
-                {quickApprovals.pendingIssues.map((issue: any) => (
-                  <div
-                    key={issue.id}
-                    className="flex items-center justify-between p-4 hover:bg-accent/50 transition-colors border-b border-border last:border-0"
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Link href="/admin/issue?statusFilterIssue=PENDING" className="hover:underline hover:text-primary">
-                          <p className="text-sm font-semibold">
-                            {issue.title?.vi || issue.title?.en || "N/A"}
-                          </p>
-                        </Link>
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] py-0 px-1.5 uppercase font-semibold text-red-500 border-red-500/30 bg-red-500/10"
-                        >
-                          {issue.type}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>Người gửi: {issue.createdBy}</span>
-                        <span>•</span>
-                        <span>
-                          {format(
-                            new Date(issue.createdAt),
-                            "dd/MM/yyyy HH:mm",
-                          )}
-                        </span>
-                      </div>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-primary/30 text-primary hover:bg-primary/10 text-xs px-3 h-8"
-                      onClick={() => handleResolveIssue(issue.id)}
+              //- sử dụng scrollarea giới hạn chiều cao tối đa là 350px và hỗ trợ cuộn cho khối báo cáo sự cố mới nhất
+              <ScrollArea className="max-h-[350px]">
+                <div className="divide-y border-border">
+                  {quickApprovals.pendingIssues.map((issue: any) => (
+                    <div
+                      key={issue.id}
+                      className="flex items-center justify-between p-4 hover:bg-accent/50 transition-colors border-b border-border last:border-0"
                     >
-                      Giải quyết nhanh
-                    </Button>
-                  </div>
-                ))}
-              </div>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Link href="/admin/issue?statusFilterIssue=PENDING" className="hover:underline hover:text-primary">
+                            <p className="text-sm font-semibold">
+                              {issue.title?.vi || issue.title?.en || "N/A"}
+                            </p>
+                          </Link>
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] py-0 px-1.5 uppercase font-semibold text-red-500 border-red-500/30 bg-red-500/10"
+                          >
+                            {issue.type}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>Người gửi: {issue.createdBy}</span>
+                          <span>•</span>
+                          <span>
+                            {format(
+                              new Date(issue.createdAt),
+                              "dd/MM/yyyy HH:mm",
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-primary/30 text-primary hover:bg-primary/10 text-xs px-3 h-8"
+                        onClick={() => handleResolveIssue(issue.id)}
+                      >
+                        Giải quyết nhanh
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
             ) : (
               <div className="p-8 text-center text-muted-foreground italic text-sm">
                 Không có báo cáo sự cố nào cần xử lý

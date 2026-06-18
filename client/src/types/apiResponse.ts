@@ -42,6 +42,8 @@ export type TemplateProps = {
   isEdit?: boolean;
   isView?: boolean;
   resumeId?: string;
+  //- ten cv cua nguoi dung
+  resumeName?: string;
 };
 
 

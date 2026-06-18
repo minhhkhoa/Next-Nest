@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { LangchainModule } from './langchain.module';
 import { ChatAiService } from './services/chat-ai.service';
@@ -12,14 +12,19 @@ import { DetailProfileModule } from '../detail-profile/detail-profile.module';
 import { SkillModule } from '../skill/skill.module';
 import { IndustryModule } from '../industry/industry.module';
 import { AiServiceService } from './ai-service.service';
-import { AiChatHistory, AiChatHistorySchema } from './schemas/ai-chat-history.schema';
+import {
+  AiChatHistory,
+  AiChatHistorySchema,
+} from './schemas/ai-chat-history.schema';
 import { AiChatHistoryRepository } from './repository/ai-chat-history.repository';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: AiChatHistory.name, schema: AiChatHistorySchema }]),
+    MongooseModule.forFeature([
+      { name: AiChatHistory.name, schema: AiChatHistorySchema },
+    ]),
     LangchainModule,
-    JobsModule,
+    forwardRef(() => JobsModule),
     UserResumeModule,
     DetailProfileModule,
     SkillModule,
@@ -34,6 +39,12 @@ import { AiChatHistoryRepository } from './repository/ai-chat-history.repository
     JobRecommendationService,
     AiChatHistoryRepository,
   ],
-  exports: [AiServiceService, ChatAiService, CvScoringService, JdMatchingService, JobRecommendationService],
+  exports: [
+    AiServiceService,
+    ChatAiService,
+    CvScoringService,
+    JdMatchingService,
+    JobRecommendationService,
+  ],
 })
 export class AiServiceModule {}

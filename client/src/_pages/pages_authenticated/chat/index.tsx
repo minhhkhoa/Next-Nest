@@ -74,6 +74,8 @@ export default function ChatPageModule() {
     companyName?: string;
     location?: string;
   } | null>(null);
+  //- state quan ly cv he thong dang cho gui khi chat voi ai
+  const [pendingCvAttachment, setPendingCvAttachment] = useState<UserResumeResponseType | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [uploadingAttachments, setUploadingAttachments] = useState<
     ChatUploadingAttachment[]
@@ -101,7 +103,8 @@ export default function ChatPageModule() {
   );
   const { data: userResumesData, isLoading: isLoadingSystemResumes } =
     useGetUserResumes(
-      !!activeConversationId && activeConversationId !== "ai-assistant",
+      //- cho phep goi api lay cv he thong ke ca khi dang chat voi ai assistant
+      !!activeConversationId,
     );
 
   const messages: ChatMessage[] = useMemo(() => {
@@ -333,6 +336,7 @@ export default function ChatPageModule() {
     if (id !== activeConversationId) {
       clearRealtimeMessages();
       setPendingJobReference(null);
+      setPendingCvAttachment(null); //- xoa cv dang cho gui khi chuyen phong chat
       if (activeConversationId) {
         clearPendingLocalFilesByConversation(activeConversationId);
       }
@@ -340,6 +344,11 @@ export default function ChatPageModule() {
     }
     setActiveConversationId(id);
     setIsMobileSidebarOpen(false);
+  };
+
+  //- gan cv he thong vao danh sach cho gui kem chat ai
+  const handleAttachSystemCv = (resume: UserResumeResponseType) => {
+    setPendingCvAttachment(resume);
   };
 
   useEffect(() => {
@@ -458,12 +467,16 @@ export default function ChatPageModule() {
 
     if (activeConversationId === "ai-assistant" && aiSession) {
       const trimmedText = currentInputText.trim();
-      if (!trimmedText && !pendingJobReference) return;
+      if (!trimmedText && !pendingJobReference && !pendingCvAttachment) return;
       const textToSend =
         trimmedText ||
-        `Tôi muốn biết thêm thông tin về vị trí ${aiSession.jobTitle}`;
+        (pendingCvAttachment
+          ? `Gửi CV để nhờ AI phân tích độ phù hợp với JD.`
+          : `Tôi muốn biết thêm thông tin về vị trí ${aiSession.jobTitle}`);
       setInputText("");
       setPendingJobReference(null);
+      const attachedCv = pendingCvAttachment; //- luu nhap de truyen vao sse query
+      setPendingCvAttachment(null); //- reset cv cho gui ngay lap tuc
 
       const userMsg: ChatMessage = {
         _id: `msg_${Date.now()}`,
@@ -520,6 +533,9 @@ export default function ChatPageModule() {
       if (token) url.searchParams.append("token", token);
       url.searchParams.append("jobId", aiSession.jobId);
       url.searchParams.append("question", textToSend);
+      if (attachedCv) {
+        url.searchParams.append("cvId", attachedCv._id);
+      }
 
       const eventSource = new EventSource(url.toString());
 
@@ -799,6 +815,9 @@ export default function ChatPageModule() {
         uploadingAttachments={activeUploadingAttachments}
         pendingLocalFiles={activePendingLocalFilesForView}
         onRemovePendingLocalFile={removePendingLocalFile}
+        pendingCvAttachment={pendingCvAttachment}
+        onClearPendingCvAttachment={() => setPendingCvAttachment(null)}
+        onAttachSystemCv={handleAttachSystemCv}
       />
     </div>
   );

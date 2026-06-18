@@ -30,7 +30,7 @@ export default function PageMyListCv() {
     return {
       ...template,
       image: template.image || templateMetadata.image,
-      title: template.title || templateMetadata.title,
+      title: template.resumeName || template.title || templateMetadata.title,
       description: template.description || templateMetadata.description,
     };
   });
@@ -135,7 +135,11 @@ export default function PageMyListCv() {
                 </div>
 
                 {/*- hiển thị nút chỉnh sửa mặc định trên desktop */}
-                <Button className="w-full group/btn hidden sm:flex" variant="outline" asChild>
+                <Button
+                  className="w-full group/btn hidden sm:flex"
+                  variant="outline"
+                  asChild
+                >
                   <Link
                     href={`/my-cv/${generateSlugUrl({ name: template.templateID, id: template._id })}?edit=true`}
                   >

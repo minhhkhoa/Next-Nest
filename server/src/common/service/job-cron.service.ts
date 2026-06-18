@@ -1,9 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { Job, JobDocument } from 'src/modules/jobs/schemas/job.schema';
 import { RedisService } from '../redis/redis.service';
+import { MailService } from 'src/modules/mail/mail.service';
+import { JobRecommendationService } from 'src/modules/ai-service/services/job-recommendation.service';
+import { UserService } from 'src/modules/user/user.service';
+import { ConfigService } from '@nestjs/config';
+import { UserDecoratorType } from 'src/utils/typeSchemas';
 
 //- Service để chạy các tác vụ định kỳ liên quan đến Job
 //- Hiện tại bao gồm việc tự động đóng các tin tuyển dụng đã hết hạn
@@ -15,6 +20,12 @@ export class JobCronService {
   constructor(
     @InjectModel(Job.name) private jobModel: Model<JobDocument>,
     private readonly redisService: RedisService,
+    private readonly mailService: MailService,
+    private readonly configService: ConfigService,
+    @Inject(forwardRef(() => JobRecommendationService))
+    private readonly jobRecommendationService: JobRecommendationService,
+    @Inject(forwardRef(() => UserService))
+    private readonly userService: UserService,
   ) {}
 
   //- Cron Job chạy mỗi giờ một lần để quét các job hết hạn
@@ -127,6 +138,100 @@ export class JobCronService {
     } catch (error) {
       this.logger.error(
         'Lỗi khi chạy Cron Job tự động gỡ bỏ trạng thái Hot:',
+        error,
+      );
+    }
+  }
+
+  //- cron job chạy vào 8:00 am sáng chủ nhật hàng tuần để gửi gợi ý việc làm phù hợp cho ứng viên
+  @Cron('0 8 * * 0')
+  async handleWeeklyJobRecommendations() {
+    this.logger.log(
+      'Bắt đầu chạy Cron Job gửi gợi ý công việc hàng tuần cho ứng viên...',
+    );
+    try {
+      //- lấy tất cả ứng viên đang hoạt động
+      const candidates = await this.userService.findAllCandidates();
+      this.logger.log(`Tìm thấy ${candidates.length} ứng viên đang hoạt động.`);
+
+      const frontendUrl = this.configService.get<string>('FRONTEND_URL') || '';
+
+      for (const candidate of candidates) {
+        try {
+          //- chuẩn bị dữ liệu decorator giả cho ứng viên
+          const userDecorated: UserDecoratorType = {
+            id: candidate._id.toString(),
+            name: candidate.name,
+            email: candidate.email,
+            avatar: candidate.avatar || '',
+            roleCodeName: 'CANDIDATE',
+            roleID: candidate.roleID as any,
+          };
+
+          //- lấy gợi ý công việc cho ứng viên
+          const result =
+            await this.jobRecommendationService.recommendJobs(userDecorated);
+
+          //- chỉ gửi email khi ứng viên có hồ sơ đầy đủ và có công việc gợi ý phù hợp thực sự
+          if (
+            result &&
+            result.hasProfile &&
+            result.recommendations &&
+            result.recommendations.length > 0
+          ) {
+            //- format danh sách công việc trước khi đưa vào template
+            const formattedJobs = result.recommendations
+              .slice(0, 5)
+              .map((job: any) => {
+                //- xử lý lương
+                let salaryStr = 'Thỏa thuận';
+                if (job.salary) {
+                  const { min, max, currency } = job.salary;
+                  if (min && max) {
+                    salaryStr = `${min.toLocaleString()} - ${max.toLocaleString()} ${currency}`;
+                  } else if (min) {
+                    salaryStr = `Từ ${min.toLocaleString()} ${currency}`;
+                  } else if (max) {
+                    salaryStr = `Lên đến ${max.toLocaleString()} ${currency}`;
+                  }
+                }
+
+                //- link chi tiết công việc
+                const jobLink = `${frontendUrl}/vi/jobs/${job._id}`;
+
+                return {
+                  title: job.title?.vi || job.title?.en || 'N/A',
+                  companyName: job.company?.name || 'Công ty ẩn',
+                  location: job.location || 'Toàn quốc',
+                  salary: salaryStr,
+                  aiExplanation:
+                    job.aiExplanation ||
+                    'Công việc phù hợp với kỹ năng của bạn.',
+                  jobLink: jobLink,
+                };
+              });
+
+            //- thực hiện gửi mail
+            await this.mailService.sendJobRecommendationsMail(
+              candidate.email,
+              candidate.name,
+              formattedJobs,
+            );
+            this.logger.log(
+              `Đã gửi email gợi ý công việc thành công cho ứng viên: ${candidate.email}`,
+            );
+          }
+        } catch (candidateErr) {
+          this.logger.error(
+            `Lỗi khi xử lý gợi ý công việc cho ứng viên ${candidate.email}:`,
+            candidateErr,
+          );
+        }
+      }
+      this.logger.log('Hoàn thành Cron Job gửi gợi ý công việc hàng tuần.');
+    } catch (error) {
+      this.logger.error(
+        'Lỗi khi chạy Cron Job gửi gợi ý việc làm tuần:',
         error,
       );
     }
