@@ -108,6 +108,7 @@ export default function ChatWindow({
 }: ChatWindowProps) {
   //- Ref tới ScrollArea để cuộn xuống cuối
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const isUserAtBottomRef = useRef(true);
   const localFileInputRef = useRef<HTMLInputElement>(null);
   const [systemCvDialogOpen, setSystemCvDialogOpen] = useState(false);
   const [selectedSystemCvId, setSelectedSystemCvId] = useState("");
@@ -121,13 +122,35 @@ export default function ChatWindow({
     setLocalText(inputText);
   }, [inputText, activeConversationId]);
 
+  //- theo dõi hành vi cuộn thực tế của người dùng để lưu vết trạng thái bám đáy
+  React.useEffect(() => {
+    const viewport = scrollAreaRef.current?.querySelector(
+      '[data-slot="scroll-area-viewport"]',
+    );
+    if (!viewport) return;
+
+    const handleScroll = () => {
+      //- nếu khoảng cách đến đáy < 150px thì coi như người dùng đang ở sát đáy
+      const distanceToBottom =
+        viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
+      isUserAtBottomRef.current = distanceToBottom < 150;
+    };
+
+    viewport.addEventListener("scroll", handleScroll);
+    return () => {
+      viewport.removeEventListener("scroll", handleScroll);
+    };
+  }, [activeConversationId]);
+
   //- Hàm cuộn viewport của ScrollArea xuống cuối
-  const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
+  const scrollToBottom = (behavior: ScrollBehavior = "smooth", force = false) => {
     const viewport = scrollAreaRef.current?.querySelector(
       '[data-slot="scroll-area-viewport"]',
     );
     if (viewport) {
-      viewport.scrollTo({ top: viewport.scrollHeight, behavior });
+      if (force || isUserAtBottomRef.current) {
+        viewport.scrollTo({ top: viewport.scrollHeight, behavior });
+      }
     }
   };
 
@@ -223,7 +246,7 @@ export default function ChatWindow({
   //- Cuộn xuống khi có tin nhắn mới hoặc đổi cuộc trò chuyện
   useEffect(() => {
     if (messages.length > 0) {
-      scrollToBottom("instant");
+      scrollToBottom("instant", true);
     }
   }, [activeConversationId]);
 
@@ -231,9 +254,9 @@ export default function ChatWindow({
 
   useEffect(() => {
     if (messages.length > 0) {
-      scrollToBottom("smooth");
+      scrollToBottom(isSending ? "instant" : "smooth", false);
     }
-  }, [messages.length, lastMessageContent]);
+  }, [messages.length, lastMessageContent, isSending]);
 
   if (!activeConversationId) {
     return (

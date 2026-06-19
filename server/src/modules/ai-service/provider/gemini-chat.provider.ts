@@ -8,16 +8,18 @@ export const GEMINI_CHAT_MODEL = 'GEMINI_CHAT_MODEL';
 
 export const GeminiChatProvider: Provider = {
   provide: GEMINI_CHAT_MODEL,
-  //- khoi tao gemini chat model tu api key trong env
+  //- khởi tạo mô hình gemini chat từ api key và tên mô hình trong env
   useFactory: (configService: ConfigService) => {
     const apiKey = configService.get<string>('GEMINI_API_KEY');
     if (!apiKey) {
       throw new Error('GEMINI_API_KEY is not defined.');
     }
 
+    const modelName = configService.get<string>('GEMINI_MODEL')!;
+
     return new ChatGoogleGenerativeAI({
       apiKey,
-      model: 'gemini-3.1-flash-lite',
+      model: modelName,
     });
   },
   inject: [ConfigService],
