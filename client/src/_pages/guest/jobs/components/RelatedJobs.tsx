@@ -9,12 +9,17 @@ import DataTablePagination from "@/components/DataTablePagination";
 import ListJobSkeleton from "@/components/skeletons/list-job";
 import { generateSlugUrl, getSalaryText } from "@/lib/utils";
 import JobHoverCard from "@/components/JobHoverCard";
+import { useGetLang } from "@/hooks/use-get-lang";
+import { useTranslations } from "next-intl";
 
 interface RelatedJobsProps {
   jobId: string;
 }
 
 export default function RelatedJobs({ jobId }: RelatedJobsProps) {
+  const { getLang } = useGetLang();
+  const t = useTranslations("PageJobDetail");
+  const tCommon = useTranslations("Common");
   const [page, setPage] = useState(1);
   const pageSize = 6;
 
@@ -44,13 +49,13 @@ export default function RelatedJobs({ jobId }: RelatedJobsProps) {
   return (
     <div className="mt-8">
       <h2 className="text-xl font-bold mb-4  pl-3 border-l-4 border-primary text-primary">
-        Các công việc liên quan
+        {t("RelatedJobs")}
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
         {relatedJobs.map((job) => (
           <Link
             href={`/jobs/${generateSlugUrl({
-              name: job.slug.vi || job.title.vi,
+              name: getLang(job.slug) || getLang(job.title),
               id: job._id,
             })}`}
             key={job._id}
@@ -63,13 +68,13 @@ export default function RelatedJobs({ jobId }: RelatedJobsProps) {
                     <JobHoverCard job={job}>
                       <CardTitle
                         className="text-base font-semibold line-clamp-2 text-foreground group-hover:text-primary transition-colors pt-2"
-                        title={job.title.vi}
+                        title={getLang(job.title)}
                       >
-                        {job.title.vi}
+                        {getLang(job.title)}
                       </CardTitle>
                     </JobHoverCard>
                     <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                      {job.company?.name || "Công ty ẩn danh"}
+                      {job.company?.name || tCommon("AnonymousCompany")}
                     </p>
                   </div>
                   <div className="border-2 rounded-lg overflow-hidden flex-shrink-0">
@@ -115,7 +120,7 @@ export default function RelatedJobs({ jobId }: RelatedJobsProps) {
                       variant="secondary"
                       className="font-normal text-xs bg-secondary text-secondary-foreground hover:bg-secondary/80"
                     >
-                      {typeof skill === "object" ? skill.name.vi : skill}
+                      {typeof skill === "object" ? getLang(skill.name) : skill}
                     </Badge>
                   ))}
                   {job.skills.length > 3 && (

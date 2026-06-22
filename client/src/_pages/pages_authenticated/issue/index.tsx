@@ -21,8 +21,11 @@ import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestruc
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import { useDebounce } from "use-debounce";
 import ListIssueSkeleton from "@/components/skeletons/list-issue";
+import { useTranslations } from "next-intl";
 
 export default function PageMyIssue() {
+  const t = useTranslations("Candidate.Issue");
+  const tCommon = useTranslations("Common");
   const [page, setPage] = useState(1);
   const [searchText, setSearchText] = useState("");
 
@@ -61,10 +64,10 @@ export default function PageMyIssue() {
     if (issueToDelete) {
       try {
         await deleteMutation.mutateAsync(issueToDelete);
-        SoftSuccessSonner("Đã xóa vấn đề thành công");
+        SoftSuccessSonner(t("DeleteSuccess"));
       } catch (e) {
         console.log("Lỗi xóa vấn đề: ", e);
-        SoftDestructiveSonner("Xóa vấn đề thất bại");
+        SoftDestructiveSonner(t("DeleteFailed"));
       } finally {
         setDeleteDialogOpen(false);
         setIssueToDelete(null);
@@ -81,16 +84,16 @@ export default function PageMyIssue() {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Vấn đề của tôi</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t("Title")}</h1>
           <p className="text-muted-foreground mt-1">
-            Quản lý và theo dõi trạng thái các vấn đề bạn đã gửi.
+            {t("SubTitle")}
           </p>
         </div>
         <div className="relative w-full md:w-auto min-w-[300px]">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Tìm kiếm vấn đề..."
+            placeholder={t("SearchPlaceholder")}
             className="pl-9 w-full"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
@@ -106,17 +109,17 @@ export default function PageMyIssue() {
           <div className="flex flex-col items-center justify-center p-8 text-center h-full">
             <ArchiveX className="h-16 w-16 text-muted-foreground mb-4" />
             <h3 className="text-lg font-medium text-destructive">
-              Đã xảy ra lỗi khi tải dữ liệu
+              {t("LoadError")}
             </h3>
-            <p className="text-muted-foreground">Vui lòng thử lại sau.</p>
+            <p className="text-muted-foreground">{t("TryAgain")}</p>
           </div>
         ) : !listIssues?.data?.result ||
           listIssues?.data?.result.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-16 text-center border-2 border-dashed rounded-lg bg-muted/20">
             <ArchiveX className="h-16 w-16 text-muted-foreground mb-4 opacity-50" />
-            <h3 className="text-lg font-medium">Không tìm thấy vấn đề nào</h3>
+            <h3 className="text-lg font-medium">{t("NoIssuesTitle")}</h3>
             <p className="text-muted-foreground mt-1">
-              Bạn chưa gửi vấn đề nào hoặc không tìm thấy kết quả phù hợp.
+              {t("NoIssuesDesc")}
             </p>
           </div>
         ) : (
@@ -159,10 +162,9 @@ export default function PageMyIssue() {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Bạn có chắc chắn muốn xóa?</DialogTitle>
+            <DialogTitle>{t("DeleteConfirmTitle")}</DialogTitle>
             <DialogDescription>
-              Hành động này không thể hoàn tác. Vấn đề này sẽ bị xóa vĩnh viễn
-              khỏi hệ thống.
+              {t("DeleteConfirmDesc")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -170,13 +172,13 @@ export default function PageMyIssue() {
               variant="outline"
               onClick={() => setDeleteDialogOpen(false)}
             >
-              Hủy
+              {tCommon("Buttons.cancel")}
             </Button>
             <Button variant="destructive" onClick={confirmDelete}>
               {deleteMutation.isPending && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              Xóa
+              {tCommon("Buttons.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

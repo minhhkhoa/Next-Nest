@@ -1,7 +1,9 @@
+"use client";
+
 import React from "react";
 import { IssueResType } from "@/schemasvalidation/issue";
 import { format } from "date-fns";
-import { vi } from "date-fns/locale";
+import { vi, enUS } from "date-fns/locale";
 import {
   Card,
   CardHeader,
@@ -28,6 +30,7 @@ import {
 import { ISSUE_STATUS_OPTIONS, ISSUE_TYPE_OPTIONS } from "@/lib/constant";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useTranslations, useLocale } from "next-intl";
 
 interface IssueCardProps {
   issue: IssueResType;
@@ -36,7 +39,12 @@ interface IssueCardProps {
 }
 
 export default function IssueCard({ issue, onEdit, onDelete }: IssueCardProps) {
+  const t = useTranslations("Candidate.Issue");
+  const tCommon = useTranslations("Common");
+  const locale = useLocale();
+
   const isPending = issue.status === "PENDING";
+  const dateLocale = locale === "vi" ? vi : enUS;
 
   const getStatusInfo = (status: string) => {
     const option = ISSUE_STATUS_OPTIONS.find((opt) => opt.value === status);
@@ -58,12 +66,13 @@ export default function IssueCard({ issue, onEdit, onDelete }: IssueCardProps) {
         color = "bg-red-500 hover:bg-red-600";
         break;
     }
-    return { label: option?.label.vi || status, color };
+    const label = option?.label[locale as "vi" | "en"] || status;
+    return { label, color };
   };
 
   const statusInfo = getStatusInfo(issue.status);
   const typeLabel =
-    ISSUE_TYPE_OPTIONS.find((opt) => opt.value === issue.type)?.label.vi ||
+    ISSUE_TYPE_OPTIONS.find((opt) => opt.value === issue.type)?.label[locale as "vi" | "en"] ||
     issue.type;
 
   return (
@@ -83,9 +92,9 @@ export default function IssueCard({ issue, onEdit, onDelete }: IssueCardProps) {
             </div>
             <CardTitle className="text-lg font-semibold leading-tight line-clamp-2">
               <span className="font-normal text-muted-foreground mr-1">
-                Tiêu đề:
+                {t("Labels.title")}:
               </span>
-              {issue.title?.vi || "Không có tiêu đề"}
+              {issue.title?.[locale as "vi" | "en"] || t("NoTitle")}
             </CardTitle>
           </div>
 
@@ -103,14 +112,14 @@ export default function IssueCard({ issue, onEdit, onDelete }: IssueCardProps) {
                   className="cursor-pointer"
                 >
                   <Edit className="mr-2 h-4 w-4" />
-                  Chỉnh sửa
+                  {tCommon("Buttons.edit")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => onDelete(issue._id)}
                   className="cursor-pointer text-red-600 focus:text-red-600"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
-                  Xóa
+                  {tCommon("Buttons.delete")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -121,15 +130,17 @@ export default function IssueCard({ issue, onEdit, onDelete }: IssueCardProps) {
       <ScrollArea className="max-h-50">
         <CardContent className="flex-1 pb-3 text-sm text-muted-foreground space-y-4">
           <div className="line-clamp-3 whitespace-pre-line">
-            <span className="font-semibold text-foreground mr-1">Mô tả:</span>
-            {issue.description?.vi}
+            <span className="font-semibold text-foreground mr-1">{t("Labels.description")}:</span>
+            {issue.description?.[locale as "vi" | "en"]}
           </div>
 
           {issue.attachments && issue.attachments.length > 0 && (
             <div className="pt-2">
               <div className="flex items-center gap-2 text-xs text-blue-500 mb-2">
                 <Paperclip className="h-3.5 w-3.5" />
-                <span>{issue.attachments.length} đính kèm</span>
+                <span>
+                  {issue.attachments.length} {t("Attachments")}
+                </span>
               </div>
               <div className="flex flex-wrap gap-2">
                 {issue.attachments.map((url, index) => (
@@ -161,10 +172,10 @@ export default function IssueCard({ issue, onEdit, onDelete }: IssueCardProps) {
             <div className="bg-muted/50 p-3 rounded-md mt-3 border border-border">
               <div className="flex items-center gap-2 mb-1 font-medium text-foreground text-xs uppercase tracking-wide">
                 <MessageSquareReply className="h-3.5 w-3.5" />
-                Phản hồi từ Admin
+                {t("AdminReply")}
               </div>
               <p className="text-xs italic pl-5 border-l-2 border-primary/20">
-                &quot;{issue.adminResponse.content?.vi}&quot;
+                &quot;{issue.adminResponse.content?.[locale as "vi" | "en"]}&quot;
               </p>
               <div className="text-[10px] text-muted-foreground text-right mt-1">
                 {format(
@@ -182,7 +193,7 @@ export default function IssueCard({ issue, onEdit, onDelete }: IssueCardProps) {
           <Calendar className="h-3.5 w-3.5 opacity-70" />
           <span>
             {format(new Date(issue.createdAt), "HH:mm dd/MM/yyyy", {
-              locale: vi,
+              locale: dateLocale,
             })}
           </span>
         </div>

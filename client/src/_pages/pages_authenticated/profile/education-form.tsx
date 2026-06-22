@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Plus, Trash2, GraduationCap, Award, Calendar } from "lucide-react";
 import { formatDateInput } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface Education {
   school: string;
@@ -20,6 +21,7 @@ interface EducationFormProps {
 }
 
 export function EducationForm({ education, onChange, setValidateForm }: EducationFormProps) {
+  const t = useTranslations("Candidate.Profile");
   const [errors, setErrors] = useState<Record<number, string>>({});
 
   const handleEducationChange = (
@@ -38,7 +40,7 @@ export function EducationForm({ education, onChange, setValidateForm }: Educatio
       setValidateForm(false);
       setErrors((prev) => ({
         ...prev,
-        [index]: "Ngày kết thúc phải sau ngày bắt đầu",
+        [index]: t("DateOrderError"),
       }));
     } else {
       setValidateForm(true);
@@ -72,13 +74,13 @@ export function EducationForm({ education, onChange, setValidateForm }: Educatio
         valid = false;
         setErrors((prev) => ({
           ...prev,
-          [index]: "Ngày kết thúc phải sau ngày bắt đầu",
+          [index]: t("DateOrderError"),
         }));
       }
     });
 
     setValidateForm(valid);
-  }, [education, setValidateForm]);
+  }, [education, setValidateForm, t]);
 
   return (
     <div className="space-y-6">
@@ -94,7 +96,7 @@ export function EducationForm({ education, onChange, setValidateForm }: Educatio
                 <GraduationCap className="w-4 h-4" />
               </div>
               <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                Học vấn #{index + 1}
+                {t("EduTitle", { index: index + 1 })}
               </span>
             </div>
             <Button
@@ -103,7 +105,7 @@ export function EducationForm({ education, onChange, setValidateForm }: Educatio
               size="icon"
               onClick={() => handleRemoveEducation(index)}
               className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive rounded-full shrink-0 transition-colors"
-              title="Xóa học vấn"
+              title={t("DeleteEdu")}
             >
               <Trash2 className="w-4 h-4" />
             </Button>
@@ -114,7 +116,7 @@ export function EducationForm({ education, onChange, setValidateForm }: Educatio
             {/* Trường học */}
             <div className="space-y-1.5">
               <Label htmlFor={`school-${index}`} className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Trường học
+                {t("SchoolLabel")}
               </Label>
               <div className="relative">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">
@@ -126,7 +128,7 @@ export function EducationForm({ education, onChange, setValidateForm }: Educatio
                   onChange={(e) =>
                     handleEducationChange(index, "school", e.target.value)
                   }
-                  placeholder="Ví dụ: Đại học Bách Khoa"
+                  placeholder={t("SchoolPlaceholder")}
                   className="pl-10 h-10 rounded-xl bg-white/80 dark:bg-slate-950/80 border-slate-200 dark:border-slate-800 focus-visible:ring-primary/20"
                 />
               </div>
@@ -135,7 +137,7 @@ export function EducationForm({ education, onChange, setValidateForm }: Educatio
             {/* Bằng cấp */}
             <div className="space-y-1.5">
               <Label htmlFor={`degree-${index}`} className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Bằng cấp / Chuyên ngành
+                {t("DegreeLabel")}
               </Label>
               <div className="relative">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">
@@ -147,7 +149,7 @@ export function EducationForm({ education, onChange, setValidateForm }: Educatio
                   onChange={(e) =>
                     handleEducationChange(index, "degree", e.target.value)
                   }
-                  placeholder="Ví dụ: Cử nhân Công nghệ thông tin"
+                  placeholder={t("DegreePlaceholder")}
                   className="pl-10 h-10 rounded-xl bg-white/80 dark:bg-slate-950/80 border-slate-200 dark:border-slate-800 focus-visible:ring-primary/20"
                 />
               </div>
@@ -158,7 +160,7 @@ export function EducationForm({ education, onChange, setValidateForm }: Educatio
             {/* Ngày bắt đầu */}
             <div className="space-y-1.5">
               <Label htmlFor={`start-${index}`} className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Ngày bắt đầu
+                {t("StartDate")}
               </Label>
               <div className="relative">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none">
@@ -179,7 +181,7 @@ export function EducationForm({ education, onChange, setValidateForm }: Educatio
             {/* Ngày kết thúc */}
             <div className="space-y-1.5">
               <Label htmlFor={`end-${index}`} className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Ngày kết thúc
+                {t("EndDate")}
               </Label>
               <div className="relative">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none">
@@ -214,7 +216,7 @@ export function EducationForm({ education, onChange, setValidateForm }: Educatio
         onClick={handleAddEducation}
         className="w-full gap-2 bg-transparent border-dashed border-primary/30 text-primary hover:bg-primary/5 hover:border-primary/60 hover:text-primary rounded-2xl h-11 font-semibold transition-all hover:scale-[1.01]"
       >
-        <Plus className="w-4.5 h-4.5" /> Thêm học vấn
+        <Plus className="w-4.5 h-4.5" /> {t("AddEducation")}
       </Button>
     </div>
   );

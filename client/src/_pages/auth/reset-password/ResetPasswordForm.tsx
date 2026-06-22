@@ -25,6 +25,7 @@ import { useSearchParams } from "next/navigation";
 import { useResetPassword, useValidateResetPassword } from "@/queries/useAuth";
 import { Link } from "@/i18n/navigation";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
+import { useTranslations } from "next-intl";
 
 const resetPasswordSchema = z
   .object({
@@ -39,6 +40,7 @@ const resetPasswordSchema = z
 type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
 
 export default function ResetPasswordForm() {
+  const t = useTranslations("Auth");
   const params = useSearchParams();
   const token = params.get("token") ?? "";
   const email = params.get("email") ?? "";
@@ -78,7 +80,7 @@ export default function ResetPasswordForm() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <Loader2 className="animate-spin mr-2" /> Đang kiểm tra token...
+        <Loader2 className="animate-spin mr-2" /> {t("VerifyToken")}
       </div>
     );
   }
@@ -87,12 +89,12 @@ export default function ResetPasswordForm() {
     return (
       <div className="flex flex-col justify-center items-center h-screen">
         <div className="text-center text-red-500">
-          Token không hợp lệ hoặc đã hết hạn.
+          {t("InvalidToken")}
         </div>
         {/* quay veef login */}
         <div className="mt-4">
           <Link href="/login">
-            <i className="hover:text-primary">Đăng nhập</i>
+            <i className="hover:text-primary">{t("Login")}</i>
           </Link>
         </div>
       </div>
@@ -102,9 +104,9 @@ export default function ResetPasswordForm() {
   return (
     <Card className="w-full max-w-md shadow-2xl border-border/50">
       <CardHeader>
-        <CardTitle>Tạo mật khẩu mới</CardTitle>
+        <CardTitle>{t("CreateNewPassword")}</CardTitle>
         <CardDescription>
-          Nhập mật khẩu mới của bạn. Mật khẩu phải có ít nhất 8 ký tự.
+          {t("ResetPasswordDesc")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -115,11 +117,11 @@ export default function ResetPasswordForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Mật khẩu mới</FormLabel>
+                  <FormLabel>{t("NewPassword")}</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="Nhập mật khẩu mới"
+                      placeholder={t("EnterNewPassword")}
                       disabled={isLoading}
                       {...field}
                     />
@@ -134,11 +136,11 @@ export default function ResetPasswordForm() {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nhập lại mật khẩu</FormLabel>
+                  <FormLabel>{t("ConfirmNewPassword")}</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="Nhập lại mật khẩu mới"
+                      placeholder={t("EnterConfirmPassword")}
                       disabled={isLoading}
                       {...field}
                     />
@@ -152,10 +154,10 @@ export default function ResetPasswordForm() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Đang xử lý...
+                  {t("Processing")}
                 </>
               ) : (
-                "Đặt lại mật khẩu"
+                t("ResetPassword")
               )}
             </Button>
           </form>
@@ -163,7 +165,7 @@ export default function ResetPasswordForm() {
 
         <div className="text-center mt-4">
           <Link href="/login" className="text-sm text-primary hover:underline">
-            Quay lại đăng nhập
+            {t("BackToLogin")}
           </Link>
         </div>
       </CardContent>

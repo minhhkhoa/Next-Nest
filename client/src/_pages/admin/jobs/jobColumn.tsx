@@ -13,6 +13,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { JobResType } from "@/schemasvalidation/job";
 
 export const getJobColumns = (
+  t: any,
+  tCommon: any,
+  locale: string,
   onEdit?: (job: JobResType) => void,
   onDelete?: (job: JobResType) => void,
   onRestoreJob?: (jobID: string) => void,
@@ -43,7 +46,7 @@ export const getJobColumns = (
   //- cty
   {
     id: "nameCompany",
-    header: () => <span className="!ml-5">Tên công ty</span>,
+    header: () => <span className="!ml-5">{t("CompanyName")}</span>,
     cell: ({ row }) => {
       const nameCompany = row?.original?.company?.name;
       const mst = row?.original?.company?.taxCode;
@@ -61,11 +64,11 @@ export const getJobColumns = (
   //- tên job
   {
     id: "title",
-    header: () => <span className="!ml-5">Tiêu đề công việc</span>,
+    header: () => <span className="!ml-5">{t("JobTitle")}</span>,
     cell: ({ row }) => {
       return (
         <span className="block text-sm text-foreground truncate max-w-[200px] !ml-5">
-          {row.original.title.vi}
+          {locale === "vi" ? row.original.title.vi : row.original.title.en || row.original.title.vi}
         </span>
       );
     },
@@ -74,7 +77,7 @@ export const getJobColumns = (
   //- trạng thái job
   {
     id: "status",
-    header: "Trạng thái",
+    header: t("Status"),
     cell: ({ row }) => {
       const status = row.original.status;
 
@@ -86,7 +89,7 @@ export const getJobColumns = (
               : "bg-red-100 text-red-800"
           }`}
         >
-          {status === "active" ? "Hoạt động" : "Dừng hoạt động"}
+          {status === "active" ? t("Active") : t("Inactive")}
         </span>
       );
     },
@@ -95,7 +98,7 @@ export const getJobColumns = (
   //- cho phép hoạt động isActive
   {
     id: "isActive",
-    header: "Kích hoạt",
+    header: t("IsActive"),
     cell: ({ row }) => {
       const isActive = row.original.isActive;
       return (
@@ -106,7 +109,7 @@ export const getJobColumns = (
               : "bg-yellow-100 text-yellow-800"
           }`}
         >
-          {isActive ? "Được phép" : "Chờ duyệt"}
+          {isActive ? t("Approved") : t("PendingApproval")}
         </span>
       );
     },
@@ -115,17 +118,17 @@ export const getJobColumns = (
   //- isHot
   {
     id: "isHot",
-    header: "Hot",
+    header: t("Hot"),
     cell: ({ row }) => {
       const { isHotJob, hotUntil } = row.original.isHot;
-      return renderHotBadge(isHotJob, hotUntil);
+      return renderHotBadge(isHotJob, hotUntil, t);
     },
   },
 
   //- Chủ sở hữu
   {
     id: "createdBy",
-    header: "Tạo bởi",
+    header: t("CreatedBy"),
     cell: ({ row }) => {
       const createdBy = row.original.createdBy;
       return (
@@ -144,7 +147,7 @@ export const getJobColumns = (
 
   {
     id: "actions",
-    header: "Thao tác",
+    header: t("Actions"),
     cell: ({ row }) => {
       const job = row.original;
       return (
@@ -160,7 +163,7 @@ export const getJobColumns = (
               <DropdownMenuItem onClick={() => onEdit && onEdit(job)}>
                 <div className="flex gap-3 items-center">
                   <Pen className="mr-2 h-4 w-4" />
-                  Chỉnh sửa
+                  {t("Edit")}
                 </div>
               </DropdownMenuItem>
             )}
@@ -172,7 +175,7 @@ export const getJobColumns = (
               >
                 <div className="flex gap-3 items-center ">
                   <Trash2 className="mr-2 h-4 w-4 hover:text-white" />
-                  Xóa
+                  {t("Delete")}
                 </div>
               </DropdownMenuItem>
             )}
@@ -184,7 +187,7 @@ export const getJobColumns = (
               >
                 <div className="flex gap-3 items-center ">
                   <RefreshCw className="mr-2 h-4 w-4 hover:text-white" />
-                  Khôi phục
+                  {t("Restore")}
                 </div>
               </DropdownMenuItem>
             )}
@@ -195,11 +198,11 @@ export const getJobColumns = (
   },
 ];
 
-export const renderHotBadge = (isHotJob: boolean, hotUntil: Date | null) => {
+export const renderHotBadge = (isHotJob: boolean, hotUntil: Date | null, t?: any) => {
   if (!isHotJob) {
     return (
       <span className="inline-block rounded px-2 py-1 text-xs font-medium bg-muted text-muted-foreground">
-        Chưa hot
+        {t ? t("NotHot") : "Chưa hot"}
       </span>
     );
   }
@@ -207,7 +210,7 @@ export const renderHotBadge = (isHotJob: boolean, hotUntil: Date | null) => {
   if (!hotUntil) {
     return (
       <span className="inline-block rounded px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600">
-        Hết hạn
+        {t ? t("Expired") : "Hết hạn"}
       </span>
     );
   }
@@ -219,14 +222,14 @@ export const renderHotBadge = (isHotJob: boolean, hotUntil: Date | null) => {
   if (remainingDays <= 0) {
     return (
       <span className="inline-block rounded px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600">
-        Hết hạn
+        {t ? t("Expired") : "Hết hạn"}
       </span>
     );
   }
 
   return (
     <span className="inline-block rounded px-2 py-1 text-xs font-semibold bg-orange-100 text-orange-800">
-      Hot · {remainingDays} ngày
+      {t ? t("HotRemaining", { days: remainingDays }) : `Hot · ${remainingDays} ngày`}
     </span>
   );
 };

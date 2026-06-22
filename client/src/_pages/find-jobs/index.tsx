@@ -18,11 +18,6 @@ import ListJobSkeleton from "@/components/skeletons/list-job";
 import JobCard from "@/_pages/home/components/JobCard";
 import { useGetTreeIndustry } from "@/queries/useIndustry";
 import { useSearchJobsPublicAdvanced } from "@/queries/useJob";
-import {
-  EMPLOYEE_TYPE_OPTIONS,
-  EXPERIENCE_OPTIONS,
-  LEVEL_OPTIONS,
-} from "@/lib/constant";
 import FindJobsSearchBar from "./components/FindJobsSearchBar";
 import AdvancedFilterPanel, {
   FindJobsAdvancedFilters,
@@ -30,6 +25,8 @@ import AdvancedFilterPanel, {
 import AppliedFilterChips, {
   AppliedChip,
 } from "./components/AppliedFilterChips";
+import { useTranslations } from "next-intl";
+import { useGetLang } from "@/hooks/use-get-lang";
 
 interface FindJobsFilterState {
   keyword: string;
@@ -124,11 +121,15 @@ const toNumberOrUndefined = (value: string) => {
   return Number.isFinite(parsed) ? parsed : undefined;
 };
 
-const findIndustryNameById = (nodes: any[], id: string): string | undefined => {
+const findIndustryNameById = (
+  nodes: any[],
+  id: string,
+  getLang: (data?: any) => string,
+): string | undefined => {
   for (const node of nodes || []) {
-    if (node._id === id) return node.name?.vi || node.name?.en;
+    if (node._id === id) return getLang(node.name);
     if (node.children?.length) {
-      const found = findIndustryNameById(node.children, id);
+      const found = findIndustryNameById(node.children, id, getLang);
       if (found) return found;
     }
   }
@@ -137,6 +138,10 @@ const findIndustryNameById = (nodes: any[], id: string): string | undefined => {
 };
 
 export default function PageFindJobs() {
+  const t = useTranslations("PageFindJobs");
+  const tCommon = useTranslations("Common");
+  const { getLang } = useGetLang();
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isLogin } = useAppStore();
@@ -241,18 +246,22 @@ export default function PageFindJobs() {
 
   const industryLabel =
     appliedFilters.industryId && industryTreeData?.data
-      ? findIndustryNameById(industryTreeData.data, appliedFilters.industryId)
+      ? findIndustryNameById(
+          industryTreeData.data,
+          appliedFilters.industryId,
+          getLang,
+        )
       : undefined;
 
-  const levelLabel = LEVEL_OPTIONS.find(
-    (item) => item.value === appliedFilters.advanced.level,
-  )?.label;
-  const employeeTypeLabel = EMPLOYEE_TYPE_OPTIONS.find(
-    (item) => item.value === appliedFilters.advanced.employeeType,
-  )?.label;
-  const experienceLabel = EXPERIENCE_OPTIONS.find(
-    (item) => item.value === appliedFilters.advanced.experience,
-  )?.label;
+  const levelLabel = appliedFilters.advanced.level
+    ? tCommon(`Level.${appliedFilters.advanced.level}` as any)
+    : undefined;
+  const employeeTypeLabel = appliedFilters.advanced.employeeType
+    ? tCommon(`EmployeeType.${appliedFilters.advanced.employeeType}` as any)
+    : undefined;
+  const experienceLabel = appliedFilters.advanced.experience
+    ? tCommon(`Experience.${appliedFilters.advanced.experience}` as any)
+    : undefined;
 
   const chips = useMemo<AppliedChip[]>(() => {
     const result: AppliedChip[] = [];
@@ -260,7 +269,7 @@ export default function PageFindJobs() {
     if (appliedFilters.keyword) {
       result.push({
         key: "keyword",
-        label: `Từ khóa: ${appliedFilters.keyword}`,
+        label: t("Chips.keyword", { val: appliedFilters.keyword }),
         onRemove: () =>
           applyFiltersAndSyncUrl({
             ...appliedFilters,
@@ -272,7 +281,7 @@ export default function PageFindJobs() {
     if (appliedFilters.location) {
       result.push({
         key: "location",
-        label: `Địa điểm: ${appliedFilters.location}`,
+        label: t("Chips.location", { val: appliedFilters.location }),
         onRemove: () =>
           applyFiltersAndSyncUrl({
             ...appliedFilters,
@@ -284,7 +293,7 @@ export default function PageFindJobs() {
     if (appliedFilters.industryId && industryLabel) {
       result.push({
         key: "industry",
-        label: `Ngành: ${industryLabel}`,
+        label: t("Chips.industry", { val: industryLabel }),
         onRemove: () =>
           applyFiltersAndSyncUrl({
             ...appliedFilters,
@@ -300,7 +309,7 @@ export default function PageFindJobs() {
     if (appliedFilters.advanced.company) {
       result.push({
         key: "company",
-        label: `Công ty: ${appliedFilters.advanced.company}`,
+        label: t("Chips.company", { val: appliedFilters.advanced.company }),
         onRemove: () =>
           applyFiltersAndSyncUrl({
             ...appliedFilters,
@@ -312,7 +321,7 @@ export default function PageFindJobs() {
     if (appliedFilters.advanced.level && levelLabel) {
       result.push({
         key: "level",
-        label: `Cấp bậc: ${levelLabel}`,
+        label: t("Chips.level", { val: levelLabel }),
         onRemove: () =>
           applyFiltersAndSyncUrl({
             ...appliedFilters,
@@ -324,7 +333,7 @@ export default function PageFindJobs() {
     if (appliedFilters.advanced.employeeType && employeeTypeLabel) {
       result.push({
         key: "employeeType",
-        label: `Loại hình: ${employeeTypeLabel}`,
+        label: t("Chips.employeeType", { val: employeeTypeLabel }),
         onRemove: () =>
           applyFiltersAndSyncUrl({
             ...appliedFilters,
@@ -336,7 +345,7 @@ export default function PageFindJobs() {
     if (appliedFilters.advanced.experience && experienceLabel) {
       result.push({
         key: "experience",
-        label: `Kinh nghiệm: ${experienceLabel}`,
+        label: t("Chips.experience", { val: experienceLabel }),
         onRemove: () =>
           applyFiltersAndSyncUrl({
             ...appliedFilters,
@@ -351,7 +360,10 @@ export default function PageFindJobs() {
     ) {
       result.push({
         key: "salary",
-        label: `Lương: ${appliedFilters.advanced.minSalary || 0} - ${appliedFilters.advanced.maxSalary || "..."}`,
+        label: t("Chips.salary", {
+          min: appliedFilters.advanced.minSalary || 0,
+          max: appliedFilters.advanced.maxSalary || "...",
+        }),
         onRemove: () =>
           applyFiltersAndSyncUrl({
             ...appliedFilters,
@@ -367,7 +379,7 @@ export default function PageFindJobs() {
     if (appliedFilters.advanced.currency) {
       result.push({
         key: "currency",
-        label: `Tiền tệ: ${appliedFilters.advanced.currency}`,
+        label: t("Chips.currency", { val: appliedFilters.advanced.currency }),
         onRemove: () =>
           applyFiltersAndSyncUrl({
             ...appliedFilters,
@@ -379,7 +391,9 @@ export default function PageFindJobs() {
     if (appliedFilters.advanced.skillIDs.length > 0) {
       result.push({
         key: "skills",
-        label: `Kỹ năng: ${appliedFilters.advanced.skillIDs.length}`,
+        label: t("Chips.skills", {
+          count: appliedFilters.advanced.skillIDs.length,
+        }),
         onRemove: () =>
           applyFiltersAndSyncUrl({
             ...appliedFilters,
@@ -391,7 +405,7 @@ export default function PageFindJobs() {
     if (appliedFilters.advanced.isHot) {
       result.push({
         key: "isHot",
-        label: "Việc làm Hot",
+        label: t("Chips.isHot"),
         onRemove: () =>
           applyFiltersAndSyncUrl({
             ...appliedFilters,
@@ -408,6 +422,7 @@ export default function PageFindJobs() {
     employeeTypeLabel,
     experienceLabel,
     applyFiltersAndSyncUrl,
+    t,
   ]);
 
   return (
@@ -415,12 +430,10 @@ export default function PageFindJobs() {
       <div className="container mx-auto space-y-6">
         <div className="space-y-2">
           <h1 className="text-2xl font-bold text-primary md:text-3xl">
-            Tìm việc làm
+            {t("Title")}
           </h1>
           <p className="text-sm text-muted-foreground md:text-base">
-            Bộ lọc tìm kiếm linh hoạt: hệ thống sẽ ưu tiên công việc khớp nhiều
-            tiêu chí, nhưng vẫn giữ kết quả phù hợp khi bạn kết hợp nhiều điều
-            kiện.
+            {t("Description")}
           </p>
         </div>
 
@@ -459,21 +472,19 @@ export default function PageFindJobs() {
                     <Sparkles className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                   </span>
                   <h3 className="text-lg font-bold text-foreground">
-                    AI Gợi ý việc làm phù hợp
+                    {t("AiRecommendTitle")}
                   </h3>
                 </div>
                 <p className="text-sm text-muted-foreground max-w-2xl">
-                  Công nghệ AI sẽ tự động phân tích Hồ sơ cá nhân và các CV của
-                  bạn để đề xuất những vị trí tuyển dụng tương thích nhất.
+                  {t("AiRecommendDesc")}
                   <span className="block mt-1 text-xs text-muted-foreground/80">
-                    * Để có kết quả tốt nhất, hãy cập nhật đầy đủ thông tin tại{" "}
+                    {t("AiRecommendNote")}
                     <Link
                       href="/profile"
                       className="font-semibold text-primary underline hover:text-primary/80"
                     >
-                      Hồ sơ cá nhân
+                      {" "}
                     </Link>{" "}
-                    hoặc viết/tải lên CV của bạn.
                   </span>
                 </p>
               </div>
@@ -482,7 +493,7 @@ export default function PageFindJobs() {
                 className="h-11 px-6 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-medium shadow-md shadow-indigo-500/10 transition-all hover:scale-[1.02] active:scale-[0.98] gap-2 shrink-0 self-start sm:self-center"
               >
                 <Brain className="h-5 w-5" />
-                AI gợi ý công việc
+                {t("AiRecommendBtn")}
               </Button>
             </div>
           </div>
@@ -505,11 +516,7 @@ export default function PageFindJobs() {
           <section className="space-y-4">
             <div className="flex items-center justify-between rounded-xl border border-border bg-card px-4 py-3">
               <p className="text-sm text-muted-foreground">
-                Tìm thấy{" "}
-                <span className="font-semibold text-foreground">
-                  {meta.totalItems}
-                </span>{" "}
-                công việc phù hợp
+                {t("FoundJobs", { count: meta.totalItems })}
               </p>
 
               <div className="lg:hidden">
@@ -520,7 +527,7 @@ export default function PageFindJobs() {
                   <SheetTrigger asChild>
                     <Button variant="outline" size="sm" className="gap-2">
                       <SlidersHorizontal className="h-4 w-4" />
-                      Bộ lọc
+                      {t("FilterMobile")}
                     </Button>
                   </SheetTrigger>
                   <SheetContent
@@ -528,7 +535,7 @@ export default function PageFindJobs() {
                     className="w-[92vw] overflow-y-auto sm:w-[420px]"
                   >
                     <SheetHeader>
-                      <SheetTitle>Bộ lọc nâng cao</SheetTitle>
+                      <SheetTitle>{t("AdvancedFilter")}</SheetTitle>
                     </SheetHeader>
 
                     <div className="mt-5 px-3">
@@ -574,7 +581,7 @@ export default function PageFindJobs() {
               </>
             ) : (
               <div className="rounded-xl border border-dashed py-14 text-center text-muted-foreground">
-                Không có công việc phù hợp với bộ lọc hiện tại.
+                {t("NoJobs")}
               </div>
             )}
           </section>

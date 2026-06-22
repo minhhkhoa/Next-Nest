@@ -13,6 +13,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { JobResType } from "@/schemasvalidation/job";
 
 export const getRecruiterJobColumns = (
+  t: any,
+  tCommon: any,
+  locale: string,
   onEdit?: (job: JobResType) => void,
   onDelete?: (job: JobResType) => void,
   onVerifyJob?: (jobID: string, action: "ACCEPT" | "REJECT") => void,
@@ -43,9 +46,9 @@ export const getRecruiterJobColumns = (
   //- tên công việc
   {
     id: "title",
-    header: () => <span>Tên công việc</span>,
+    header: () => <span>{t("JobTitle")}</span>,
     cell: ({ row }) => {
-      const titleJob = row.original.title.vi;
+      const titleJob = locale === "vi" ? row.original.title.vi : row.original.title.en || row.original.title.vi;
       return (
         <p className="text-sm font-medium text-foreground max-w-[200px] whitespace-normal">
           {titleJob}
@@ -57,14 +60,15 @@ export const getRecruiterJobColumns = (
   //- mức lương của công việc
   {
     id: "salary",
-    header: () => <span>Mức lương</span>,
+    header: () => <span>{t("Salary")}</span>,
     cell: ({ row }) => {
       const min = row.original.salary.min;
       const max = row.original.salary.max;
       const currency = row.original.salary.currency;
+      const loc = locale === "vi" ? "vi-VN" : "en-US";
       return (
         <p className="text-sm font-medium text-foreground">
-          {min.toLocaleString("vi-VN")} - {max.toLocaleString("vi-VN")}{" "}
+          {min.toLocaleString(loc)} - {max.toLocaleString(loc)}{" "}
           {currency}
         </p>
       );
@@ -74,14 +78,15 @@ export const getRecruiterJobColumns = (
   //- ngày tạo và hết hạn
   {
     id: "dates",
-    header: "Ngày tạo / Hết hạn",
+    header: t("Dates"),
     cell: ({ row }) => {
       const createdAt = new Date(row.original.createdAt);
       const endDate = new Date(row.original.endDate);
+      const loc = locale === "vi" ? "vi-VN" : "en-US";
       return (
         <p className="text-sm font-medium text-foreground">
-          {createdAt.toLocaleDateString("vi-VN")} -{" "}
-          {endDate.toLocaleDateString("vi-VN")}
+          {createdAt.toLocaleDateString(loc)} -{" "}
+          {endDate.toLocaleDateString(loc)}
         </p>
       );
     },
@@ -90,7 +95,7 @@ export const getRecruiterJobColumns = (
   //- trạng thái của công việc
   {
     id: "status",
-    header: "Trạng thái",
+    header: t("Status"),
     cell: ({ row }) => {
       const status = row.original.status;
 
@@ -102,7 +107,7 @@ export const getRecruiterJobColumns = (
               : "bg-red-100 text-red-800"
           }`}
         >
-          {status === "active" ? "Hoạt động" : "Dừng hoạt động"}
+          {status === "active" ? t("Active") : t("Inactive")}
         </span>
       );
     },
@@ -111,7 +116,7 @@ export const getRecruiterJobColumns = (
   //- cho phép hoạt động isActive
   {
     id: "isActive",
-    header: "Kích hoạt",
+    header: t("IsActive"),
     cell: ({ row }) => {
       const isActive = row.original.isActive;
       return (
@@ -122,7 +127,7 @@ export const getRecruiterJobColumns = (
               : "bg-yellow-100 text-yellow-800"
           }`}
         >
-          {isActive ? "Được phép" : "Chờ duyệt"}
+          {isActive ? t("Approved") : t("PendingApproval")}
         </span>
       );
     },
@@ -131,7 +136,7 @@ export const getRecruiterJobColumns = (
   //- Chủ sở hữu
   {
     id: "createdBy",
-    header: "Tạo bởi",
+    header: t("CreatedBy"),
     cell: ({ row }) => {
       const createdBy = row.original.createdBy;
       return (
@@ -150,7 +155,7 @@ export const getRecruiterJobColumns = (
 
   {
     id: "actions",
-    header: "Thao tác",
+    header: t("Actions"),
     cell: ({ row }) => {
       const job = row.original;
       return (
@@ -166,7 +171,7 @@ export const getRecruiterJobColumns = (
               <DropdownMenuItem onClick={() => onEdit && onEdit(job)}>
                 <div className="flex gap-3 items-center">
                   <Pen className="mr-2 h-4 w-4" />
-                  Chỉnh sửa
+                  {t("Edit")}
                 </div>
               </DropdownMenuItem>
             )}
@@ -178,7 +183,7 @@ export const getRecruiterJobColumns = (
               >
                 <div className="flex gap-3 items-center ">
                   <CheckCheck className="mr-2 h-4 w-4 hover:text-white" />
-                  Duyệt bài
+                  {t("Approve")}
                 </div>
               </DropdownMenuItem>
             )}
@@ -187,7 +192,7 @@ export const getRecruiterJobColumns = (
               <DropdownMenuItem onClick={() => onVerifyJob(job._id, "REJECT")}>
                 <div className="flex gap-3 items-center">
                   <CircleX className="mr-2 h-4 w-4" />
-                  Từ chối bài
+                  {t("Reject")}
                 </div>
               </DropdownMenuItem>
             )}
@@ -199,7 +204,7 @@ export const getRecruiterJobColumns = (
               >
                 <div className="flex gap-3 items-center ">
                   <Trash2 className="mr-2 h-4 w-4 hover:text-white" />
-                  Xóa
+                  {t("Delete")}
                 </div>
               </DropdownMenuItem>
             )}
@@ -210,11 +215,11 @@ export const getRecruiterJobColumns = (
   },
 ];
 
-export const renderHotBadge = (isHotJob: boolean, hotUntil: Date | null) => {
+export const renderHotBadge = (isHotJob: boolean, hotUntil: Date | null, t?: any) => {
   if (!isHotJob) {
     return (
       <span className="inline-block rounded px-2 py-1 text-xs font-medium bg-muted text-muted-foreground">
-        Chưa hot
+        {t ? t("NotHot") : "Chưa hot"}
       </span>
     );
   }
@@ -222,7 +227,7 @@ export const renderHotBadge = (isHotJob: boolean, hotUntil: Date | null) => {
   if (!hotUntil) {
     return (
       <span className="inline-block rounded px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600">
-        Hết hạn
+        {t ? t("Expired") : "Hết hạn"}
       </span>
     );
   }
@@ -234,14 +239,14 @@ export const renderHotBadge = (isHotJob: boolean, hotUntil: Date | null) => {
   if (remainingDays <= 0) {
     return (
       <span className="inline-block rounded px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600">
-        Hết hạn
+        {t ? t("Expired") : "Hết hạn"}
       </span>
     );
   }
 
   return (
     <span className="inline-block rounded px-2 py-1 text-xs font-semibold bg-orange-100 text-orange-800">
-      Hot · {remainingDays} ngày
+      {t ? t("HotRemaining", { days: remainingDays }) : `Hot · ${remainingDays} ngày`}
     </span>
   );
 };

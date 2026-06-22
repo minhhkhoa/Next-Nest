@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import { useForgotPassword } from "@/queries/useAuth";
+import { useTranslations } from "next-intl";
 
 export default function ForgotPasswordForm() {
+  const t = useTranslations("Auth");
   const { mutateAsync: forgotPasswordMutate, isPending } = useForgotPassword();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
@@ -18,7 +20,7 @@ export default function ForgotPasswordForm() {
     e.preventDefault();
 
     if (!email.trim()) {
-      setError("Vui lòng nhập email");
+      setError(t("EnterEmail"));
       return;
     }
 
@@ -49,7 +51,7 @@ export default function ForgotPasswordForm() {
           <Input
             id="email"
             type="email"
-            placeholder="Nhập email của bạn"
+            placeholder={t("EmailPlaceholder")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={isPending}
@@ -62,19 +64,19 @@ export default function ForgotPasswordForm() {
           {isPending ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Đang xử lý...
+              {t("Processing")}
             </>
           ) : (
-            "Xác nhận"
+            t("ForgotPasswordConfirm")
           )}
         </Button>
 
         <div className="flex justify-between">
           <Link href="/login" className="text-sm text-white hover:text-primary">
-            Quay lại đăng nhập
+            {t("BackToLogin")}
           </Link>
           <Link href="/register" className="text-sm text-white hover:text-primary">
-            Đăng ký tài khoản mới
+            {t("RegisterNow")}
           </Link>
         </div>
       </form>

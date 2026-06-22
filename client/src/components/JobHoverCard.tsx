@@ -11,6 +11,7 @@ import { Building, MapPin, DollarSign } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useGetLang } from "@/hooks/use-get-lang";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -25,6 +26,8 @@ interface JobHoverCardProps {
 }
 
 export default function JobHoverCard({ job, children }: JobHoverCardProps) {
+  const tJob = useTranslations("PageJobDetail");
+  const tCommon = useTranslations("Common");
   const { getLang } = useGetLang();
   const isMobile = useIsMobile();
 
@@ -80,7 +83,7 @@ export default function JobHoverCard({ job, children }: JobHoverCardProps) {
             {/* Description Preview */}
             <div className="space-y-1">
               <h5 className="text-xs font-semibold text-foreground">
-                Mô tả công việc
+                {tJob("JobDescription")}
               </h5>
               <ScrollArea className="h-30">
                 <div
@@ -96,7 +99,7 @@ export default function JobHoverCard({ job, children }: JobHoverCardProps) {
             {job.skills && job.skills.length > 0 && (
               <div className="space-y-1">
                 <h5 className="text-xs font-semibold text-foreground">
-                  Kỹ năng yêu cầu
+                  {tJob("RequiredSkills")}
                 </h5>
                 <div className="flex flex-wrap gap-1">
                   {job.skills.slice(0, 5).map((skill: any, idx) => (
@@ -135,7 +138,7 @@ export default function JobHoverCard({ job, children }: JobHoverCardProps) {
                   id: job._id,
                 })}`}
               >
-                Ứng tuyển
+                {tJob("ApplyNow")}
               </Link>
             </Button>
             <Button
@@ -149,7 +152,7 @@ export default function JobHoverCard({ job, children }: JobHoverCardProps) {
                   id: job._id,
                 })}`}
               >
-                Xem chi tiết
+                {tCommon("Buttons.viewDetail")}
               </Link>
             </Button>
             <div className="flex-none">

@@ -5,6 +5,7 @@ import { useGetResumeData } from "@/queries/useUser";
 import React from "react";
 import PageTemplateDetail from "./TemplateDetail";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslations } from "next-intl";
 
 export default function WrapDetailTemplate({
   templateId,
@@ -12,6 +13,8 @@ export default function WrapDetailTemplate({
   templateId: string;
 }) {
   const { data: resumeData, isLoading } = useGetResumeData();
+
+  const t = useTranslations("Candidate.CvTemplates");
 
   if (isLoading)
     return (
@@ -26,7 +29,7 @@ export default function WrapDetailTemplate({
     );
 
   if (!isLoading && !resumeData?.data)
-    return <div>Không có dữ liệu để hiển thị</div>;
+    return <div>{t("NoData")}</div>;
 
   return (
     <div>

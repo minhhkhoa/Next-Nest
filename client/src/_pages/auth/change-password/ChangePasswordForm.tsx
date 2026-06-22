@@ -25,8 +25,10 @@ import {
 import { useAppStore } from "@/components/TanstackProvider";
 import { useChangePassword } from "@/queries/useAuth";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
+import { useTranslations } from "next-intl";
 
 export default function ChangePasswordForm() {
+  const t = useTranslations("Auth");
   const { user } = useAppStore();
   const { mutateAsync: changePassword, isPending } = useChangePassword();
 
@@ -47,14 +49,19 @@ export default function ChangePasswordForm() {
         newPassword: values.newPassword,
       });
       if (result.isOk) {
-        SoftSuccessSonner(result.message);
+        SoftSuccessSonner(t("ChangePasswordSuccess"));
         form.reset();
       } else {
         if (
-          result.data?.message === "Mật khẩu hiện tại bạn nhập không chính xác"
+          result.data?.message === "Mật khẩu hiện tại bạn nhập không chính xác" ||
+          result.data?.message === "The current password you entered is incorrect"
         ) {
           form.setError("currentPassword", {
-            message: result.data.message,
+            message: t("CurrentPasswordIncorrect"),
+          });
+        } else {
+          form.setError("currentPassword", {
+            message: result.data?.message || t("CurrentPasswordIncorrect"),
           });
         }
       }
@@ -66,9 +73,9 @@ export default function ChangePasswordForm() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle className="pt-2">Đổi mật khẩu</CardTitle>
+        <CardTitle className="pt-2">{t("ChangePassword")}</CardTitle>
         <CardDescription>
-          Cập nhật mật khẩu của bạn để bảo mật tài khoản
+          {t("ChangePasswordDesc")}
         </CardDescription>
       </CardHeader>
       <CardContent className="pb-2">
@@ -79,10 +86,10 @@ export default function ChangePasswordForm() {
               name="currentPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Mật khẩu hiện tại</FormLabel>
+                  <FormLabel>{t("CurrentPasswordLabel")}</FormLabel>
                   <Input
                     type="password"
-                    placeholder="Nhập mật khẩu hiện tại"
+                    placeholder={t("CurrentPasswordPlaceholder")}
                     disabled={isPending}
                     {...field}
                   />
@@ -96,10 +103,10 @@ export default function ChangePasswordForm() {
               name="newPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Mật khẩu mới</FormLabel>
+                  <FormLabel>{t("NewPassword")}</FormLabel>
                   <Input
                     type="password"
-                    placeholder="Nhập mật khẩu mới (ít nhất 8 ký tự)"
+                    placeholder={t("NewPasswordPlaceholder")}
                     disabled={isPending}
                     {...field}
                   />
@@ -113,10 +120,10 @@ export default function ChangePasswordForm() {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Xác nhận mật khẩu mới</FormLabel>
+                  <FormLabel>{t("ConfirmNewPassword")}</FormLabel>
                   <Input
                     type="password"
-                    placeholder="Nhập lại mật khẩu mới"
+                    placeholder={t("ConfirmPasswordPlaceholder")}
                     disabled={isPending}
                     {...field}
                   />
@@ -126,7 +133,7 @@ export default function ChangePasswordForm() {
             />
 
             <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending ? "Đang xử lý..." : "Đổi mật khẩu"}
+              {isPending ? t("Processing") : t("ChangePassword")}
             </Button>
           </form>
         </Form>

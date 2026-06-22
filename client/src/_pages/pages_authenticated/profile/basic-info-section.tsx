@@ -1,7 +1,5 @@
 "use client";
 
-import type React from "react";
-
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,15 +11,17 @@ import { handleInitName, uploadToCloudinary } from "@/lib/utils";
 import { Spinner } from "@/components/ui/spinner";
 import { useUpdateUserMutate } from "@/queries/useUser";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
+import { useTranslations } from "next-intl";
 
 export function BasicInfoSection() {
+  const t = useTranslations("Candidate.Profile");
+  const tCommon = useTranslations("Common");
   const { mutateAsync: userUpdateMutate } = useUpdateUserMutate();
   const { user } = useAppStore();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(user);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -66,7 +66,7 @@ export function BasicInfoSection() {
   };
 
   const handleCancel = () => {
-    setFormData(formData);
+    setFormData(user);
     setIsEditing(false);
   };
 
@@ -78,7 +78,7 @@ export function BasicInfoSection() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-semibold text-foreground">
-          Thông tin cơ bản
+          {t("BasicInfo")}
         </h2>
         {!isEditing && (
           <Button
@@ -88,7 +88,7 @@ export function BasicInfoSection() {
             className="gap-2"
           >
             <Edit2 className="w-4 h-4" />
-            Chỉnh sửa
+            {t("Edit")}
           </Button>
         )}
       </div>
@@ -105,7 +105,7 @@ export function BasicInfoSection() {
             <div className="flex-1 space-y-3">
               <div>
                 <Label htmlFor="avatar-upload" className="text-sm font-medium">
-                  Tải lên Avatar
+                  {t("UploadAvatar")}
                 </Label>
                 <div className="mt-2 flex items-center gap-2">
                   <Input
@@ -118,7 +118,7 @@ export function BasicInfoSection() {
                   <Upload className="w-4 h-4 text-muted-foreground" />
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  PNG, JPG, GIF (tối đa 2MB)
+                  {t("AvatarHelp")}
                 </p>
               </div>
             </div>
@@ -129,7 +129,7 @@ export function BasicInfoSection() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="name" className="text-sm font-medium">
-              Họ và tên
+              {t("FullName")}
             </Label>
             {isEditing ? (
               <Input
@@ -154,7 +154,7 @@ export function BasicInfoSection() {
                 value={
                   formData.email
                     ? formData.email
-                    : "Tài khoản đăng nhập với FaceBook"
+                    : t("FacebookAccount")
                 }
                 className="mt-2"
                 readOnly
@@ -163,7 +163,7 @@ export function BasicInfoSection() {
               <p className="mt-2 text-foreground">
                 {formData.email
                   ? formData.email
-                  : "Tài khoản đăng nhập với FaceBook"}
+                  : t("FacebookAccount")}
               </p>
             )}
           </div>
@@ -178,7 +178,7 @@ export function BasicInfoSection() {
               className="gap-2 bg-transparent"
             >
               <X className="w-4 h-4" />
-              Hủy
+              {tCommon("Buttons.cancel")}
             </Button>
             <Button
               onClick={handleSave}
@@ -187,7 +187,7 @@ export function BasicInfoSection() {
             >
               {(isSaving || isUploading) && <Spinner />}
               <Check className="w-4 h-4" />
-              Lưu
+              {tCommon("Buttons.save")}
             </Button>
           </div>
         )}

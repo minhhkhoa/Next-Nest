@@ -20,6 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ADDRESS_OPTIONS } from "@/lib/constant";
 import IndustrySelector from "@/_pages/home/components/IndustrySelector";
+import { useTranslations } from "next-intl";
 
 interface IndustryNode {
   _id: string;
@@ -54,6 +55,7 @@ export default function FindJobsSearchBar({
   onSearch,
 }: FindJobsSearchBarProps) {
   const [openLocation, setOpenLocation] = useState(false);
+  const t = useTranslations("PageFindJobs");
 
   return (
     <div className="rounded-2xl border border-border bg-card p-3 shadow-sm">
@@ -64,7 +66,7 @@ export default function FindJobsSearchBar({
             value={keyword}
             onChange={(e) => onKeywordChange(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && onSearch()}
-            placeholder="Tìm theo vị trí, chức danh"
+            placeholder={t("SearchByPosition")}
             className="border-none px-2 pr-8 shadow-none focus-visible:ring-0"
           />
           {keyword && (
@@ -81,7 +83,7 @@ export default function FindJobsSearchBar({
             industries={industries}
             value={industryId}
             onSelect={onIndustryChange}
-            placeholder="Ngành nghề"
+            placeholder={t("Industry")}
             isLoading={isLoadingIndustry}
           />
           {industryId && (
@@ -108,14 +110,14 @@ export default function FindJobsSearchBar({
                   !location && "text-muted-foreground",
                 )}
               >
-                {location || "Địa điểm"}
+                {location || t("Location")}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[300px] p-0">
               <Command>
-                <CommandInput placeholder="Tìm địa điểm" />
+                <CommandInput placeholder={t("SearchLocation")} />
                 <CommandList>
-                  <CommandEmpty>Không có dữ liệu</CommandEmpty>
+                  <CommandEmpty>{t("NoData")}</CommandEmpty>
                   <CommandGroup>
                     <CommandItem
                       value="all"
@@ -130,7 +132,7 @@ export default function FindJobsSearchBar({
                           location === "" ? "opacity-100" : "opacity-0",
                         )}
                       />
-                      Tất cả địa điểm
+                      {t("AllLocations")}
                     </CommandItem>
                     {ADDRESS_OPTIONS.map((item) => (
                       <CommandItem
@@ -169,7 +171,7 @@ export default function FindJobsSearchBar({
         </div>
 
         <Button className="w-full md:w-auto" onClick={onSearch}>
-          Search
+          {t("SearchBtn")}
         </Button>
       </div>
     </div>

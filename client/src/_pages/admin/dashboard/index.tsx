@@ -8,7 +8,7 @@ import { DateRange } from "react-day-picker";
 
 import { useGetAdminStats } from "@/queries/useDashboard";
 import { useAdminVerifyCompany } from "@/queries/useCompany";
-import { useAdminReplyIssue } from "@/queries/useIssue";
+// import { useAdminReplyIssue } from "@/queries/useIssue";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -80,7 +80,7 @@ export default function PageAdminDashboard() {
 
   //- các mutations phê duyệt nhanh
   const { mutateAsync: verifyCompany } = useAdminVerifyCompany();
-  const { mutateAsync: replyIssue } = useAdminReplyIssue();
+  // const { mutateAsync: replyIssue } = useAdminReplyIssue();
 
   //- duyệt công ty nhanh
   const handleVerifyCompany = async (

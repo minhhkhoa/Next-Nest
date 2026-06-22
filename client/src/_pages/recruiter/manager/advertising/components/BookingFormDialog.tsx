@@ -25,6 +25,8 @@ import AdCalendarPicker from "./AdCalendarPicker";
 import { useGetBusyDatesQuery } from "@/queries/useAdBooking";
 import { useMemo } from "react";
 import { addDays, isWithinInterval, startOfDay } from "date-fns";
+import { useTranslations } from "next-intl";
+import { useGetLang } from "@/hooks/use-get-lang";
 
 interface BookingFormDialogProps {
   isOpen: boolean;
@@ -51,6 +53,9 @@ export default function BookingFormDialog({
   onSubmit,
   isPending,
 }: BookingFormDialogProps) {
+  const t = useTranslations("Recruiter.Advertising");
+  const tButtons = useTranslations("Common.Buttons");
+  const { locale } = useGetLang();
   //- Lấy lịch bận của slot này
   const { data: busyDatesRes, isLoading: isLoadingBusy } = useGetBusyDatesQuery(
     selectedSlot?.code || "",
@@ -89,16 +94,16 @@ export default function BookingFormDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-xl">Thiết lập quảng cáo</DialogTitle>
+          <DialogTitle className="text-xl">{t("SetupAd")}</DialogTitle>
           <DialogDescription>
-            Vị trí:{" "}
+            {t("PositionLabel")}{" "}
             <span className="font-bold text-primary">{selectedSlot.name}</span>
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-5 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="adType">Chế độ hiển thị</Label>
+            <Label htmlFor="adType">{t("AdMode")}</Label>
             <Select
               disabled={selectedSlot.adModeAllowed !== "BOTH"}
               value={formData.adType}
@@ -109,33 +114,33 @@ export default function BookingFormDialog({
                   selectedSlot.adModeAllowed !== "BOTH" ? "bg-muted" : ""
                 }
               >
-                <SelectValue placeholder="Chọn loại quảng cáo" />
+                <SelectValue placeholder={t("AdModePlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {selectedSlot.adModeAllowed !== "DISMISSIBLE" && (
                   <SelectItem value="NON_DISMISSIBLE">
-                    Cố định (Ưu tiên)
+                    {t("FixedAd")}
                   </SelectItem>
                 )}
                 {selectedSlot.adModeAllowed !== "NON_DISMISSIBLE" && (
-                  <SelectItem value="DISMISSIBLE">Có thể đóng (x)</SelectItem>
+                  <SelectItem value="DISMISSIBLE">{t("DismissibleAd")}</SelectItem>
                 )}
               </SelectContent>
             </Select>
             {selectedSlot.adModeAllowed !== "BOTH" && (
               <p className="text-[10px] text-primary italic font-medium">
-                * Vị trí này bắt buộc sử dụng chế độ{" "}
-                {selectedSlot.adModeAllowed === "NON_DISMISSIBLE"
-                  ? "Cố định"
-                  : "Có thể đóng"}
-                .
+                {t("AdModeRequired", {
+                  mode: selectedSlot.adModeAllowed === "NON_DISMISSIBLE"
+                    ? t("FixedAd")
+                    : t("DismissibleAd")
+                })}
               </p>
             )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="startAt">Ngày bắt đầu</Label>
+              <Label htmlFor="startAt">{t("StartDate")}</Label>
               <AdCalendarPicker
                 date={formData.startAt ? new Date(formData.startAt) : undefined}
                 setDate={(date) =>
@@ -148,7 +153,7 @@ export default function BookingFormDialog({
             </div>
             <div className="grid gap-2">
               <Label htmlFor="duration">
-                Số ngày chạy ({formData.duration} ngày)
+                {t("DurationDays", { count: formData.duration })}
               </Label>
               <Input
                 id="duration"
@@ -167,7 +172,7 @@ export default function BookingFormDialog({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="imageUrl">Link ảnh quảng cáo</Label>
+            <Label htmlFor="imageUrl">{t("AdImageUrl")}</Label>
             <Input
               id="imageUrl"
               placeholder="https://..."
@@ -177,12 +182,12 @@ export default function BookingFormDialog({
               }
             />
             <p className="text-[10px] text-muted-foreground italic bg-muted p-1 px-2 rounded">
-              Gợi ý kích thước: {selectedSlot.width}x{selectedSlot.height}px
+              {t("SuggestedSize", { size: `${selectedSlot.width}x${selectedSlot.height}` })}
             </p>
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="targetUrl">Link đích (Khi nhấn)</Label>
+            <Label htmlFor="targetUrl">{t("TargetUrl")}</Label>
             <Input
               id="targetUrl"
               placeholder="https://..."
@@ -195,16 +200,20 @@ export default function BookingFormDialog({
 
           <div className="bg-primary/5 p-4 rounded-xl border border-primary/20 space-y-2 mt-2 shadow-inner text-sm">
             <div className="flex justify-between text-muted-foreground">
-              <span>Đơn giá:</span>
+              <span>{t("UnitPrice")}</span>
               <span>
-                {selectedSlot.pricePerDay.toLocaleString("vi-VN")}đ / ngày
+                {t("PricePerDay", {
+                  price: selectedSlot.pricePerDay.toLocaleString(
+                    locale === "vi" ? "vi-VN" : "en-US",
+                  ),
+                })}
               </span>
             </div>
             <div className="flex justify-between font-bold text-lg border-t border-primary/10 pt-2">
-              <span>Tổng thanh toán:</span>
+              <span>{t("TotalPrice")}</span>
               <span className="text-primary">
                 {(selectedSlot.pricePerDay * formData.duration).toLocaleString(
-                  "vi-VN",
+                  locale === "vi" ? "vi-VN" : "en-US",
                 )}{" "}
                 VND
               </span>
@@ -218,7 +227,7 @@ export default function BookingFormDialog({
             onClick={onClose}
             className="text-muted-foreground"
           >
-            Hủy bỏ
+            {tButtons("cancel")}
           </Button>
           <Button
             onClick={onSubmit}
@@ -227,7 +236,7 @@ export default function BookingFormDialog({
             }
             className="min-w-[150px]"
           >
-            {isPending ? "Đang xử lý..." : "Tạo đơn & Thanh toán"}
+            {isPending ? t("Processing") : t("CreateAndPay")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useRef, useEffect, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { X, ChevronDown, ChevronRight, Check, Search } from "lucide-react";
@@ -12,6 +10,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useLocale } from "next-intl";
 
 interface MultiLang {
   vi: string;
@@ -46,6 +45,8 @@ export function MultiSelectTree({
   placeholder = "Chọn ngành nghề...",
   className,
 }: MultiSelectTreeProps) {
+  const locale = useLocale();
+  const curLocale = (locale === "vi" ? "vi" : "en") as "vi" | "en";
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch] = useDebounce(searchTerm, 500);
@@ -61,6 +62,7 @@ export function MultiSelectTree({
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
+      //- comment
     });
   };
 
@@ -111,7 +113,7 @@ export function MultiSelectTree({
               </span>
             )}
             {!node.isParent && <span className="w-4" />}
-            <span className="flex-1">{node.name.vi}</span>
+            <span className="flex-1">{node.name[curLocale]}</span>
             {isSelected(node._id) && <Check className="w-4 h-4 ml-auto" />}
           </div>
         </div>
@@ -153,7 +155,7 @@ export function MultiSelectTree({
 
   return (
     <div ref={containerRef} className={cn("w-full", className)}>
-      {/* modal={true}: Khi bật chế độ này, Radix UI sẽ coi Popover là một "lớp phủ" độc lập (giống như một Modal nhỏ nằm trên Modal to). Nó sẽ thiết lập lại cơ chế quản lý sự kiện và focus, cho phép con lăn chuột hoạt động bên trong nó thay vì bị Dialog phía dưới chặn lại */}
+      {/* modal={true}: Khi bật chế độ này, Radix UI sẽ coi Popover là một "lớp phủ" độc lập */}
       <Popover modal={true} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <div className="relative pr-10 border border-input rounded-md bg-background p-2 min-h-10 flex flex-wrap gap-2 items-center cursor-pointer">
@@ -163,7 +165,7 @@ export function MultiSelectTree({
                   key={item.value}
                   className="inline-flex items-center gap-1 px-2 py-1 rounded bg-primary text-primary-foreground text-sm"
                 >
-                  {item.label.vi}
+                  {item.label[curLocale]}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -211,7 +213,7 @@ export function MultiSelectTree({
           {/* Search box */}
           <div className="flex items-center border-b">
             <Input
-              placeholder="Tìm kiếm ngành nghề..."
+              placeholder={locale === "vi" ? "Tìm kiếm ngành nghề..." : "Search industries..."}
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
@@ -239,7 +241,7 @@ export function MultiSelectTree({
                 displayNodes
               ) : (
                 <div className="px-4 py-12 text-center text-sm text-muted-foreground">
-                  Không tìm thấy ngành nghề nào
+                  {locale === "vi" ? "Không tìm thấy ngành nghề nào" : "No industries found"}
                 </div>
               )}
             </div>

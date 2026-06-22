@@ -47,7 +47,7 @@ export function UserAvatarMenu() {
     //- login success
     removeTokensFromLocalStorage();
     setLogin(false);
-    SoftSuccessSonner("Đăng xuất thành công!");
+    SoftSuccessSonner(t("LogoutSuccess"));
     router.push("/");
     router.refresh();
   };

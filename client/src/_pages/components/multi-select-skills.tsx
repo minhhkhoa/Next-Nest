@@ -20,6 +20,8 @@ import { cn } from "@/lib/utils";
 import { useGetSkillFilter } from "@/queries/useSkill";
 import { SkillResType } from "@/schemasvalidation/skill";
 import { useDebounce } from "use-debounce";
+import { useGetLang } from "@/hooks/use-get-lang";
+import { useTranslations } from "next-intl";
 
 interface MultiSelectSkillsProps {
   selected: string[];
@@ -32,10 +34,14 @@ export function MultiSelectSkills({
   selected,
   onChange,
   industryIDs,
-  placeholder = "Chọn kỹ năng...",
+  placeholder,
 }: MultiSelectSkillsProps) {
   const [open, setOpen] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
+  const { getLang } = useGetLang();
+  const t = useTranslations("PageFindJobs");
+
+  const displayPlaceholder = placeholder || t("SelectSkills");
 
   //- ID duy nhất để liên kết Combobox với Listbox (fix lỗi ARIA)
   const listboxId = React.useId();
@@ -79,7 +85,7 @@ export function MultiSelectSkills({
                     variant="secondary"
                     className="hover:bg-secondary"
                   >
-                    {skill?.name?.vi || "Đang tải..."}
+                    {skill ? getLang(skill.name) : t("Loading")}
                     <button
                       className="ml-1 rounded-full outline-none ring-offset-background"
                       onMouseDown={(e) => {
@@ -94,7 +100,7 @@ export function MultiSelectSkills({
                 );
               })
             ) : (
-              <span className="text-muted-foreground">{placeholder}</span>
+              <span className="text-muted-foreground">{displayPlaceholder}</span>
             )}
           </div>
           <div className="flex items-center">
@@ -109,7 +115,7 @@ export function MultiSelectSkills({
         <Command shouldFilter={false}>
           {/* shouldFilter={false} vì ta đã lọc từ API (Server side) */}
           <CommandInput
-            placeholder="Tìm kiếm kỹ năng..."
+            placeholder={t("SearchSkills")}
             value={searchTerm}
             onValueChange={setSearchTerm}
           />
@@ -120,7 +126,7 @@ export function MultiSelectSkills({
               </div>
             ) : (
               <>
-                <CommandEmpty>Không tìm thấy kỹ năng nào phù hợp.</CommandEmpty>
+                <CommandEmpty>{t("NoSkillsFound")}</CommandEmpty>
                 <CommandGroup className="max-h-64 overflow-auto">
                   {skills.map((skill: SkillResType) => (
                     <CommandItem
@@ -143,7 +149,7 @@ export function MultiSelectSkills({
                       >
                         <Check className={cn("h-4 w-4")} color="white" />
                       </div>
-                      <span>{skill.name.vi}</span>
+                      <span>{getLang(skill.name)}</span>
                     </CommandItem>
                   ))}
                 </CommandGroup>

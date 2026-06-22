@@ -21,11 +21,15 @@ import { useGetLang } from "@/hooks/use-get-lang";
 import { IssueDialogForm } from "@/_pages/admin/issue/components/issue-modal-form";
 import { useAppStore } from "@/components/TanstackProvider";
 
+import { useTranslations } from "next-intl";
+
 interface CompanyInfoProps {
   company: CompanyResType;
 }
 
 export default function CompanyInfo({ company }: CompanyInfoProps) {
+  const t = useTranslations("PageCompanyDetail");
+  const tCommon = useTranslations("Common");
   const { isLogin } = useAppStore();
   const { getLang } = useGetLang();
 
@@ -47,7 +51,7 @@ export default function CompanyInfo({ company }: CompanyInfoProps) {
         defaultValues={{
           type: "REPORT_COMPANY",
           targetId: company._id,
-          title: `Báo cáo công ty: ${company.name}`,
+          title: `${t("ReportCompany")}: ${company.name}`,
         }}
       />
       {/* Left Column: Description & Details */}
@@ -56,7 +60,7 @@ export default function CompanyInfo({ company }: CompanyInfoProps) {
           <CardHeader className="!px-0 flex flex-row items-center justify-between">
             <CardTitle className="text-xl font-bold flex items-center gap-2">
               <Building2 className="text-primary" size={20} />
-              Giới thiệu công ty
+              {t("About")}
             </CardTitle>
             {isLogin && (
               <Button
@@ -66,7 +70,7 @@ export default function CompanyInfo({ company }: CompanyInfoProps) {
                 onClick={() => setReportModalOpen(true)}
               >
                 <Flag className="w-4 h-4 mr-2" />
-                Báo cáo
+                {tCommon("Buttons.report")}
               </Button>
             )}
           </CardHeader>
@@ -97,11 +101,11 @@ export default function CompanyInfo({ company }: CompanyInfoProps) {
                 >
                   {isExpanded ? (
                     <span className="flex items-center gap-1">
-                      Thu gọn <ChevronUp size={16} />
+                      {tCommon("Buttons.close")} <ChevronUp size={16} />
                     </span>
                   ) : (
                     <span className="flex items-center gap-1">
-                      Xem thêm <ChevronDown size={16} />
+                      {tCommon("Buttons.viewDetail")} <ChevronDown size={16} />
                     </span>
                   )}
                 </Button>
@@ -111,13 +115,13 @@ export default function CompanyInfo({ company }: CompanyInfoProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t mt-4">
               <div className="flex flex-col gap-1">
                 <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <Ticket size={16} /> Mã số thuế
+                  <Ticket size={16} /> {t("TaxCode")}
                 </span>
                 <span className="font-semibold">{company.taxCode}</span>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <Network size={16} /> Lĩnh vực hoạt động
+                  <Network size={16} /> {t("Industries")}
                 </span>
                 <div className="flex flex-wrap gap-2">
                   {industries.map((industry: any, index) => (
@@ -146,7 +150,7 @@ export default function CompanyInfo({ company }: CompanyInfoProps) {
           <CardHeader className="pb-3 !px-0">
             <CardTitle className="text-xl font-bold flex items-center gap-2">
               <MapIcon className="text-primary" size={20} />
-              Vị trí công ty
+              {t("CompanyLocation")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 !px-0">

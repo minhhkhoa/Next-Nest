@@ -44,6 +44,7 @@ import { uploadToCloudinary } from "@/lib/utils";
 import { Upload, X } from "lucide-react";
 import Image from "next/image";
 import ModeEditIssue from "./mode-edit";
+import { useTranslations, useLocale } from "next-intl";
 
 interface IssueDialogProps {
   onClose: () => void;
@@ -60,6 +61,10 @@ export function IssueDialogForm({
   open,
   defaultValues,
 }: IssueDialogProps) {
+  const t = useTranslations("Candidate.Issue");
+  const tCommon = useTranslations("Common");
+  const tAuth = useTranslations("Auth");
+  const locale = useLocale();
   const isEditMode = !!issue;
   const [isUploading, setIsUploading] = useState(false);
   
@@ -109,7 +114,7 @@ export function IssueDialogForm({
       form.setValue("attachments", [...currentAttachments, ...uploadedUrls]);
     } catch (error) {
       console.error("Lỗi upload media: ", error);
-      SoftDestructiveSonner("Có lỗi xảy ra khi tải ảnh lên");
+      SoftDestructiveSonner(t("UploadFailed"));
     } finally {
       setIsUploading(false);
     }
@@ -135,7 +140,7 @@ export function IssueDialogForm({
         };
         await adminReplyMutation(payload);
 
-        SoftSuccessSonner("Cập nhật vấn đề thành công");
+        SoftSuccessSonner(t("EditSuccess"));
         onClose();
         setIsUploading(false);
       } else {
@@ -149,13 +154,13 @@ export function IssueDialogForm({
         };
         await createIssueMutation(payload);
         
-        SoftSuccessSonner("Gửi vấn đề thành công");
+        SoftSuccessSonner(t("CreateSuccess"));
         onClose();
         setIsUploading(false);
       }
     } catch (error) {
       console.error(error);
-      SoftDestructiveSonner("Có lỗi xảy ra");
+      SoftDestructiveSonner(t("CreateFailed"));
       setIsUploading(false);
     }
   };
@@ -184,12 +189,12 @@ export function IssueDialogForm({
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>
-            {isEditMode ? "Phản hồi yêu cầu" : "Thêm yêu cầu mới"}
+            {isEditMode ? t("ReplyTitle") : t("Create")}
           </DialogTitle>
           <DialogDescription>
             {isEditMode
-              ? "Cập nhật trạng thái và phản hồi cho yêu cầu này."
-              : "Điền thông tin để tạo yêu cầu hỗ trợ hoặc báo cáo mới."}
+              ? t("ReplyDesc")
+              : t("CreateDesc")}
           </DialogDescription>
         </DialogHeader>
 
@@ -207,10 +212,10 @@ export function IssueDialogForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Tiêu đề <span className="text-destructive">*</span>
+                        {t("Labels.title")} <span className="text-destructive">*</span>
                       </FormLabel>
                       <FormControl>
-                        <Input placeholder="Nhập tiêu đề yêu cầu" {...field} />
+                        <Input placeholder={t("Labels.enterTitle")} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -224,7 +229,7 @@ export function IssueDialogForm({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Loại yêu cầu{" "}
+                          {t("Labels.type")}{" "}
                           <span className="text-destructive">*</span>
                         </FormLabel>
                         <Select
@@ -234,7 +239,7 @@ export function IssueDialogForm({
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Chọn loại yêu cầu" />
+                              <SelectValue placeholder={t("Labels.selectType")} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -243,7 +248,7 @@ export function IssueDialogForm({
                                 key={option.value}
                                 value={option.value}
                               >
-                                {option.label.vi}
+                                {option.label[locale as "vi" | "en"]}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -258,10 +263,10 @@ export function IssueDialogForm({
                     name="targetId"
                     render={({ field }) => (
                       <FormItem className="">
-                        <FormLabel>ID đối tượng (Tuỳ chọn)</FormLabel>
+                        <FormLabel>{t("TargetId")}</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="ID Job, Company, User..."
+                            placeholder={t("TargetIdPlaceholder")}
                             {...field}
                             value={field.value || ""}
                             readOnly
@@ -279,12 +284,12 @@ export function IssueDialogForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Nội dung chi tiết{" "}
+                        {t("Labels.description")}{" "}
                         <span className="text-destructive">*</span>
                       </FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Mô tả chi tiết vấn đề của bạn..."
+                          placeholder={t("Labels.enterDesc")}
                           className="min-h-[120px]"
                           {...field}
                         />
@@ -296,7 +301,7 @@ export function IssueDialogForm({
 
                 {/* Upload Image Section */}
                 <div className="space-y-3">
-                  <FormLabel>Hình ảnh đính kèm</FormLabel>
+                  <FormLabel>{t("Labels.attachments")}</FormLabel>
                   <div className="flex flex-wrap gap-4">
                     {form
                       .watch("attachments")
@@ -306,11 +311,11 @@ export function IssueDialogForm({
                           className="relative w-24 h-24 border rounded-md overflow-hidden group hover:ring-2 hover:ring-primary/50 transition-all"
                         >
                           <Image
-                            src={url}
-                            alt={`Attachment ${index + 1}`}
-                            fill
-                            className="object-cover"
-                          />
+                             src={url}
+                             alt={`Attachment ${index + 1}`}
+                             fill
+                             className="object-cover"
+                           />
                           <button
                             type="button"
                             onClick={() => handleRemoveImage(index)}
@@ -341,7 +346,7 @@ export function IssueDialogForm({
                         <>
                           <Upload className="w-6 h-6 text-muted-foreground mb-1 group-hover:scale-110 transition-transform" />
                           <span className="text-[10px] text-muted-foreground font-medium">
-                            Thêm ảnh
+                            {t("Labels.upload")}
                           </span>
                         </>
                       )}
@@ -356,15 +361,15 @@ export function IssueDialogForm({
 
             <DialogFooter className="gap-2">
               <Button type="button" variant="outline" onClick={onClose}>
-                Hủy
+                {tCommon("Buttons.cancel")}
               </Button>
               <Button type="submit" disabled={isLoading || isUploading}>
                 {isLoading ? (
-                  <span className="flex items-center gap-2">Đang xử lý...</span>
+                  <span className="flex items-center gap-2">{tAuth("Processing")}</span>
                 ) : isEditMode ? (
-                  "Cập nhật phản hồi"
+                  t("ReplyBtn")
                 ) : (
-                  "Tạo mới"
+                  t("SubmitBtn")
                 )}
               </Button>
             </DialogFooter>

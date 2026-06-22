@@ -5,6 +5,7 @@ import SimpleTemplate from "@/components/cv-templates/SimpleTemplate";
 import { CV_TEMPLATES } from "@/lib/constant";
 import { apiUserForCVResType } from "@/schemasvalidation/user";
 import React from "react";
+import { useTranslations } from "next-intl";
 
 export default function PageTemplateDetail({
   templateId,
@@ -13,6 +14,8 @@ export default function PageTemplateDetail({
   templateId: string;
   data: apiUserForCVResType;
 }) {
+  const t = useTranslations("Candidate.CvTemplates");
+
   const templates = [
     {
       Id_template: CV_TEMPLATES.basicTemplate,
@@ -35,18 +38,17 @@ export default function PageTemplateDetail({
   const template = templates.find((t) => t.Id_template === templateId);
 
   if (!template) {
-    return <div>Mẫu CV không tồn tại.</div>;
+    return <div>{t("NotFound")}</div>;
   }
 
   return (
     <div className="flex flex-col items-center gap-4 min-h-screen">
       <div className="text-center space-y-2 max-w-3xl px-4 animate-in fade-in slide-in-from-top-4 duration-500">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          Tạo CV chuyên nghiệp của bạn
+          {t("CreateTitle")}
         </h1>
         <p className="text-muted-foreground">
-          Điền thông tin của bạn trực tiếp vào mẫu bên dưới. Chỉ cần nhấp vào bất
-          kỳ văn bản nào để chỉnh sửa và nhấn nút Lưu ở cuối trang khi hoàn tất.
+          {t("CreateDesc")}
         </p>
       </div>
 

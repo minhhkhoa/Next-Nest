@@ -22,6 +22,7 @@ import { useAppStore } from "@/components/TanstackProvider";
 import DataTablePagination from "@/components/DataTablePagination";
 import ListJobSkeleton from "@/components/skeletons/list-job";
 import JobCard from "@/_pages/home/components/JobCard";
+import { useTranslations } from "next-intl";
 import {
   useGetRecommendJobs,
   useForceRecommendJobsMutation,
@@ -29,6 +30,7 @@ import {
 import { LEVEL_OPTIONS, ADDRESS_OPTIONS } from "@/lib/constant";
 
 export default function PageAiRecommendations() {
+  const t = useTranslations("AiRecommendations");
   const { isLogin } = useAppStore();
 
   //- các bộ lọc tìm kiếm cơ bản
@@ -148,18 +150,17 @@ export default function PageAiRecommendations() {
           </div>
           <div className="space-y-2">
             <h2 className="text-2xl font-bold text-foreground">
-              Đăng nhập để sử dụng AI
+              {t("LoginRequiredTitle")}
             </h2>
             <p className="text-sm text-muted-foreground">
-              Vui lòng đăng nhập tài khoản ứng viên để sử dụng tính năng gợi ý
-              việc làm thông minh bằng công nghệ AI.
+              {t("LoginRequiredDesc")}
             </p>
           </div>
           <Button
             asChild
             className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white shadow-md"
           >
-            <Link href="/login">Đăng nhập ngay</Link>
+            <Link href="/login">{t("LoginNow")}</Link>
           </Button>
         </div>
       </div>
@@ -179,13 +180,11 @@ export default function PageAiRecommendations() {
                   <Brain className="h-6 w-6" />
                 </span>
                 <h1 className="text-2xl font-extrabold  md:text-3xl tracking-tight bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
-                  AI Gợi ý việc làm của bạn
+                  {t("Title")}
                 </h1>
               </div>
               <p className="text-sm text-muted-foreground max-w-3xl leading-relaxed">
-                Hệ thống AI đã tự động phân tích hồ sơ chi tiết và các tệp CV
-                của bạn để đối chiếu, chọn lọc ra những cơ hội nghề nghiệp tương
-                thích cao nhất trên toàn hệ thống.
+                {t("Description")}
               </p>
             </div>
             <Button
@@ -197,7 +196,7 @@ export default function PageAiRecommendations() {
               <RefreshCw
                 className={`h-4 w-4 ${isLoading || forceMutation.isPending ? "animate-spin" : ""}`}
               />
-              Cập nhật gợi ý
+              {t("UpdateRecommendations")}
             </Button>
           </div>
         </div>
@@ -219,21 +218,23 @@ export default function PageAiRecommendations() {
             <div className="space-y-1">
               <p className="text-sm font-semibold">
                 {hasProfile
-                  ? "Hồ sơ phân tích hoàn chỉnh"
-                  : "Hồ sơ của bạn hiện chưa đầy đủ thông tin hoặc thiếu CV"}
+                  ? t("ProfileComplete")
+                  : t("ProfileIncomplete")}
               </p>
               <p className="text-xs text-muted-foreground leading-normal">
                 {message}
                 {!hasProfile && (
                   <span className="block mt-1">
-                    👉 Cập nhật ngay tại{" "}
+                {t.rich("UpdateProfilePrompt", {
+                  link: () => (
                     <Link
                       href="/profile"
                       className="font-bold underline text-primary hover:opacity-85"
                     >
-                      Hồ sơ cá nhân
-                    </Link>{" "}
-                    hoặc tải CV lên để nhận kết quả khớp chuẩn nhất.
+                      {t("ProfileLink")}
+                    </Link>
+                  ),
+                })}
                   </span>
                 )}
               </p>
@@ -248,7 +249,7 @@ export default function PageAiRecommendations() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Tên công việc, công ty, kỹ năng..."
+                placeholder={t("SearchPlaceholder")}
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
                 className="pl-9 bg-background border-border focus-visible:ring-violet-500"
@@ -258,10 +259,10 @@ export default function PageAiRecommendations() {
             {/* Bộ lọc địa điểm */}
             <Select value={location} onValueChange={(val) => setLocation(val)}>
               <SelectTrigger className="bg-background border-border">
-                <SelectValue placeholder="Chọn địa điểm" />
+                <SelectValue placeholder={t("SelectLocation")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả địa điểm</SelectItem>
+                <SelectItem value="all">{t("AllLocations")}</SelectItem>
                 {ADDRESS_OPTIONS.map((addr) => (
                   <SelectItem key={addr} value={addr}>
                     {addr}
@@ -273,10 +274,10 @@ export default function PageAiRecommendations() {
             {/* Bộ lọc cấp bậc */}
             <Select value={level} onValueChange={(val) => setLevel(val)}>
               <SelectTrigger className="bg-background border-border">
-                <SelectValue placeholder="Chọn cấp bậc" />
+                <SelectValue placeholder={t("SelectLevel")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả cấp bậc</SelectItem>
+                <SelectItem value="all">{t("AllLevels")}</SelectItem>
                 {LEVEL_OPTIONS.map((opt) => (
                   <SelectItem key={opt.value} value={opt.value}>
                     {opt.label}
@@ -288,9 +289,7 @@ export default function PageAiRecommendations() {
 
           <div className="flex justify-between items-center pt-2 border-t border-border text-xs">
             <span className="text-muted-foreground">
-              Tìm thấy{" "}
-              <strong className="text-foreground">{filteredJobs.length}</strong>{" "}
-              việc làm phù hợp với tiêu chí lọc hiện tại
+              {t("FoundJobs", { count: filteredJobs.length })}
             </span>
             {(keyword || location !== "all" || level !== "all") && (
               <Button
@@ -300,7 +299,7 @@ export default function PageAiRecommendations() {
                 className="text-violet-600 hover:text-violet-700 hover:bg-violet-500/5 h-8 gap-1"
               >
                 <RefreshCw className="h-3 w-3" />
-                Xóa bộ lọc
+                {t("ResetFilters")}
               </Button>
             )}
           </div>
@@ -352,11 +351,10 @@ export default function PageAiRecommendations() {
                 <Search className="w-5 h-5" />
               </div>
               <p className="font-semibold text-foreground text-sm">
-                Không tìm thấy công việc phù hợp
+                {t("NoJobsTitle")}
               </p>
               <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                Không tìm thấy kết quả phù hợp với các bộ lọc hiện tại. Thử thay
-                đổi từ khóa hoặc bộ lọc của bạn.
+                {t("NoJobsDesc")}
               </p>
             </div>
           )}

@@ -7,6 +7,8 @@ import { useDebounce } from "use-debounce";
 import { Spinner } from "@/components/ui/spinner";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import { useGetLang } from "@/hooks/use-get-lang";
 import { Popover } from "@radix-ui/react-popover";
 import { PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DeleteConfirmModal } from "../NewsCategory/components/modals/delete-confirm-modal";
@@ -23,6 +25,9 @@ import BlockFiltersJob from "./components/blockFiltersJob";
 import { JobDialogForm } from "./components/job-modal-form";
 
 export default function PageAdminJob() {
+  const t = useTranslations("Admin.Jobs");
+  const tCommon = useTranslations("Common");
+  const { locale } = useGetLang();
   const [filtersJob, setFiltersJob] = useState<{
     title: string;
     status: string;
@@ -83,12 +88,12 @@ export default function PageAdminJob() {
   const handleConfirmDelete = async () => {
     try {
       const res = await deleteJobMutation(deleteModal.id);
-      if (res.isError) SoftDestructiveSonner("Có lỗi xảy ra khi xóa công việc");
+      if (res.isError) SoftDestructiveSonner(t("DeleteError"));
 
       SoftSuccessSonner(res.message);
       setDeleteModal({ isOpen: false, id: "" });
     } catch (error) {
-      SoftDestructiveSonner("Có lỗi xảy ra khi xóa công việc");
+      SoftDestructiveSonner(t("DeleteError"));
       console.log("error delete job: ", error);
     }
   };
@@ -98,7 +103,7 @@ export default function PageAdminJob() {
       if (idDeleteMany.length === 0) return;
 
       const res = await deleteManyJobMutation(idDeleteMany);
-      if (res.isError) SoftDestructiveSonner("Có lỗi xảy ra khi xóa công việc");
+      if (res.isError) SoftDestructiveSonner(t("DeleteError"));
 
       setIdDeleteMany([]);
 
@@ -138,7 +143,7 @@ export default function PageAdminJob() {
     }
   };
 
-  const columns = getJobColumns(handleOpenEditModal, handleOpenDeleteModal);
+  const columns = getJobColumns(t, tCommon, locale, handleOpenEditModal, handleOpenDeleteModal);
 
   return (
     <div className="min-h-screen bg-background">
@@ -162,7 +167,7 @@ export default function PageAdminJob() {
                   className="gap-2"
                 >
                   <Trash2 className="h-4 w-4" />
-                  Xóa ({idDeleteMany.length})
+                  {tCommon("Buttons.delete")} ({idDeleteMany.length})
                 </Button>
               )}
             </div>
@@ -214,7 +219,7 @@ export default function PageAdminJob() {
       {/* modal confirm delete */}
       {deleteModal.isOpen && (
         <DeleteConfirmModal
-          title="Xóa vai trò"
+          title={t("DeleteConfirmTitle")}
           isDeleting={isDeleteJob}
           onConfirm={handleConfirmDelete}
           onCancel={() => setDeleteModal({ isOpen: false, id: "" })}
@@ -225,50 +230,46 @@ export default function PageAdminJob() {
 }
 
 function HeaderPage() {
+  const t = useTranslations("Admin.Jobs");
   return (
     <div>
-      <h1 className="text-3xl font-bold text-foreground">
-        Danh sách công{" "}
-        <span className="inline-flex items-center gap-1.5 whitespace-nowrap align-middle pb-2">
-          việc
-          <Popover modal={false}>
-            <PopoverTrigger asChild>
-              <button
-                type="button"
-                className="text-muted-foreground hover:text-foreground transition inline-flex items-center"
-              >
-                <InfoIcon className="h-4 w-4" color="yellow" />
-              </button>
-            </PopoverTrigger>
+      <h1 className="text-3xl font-bold text-foreground inline-flex items-center gap-2">
+        {t("ListTitle")}
+        <Popover modal={false}>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              className="text-muted-foreground hover:text-foreground transition inline-flex items-center align-middle"
+            >
+              <InfoIcon className="h-5 w-5" color="yellow" />
+            </button>
+          </PopoverTrigger>
 
-            <PopoverContent className="w-80 font-normal text-base normal-case tracking-normal">
-              <div className="space-y-3">
-                <p className="font-semibold">Thông tin quản lý công việc</p>
+          <PopoverContent className="w-80 font-normal text-base normal-case tracking-normal">
+            <div className="space-y-3">
+              <p className="font-semibold">{t("InfoTitle")}</p>
 
-                <p className="text-sm text-muted-foreground">
-                  Khu vực này hiển thị các công việc đang hoạt động. Bạn có thể
-                  xem, chỉnh sửa thông tin và quản lý trạng thái công việc.
-                </p>
+              <p className="text-sm text-muted-foreground">
+                {t("InfoDesc1")}
+              </p>
 
-                <p className="text-sm text-muted-foreground">
-                  Nếu bạn không tìm thấy công việc mong muốn, có thể công việc
-                  đó đã bị xoá tạm thời.
-                </p>
+              <p className="text-sm text-muted-foreground">
+                {t("InfoDesc2")}
+              </p>
 
-                <div className="pt-2">
-                  <Link href="/admin/jobs/job-deleted">
-                    <Button variant="link" className="px-0">
-                      Xem danh sách công việc đã xoá →
-                    </Button>
-                  </Link>
-                </div>
+              <div className="pt-2">
+                <Link href="/admin/jobs/job-deleted">
+                  <Button variant="link" className="px-0">
+                    {t("ViewDeleted")}
+                  </Button>
+                </Link>
               </div>
-            </PopoverContent>
-          </Popover>
-        </span>
+            </div>
+          </PopoverContent>
+        </Popover>
       </h1>
 
-      <p className="mt-2 text-sm text-muted-foreground">Quản lý công việc</p>
+      <p className="mt-2 text-sm text-muted-foreground">{t("SubTitle")}</p>
     </div>
   );
 }

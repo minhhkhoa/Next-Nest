@@ -29,6 +29,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { useGetCompanyDetail } from "@/queries/useCompany";
 import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import { useGetLang } from "@/hooks/use-get-lang";
 
 interface JobFormProps {
   initialData?: JobResType;
@@ -42,6 +44,9 @@ export default function JobForm({
   isPending,
 }: JobFormProps) {
   const router = useRouter();
+  const t = useTranslations("Recruiter.JobManager.Form");
+  const tButtons = useTranslations("Common.Buttons");
+  const { locale } = useGetLang();
   const { user } = useAppStore();
   const isUpdate = !!initialData;
   const roleRecruiterAdmin = getRoleRecruiterAdmin();
@@ -220,12 +225,16 @@ export default function JobForm({
                 {" "}
                 {/* min-w-0 giúp text truncate nếu quá dài */}
                 <h1 className="text-lg md:text-xl font-bold tracking-tight truncate">
-                  {isUpdate ? "Chỉnh sửa bài đăng" : "Tạo tin tuyển dụng mới"}
+                  {isUpdate ? t("EditJob") : t("CreateJob")}
                 </h1>
                 <p className="text-[10px] md:text-xs text-muted-foreground italic truncate">
                   {isUpdate
-                    ? `Cập nhật lần cuối: ${new Date(initialData.updatedAt).toLocaleString("vi-VN")}`
-                    : "Tin của bạn sẽ được kiểm duyệt sau khi đăng"}
+                    ? t("LastUpdated", {
+                        time: new Date(initialData.updatedAt).toLocaleString(
+                          locale === "vi" ? "vi-VN" : "en-US",
+                        ),
+                      })
+                    : t("ModerationNote")}
                 </p>
               </div>
             </div>
@@ -238,7 +247,7 @@ export default function JobForm({
                 onClick={() => router.back()}
                 className="flex-1 md:flex-none" // Mobile chiếm hết chỗ trống còn lại
               >
-                Hủy bỏ
+                {tButtons("cancel")}
               </Button>
               <Button
                 type="submit"
@@ -248,9 +257,9 @@ export default function JobForm({
                 {isPending ? (
                   <Spinner className="mr-2 h-4 w-4" />
                 ) : isUpdate ? (
-                  "Cập nhật"
+                  tButtons("update")
                 ) : (
-                  "Tạo mới"
+                  tButtons("create")
                 )}
               </Button>
             </div>
@@ -275,7 +284,7 @@ export default function JobForm({
               <Card className="border-orange-200 bg-orange-30/10 gap-2">
                 <CardHeader>
                   <CardTitle className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider text-orange-700 !mt-2">
-                    Trạng thái tin bài
+                    {t("JobStatus")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 mb-2">
@@ -287,10 +296,10 @@ export default function JobForm({
                       <FormItem className="flex items-center justify-between rounded-lg border bg-background p-3 shadow-sm">
                         <div className="space-y-0.5">
                           <FormLabel className="text-sm font-medium">
-                            Hiển thị
+                            {t("Visibility")}
                           </FormLabel>
                           <p className="text-[10px] text-muted-foreground">
-                            Chủ động đóng/mở tin
+                            {t("VisibilityDesc")}
                           </p>
                         </div>
                         <FormControl>
@@ -314,10 +323,10 @@ export default function JobForm({
                         <FormItem className="flex items-center justify-between rounded-lg border border-blue-200 bg-blue-30/10 p-3 shadow-sm">
                           <div className="space-y-0.5">
                             <FormLabel className="text-sm font-bold text-blue-500">
-                              Phê duyệt
+                              {t("Approval")}
                             </FormLabel>
                             <p className="text-[10px] text-blue-400/70">
-                              Quyền Admin hệ thống
+                              {t("SystemAdminPermission")}
                             </p>
                           </div>
                           <FormControl>

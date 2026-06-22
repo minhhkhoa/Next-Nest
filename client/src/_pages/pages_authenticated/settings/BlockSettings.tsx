@@ -6,8 +6,10 @@ import ColorThemeSelector from "@/components/ColorThemeSelector";
 import DemoChartAreaGradient from "@/app/[locale]/(authenticated)/settings/DemoChartChangeColor";
 import { useGetProfile } from "@/queries/useAuth";
 import { Spinner } from "@/components/ui/spinner";
+import { useTranslations } from "next-intl";
 
 export default function BlockSettings() {
+  const t = useTranslations("Candidate.Settings");
   const { data, isLoading } = useGetProfile();
   const user = data?.data?.user;
 
@@ -24,7 +26,7 @@ export default function BlockSettings() {
       {!user?.provider?.id && (
         <div className="w-full max-w-md">
           <h2 className="scroll-m-20 text-2xl font-semibold tracking-tight">
-            Đổi mật khẩu
+            {t("ChangePassword")}
           </h2>
           <div className="pt-3">
             <ChangePasswordForm />
@@ -33,7 +35,7 @@ export default function BlockSettings() {
       )}
       <div className="w-full max-w-md md:max-w-2xl">
         <h2 className="scroll-m-20 text-2xl font-semibold tracking-tight">
-          Chọn chủ đề màu
+          {t("SelectColorTheme")}
         </h2>
         <div className="pt-3">
           <ColorThemeSelector />

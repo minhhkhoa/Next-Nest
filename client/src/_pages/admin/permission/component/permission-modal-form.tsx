@@ -40,6 +40,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useCreatePermission, useUpdatePermission } from "@/queries/usePermission";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
+import { useTranslations } from "next-intl";
 
 interface PermissionDialogProps {
   onClose: () => void;
@@ -52,6 +53,8 @@ export function PermissionDialogForm({
   permission,
   listModules,
 }: PermissionDialogProps) {
+  const t = useTranslations("Admin.Permission");
+  const tButtons = useTranslations("Common.Buttons");
   const form = useForm<PermissionCreateType>({
     resolver: zodResolver(permissionCreate),
     defaultValues: {
@@ -85,19 +88,19 @@ export function PermissionDialogForm({
         });
 
         if (res.isError)
-          SoftDestructiveSonner("Có lỗi xảy ra khi chỉnh sửa quyền hạn");
+          SoftDestructiveSonner(t("UpdateError"));
 
         SoftSuccessSonner(res.message);
       } else {
         const res = await createPermissionMutation(finalPayload);
 
         if (res.isError)
-          SoftDestructiveSonner("Có lỗi xảy ra khi Thêm mới quyền hạn");
+          SoftDestructiveSonner(t("CreateError"));
 
         SoftSuccessSonner(res.message);
       }
     } catch (error) {
-      SoftDestructiveSonner("Có lỗi xảy ra");
+      SoftDestructiveSonner(t("GeneralError"));
       console.log("error handle submit permission: ", error);
     }
   };
@@ -120,12 +123,10 @@ export function PermissionDialogForm({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {permission ? "Chỉnh sửa quyền hạn" : "Thêm mới quyền hạn"}
+            {permission ? t("EditTitle") : t("CreateTitle")}
           </DialogTitle>
           <DialogDescription>
-            {permission
-              ? "Điền đầy đủ thông tin để chỉnh sửa quyền hạn hệ thống"
-              : "Điền đầy đủ thông tin để tạo mới quyền hạn hệ thống"}
+            {permission ? t("EditDesc") : t("CreateDesc")}
           </DialogDescription>
         </DialogHeader>
 
@@ -139,9 +140,9 @@ export function PermissionDialogForm({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tên quyền hạn</FormLabel>
+                  <FormLabel>{t("PermissionName")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nhập tên quyền hạn" {...field} />
+                    <Input placeholder={t("PermissionNamePlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -153,9 +154,9 @@ export function PermissionDialogForm({
               name="code"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Mã quyền hạn</FormLabel>
+                  <FormLabel>{t("PermissionCode")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nhập mã quyền hạn" {...field} />
+                    <Input placeholder={t("PermissionCodePlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -167,7 +168,7 @@ export function PermissionDialogForm({
               name="apiPath"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Api path</FormLabel>
+                  <FormLabel>{t("ApiPath")}</FormLabel>
                   <FormControl>
                     <div className="relative flex items-center">
                       {/* Đổi thành /api/ */}
@@ -202,14 +203,14 @@ export function PermissionDialogForm({
               name="method"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Chọn phương thức</FormLabel>
+                  <FormLabel>{t("SelectMethod")}</FormLabel>
                   <FormControl>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <SelectTrigger id="method" className="mt-2 w-full">
-                        <SelectValue placeholder="Chọn phương thức" />
+                        <SelectValue placeholder={t("SelectMethod")} />
                       </SelectTrigger>
                       <SelectContent>
                         <ScrollArea className="max-h-52">
@@ -233,11 +234,11 @@ export function PermissionDialogForm({
               name="module"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Chọn module</FormLabel>
+                  <FormLabel>{t("SelectModule")}</FormLabel>
                   <FormControl>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger id="module" className="mt-2 w-full">
-                        <SelectValue placeholder="Chọn module" />
+                        <SelectValue placeholder={t("SelectModule")} />
                       </SelectTrigger>
                       <SelectContent>
                         <ScrollArea>
@@ -270,18 +271,18 @@ export function PermissionDialogForm({
                 onClick={onClose}
                 disabled={isCreating || isUpdating}
               >
-                Hủy
+                {tButtons("cancel")}
               </Button>
               <Button type="submit">
                 {isCreating || isUpdating ? (
                   <>
                     <Spinner className="mr-2 h-4 w-4 animate-spin" />
-                    Đang xử lý...
+                    {t("Processing")}
                   </>
                 ) : permission ? (
-                  "Cập nhật"
+                  tButtons("update")
                 ) : (
-                  "Thêm mới"
+                  tButtons("create")
                 )}
               </Button>
             </DialogFooter>

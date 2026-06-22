@@ -7,6 +7,7 @@ import { JobResType } from "@/schemasvalidation/job";
 import { generateSlugUrl, getSalaryText } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { useGetLang } from "@/hooks/use-get-lang";
+import { useTranslations } from "next-intl";
 import {
   Card,
   CardContent,
@@ -22,6 +23,8 @@ interface JobCardProps {
 
 export default function JobCard({ job }: JobCardProps) {
   const { getLang } = useGetLang();
+  const t = useTranslations("JobCard");
+  const tCommon = useTranslations("Common");
 
   return (
     <Card className="hover:shadow-lg transition-shadow duration-300 border shadow-sm border-border bg-card h-full flex flex-col relative group">
@@ -72,9 +75,9 @@ export default function JobCard({ job }: JobCardProps) {
       <CardContent className="p-4 py-2 flex-1">
         <div className="flex flex-col gap-2 text-sm text-muted-foreground mb-3">
           <div className="flex items-center gap-1 w-full text-xs">
-            <span>Cấp bậc từ </span>
+            <span>{t("LevelFrom")} </span>
             <span className="font-semibold text-foreground bg-secondary px-2 py-0.5 rounded-sm capitalize">
-              {job.level}
+              {tCommon(`Level.${job.level}` as any)}
             </span>
           </div>
 
@@ -99,7 +102,7 @@ export default function JobCard({ job }: JobCardProps) {
 
         <div className="flex flex-wrap gap-1">
           <i className="text-xs text-muted-foreground block w-full">
-            Kỹ năng yêu cầu:
+            {t("RequiredSkills")}
           </i>
           {job.skills &&
             job.skills.slice(0, 3).map((skill: any, index) => (
@@ -127,15 +130,15 @@ export default function JobCard({ job }: JobCardProps) {
           <Clock className="w-3 h-3 shrink-0" />
           {job.endDate ? (
             <>
-              Hạn nộp: {format(new Date(job.endDate), "dd/MM/yyyy")}
+              {t("Deadline")} {format(new Date(job.endDate), "dd/MM/yyyy")}
               <span className="text-yellow-500 ml-1">
                 {differenceInDays(new Date(job.endDate), new Date()) > 0
-                  ? `(còn ${differenceInDays(new Date(job.endDate), new Date())} ngày)`
-                  : "Job đã hết hạn"}{" "}
+                  ? t("DaysLeft", { days: differenceInDays(new Date(job.endDate), new Date()) })
+                  : t("Expired")}{" "}
               </span>
             </>
           ) : (
-            "Vô thời hạn"
+            t("NoDeadline")
           )}
         </span>
         <Badge
@@ -146,7 +149,7 @@ export default function JobCard({ job }: JobCardProps) {
               : "border-border text-muted-foreground"
           }
         >
-          {job.isHot?.isHotJob ? "Hot" : "Mới"}
+          {job.isHot?.isHotJob ? "Hot" : t("New")}
         </Badge>
       </CardFooter>
     </Card>

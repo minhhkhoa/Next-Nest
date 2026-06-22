@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Clock, MapPin, DollarSign, Briefcase } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { format } from "date-fns";
-import { vi } from "date-fns/locale";
 import DataTablePagination from "@/components/DataTablePagination";
 import ListJobSkeleton from "@/components/skeletons/list-job";
 import { generateSlugUrl, getSalaryText } from "@/lib/utils";
@@ -17,11 +16,16 @@ import { useGetLang } from "@/hooks/use-get-lang";
 import BookmarkJobButton from "@/components/BookmarkJobButton";
 import JobHoverCard from "@/components/JobHoverCard";
 
+import { useTranslations } from "next-intl";
+
 interface CompanyJobsProps {
   companyId: string;
 }
 
 export default function CompanyJobs({ companyId }: CompanyJobsProps) {
+  const tCompany = useTranslations("PageCompanyDetail");
+  const tJob = useTranslations("PageJobDetail");
+  const tCommon = useTranslations("Common");
   const { getLang } = useGetLang();
   const [currentPage, setCurrentPage] = useState(1);
   const { data: jobsData, isLoading } = useGetJobsFilterPublic({
@@ -42,7 +46,7 @@ export default function CompanyJobs({ companyId }: CompanyJobsProps) {
     <div className="space-y-6">
       <h2 className="text-2xl font-bold flex items-center gap-2">
         <Briefcase className="text-primary" />
-        Vị trí đang tuyển dụng
+        {tCompany("HiringJobs")}
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
@@ -101,10 +105,8 @@ export default function CompanyJobs({ companyId }: CompanyJobsProps) {
                             <Clock className="shrink-0" size={16} />
                             <span>
                               {job.endDate
-                                ? format(new Date(job.endDate), "dd/MM/yyyy", {
-                                    locale: vi,
-                                  })
-                                : "Không thời hạn"}
+                                ? format(new Date(job.endDate), "dd/MM/yyyy")
+                                : "N/A"}
                             </span>
                           </div>
                         </div>
@@ -112,7 +114,7 @@ export default function CompanyJobs({ companyId }: CompanyJobsProps) {
                         <div className="flex flex-wrap gap-2 mt-2">
                           {job.level && (
                             <Badge variant="outline" className="bg-muted/50">
-                              {job.level}
+                              {tCommon(`Level.${job.level}` as any)}
                             </Badge>
                           )}
                         </div>
@@ -120,7 +122,7 @@ export default function CompanyJobs({ companyId }: CompanyJobsProps) {
 
                       <div className="flex flex-col justify-end items-end gap-2 shrink-0">
                         <Button className="w-full md:w-auto">
-                          Ứng tuyển ngay
+                          {tJob("ApplyNow")}
                         </Button>
                       </div>
                     </div>

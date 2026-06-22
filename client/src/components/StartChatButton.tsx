@@ -8,6 +8,7 @@ import { useAppStore } from "@/components/TanstackProvider";
 import { useRouter } from "next/navigation";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import { envConfig } from "../../config";
+import { useTranslations } from "next-intl";
 
 interface StartChatButtonProps {
   /**
@@ -33,15 +34,17 @@ export default function StartChatButton({
   jobReferenceId,
   className,
   variant = "default",
-  label = "Liên hệ",
+  label,
 }: StartChatButtonProps) {
   const router = useRouter();
+  const t = useTranslations("Common.StartChat");
+  const displayLabel = label || t("Contact");
   const { user } = useAppStore();
   const createConversationMutation = useCreateConversationMutation();
 
   const handleStartChat = async () => {
     if (!user) {
-      SoftDestructiveSonner("Bạn cần đăng nhập để thao tác");
+      SoftDestructiveSonner(t("LoginRequired"));
       return;
     }
 
@@ -75,7 +78,7 @@ export default function StartChatButton({
         router.push("/chat");
       }
     } catch (error) {
-      SoftDestructiveSonner("Có lỗi xảy ra khi tạo cuộc trò chuyện");
+      SoftDestructiveSonner(t("CreateError"));
       console.log("error create conversation: ", error);
     }
   };
@@ -88,7 +91,7 @@ export default function StartChatButton({
       disabled={createConversationMutation.isPending}
     >
       <MessageSquare className="w-4 h-4 mr-2" />
-      {createConversationMutation.isPending ? "Đang kết nối..." : label}
+      {createConversationMutation.isPending ? t("Connecting") : displayLabel}
     </Button>
   );
 }

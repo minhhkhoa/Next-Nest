@@ -39,6 +39,7 @@ import { Badge } from "@/components/ui/badge";
 import { UserResumeResponseType } from "@/schemasvalidation/user-resume";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "@/i18n/navigation";
+import { useTranslations, useLocale } from "next-intl";
 
 export interface ChatUploadingAttachment {
   id: string;
@@ -106,6 +107,10 @@ export default function ChatWindow({
   onClearPendingCvAttachment,
   onAttachSystemCv,
 }: ChatWindowProps) {
+  const t = useTranslations("Candidate.Chat");
+  const tCommon = useTranslations("Common");
+  const locale = useLocale();
+
   //- Ref tới ScrollArea để cuộn xuống cuối
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const isUserAtBottomRef = useRef(true);
@@ -267,14 +272,14 @@ export default function ChatWindow({
             variant="ghost"
             size="icon"
             onClick={onOpenMobileSidebar}
-            aria-label="Mở danh sách đoạn chat"
+            aria-label={t("ChatListTitle")}
           >
             <Menu className="h-5 w-5" />
           </Button>
         </div>
         <div className="flex-1 flex items-center justify-center flex-col text-gray-400 px-4 text-center">
           <UserIcon className="w-16 h-16 text-gray-200 mb-4" />
-          <p>Chọn một đoạn chat để bắt đầu</p>
+          <p>{t("SelectConversationPrompt")}</p>
         </div>
       </div>
     );
@@ -290,7 +295,7 @@ export default function ChatWindow({
           size="icon"
           className="lg:hidden"
           onClick={onOpenMobileSidebar}
-          aria-label="Mở danh sách đoạn chat"
+          aria-label={t("ChatListTitle")}
         >
           <Menu className="h-5 w-5" />
         </Button>
@@ -311,7 +316,7 @@ export default function ChatWindow({
         </div>
         <span className="font-semibold truncate text-sm sm:text-base">
           {activeConversationId === "ai-assistant"
-            ? "AI Assistant"
+            ? t("AiAssistant")
             : isCandidate
             ? hrData?.name
             : candidateData?.name}
@@ -323,7 +328,7 @@ export default function ChatWindow({
         <div className="p-2 flex flex-col gap-2 w-full max-w-full">
           {messages.length === 0 ? (
             <div className="flex-1 flex items-center justify-center text-gray-400 text-sm py-20">
-              Chưa có tin nhắn nào. Hãy gửi lời chào!
+              {t("NoMessagesPrompt")}
             </div>
           ) : (
             messageItems
@@ -347,9 +352,9 @@ export default function ChatWindow({
                   />
                 ) : null}
                 <div className="min-w-0">
-                  <p className="text-xs text-gray-500">Đang đính kèm job</p>
+                  <p className="text-xs text-gray-500">{t("AttachingJob")}</p>
                   <p className="text-sm font-medium truncate">
-                    {pendingJobReference.jobTitle || "Thông tin công việc"}
+                    {pendingJobReference.jobTitle || t("JobInfo")}
                   </p>
                 </div>
               </div>
@@ -387,9 +392,9 @@ export default function ChatWindow({
                   </div>
                 )}
                 <div className="min-w-0">
-                  <p className="text-xs text-gray-500">Đang đính kèm CV hệ thống</p>
+                  <p className="text-xs text-gray-500">{t("AttachingSystemCv")}</p>
                   <p className="text-sm font-medium truncate">
-                    {pendingCvAttachment.resumeName || "CV chưa đặt tên"}
+                    {pendingCvAttachment.resumeName || t("UnnamedCv")}
                   </p>
                 </div>
               </div>
@@ -440,7 +445,7 @@ export default function ChatWindow({
                   !activeConversationId ||
                   isSending
                 }
-                aria-label="Mở menu đính kèm"
+                aria-label={t("AttachFile")}
               >
                 <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
@@ -458,7 +463,7 @@ export default function ChatWindow({
                   }}
                 >
                   <Paperclip className="w-4 h-4" />
-                  Chọn file từ máy
+                  {t("SelectFileFromDevice")}
                 </DropdownMenuItem>
               )}
 
@@ -472,7 +477,7 @@ export default function ChatWindow({
                 }}
               >
                 <FileUser className="w-4 h-4" />
-                Chọn CV hệ thống
+                {t("SelectSystemCv")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -483,8 +488,8 @@ export default function ChatWindow({
             onChange={(e) => setLocalText(e.target.value)}
             placeholder={
               pendingLocalFiles.length > 0
-                ? "Nhập mô tả cho ảnh/file (tuỳ chọn)..."
-                : "Nhập tin nhắn..."
+                ? t("EnterDescriptionPlaceholder")
+                : t("TypeMessage")
             }
             className="flex-1 min-w-0 bg-gray-100 dark:bg-slate-900 border-none rounded-full px-4 py-2 text-sm sm:text-base focus:ring-2 focus:ring-primary/40 outline-none"
           />
@@ -495,7 +500,7 @@ export default function ChatWindow({
               className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shrink-0 px-4"
             >
               {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-              Xác nhận
+              {tCommon("Buttons.confirm")}
             </Button>
           ) : (
             <Button
@@ -512,7 +517,7 @@ export default function ChatWindow({
         {pendingLocalFiles.length > 0 ? (
           <div className="mt-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-900 p-3">
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mb-2">
-              Đã chọn {pendingLocalFiles.length} tệp. Nhấn Xác nhận để gửi.
+              {t("FilesSelectedPrompt", { count: pendingLocalFiles.length })}
             </p>
 
             <div className="grid gap-2 max-h-40 overflow-y-auto pr-1">
@@ -578,8 +583,7 @@ export default function ChatWindow({
                     <div className="mt-1 flex items-center gap-2">
                       <Skeleton className="h-2 w-24 sm:w-40" />
                       <span className="text-xs text-gray-500">
-                        Đang upload {Math.max(file.fileSize / 1024 / 1024, 0.01).toFixed(2)}
-                        MB...
+                        {t("UploadingFileProgress", { size: Math.max(file.fileSize / 1024 / 1024, 0.01).toFixed(2) })}
                       </span>
                     </div>
                   </div>
@@ -593,9 +597,9 @@ export default function ChatWindow({
       <Dialog open={systemCvDialogOpen} onOpenChange={setSystemCvDialogOpen}>
         <DialogContent className="w-[96vw] max-w-[680px] p-0 overflow-hidden">
           <DialogHeader className="px-5 pt-5 pb-3 border-b">
-            <DialogTitle>Gửi CV hệ thống</DialogTitle>
+            <DialogTitle>{t("SendSystemCvTitle")}</DialogTitle>
             <DialogDescription>
-              Chọn CV muốn gửi trong cuộc trò chuyện này. CV mặc định được chọn sẵn.
+              {t("SendSystemCvDesc")}
             </DialogDescription>
           </DialogHeader>
 
@@ -614,10 +618,10 @@ export default function ChatWindow({
               <div className="rounded-xl border border-dashed p-8 text-center">
                 <FileText className="mx-auto h-8 w-8 text-slate-400 mb-3" />
                 <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">
-                  Bạn chưa có CV nào trong hệ thống.
+                  {t("NoSystemCvsPrompt")}
                 </p>
                 <Button asChild variant="outline" size="sm">
-                  <Link href="/my-cv">Đi tới trang quản lý CV</Link>
+                  <Link href="/my-cv">{t("GoToManageCv")}</Link>
                 </Button>
               </div>
             ) : (
@@ -639,7 +643,7 @@ export default function ChatWindow({
                       htmlFor={`chat-system-cv-${resume._id}`}
                       className={`group rounded-2xl border p-3 sm:p-4 cursor-pointer transition ${
                         isActive
-                          ? "border-primary bg-primary/5 dark:bg-primary/20"
+                           ? "border-primary bg-primary/5 dark:bg-primary/20"
                           : "border-slate-200 hover:border-primary/50 dark:border-slate-700"
                       }`}
                     >
@@ -667,10 +671,10 @@ export default function ChatWindow({
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <Label className="text-sm sm:text-base font-semibold cursor-pointer">
-                              {resume.resumeName || "CV chưa đặt tên"}
+                              {resume.resumeName || t("UnnamedCv")}
                             </Label>
                             {resume.isDefault ? (
-                              <Badge variant="secondary">Mặc định</Badge>
+                              <Badge variant="secondary">{t("DefaultResume")}</Badge>
                             ) : null}
                           </div>
 
@@ -678,7 +682,7 @@ export default function ChatWindow({
                             Template: {templateID}
                           </p>
                           <p className="text-xs sm:text-sm text-slate-500">
-                            Cập nhật: {new Date(resume.updatedAt).toLocaleDateString("vi-VN")}
+                            {t("UpdateAt", { date: new Date(resume.updatedAt).toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US") })}
                           </p>
                         </div>
                       </div>
@@ -696,7 +700,7 @@ export default function ChatWindow({
               onClick={() => setSystemCvDialogOpen(false)}
               disabled={isSubmittingSystemCv}
             >
-              Hủy
+              {tCommon("Buttons.cancel")}
             </Button>
             <Button
               type="button"
@@ -710,7 +714,7 @@ export default function ChatWindow({
               {isSubmittingSystemCv ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : null}
-              {activeConversationId === "ai-assistant" ? "Đính kèm CV" : "Gửi CV đã chọn"}
+              {activeConversationId === "ai-assistant" ? t("AttachCvBtn") : t("SendSelectedCvBtn")}
             </Button>
           </DialogFooter>
         </DialogContent>

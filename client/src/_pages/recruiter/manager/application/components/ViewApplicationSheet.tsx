@@ -31,6 +31,8 @@ import StartChatButton from "@/components/StartChatButton";
 import AiMatchModal from "./AiMatchModal";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import { useGetLang } from "@/hooks/use-get-lang";
 
 export const TEMPLATE_COMPONENTS: Record<string, React.ElementType> = {
   [CV_TEMPLATES.basicTemplate]: BasicTemplate,
@@ -50,6 +52,8 @@ export function ViewApplicationSheet({
   onOpenChange,
   applicationId,
 }: ViewApplicationSheetProps) {
+  const t = useTranslations("Recruiter.ApplicationManager");
+  const { locale } = useGetLang();
   const { data: qData, isLoading } = useGetApplicationDetail(
     applicationId || "",
     open && !!applicationId,
@@ -93,7 +97,7 @@ export function ViewApplicationSheet({
               <TemplateComponent {...templateProps} />
             ) : (
               <div className="text-center py-10 text-muted-foreground">
-                Không tìm thấy mẫu CV phù hợp
+                {t("NoCvTemplate")}
               </div>
             )}
           </div>
@@ -113,7 +117,7 @@ export function ViewApplicationSheet({
       >
         <SheetHeader className="p-4 border-b shrink-0 flex flex-row items-center justify-between shadow-sm bg-background z-10 w-full relative">
           <SheetTitle className="text-lg grow text-center">
-            Chi tiết hồ sơ ứng viên
+            {t("CandidateProfileDetail")}
           </SheetTitle>
         </SheetHeader>
         {isLoading ? (
@@ -123,7 +127,7 @@ export function ViewApplicationSheet({
         ) : !application ? (
           <div className="flex-1 flex justify-center items-center">
             <span className="text-muted-foreground">
-              Không tìm thấy đơn ứng tuyển
+              {t("ApplicationNotFound")}
             </span>
           </div>
         ) : (
@@ -138,7 +142,7 @@ export function ViewApplicationSheet({
                 )}
                 onClick={() => setMobileTab("info")}
               >
-                Thông tin ứng viên
+                {t("CandidateInfo")}
               </Button>
               <Button
                 variant={mobileTab === "cv" ? "default" : "ghost"}
@@ -148,7 +152,7 @@ export function ViewApplicationSheet({
                 )}
                 onClick={() => setMobileTab("cv")}
               >
-                Chi tiết CV
+                {t("CvDetail")}
               </Button>
             </div>
 
@@ -180,7 +184,7 @@ export function ViewApplicationSheet({
                   <h3 className="font-semibold text-lg truncate">
                     {typeof application.userId === "object"
                       ? application.userId.name
-                      : "Người dùng đã xóa"}
+                      : t("DeletedUser")}
                   </h3>
                   <div className="text-sm text-muted-foreground flex items-center gap-1.5 mt-1 truncate">
                     <Mail className="w-3.5 h-3.5 shrink-0" />
@@ -199,7 +203,7 @@ export function ViewApplicationSheet({
                       ? qData?.data?.jobId?._id || ""
                       : ""
                   }
-                  label="Trao đổi"
+                  label={t("Chat")}
                   variant="outline"
                   className="h-8 py-0 px-3 text-sm"
                 />
@@ -209,13 +213,13 @@ export function ViewApplicationSheet({
               <div className="grid grid-cols-2 gap-4 bg-muted/30 p-4 rounded-xl border border-border/50">
                 <div>
                   <p className="text-[11px] font-medium uppercase text-muted-foreground mb-1.5">
-                    Trạng thái
+                    {t("Status")}
                   </p>
                   <div>{generateStatusOptions(application.status)}</div>
                 </div>
                 <div>
                   <p className="text-[11px] font-medium uppercase text-muted-foreground mb-1.5">
-                    Điểm số
+                    {t("Score")}
                   </p>
                   <div>
                     {application.score && application.score > 0 ? (
@@ -229,7 +233,7 @@ export function ViewApplicationSheet({
                       </div>
                     ) : (
                       <span className="text-sm font-medium text-muted-foreground italic">
-                        Chưa chấm
+                        {t("NotScored")}
                       </span>
                     )}
                   </div>
@@ -242,31 +246,31 @@ export function ViewApplicationSheet({
                 className="w-full gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white border-none shadow-lg shadow-purple-500/20 font-bold h-11"
               >
                 <Sparkles className="w-4 h-4 fill-white animate-pulse" />
-                Đánh giá mức độ phù hợp với AI
+                {t("AiAssessment")}
               </Button>
 
               {/* Job Info */}
               <div className="space-y-4 p-4 rounded-xl border border-border/50 bg-card">
                 <div>
                   <p className="text-[11px] font-medium text-muted-foreground uppercase mb-1.5 flex items-center gap-1.5">
-                    <Briefcase className="w-3.5 h-3.5" /> Ứng tuyển công việc
+                    <Briefcase className="w-3.5 h-3.5" /> {t("AppliedJob")}
                   </p>
                   <p className="font-medium text-sm leading-snug">
                     {typeof application.jobId === "object"
                       ? application.jobId.title?.vi ||
                         application.jobId.title?.en
-                      : "Công việc đã xóa"}
+                      : t("DeletedJob")}
                   </p>
                 </div>
                 <div className="pt-3 border-t">
                   <p className="text-[11px] font-medium text-muted-foreground uppercase mb-1.5 flex items-center gap-1.5">
-                    <CalendarClock className="w-3.5 h-3.5" /> Ngày nộp hồ sơ
+                    <CalendarClock className="w-3.5 h-3.5" /> {t("ApplyDate")}
                   </p>
                   <p className="text-sm font-medium">
                     {format(
                       new Date(application.createdAt),
                       "dd/MM/yyyy • HH:mm",
-                      { locale: vi },
+                      { locale: locale === "vi" ? vi : undefined },
                     )}
                   </p>
                 </div>
@@ -275,14 +279,13 @@ export function ViewApplicationSheet({
                   application.interviewTime && (
                     <div className="pt-3 border-t">
                       <p className="text-[11px] font-medium text-blue-600 dark:text-blue-400 uppercase mb-1.5 flex items-center gap-1.5">
-                        <CalendarClock className="w-3.5 h-3.5" /> Thời gian
-                        phỏng vấn
+                        <CalendarClock className="w-3.5 h-3.5" /> {t("InterviewTime")}
                       </p>
                       <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
                         {format(
                           new Date(application.interviewTime),
                           "dd/MM/yyyy • HH:mm",
-                          { locale: vi },
+                          { locale: locale === "vi" ? vi : undefined },
                         )}
                       </p>
                     </div>
@@ -295,14 +298,14 @@ export function ViewApplicationSheet({
                   <div className="p-1.5 bg-primary/10 text-primary rounded-md">
                     <FileText className="w-4 h-4" />
                   </div>
-                  Thư giới thiệu (Cover Letter)
+                  {t("CoverLetterTitle")}
                 </div>
                 <div className="text-sm text-foreground bg-muted/20 p-3.5 rounded-lg border border-border/50 whitespace-pre-wrap leading-relaxed min-h-[100px]">
                   {(typeof application.coverLetter === "object"
                     ? application.coverLetter.vi
                     : application.coverLetter) || (
                     <span className="italic text-muted-foreground">
-                      Không đính kèm thư giới thiệu.
+                      {t("NoCoverLetter")}
                     </span>
                   )}
                 </div>
@@ -315,7 +318,7 @@ export function ViewApplicationSheet({
                     <div className="p-1.5 bg-yellow-500/10 text-yellow-600 rounded-md">
                       <ClipboardList className="w-4 h-4" />
                     </div>
-                    Ghi chú nội bộ
+                    {t("InternalNote")}
                   </div>
                   <div className="text-sm bg-yellow-50 dark:bg-yellow-900/10 text-yellow-800 dark:text-yellow-200/80 p-3.5 border border-yellow-200 dark:border-yellow-900/30 rounded-lg whitespace-pre-wrap">
                     {typeof application.recruiterNote === "object"

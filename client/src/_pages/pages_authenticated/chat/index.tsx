@@ -36,8 +36,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { envConfig } from "../../../../config";
 import { uploadToCloudinary } from "@/lib/utils";
 import { UserResumeResponseType } from "@/schemasvalidation/user-resume";
+import { useTranslations } from "next-intl";
 
 export default function ChatPageModule() {
+  const t = useTranslations("Candidate.Chat");
   const { user, setActiveChatId } = useAppStore();
   const searchParams = useSearchParams();
   const defaultConversationId = searchParams.get("conversationId");
@@ -175,7 +177,7 @@ export default function ChatPageModule() {
       _id: "ai-assistant",
       companyId: {
         _id: "ai-bot",
-        name: "AI Assistant",
+        name: t("AiAssistant"),
         logo: "https://cdn-icons-png.flaticon.com/512/8943/8943377.png",
       },
       candidateId: user?._id || "guest",
@@ -193,7 +195,7 @@ export default function ChatPageModule() {
           ? aiMessages[aiMessages.length - 1].createdAt
           : new Date(aiSession.timestamp).toISOString(),
     } as any;
-  }, [aiSession, aiMessages, user]);
+  }, [aiSession, aiMessages, user, t]);
 
   const allConversations = useMemo(() => {
     if (aiConversation) return [aiConversation, ...conversations];
@@ -365,7 +367,7 @@ export default function ChatPageModule() {
         const activeJobId = queryJobId || data?.jobId;
         const activeJobTitle = queryJobTitle
           ? decodeURIComponent(queryJobTitle)
-          : data?.jobTitle || "Vị trí tuyển dụng";
+          : data?.jobTitle || t("JobReferencePlaceholder");
 
         if (activeJobId) {
           setAiSession({
@@ -385,14 +387,14 @@ export default function ChatPageModule() {
               msg.role === "ai"
                 ? {
                     _id: "ai-bot",
-                    name: "AI Assistant",
+                    name: t("AiAssistant"),
                     avatar:
                       "https://cdn-icons-png.flaticon.com/512/8943/8943377.png",
                     email: "",
                   }
                 : {
                     _id: user?._id || "guest",
-                    name: user?.name || "You",
+                    name: user?.name || t("You"),
                     avatar: user?.avatar || "",
                     email: user?.email || "",
                   },
@@ -418,7 +420,7 @@ export default function ChatPageModule() {
         //- Prefill input chi khi den tu nut "Hoi them" (co queryJobTitle tren URL)
         if (queryJobId && queryJobTitle) {
           const decodedTitle = decodeURIComponent(queryJobTitle);
-          setInputText(`Tôi muốn hỏi thêm thông tin về vị trí ${decodedTitle}`);
+          setInputText(t("AiAskJobPrompt", { title: decodedTitle }));
         }
 
         //- Nếu URL yêu cầu chat AI hoặc default conversation là ai-assistant
@@ -430,7 +432,7 @@ export default function ChatPageModule() {
         }
       })
       .catch((e) => console.log("Failed to load AI history", e));
-  }, [searchParams, defaultConversationId, user]);
+  }, [searchParams, defaultConversationId, user, t]);
 
   useEffect(() => {
     if (!activeConversationId || typeof window === "undefined") return;
@@ -445,14 +447,14 @@ export default function ChatPageModule() {
       if (parsedDraft?.conversationId !== activeConversationId) return;
 
       setInputText(
-        parsedDraft?.inputText || "Tôi muốn biết thêm thông tin về job này",
+        parsedDraft?.inputText || t("AiDefaultPrompt"),
       );
       setPendingJobReference(parsedDraft?.metadata || null);
       sessionStorage.removeItem(CHAT_JOB_REFERENCE_DRAFT_STORAGE_KEY);
     } catch {
       sessionStorage.removeItem(CHAT_JOB_REFERENCE_DRAFT_STORAGE_KEY);
     }
-  }, [activeConversationId]);
+  }, [activeConversationId, t]);
 
   //- nhận textOverride từ ChatWindow gửi lên để tránh lag re-render khi gõ phím
   const handleSendMessage = async (
@@ -471,8 +473,8 @@ export default function ChatPageModule() {
       const textToSend =
         trimmedText ||
         (pendingCvAttachment
-          ? `Gửi CV để nhờ AI phân tích độ phù hợp với JD.`
-          : `Tôi muốn biết thêm thông tin về vị trí ${aiSession.jobTitle}`);
+          ? t("AiAnalyzeCvPrompt")
+          : t("AiAskJobPrompt", { title: aiSession.jobTitle }));
       setInputText("");
       setPendingJobReference(null);
       const attachedCv = pendingCvAttachment; //- luu nhap de truyen vao sse query
@@ -483,7 +485,7 @@ export default function ChatPageModule() {
         conversationId: "ai-assistant",
         senderId: {
           _id: user?._id || "guest",
-          name: user?.name || "You",
+          name: user?.name || t("You"),
           avatar: user?.avatar || "",
           email: user?.email || "",
         },
@@ -502,7 +504,7 @@ export default function ChatPageModule() {
         conversationId: "ai-assistant",
         senderId: {
           _id: "ai-bot",
-          name: "AI Assistant",
+          name: t("AiAssistant"),
           avatar: "https://cdn-icons-png.flaticon.com/512/8943/8943377.png",
           email: "",
         },
@@ -562,7 +564,7 @@ export default function ChatPageModule() {
       eventSource.onerror = () => {
         eventSource.close();
         setIsAiStreaming(false);
-        SoftDestructiveSonner("Đã có lỗi xảy ra khi chat với AI.");
+        SoftDestructiveSonner(t("AiError"));
       };
       return;
     }
@@ -595,7 +597,7 @@ export default function ChatPageModule() {
           const uploadUrl = await uploadToCloudinary(pendingItem.file, "Chat");
 
           if (!uploadUrl) {
-            throw new Error("Không lấy được URL file từ Cloudinary");
+            throw new Error(t("CloudinaryError"));
           }
 
           const isImage = pendingItem.file.type.startsWith("image/");
@@ -625,10 +627,10 @@ export default function ChatPageModule() {
                     fileExt,
                   },
             },
-            `Không thể gửi file ${pendingItem.file.name}`,
+            t("SendFileError", { name: pendingItem.file.name }),
           );
         } catch (error) {
-          SoftDestructiveSonner(`Upload thất bại: ${pendingItem.file.name}`);
+          SoftDestructiveSonner(t("UploadFileFailed", { name: pendingItem.file.name }));
           console.log("error upload file: ", error);
         } finally {
           removeUploadingAttachment(uploadId);
@@ -643,7 +645,7 @@ export default function ChatPageModule() {
     if (!trimmedText && !sendingJobReference) return;
 
     const textToSend =
-      trimmedText || "Tôi muốn biết thêm thông tin về công việc này";
+      trimmedText || t("JobReferenceDefaultText");
     const jobReferenceData = pendingJobReference;
     const messageType = sendingJobReference ? "JOB_REFERENCE" : "TEXT";
 
@@ -659,7 +661,7 @@ export default function ChatPageModule() {
         content: textToSend,
         metadata: sendingJobReference ? jobReferenceData : undefined,
       },
-      "Không thể gửi tin nhắn. Vui lòng thử lại",
+      t("SendMessageFailed"),
     );
 
     if (!isSuccess) {
@@ -672,7 +674,7 @@ export default function ChatPageModule() {
 
   const handleSelectLocalFiles = (files: FileList | null) => {
     if (!activeConversationId) {
-      SoftDestructiveSonner("Vui lòng chọn đoạn chat trước khi gửi file");
+      SoftDestructiveSonner(t("SelectChatBeforeFile"));
       return;
     }
 
@@ -695,7 +697,7 @@ export default function ChatPageModule() {
     resume: UserResumeResponseType,
   ): Promise<boolean> => {
     if (!activeConversationId) {
-      SoftDestructiveSonner("Vui lòng chọn đoạn chat trước khi gửi CV");
+      SoftDestructiveSonner(t("SelectChatBeforeCv"));
       return false;
     }
 
@@ -712,10 +714,10 @@ export default function ChatPageModule() {
       {
         conversationId: activeConversationId,
         type: "CV_SYSTEM",
-        content: resume.resumeName || resume.title || "CV hệ thống",
+        content: resume.resumeName || resume.title || t("SystemCv"),
         metadata: {
           cvId: resume._id,
-          cvName: resume.resumeName || resume.title || "CV hệ thống",
+          cvName: resume.resumeName || resume.title || t("SystemCv"),
           templateID,
           templateId: templateID,
           resumeContent,
@@ -724,7 +726,7 @@ export default function ChatPageModule() {
           updatedAt: resume.updatedAt,
         },
       },
-      "Không thể gửi CV hệ thống",
+      t("SendSystemCvFailed"),
     );
   };
 
@@ -781,7 +783,7 @@ export default function ChatPageModule() {
           className="w-[85vw] sm:w-[350px] p-0 flex flex-col"
         >
           <SheetHeader className="sr-only">
-            <SheetTitle>Danh sách đoạn chat</SheetTitle>
+            <SheetTitle>{t("ChatListTitle")}</SheetTitle>
           </SheetHeader>
           <ConversationList
             conversations={allConversations}

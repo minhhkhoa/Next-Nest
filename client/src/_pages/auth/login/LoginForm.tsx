@@ -32,8 +32,10 @@ import { Link, useRouter } from "@/i18n/navigation";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import { getBaseServerUrl } from "@/lib/http";
+import { useTranslations } from "next-intl";
 
 export default function LoginForm() {
+  const t = useTranslations("Auth");
   const { setLogin } = useAppStore();
   const [isClient, setIsClient] = useState(false);
   const { theme } = useTheme();
@@ -60,7 +62,7 @@ export default function LoginForm() {
 
         //- chuyen trang
         router.push("/");
-        SoftSuccessSonner("Đăng nhập thành công!");
+        SoftSuccessSonner(t("LoginSuccess"));
       }
     } catch (error) {
       console.log("error login: ", error);
@@ -111,7 +113,7 @@ export default function LoginForm() {
           // Cập nhật trạng thái và điều hướng
           setLogin(true);
           router.push("/");
-          SoftSuccessSonner(`Đăng nhập với ${provider} thành công!`);
+          SoftSuccessSonner(t("LoginSuccessWith", { provider }));
         }
 
         if (error) {
@@ -138,10 +140,10 @@ export default function LoginForm() {
     <Card className="w-full max-w-md shadow-2xl border-border/50">
       <CardHeader className="space-y-2 text-center pt-2">
         <CardTitle className="text-3xl font-bold tracking-tight">
-          Đăng nhập
+          {t("Login")}
         </CardTitle>
         <CardDescription className="text-base">
-          Nhập thông tin của bạn để tiếp tục
+          {t("EnterDetailsToContinue")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -175,7 +177,7 @@ export default function LoginForm() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>{t("PasswordLabel")}</FormLabel>
                     <FormControl>
                       <Input
                         type={showPassword ? "text" : "password"}
@@ -211,7 +213,7 @@ export default function LoginForm() {
                 href="/forgot-password"
                 className="text-sm text-muted-foreground hover:text-primary"
               >
-                Quên mật khẩu?
+                {t("ForgotPassword")}
               </Link>
             </div>
 
@@ -220,7 +222,7 @@ export default function LoginForm() {
               className="w-full select-none" //- select-none: giúp click đúp không bôi text
               disabled={isPending}
             >
-              {isPending ? "Đang đăng nhập..." : "Đăng nhập"}
+              {isPending ? t("LoggingIn") : t("Login")}
             </Button>
           </form>
         </Form>
@@ -231,12 +233,12 @@ export default function LoginForm() {
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-card px-2 text-muted-foreground">
-              Hoặc tiếp tục với
+              {t("OrContinueWith")}
             </span>
           </div>
         </div>
 
-        {/* clg ra theme */}
+        {/* mạng xã hội */}
         <div className="grid grid-cols-2 gap-3">
           <Button
             variant="outline"
@@ -260,12 +262,12 @@ export default function LoginForm() {
       </CardContent>
       <CardFooter className="flex justify-center pb-2">
         <p className="text-sm text-muted-foreground">
-          Bạn chưa có tài khoản?{" "}
+          {t("NoAccountPrompt")}{" "}
           <Link
             href="/register"
             className="text-primary font-medium hover:underline"
           >
-            Đăng ký ngay
+            {t("RegisterNowLink")}
           </Link>
         </p>
       </CardFooter>

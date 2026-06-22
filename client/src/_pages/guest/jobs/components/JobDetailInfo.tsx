@@ -33,6 +33,8 @@ import StartChatButton from "@/components/StartChatButton";
 import AskMoreJobButton from "@/components/AskMoreJobButton";
 import { envConfig } from "../../../../../config";
 
+import { useTranslations } from "next-intl";
+
 interface JobDetailInfoProps {
   job: JobResType;
 }
@@ -58,6 +60,8 @@ function InfoItem({
 }
 
 export default function JobDetailInfo({ job }: JobDetailInfoProps) {
+  const t = useTranslations("PageJobDetail");
+  const tCommon = useTranslations("Common");
   const { user, isLogin } = useAppStore();
   const { getLang } = useGetLang();
   const [reportModalOpen, setReportModalOpen] = useState(false);
@@ -74,7 +78,7 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
         defaultValues={{
           type: "REPORT_JOB",
           targetId: job._id,
-          title: `Báo cáo tin tuyển dụng: ${getLang(job.title)}`,
+          title: `${tCommon("Buttons.report")}: ${getLang(job.title)}`,
         }}
       />
       {/* Header Section */}
@@ -118,7 +122,7 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
                 <div className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />
                   <span>
-                    Hạn nộp: {format(new Date(job.endDate), "dd/MM/yyyy")}
+                    {t("Expired")}: {format(new Date(job.endDate), "dd/MM/yyyy")}
                   </span>
                 </div>
               </div>
@@ -133,7 +137,7 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
                       disabled={job.hasApplication}
                       className="bg-primary hover:bg-primary/90 text-primary-foreground"
                     >
-                      {job.hasApplication ? "Đã ứng tuyển" : "Ứng tuyển ngay"}
+                      {job.hasApplication ? t("Applied") : t("ApplyNow")}
                     </Button>
                   }
                 />
@@ -143,7 +147,7 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
                   size="default"
                   className="gap-2"
                 >
-                  Lưu tin
+                  {t("Save")}
                 </BookmarkJobButton>
 
                 {isLogin &&
@@ -156,7 +160,7 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
                       variant="outline"
                       size="default"
                       className="gap-2"
-                      label="Hỏi thêm"
+                      label={t("AskAI")}
                     />
                   )}
 
@@ -165,10 +169,10 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
                     variant="ghost"
                     className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                     onClick={() => setReportModalOpen(true)}
-                    title="Báo cáo tin tuyển dụng này"
+                    title={tCommon("Buttons.report")}
                   >
                     <Flag className="w-5 h-5 mr-2" />
-                    Báo cáo
+                    {tCommon("Buttons.report")}
                   </Button>
                 )}
               </div>
@@ -185,7 +189,7 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
             <CardContent className="p-6 space-y-6">
               <div>
                 <h2 className="text-xl font-bold border-l-4 border-primary pl-3 mb-4 text-foreground">
-                  Mô tả công việc
+                  {t("JobDescription")}
                 </h2>
                 <div className="relative">
                   <div
@@ -214,11 +218,11 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
                     >
                       {isExpanded ? (
                         <>
-                          Thu gọn <ChevronUp size={16} />
+                          {tCommon("Buttons.collapse")} <ChevronUp size={16} />
                         </>
                       ) : (
                         <>
-                          Xem thêm <ChevronDown size={16} />
+                          {tCommon("Buttons.viewMore")} <ChevronDown size={16} />
                         </>
                       )}
                     </Button>
@@ -237,7 +241,7 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
               <CardContent className="p-6 space-y-4">
                 <div className="flex items-center justify-between pl-3 border-l-4 border-primary mb-4">
                   <h2 className="text-xl font-bold text-foreground">
-                    Thông tin công ty
+                    {t("JobInfo")}
                   </h2>
                   {isLogin &&
                     user?.roleCodeName ===
@@ -245,7 +249,7 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
                       <StartChatButton
                         receiverId={job.company._id}
                         jobReferenceId={job._id}
-                        label="Nhắn tin"
+                        label={tCommon("Buttons.chat")}
                         variant="outline"
                         className="h-8 py-0 px-3 text-sm"
                       />
@@ -286,7 +290,7 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
                           rel="noopener noreferrer"
                           className="hover:underline"
                         >
-                          Website công ty
+                          {job.company.website}
                         </a>
                       </div>
                     )}
@@ -304,7 +308,7 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
                   passHref
                 >
                   <Button variant="link" className="p-0 h-auto text-primary">
-                    Xem chi tiết công ty
+                    {tCommon("Buttons.viewDetail")}
                     <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
                 </Link>
@@ -315,34 +319,34 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
           <Card className="border-none shadow-sm bg-card">
             <CardContent className="p-6">
               <h3 className="font-bold text-lg mb-4 text-foreground pl-3 border-l-4 border-primary">
-                Thông tin chung
+                {t("JobInfo")}
               </h3>
               <div className="space-y-4">
                 <InfoItem
                   icon={<User className="w-5 h-5" />}
-                  label="Cấp bậc"
-                  value={job.level}
+                  label={t("Level")}
+                  value={tCommon(`Level.${job.level}` as any)}
                 />
                 <InfoItem
                   icon={<Briefcase className="w-5 h-5" />}
-                  label="Hình thức"
-                  value={job.employeeType}
+                  label={t("EmployeeType")}
+                  value={tCommon(`EmployeeType.${job.employeeType}` as any)}
                 />
                 <InfoItem
                   icon={<Calendar className="w-5 h-5" />}
-                  label="Kinh nghiệm"
-                  value={job.experience}
+                  label={t("Experience")}
+                  value={tCommon(`Experience.${job.experience}` as any)}
                 />
                 <InfoItem
                   icon={<User className="w-5 h-5" />}
-                  label="Số lượng tuyển"
-                  value={job.quantity.toString() + " người"}
+                  label={t("Quantity")}
+                  value={job.quantity.toString()}
                 />
               </div>
 
               <div className="mt-6">
                 <h3 className="font-bold text-lg mb-2 text-foreground">
-                  Kỹ năng
+                  {t("RequiredSkills")}
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {job.skills.map((skill: any, idx) => (

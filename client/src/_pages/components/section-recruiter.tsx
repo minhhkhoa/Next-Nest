@@ -7,9 +7,11 @@ import { Link } from "@/i18n/navigation";
 import React from "react";
 import { envConfig } from "../../../config";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslations } from "next-intl";
 
 export default function SectionRecruiter() {
   const { user } = useAppStore();
+  const t = useTranslations("Header.RecruiterSection");
 
   //- ngăn nháy vì server không biết biến user nên nó sẽ show bạn là nhà tuyển dụng
   //- và khi hydrat thì thấy có user và vi phạm if isRecruiter nên tắt ==> Nháy
@@ -32,9 +34,9 @@ export default function SectionRecruiter() {
       <Separator orientation="vertical" className="hidden md:block !h-8" />
 
       <div className="hidden md:flex flex-col">
-        <span className="text-xs">Bạn là nhà tuyển dụng?</span>
+        <span className="text-xs">{t("Question")}</span>
         <div className="flex items-center gap-1 text-[15px] hover:text-primary cursor-pointer hover:translate-x-1 transition-all duration-100 ease-out">
-          <Link href="/recruiter/welcome">Đăng tuyển ngay</Link>
+          <Link href="/recruiter/welcome">{t("PostNow")}</Link>
           <ArrowRight size={15} className="mt-1" />
         </div>
       </div>

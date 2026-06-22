@@ -11,8 +11,13 @@ import { useGetJobsFilter, useRestoreJob } from "@/queries/useJob";
 import { getJobColumns } from "../jobColumn";
 import TableJob from "../tableJob";
 import { SearchBar } from "../../NewsCategory/components/search-bar";
+import { useTranslations } from "next-intl";
+import { useGetLang } from "@/hooks/use-get-lang";
 
 export default function PageAdminJobDeleted() {
+  const t = useTranslations("Admin.Jobs");
+  const tCommon = useTranslations("Common");
+  const { locale } = useGetLang();
   const [filtersJob, setFiltersJob] = useState<{
     title: string;
     fieldCompany: string;
@@ -52,7 +57,14 @@ export default function PageAdminJobDeleted() {
     }
   };
 
-  const columns = getJobColumns(undefined, undefined, handleRestoreJob);
+  const columns = getJobColumns(
+    t,
+    tCommon,
+    locale,
+    undefined,
+    undefined,
+    handleRestoreJob,
+  );
 
   return (
     <div className="min-h-screen bg-background">

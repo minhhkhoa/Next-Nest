@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { X, ChevronDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLocale } from "next-intl";
 
 interface MultiLang {
   vi: string;
@@ -31,12 +32,14 @@ export function MultiSelect({
   placeholder = "Chọn...",
   className,
 }: MultiSelectProps) {
+  const locale = useLocale();
+  const curLocale = (locale === "vi" ? "vi" : "en") as "vi" | "en";
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
 
   const filteredOptions = options.filter((option) =>
-    option.label.vi.toLowerCase().includes(searchTerm.toLowerCase() || "")
+    (option.label[curLocale] || "").toLowerCase().includes(searchTerm.toLowerCase() || "")
   );
 
   const handleSelect = (option: Option) => {
@@ -83,7 +86,7 @@ export function MultiSelect({
                 key={item.value}
                 className="inline-flex items-center gap-1 px-2 py-1 rounded bg-primary text-primary-foreground text-sm"
               >
-                {item.label.vi}
+                {item.label[curLocale]}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -124,7 +127,7 @@ export function MultiSelect({
                 >
                   {/* optional small bullet or caret to show hierarchy */}
                   <div className="flex items-center w-full">
-                    <span>{option.label.vi}</span>
+                    <span>{option.label[curLocale]}</span>
                     {selected.some((item) => item.value === option.value) && (
                       <Check className="w-4 h-4 ml-auto text-muted-foreground" />
                     )}

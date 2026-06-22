@@ -17,6 +17,8 @@ import { generateSlugUrl } from "@/lib/utils";
 import { Link } from "@/i18n/navigation";
 import { useQuery } from "@tanstack/react-query";
 import applicationApiRequest from "@/apiRequest/application";
+import { useTranslations } from "next-intl";
+import { useGetLang } from "@/hooks/use-get-lang";
 
 import {
   Sheet,
@@ -41,6 +43,9 @@ export default function ApplicationDetailDialog({
   companyName,
 }: Props) {
   const [openPdfViewer, setOpenPdfViewer] = React.useState(false);
+  const t = useTranslations("Candidate.MyApplication");
+  const tCommon = useTranslations("Common");
+  const { locale } = useGetLang();
 
   const { data: detailData } = useQuery({
     queryKey: ["my-application-detail", initialApplication._id],
@@ -59,10 +64,10 @@ export default function ApplicationDetailDialog({
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-xl">
-              Chi tiết đơn ứng tuyển
+              {t("DetailTitle")}
             </DialogTitle>
             <DialogDescription>
-              {jobTitle} - {companyName || "Công ty bảo mật"}
+              {jobTitle} - {companyName || tCommon("ConfidentialCompany")}
             </DialogDescription>
           </DialogHeader>
 
@@ -74,21 +79,20 @@ export default function ApplicationDetailDialog({
                   <CalendarClock className="w-5 h-5 shrink-0 mt-0.5 text-blue-600 dark:text-blue-400" />
                   <div>
                     <p className="font-semibold text-base mb-1">
-                      Nhà tuyển dụng mời bạn phỏng vấn!
+                      {t("InterviewInvite")}
                     </p>
                     <p>
-                      Thời gian dự kiến:{" "}
+                      {t("InterviewTime")}:{" "}
                       <span className="font-medium">
                         {format(
                           new Date(application.interviewTime),
                           "dd/MM/yyyy HH:mm",
-                          { locale: vi },
+                          { locale: locale === "vi" ? vi : undefined },
                         )}
                       </span>
                     </p>
                     <p className="text-muted-foreground mt-1 text-xs">
-                      Vui lòng kiểm tra email của bạn để biết thêm chi tiết mốc
-                      thời gian hoặc đường dẫn tham gia.
+                      {t("InterviewCheckEmail")}
                     </p>
                   </div>
                 </div>
@@ -99,13 +103,13 @@ export default function ApplicationDetailDialog({
                 <XCircle className="w-5 h-5 shrink-0 mt-0.5 text-red-600 dark:text-red-400" />
                 <div className="w-full">
                   <p className="font-semibold text-base mb-1">
-                    Cảm ơn bạn đã ứng tuyển
+                    {t("ThankYou")}
                   </p>
-                  <p>Rất tiếc hồ sơ của bạn chưa phù hợp với vị trí này.</p>
+                  <p>{t("RejectMessage")}</p>
                   {application.rejectionReason && (
                     <div className="mt-2 p-3 bg-white/50 dark:bg-background/50 rounded border border-red-100 dark:border-red-900/30 whitespace-pre-wrap text-sm">
                       <p className="font-medium text-xs uppercase opacity-70 mb-1">
-                        Phản hồi từ nhà tuyển dụng:
+                        {t("RecruiterFeedback")}
                       </p>
                       {typeof application.rejectionReason === "object"
                         ? application.rejectionReason.vi
@@ -120,10 +124,10 @@ export default function ApplicationDetailDialog({
             <div className="flex gap-2 items-center text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
               <CalendarClock className="w-4 h-4" />
               <span>
-                Thời gian nộp:{" "}
+                {t("ApplyTime")}:{" "}
                 <span className="font-medium text-foreground">
                   {format(new Date(application.createdAt), "dd/MM/yyyy HH:mm", {
-                    locale: vi,
+                    locale: locale === "vi" ? vi : undefined,
                   })}
                 </span>
               </span>
@@ -132,13 +136,13 @@ export default function ApplicationDetailDialog({
             {/* Cover Letter */}
             <div className="space-y-2">
               <h3 className="font-semibold text-sm uppercase text-muted-foreground">
-                Thư giới thiệu (Cover Letter)
+                {t("CoverLetter")} (Cover Letter)
               </h3>
               <div className="p-4 bg-muted/30 rounded-lg border text-sm whitespace-pre-wrap min-h-[100px]">
                 {application.coverLetter && (
                   <div className="pt-2">
                     <span className="font-semibold text-foreground block mb-2">
-                      Thư giới thiệu:
+                      {t("CoverLetter")}:
                     </span>
                     <div className="text-muted-foreground p-3 bg-background rounded-md border min-h-[60px] whitespace-pre-wrap leading-relaxed">
                       {typeof application.coverLetter === "object"
@@ -153,7 +157,7 @@ export default function ApplicationDetailDialog({
             {/* Nguồn CV */}
             <div className="space-y-3 border-t pt-4">
               <h3 className="font-semibold text-sm uppercase text-muted-foreground">
-                Hồ sơ đính kèm (CV)
+                {t("AttachedResume")}
               </h3>
               <div className="flex items-center justify-between p-4 border rounded-lg bg-card">
                 <div className="flex items-center gap-3">
@@ -163,13 +167,13 @@ export default function ApplicationDetailDialog({
                   <div>
                     <p className="font-medium">
                       {application.resumeType === "SYSTEM_CV"
-                        ? "CV tạo từ hệ thống"
-                        : "CV tải lên từ thiết bị"}
+                        ? t("SystemCv")
+                        : t("UploadedCv")}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {application.resumeType === "SYSTEM_CV"
-                        ? "Mẫu CV tiêu chuẩn"
-                        : "File PDF hoặc Document"}
+                        ? t("StandardCvTemplate")
+                        : t("PdfOrDocument")}
                     </p>
                   </div>
                 </div>
@@ -183,7 +187,7 @@ export default function ApplicationDetailDialog({
                       onOpenChange(false);
                     }}
                   >
-                    Xem CV <ExternalLink className="ml-2 w-4 h-4" />
+                    {t("ViewCv")} <ExternalLink className="ml-2 w-4 h-4" />
                   </Button>
                 ) : (
                   <Button asChild variant="secondary" size="sm">
@@ -196,7 +200,7 @@ export default function ApplicationDetailDialog({
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      Xem CV <ExternalLink className="ml-2 w-4 h-4" />
+                      {t("ViewCv")} <ExternalLink className="ml-2 w-4 h-4" />
                     </Link>
                   </Button>
                 )}
@@ -213,7 +217,7 @@ export default function ApplicationDetailDialog({
         >
           <SheetHeader className="p-4 border-b shrink-0 flex flex-row items-center justify-between shadow-sm bg-background z-10 w-full relative">
             <SheetTitle className="text-lg grow text-center">
-              Hồ sơ ứng tuyển - {jobTitle}
+              {t("ApplicationProfile")} - {jobTitle}
             </SheetTitle>
           </SheetHeader>
           <div className="flex-1 w-full bg-muted/20 relative">

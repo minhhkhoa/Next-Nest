@@ -27,8 +27,13 @@ import {
 import { SearchBar } from "@/_pages/admin/NewsCategory/components/search-bar";
 import { useQueryFilter } from "@/hooks/useQueryFilter";
 import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import { useGetLang } from "@/hooks/use-get-lang";
 
 export default function RecruiterAdminJobsPage() {
+  const t = useTranslations("Recruiter.JobManager");
+  const tCommon = useTranslations("Common");
+  const { locale } = useGetLang();
   const { user } = useAppStore();
   const roleCodeName = user?.roleCodeName;
   const roleRecruiterAdmin = getRoleRecruiterAdmin();
@@ -80,12 +85,12 @@ export default function RecruiterAdminJobsPage() {
   const handleConfirmDelete = async () => {
     try {
       const res = await deleteJobMutation(deleteModal.id);
-      if (res.isError) SoftDestructiveSonner("Có lỗi xảy ra khi xóa công việc");
+      if (res.isError) SoftDestructiveSonner(t("DeleteError"));
 
       SoftSuccessSonner(res.message);
       setDeleteModal({ isOpen: false, id: "" });
     } catch (error) {
-      SoftDestructiveSonner("Có lỗi xảy ra khi xóa công việc");
+      SoftDestructiveSonner(t("DeleteError"));
       console.log("error delete job: ", error);
     }
   };
@@ -96,7 +101,7 @@ export default function RecruiterAdminJobsPage() {
       if (idDeleteMany.length === 0) return;
 
       const res = await deleteManyJobMutation(idDeleteMany);
-      if (res.isError) SoftDestructiveSonner("Có lỗi xảy ra khi xóa công việc");
+      if (res.isError) SoftDestructiveSonner(t("DeleteError"));
 
       setIdDeleteMany([]);
 
@@ -144,7 +149,7 @@ export default function RecruiterAdminJobsPage() {
 
       if (res.isError) {
         // Hiển thị thông báo lỗi
-        console.log("Có lỗi xảy ra khi phê duyệt công việc");
+        console.log(t("VerifyError"));
         return;
       }
 
@@ -155,6 +160,9 @@ export default function RecruiterAdminJobsPage() {
   };
 
   const columns = getRecruiterJobColumns(
+    t,
+    tCommon,
+    locale,
     handleOpenEdit,
     roleCodeName === roleRecruiterAdmin ? handleOpenDeleteModal : undefined,
     roleCodeName === roleRecruiterAdmin ? handleVerifyJob : undefined,
@@ -174,7 +182,7 @@ export default function RecruiterAdminJobsPage() {
         <div className="mx-auto max-w-7xl pb-8 md:pt-8 ">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-3xl font-bold">Quản lý công việc</p>
+              <p className="text-3xl font-bold">{t("Title")}</p>
             </div>
             <div className="flex gap-3">
               {idDeleteMany.length > 0 &&
@@ -186,7 +194,7 @@ export default function RecruiterAdminJobsPage() {
                     className="gap-2"
                   >
                     <Trash2 className="h-4 w-4" />
-                    Xóa ({idDeleteMany.length})
+                    {tCommon("Buttons.delete")} ({idDeleteMany.length})
                   </Button>
                 )}
 
@@ -195,7 +203,7 @@ export default function RecruiterAdminJobsPage() {
                 size="sm"
               >
                 <Plus className="h-4 w-4" />
-                Thêm mới
+                {t("Create")}
               </Button>
             </div>
           </div>
@@ -213,7 +221,7 @@ export default function RecruiterAdminJobsPage() {
                 onChange={(value) =>
                   setFiltersJob((prev) => ({ ...prev, title: value }))
                 }
-                placeholder="Tìm theo tên công việc"
+                placeholder={t("SearchPlaceholder")}
               />
             </div>
 
@@ -223,7 +231,7 @@ export default function RecruiterAdminJobsPage() {
                 onChange={(value) =>
                   setFiltersJob((prev) => ({ ...prev, nameCreatedBy: value }))
                 }
-                placeholder="Tìm theo tên người tạo công việc"
+                placeholder={t("SearchCreatorPlaceholder")}
               />
             </div>
           </div>
@@ -231,7 +239,7 @@ export default function RecruiterAdminJobsPage() {
           <div className="flex flex-col md:flex-row md:gap-10 gap-3 py-3">
             {/* Filter section active */}
             <FilterSelect
-              label="Lọc theo trạng thái:"
+              label={t("FilterStatus")}
               value={filtersJob.status}
               options={statusFilters}
               onChange={(value) => handleChooseFilter("status", value)}
@@ -239,7 +247,7 @@ export default function RecruiterAdminJobsPage() {
 
             {/* Filter section isActive */}
             <FilterSelect
-              label="Lọc theo kích hoạt:"
+              label={t("FilterApproval")}
               value={filtersJob.isActive}
               options={isActiveFilters}
               onChange={(value) => handleChooseFilter("isActive", value)}
@@ -273,7 +281,7 @@ export default function RecruiterAdminJobsPage() {
       {/* modal confirm delete */}
       {deleteModal.isOpen && (
         <DeleteConfirmModal
-          title="Xóa vai trò"
+          title={t("DeleteConfirmTitle")}
           isDeleting={isDeleteJob}
           onConfirm={handleConfirmDelete}
           onCancel={() => setDeleteModal({ isOpen: false, id: "" })}

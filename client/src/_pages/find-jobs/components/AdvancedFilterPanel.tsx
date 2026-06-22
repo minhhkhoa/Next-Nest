@@ -18,6 +18,7 @@ import {
   LEVEL_OPTIONS,
 } from "@/lib/constant";
 import { MultiSelectSkills } from "@/_pages/components/multi-select-skills";
+import { useTranslations } from "next-intl";
 
 export interface FindJobsAdvancedFilters {
   company: string;
@@ -46,6 +47,9 @@ export default function AdvancedFilterPanel({
   onApply,
   onReset,
 }: AdvancedFilterPanelProps) {
+  const t = useTranslations("PageFindJobs");
+  const tCommon = useTranslations("Common");
+
   const update = <K extends keyof FindJobsAdvancedFilters>(
     key: K,
     nextValue: FindJobsAdvancedFilters[K],
@@ -56,28 +60,28 @@ export default function AdvancedFilterPanel({
   return (
     <div className="space-y-5">
       <div className="space-y-2">
-        <Label>Tên công ty</Label>
+        <Label>{t("CompanyName")}</Label>
         <Input
           value={value.company}
           onChange={(e) => update("company", e.target.value)}
-          placeholder="Nhập tên công ty hoặc mã số thuế"
+          placeholder={t("PlaceholderCompany")}
         />
       </div>
 
       <div className="space-y-2">
-        <Label>Cấp bậc</Label>
+        <Label>{t("Level")}</Label>
         <Select
           value={value.level || "all"}
           onValueChange={(next) => update("level", next === "all" ? "" : next)}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Tất cả cấp bậc" />
+            <SelectValue placeholder={t("AllLevels")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tất cả cấp bậc</SelectItem>
+            <SelectItem value="all">{t("AllLevels")}</SelectItem>
             {LEVEL_OPTIONS.map((item) => (
               <SelectItem key={item.value} value={item.value}>
-                {item.label}
+                {tCommon(`Level.${item.value}` as any)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -85,7 +89,7 @@ export default function AdvancedFilterPanel({
       </div>
 
       <div className="space-y-2">
-        <Label>Loại hình làm việc</Label>
+        <Label>{t("EmployeeType")}</Label>
         <Select
           value={value.employeeType || "all"}
           onValueChange={(next) =>
@@ -93,13 +97,13 @@ export default function AdvancedFilterPanel({
           }
         >
           <SelectTrigger>
-            <SelectValue placeholder="Tất cả loại hình" />
+            <SelectValue placeholder={t("AllTypes")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tất cả loại hình</SelectItem>
+            <SelectItem value="all">{t("AllTypes")}</SelectItem>
             {EMPLOYEE_TYPE_OPTIONS.map((item) => (
               <SelectItem key={item.value} value={item.value}>
-                {item.label}
+                {tCommon(`EmployeeType.${item.value}` as any)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -107,7 +111,7 @@ export default function AdvancedFilterPanel({
       </div>
 
       <div className="space-y-2">
-        <Label>Kinh nghiệm</Label>
+        <Label>{t("Experience")}</Label>
         <Select
           value={value.experience || "all"}
           onValueChange={(next) =>
@@ -115,13 +119,13 @@ export default function AdvancedFilterPanel({
           }
         >
           <SelectTrigger>
-            <SelectValue placeholder="Tất cả mức kinh nghiệm" />
+            <SelectValue placeholder={t("AllExperiences")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tất cả mức kinh nghiệm</SelectItem>
+            <SelectItem value="all">{t("AllExperiences")}</SelectItem>
             {EXPERIENCE_OPTIONS.map((item) => (
               <SelectItem key={item.value} value={item.value}>
-                {item.label}
+                {tCommon(`Experience.${item.value}` as any)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -129,47 +133,47 @@ export default function AdvancedFilterPanel({
       </div>
 
       <div className="space-y-2">
-        <Label>Kỹ năng</Label>
+        <Label>{t("Skills")}</Label>
         <MultiSelectSkills
           selected={value.skillIDs}
           onChange={(next) => update("skillIDs", next)}
           industryIDs={industryIDs}
-          placeholder="Chọn kỹ năng"
+          placeholder={t("SelectSkills")}
         />
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label>Mức lương từ</Label>
+          <Label>{t("MinSalary")}</Label>
           <Input
             type="number"
             value={value.minSalary}
             onChange={(e) => update("minSalary", e.target.value)}
-            placeholder="VD: 10000000"
+            placeholder={t("EgMinSalary")}
           />
         </div>
         <div className="space-y-2">
-          <Label>Mức lương đến</Label>
+          <Label>{t("MaxSalary")}</Label>
           <Input
             type="number"
             value={value.maxSalary}
             onChange={(e) => update("maxSalary", e.target.value)}
-            placeholder="VD: 30000000"
+            placeholder={t("EgMaxSalary")}
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label>Đơn vị tiền tệ</Label>
+        <Label>{t("Currency")}</Label>
         <Select
           value={value.currency || "all"}
           onValueChange={(next) => update("currency", next === "all" ? "" : next)}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Tất cả" />
+            <SelectValue placeholder={t("All")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tất cả</SelectItem>
+            <SelectItem value="all">{t("All")}</SelectItem>
             <SelectItem value="VND">VND</SelectItem>
             <SelectItem value="USD">USD</SelectItem>
           </SelectContent>
@@ -177,7 +181,7 @@ export default function AdvancedFilterPanel({
       </div>
 
       <div className="flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2">
-        <Label htmlFor="isHot">Chỉ hiển thị việc làm Hot</Label>
+        <Label htmlFor="isHot">{t("ShowOnlyHot")}</Label>
         <Switch
           id="isHot"
           checked={value.isHot}
@@ -187,9 +191,9 @@ export default function AdvancedFilterPanel({
 
       <div className="grid grid-cols-2 gap-2">
         <Button variant="outline" onClick={onReset}>
-          Đặt lại
+          {tCommon("Buttons.reset")}
         </Button>
-        <Button onClick={onApply}>Áp dụng</Button>
+        <Button onClick={onApply}>{tCommon("Buttons.apply")}</Button>
       </div>
     </div>
   );

@@ -9,9 +9,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAppStore } from "@/components/TanstackProvider";
 import { handleInitName } from "@/lib/utils";
 import { Mail, Shield, CheckCircle2, UserCheck } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export default function ProfilePage() {
   const { user } = useAppStore();
+  const t = useTranslations("Candidate.Profile");
 
   //- tính toán độ hoàn thiện hồ sơ ước tính dựa trên thông tin đã nhập
   const calculateCompletion = () => {
@@ -31,10 +33,10 @@ export default function ProfilePage() {
         <div>
           {/*- tiêu đề trang có đường kẻ primary đặc trưng của dự án */}
           <h1 className="text-3xl font-extrabold text-foreground mb-2 pl-4 border-l-4 border-primary">
-            Thông tin cá nhân
+            {t("PageTitle")}
           </h1>
           <p className="text-xs text-muted-foreground ml-4">
-            Quản lý và cập nhật thông tin tài khoản của bạn
+            {t("PageDesc")}
           </p>
         </div>
 
@@ -62,7 +64,7 @@ export default function ProfilePage() {
 
                 {/*- hiển thị tên người dùng và icon tick xanh nếu đạt 100% */}
                 <h3 className="mt-4 text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5 justify-center">
-                  {user?.name || "Người dùng"}
+                  {user?.name || t("DefaultUser")}
                   {completionScore === 100 && (
                     <CheckCircle2 className="w-5 h-5 text-emerald-500 fill-emerald-500/10 shrink-0" />
                   )}
@@ -72,16 +74,16 @@ export default function ProfilePage() {
                 <span className="mt-2 inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
                   <UserCheck className="w-3.5 h-3.5" />
                   {user?.roleCodeName === "CANDIDATE"
-                    ? "Ứng viên"
+                    ? t("RoleCandidate")
                     : user?.roleCodeName === "RECRUITER"
-                      ? "Nhà tuyển dụng"
-                      : "Quản trị viên"}
+                      ? t("RoleRecruiter")
+                      : t("RoleAdmin")}
                 </span>
 
                 {/*- thanh progress đo độ hoàn thiện hồ sơ */}
                 <div className="w-full mt-6 space-y-2 text-left pt-5 border-t border-slate-100 dark:border-slate-800/80">
                   <div className="flex justify-between text-xs font-semibold">
-                    <span className="text-slate-500">Hoàn thiện hồ sơ</span>
+                    <span className="text-slate-500">{t("ProfileCompletion")}</span>
                     <span className="text-primary">{completionScore}%</span>
                   </div>
                   <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5">
@@ -98,14 +100,14 @@ export default function ProfilePage() {
                     <Mail className="w-4 h-4 text-slate-400 shrink-0" />
                     <span
                       className="truncate"
-                      title={user?.email ? "Đã xác thực" : "Chưa xác thực"}
+                      title={user?.email ? t("EmailVerified") : t("EmailNotVerified")}
                     >
-                      {user?.email || "Chưa cập nhật email"}
+                      {user?.email || t("EmailNotUpdated")}
                     </span>
                   </div>
                   <div className="flex items-center gap-2.5">
                     <Shield className="w-4 h-4 text-slate-400 shrink-0" />
-                    <span>Mã ID: {user?._id || "N/A"}</span>
+                    <span>{t("UserId", { id: user?._id || "N/A" })}</span>
                   </div>
                 </div>
               </CardContent>
@@ -118,10 +120,10 @@ export default function ProfilePage() {
               {/*- thanh chuyển đổi tab sử dụng class mặc định chuẩn của dự án để tránh xung đột layout */}
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="basic" className="font-semibold text-sm">
-                  Thông tin cơ bản
+                  {t("BasicInfo")}
                 </TabsTrigger>
                 <TabsTrigger value="detailed" className="font-semibold text-sm">
-                  Thông tin chi tiết
+                  {t("DetailedInfo")}
                 </TabsTrigger>
               </TabsList>
 

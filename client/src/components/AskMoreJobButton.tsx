@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useCreateConversationMutation } from "@/queries/useChat";
@@ -15,6 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useTranslations } from "next-intl";
 
 export const CHAT_JOB_REFERENCE_DRAFT_STORAGE_KEY = "chat_job_reference_draft";
 export const AI_CHAT_SESSION_STORAGE_KEY = "ai_chat_session_state";
@@ -33,17 +32,22 @@ export default function AskMoreJobButton({
   className,
   variant = "outline",
   size = "default",
-  label = "Hỏi thêm",
+  label,
   ...props
 }: AskMoreJobButtonProps) {
   const router = useRouter();
+  const t = useTranslations("PageJobDetail.AskMoreBtn");
+  const tChat = useTranslations("Candidate.Chat");
+  const tCommon = useTranslations("Common");
+  const displayLabel = label || t("Trigger");
+
   const { user } = useAppStore();
   const createConversationMutation = useCreateConversationMutation();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleAskMoreHR = async () => {
     if (!user) {
-      SoftDestructiveSonner("Bạn cần đăng nhập để thao tác");
+      SoftDestructiveSonner(tCommon("StartChat.LoginRequired"));
       return;
     }
 
@@ -53,9 +57,7 @@ export default function AskMoreJobButton({
 
     const companyId = job.company?._id || job.companyID;
     if (!companyId) {
-      SoftDestructiveSonner(
-        "Không tìm thấy công ty để bắt đầu cuộc trò chuyện",
-      );
+      SoftDestructiveSonner(t("NoCompany"));
       return;
     }
 
@@ -77,7 +79,7 @@ export default function AskMoreJobButton({
 
       const draftPayload = {
         conversationId: activeConversationId,
-        inputText: "Tôi muốn biết thêm thông tin về job này",
+        inputText: tChat("JobReferenceDefaultText"),
         type: "JOB_REFERENCE" as const,
         metadata: {
           jobId: job._id,
@@ -97,7 +99,7 @@ export default function AskMoreJobButton({
 
       router.push(`/chat?conversationId=${activeConversationId}`);
     } catch (error) {
-      SoftDestructiveSonner("Không thể chuẩn bị tin nhắn hỏi thêm");
+      SoftDestructiveSonner(t("PrepError"));
       console.log("error ask more about job: ", error);
     }
   };
@@ -106,7 +108,7 @@ export default function AskMoreJobButton({
     //- Chuẩn bị tin nhắn nháp tương tự chat HR
     const draftPayload = {
       conversationId: "ai-assistant",
-      inputText: `Tôi muốn hỏi thêm thông tin về vị trí ${jobTitle}`,
+      inputText: tChat("AiAskJobPrompt", { title: jobTitle }),
       type: "TEXT" as const,
       metadata: {
         jobId: job._id,
@@ -139,7 +141,7 @@ export default function AskMoreJobButton({
           disabled={createConversationMutation.isPending || props.disabled}
         >
           <CircleHelp className="w-4 h-4 mr-2" />
-          {createConversationMutation.isPending ? "Đang chuẩn bị..." : label}
+          {createConversationMutation.isPending ? t("Preparing") : displayLabel}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
@@ -148,14 +150,14 @@ export default function AskMoreJobButton({
           className="cursor-pointer py-3"
         >
           <MessageCircle className="mr-2 h-4 w-4" />
-          <span>Chat với Nhà tuyển dụng</span>
+          <span>{t("HR")}</span>
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={handleAskMoreAI}
           className="cursor-pointer py-3"
         >
           <Bot className="mr-2 h-4 w-4" />
-          <span>Hỏi AI tư vấn</span>
+          <span>{t("AI")}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

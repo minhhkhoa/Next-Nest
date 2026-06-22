@@ -17,11 +17,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import StartChatButton from "@/components/StartChatButton";
 import { envConfig } from "../../../../../config";
 
+import { useTranslations } from "next-intl";
+
 interface CompanyHeaderProps {
   company: CompanyResType;
 }
 
 export default function CompanyHeader({ company }: CompanyHeaderProps) {
+  const t = useTranslations("PageCompanyDetail");
   const { isLogin, user } = useAppStore();
 
   const queryClient = useQueryClient();
@@ -40,7 +43,7 @@ export default function CompanyHeader({ company }: CompanyHeaderProps) {
       deleteBookmarkMutation.mutate(company._id, {
         onSuccess: () => {
           setIsBookmarked(false);
-          SoftSuccessSonner("Đã bỏ theo dõi công ty");
+          SoftSuccessSonner(t("Unfollowed"));
           queryClient.invalidateQueries({
             queryKey: ["company-detail", company._id],
           });
@@ -59,7 +62,7 @@ export default function CompanyHeader({ company }: CompanyHeaderProps) {
         {
           onSuccess: () => {
             setIsBookmarked(true);
-            SoftSuccessSonner("Đã lưu công ty");
+            SoftSuccessSonner(t("Followed"));
             queryClient.invalidateQueries({
               queryKey: ["company-detail", company._id],
             });
@@ -130,7 +133,7 @@ export default function CompanyHeader({ company }: CompanyHeaderProps) {
               )}
               <div className="flex items-center gap-1.5">
                 <Users size={16} />
-                <span>{company.totalMember} nhân viên</span>
+                <span>{t("MemberCount", { count: company.totalMember || 0 })}</span>
               </div>
             </div>
           </div>
@@ -141,7 +144,7 @@ export default function CompanyHeader({ company }: CompanyHeaderProps) {
               {user?.roleCodeName === envConfig.NEXT_PUBLIC_ROLE_CANDIDATE && (
                 <StartChatButton
                   receiverId={company._id}
-                  label="Nhắn tin"
+                  label={t("Message")}
                   className="gap-2 shadow-lg"
                   variant="outline"
                 />
@@ -151,7 +154,7 @@ export default function CompanyHeader({ company }: CompanyHeaderProps) {
                 onClick={handleToggleBookmark}
               >
                 {isBookmarked ? <X size={18} /> : <Plus size={18} />}{" "}
-                {isBookmarked ? "Bỏ theo dõi" : "Theo dõi công ty"}
+                {isBookmarked ? t("UnfollowBtn") : t("FollowBtn")}
               </Button>
             </div>
           )}
@@ -166,7 +169,7 @@ export default function CompanyHeader({ company }: CompanyHeaderProps) {
             onClick={handleToggleBookmark}
           >
             {isBookmarked ? <X size={18} /> : <Plus size={18} />}{" "}
-            {isBookmarked ? "Bỏ theo dõi" : "Theo dõi công ty"}
+            {isBookmarked ? t("UnfollowBtn") : t("FollowBtn")}
           </Button>
         </div>
       )}

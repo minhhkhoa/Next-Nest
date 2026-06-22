@@ -20,6 +20,7 @@ import {
   Target,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useTranslations } from "next-intl";
 
 interface AiMatchModalProps {
   cvId: string | null;
@@ -34,6 +35,8 @@ export default function AiMatchModal({
   isOpen,
   onClose,
 }: AiMatchModalProps) {
+  const t = useTranslations("AiMatchModal");
+  const tCommon = useTranslations("Common");
   const { mutate, isPending, data } = useJdMatchMutation();
   const [matchData, setMatchData] = useState<JdMatchResponseType | null>(null);
 
@@ -67,11 +70,10 @@ export default function AiMatchModal({
         <DialogHeader className="p-6 border-b shrink-0">
           <DialogTitle className="text-2xl flex items-center gap-2 font-bold">
             <Sparkles className="text-purple-500 fill-purple-500 h-6 w-6" />
-            Phân tích mức độ phù hợp bằng AI
+            {t("Title")}
           </DialogTitle>
           <DialogDescription>
-            AI đang so sánh nội dung CV với mô tả công việc (JD) để đánh giá độ
-            tương thích.
+            {t("Description")}
           </DialogDescription>
         </DialogHeader>
 
@@ -83,11 +85,10 @@ export default function AiMatchModal({
             </div>
             <div className="text-center space-y-2">
               <p className="font-semibold text-lg animate-pulse">
-                Đang phân tích dữ liệu...
+                {t("Analyzing")}
               </p>
               <p className="text-sm text-muted-foreground">
-                Quá trình này có thể mất chút thời gian để AI xử lý, vui lòng
-                chờ...
+                {t("PleaseWait")}
               </p>
             </div>
           </div>
@@ -113,10 +114,10 @@ export default function AiMatchModal({
                   </div>
                   <div className="space-y-1 flex-1">
                     <h4 className="text-lg font-bold leading-tight">
-                      Mức độ tương thích
+                      {t("Compatibility")}
                     </h4>
                     <p className="text-muted-foreground text-xs leading-relaxed line-clamp-2">
-                      Phân tích dựa trên kỹ năng và kinh nghiệm so với JD.
+                      {t("AnalysisBase")}
                     </p>
                   </div>
                 </div>
@@ -124,7 +125,7 @@ export default function AiMatchModal({
                 {/* Khối Nhận xét: Tối ưu chiều cao */}
                 <div className="flex flex-col gap-1.5 w-full max-w-2xl">
                   <h5 className="text-[10px] font-bold flex items-center gap-2 text-primary uppercase tracking-widest">
-                    <FileSearch className="w-3.5 h-3.5" /> Nhận xét tổng quan
+                    <FileSearch className="w-3.5 h-3.5" /> {t("OverviewComments")}
                   </h5>
                   <div className="w-full bg-background/50 p-3 rounded-xl border border-border shadow-sm flex flex-col">
                     <ScrollArea className="h-[60px] w-full">
@@ -146,7 +147,7 @@ export default function AiMatchModal({
                     <div className="space-y-4">
                       <h3 className="flex items-center gap-2 font-bold text-green-600 bg-green-500/10 w-fit px-3 py-1 rounded-full text-sm">
                         <CheckCircle2 className="h-4 w-4" />
-                        Kỹ năng đáp ứng
+                        {t("MatchedSkills")}
                       </h3>
                       <div className="flex flex-wrap gap-2">
                         {matchData.matched_skills.length > 0 ? (
@@ -160,7 +161,7 @@ export default function AiMatchModal({
                           ))
                         ) : (
                           <span className="text-sm text-muted-foreground italic">
-                            Không tìm thấy kỹ năng tương ứng
+                            {t("NoMatchedSkills")}
                           </span>
                         )}
                       </div>
@@ -170,7 +171,7 @@ export default function AiMatchModal({
                     <div className="space-y-4">
                       <h3 className="flex items-center gap-2 font-bold text-red-600 bg-red-500/10 w-fit px-3 py-1 rounded-full text-sm">
                         <XCircle className="h-4 w-4" />
-                        Kỹ năng còn thiếu
+                        {t("MissingSkills")}
                       </h3>
                       <div className="flex flex-wrap gap-2">
                         {matchData.missing_skills.length > 0 ? (
@@ -184,7 +185,7 @@ export default function AiMatchModal({
                           ))
                         ) : (
                           <span className="text-sm text-muted-foreground italic">
-                            Ứng viên đáp ứng hầu hết các kỹ năng yêu cầu
+                            {t("AllSkillsMatched")}
                           </span>
                         )}
                       </div>
@@ -198,10 +199,10 @@ export default function AiMatchModal({
           <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-10 text-center">
             <XCircle className="h-12 w-12 mb-4 text-destructive opacity-50" />
             <p className="text-lg font-medium text-foreground">
-              Không thể hoàn thành phân tích
+              {t("ErrorTitle")}
             </p>
             <p className="text-sm">
-              Vui lòng thử lại sau hoặc liên hệ bộ phận hỗ trợ kỹ thuật.
+              {t("ErrorDesc")}
             </p>
           </div>
         )}
@@ -212,7 +213,7 @@ export default function AiMatchModal({
             onClick={handleClose}
             className="px-8 font-semibold"
           >
-            Đóng
+            {tCommon("Buttons.close")}
           </Button>
         </div>
       </DialogContent>

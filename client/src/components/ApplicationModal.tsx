@@ -38,6 +38,7 @@ import { uploadToCloudinary } from "@/lib/utils";
 import { useAppStore } from "./TanstackProvider";
 import SoftSuccessSonner from "./shadcn-studio/sonner/SoftSuccessSonner";
 import SoftDestructiveSonner from "./shadcn-studio/sonner/SoftDestructiveSonner";
+import { useTranslations, useLocale } from "next-intl";
 
 interface ApplicationModalProps {
   jobId: string;
@@ -58,6 +59,8 @@ export function ApplicationModal({
 }: ApplicationModalProps) {
   const { isLogin, user } = useAppStore();
 
+  const t = useTranslations("ApplicationModal");
+  const locale = useLocale();
   const [internalOpen, setInternalOpen] = useState(false);
   const isControlled = open !== undefined;
   const show = isControlled ? open : internalOpen;
@@ -92,14 +95,14 @@ export function ApplicationModal({
 
         if (url) {
           form.setValue("cvUrl", url);
-          SoftSuccessSonner("Tải file thành công");
+          SoftSuccessSonner(t("UploadSuccess"));
         } else {
-          SoftDestructiveSonner("Không lấy được đường dẫn file");
+          SoftDestructiveSonner(t("UploadUrlError"));
           setFile(null);
         }
       } catch (error) {
         console.error(error);
-        SoftDestructiveSonner("Upload file thất bại");
+        SoftDestructiveSonner(t("UploadFail"));
         setFile(null);
       } finally {
         setIsUploading(false);
@@ -114,12 +117,12 @@ export function ApplicationModal({
 
   const onSubmit = async (values: CreateApplicationType) => {
     if (activeTab === "UPLOAD_CV" && !values.cvUrl) {
-      SoftDestructiveSonner("Vui lòng tải lên CV của bạn");
+      SoftDestructiveSonner(t("RequireUploadCv"));
       return;
     }
 
     if (activeTab === "SYSTEM_CV" && !values.systemCvData?.userResumeId) {
-      SoftDestructiveSonner("Vui lòng chọn một CV từ hệ thống");
+      SoftDestructiveSonner(t("RequireSystemCv"));
       return;
     }
 
@@ -134,13 +137,13 @@ export function ApplicationModal({
       };
 
       await createApplication(payload);
-      SoftSuccessSonner("Nộp hồ sơ ứng tuyển thành công!");
+      SoftSuccessSonner(t("SubmitSuccess"));
       if (setShow) setShow(false);
       form.reset();
       setFile(null);
       setActiveTab("UPLOAD_CV");
     } catch (error: any) {
-      SoftDestructiveSonner(error?.message || "Có lỗi xảy ra khi nộp hồ sơ");
+      SoftDestructiveSonner(error?.message || t("SubmitError"));
     }
   };
 
@@ -181,8 +184,8 @@ export function ApplicationModal({
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>Ứng tuyển: {jobTitle}</DialogTitle>
-          <DialogDescription>Nộp hồ sơ vào {companyName}</DialogDescription>
+          <DialogTitle>{t("Title", { jobTitle })}</DialogTitle>
+          <DialogDescription>{t("Description", { companyName })}</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -190,7 +193,7 @@ export function ApplicationModal({
           <form
             onSubmit={form.handleSubmit(onSubmit, (errors) => {
               console.log("Validation errors:", errors);
-              SoftDestructiveSonner("Vui lòng kiểm tra lại thông tin nhập");
+              SoftDestructiveSonner(t("ValidationError"));
             })}
             className="flex flex-col h-full overflow-hidden"
           >
@@ -202,11 +205,11 @@ export function ApplicationModal({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Email liên hệ <span className="text-red-500">*</span>
+                      {t("EmailLabel")} <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Nhập email của bạn"
+                        placeholder={t("EmailPlaceholder")}
                         {...field}
                       />
                     </FormControl>
@@ -217,7 +220,7 @@ export function ApplicationModal({
 
               <div className="space-y-2 border rounded-md p-4">
                 <Label className="text-base font-semibold">
-                  Chọn phương thức nộp CV
+                  {t("SubmitMethodLabel")}
                 </Label>
                 <Tabs
                   value={activeTab}
@@ -226,10 +229,10 @@ export function ApplicationModal({
                 >
                   <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="UPLOAD_CV">
-                      Tải CV lên (PDF)
+                      {t("UploadTab")}
                     </TabsTrigger>
                     <TabsTrigger value="SYSTEM_CV">
-                      CV Online trên hệ thống
+                      {t("SystemTab")}
                     </TabsTrigger>
                   </TabsList>
 
@@ -246,10 +249,10 @@ export function ApplicationModal({
                           />
                           <UploadCloud className="h-10 w-10 mb-2 text-primary" />
                           <p className="text-sm font-medium truncate max-w-[80%] text-center">
-                            Nhấn để tải lên file PDF
+                            {t("UploadClick")}
                           </p>
                           <p className="text-xs text-gray-500 mt-1">
-                            Dung lượng tối đa 5MB
+                            {t("MaxFileSize")}
                           </p>
                         </div>
                       </div>
@@ -269,7 +272,7 @@ export function ApplicationModal({
                             </p>
                             <p className="text-xs text-muted-foreground">
                               {isUploading
-                                ? "Đang tải lên..."
+                                ? t("Uploading")
                                 : `${(file.size / 1024 / 1024).toFixed(2)} MB`}
                             </p>
                           </div>
@@ -355,13 +358,16 @@ export function ApplicationModal({
                                     <span className="font-semibold">
                                       {resume.title ||
                                         resume.resumeName ||
-                                        "CV Không tên"}
+                                        t("SystemCvPlaceholder")}
                                     </span>
                                     <span className="text-xs text-gray-500">
-                                      Cập nhật:{" "}
-                                      {new Date(
-                                        resume.updatedAt,
-                                      ).toLocaleDateString("vi-VN")}
+                                      {t("UpdatedAt", {
+                                        date: new Date(
+                                          resume.updatedAt,
+                                        ).toLocaleDateString(
+                                          locale === "vi" ? "vi-VN" : "en-US",
+                                        ),
+                                      })}
                                     </span>
                                   </Label>
                                 </div>
@@ -374,11 +380,11 @@ export function ApplicationModal({
                     ) : (
                       <div className="text-center py-6 flex flex-col items-center">
                         <p className="text-gray-500 mb-4">
-                          Bạn chưa có CV nào trên hệ thống
+                          {t("NoSystemCv")}
                         </p>
                         <Button asChild variant="outline" size="sm">
                           <Link href="/my-cv" onClick={() => setShow?.(false)}>
-                            Quản lý CV
+                            {t("ManageCv")}
                           </Link>
                         </Button>
                       </div>
@@ -392,10 +398,10 @@ export function ApplicationModal({
                 name="coverLetter"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Thư giới thiệu</FormLabel>
+                    <FormLabel>{t("CoverLetterLabel")}</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Viết đôi lời giới thiệu về bản thân và lý do bạn phù hợp với công việc này..."
+                        placeholder={t("CoverLetterPlaceholder")}
                         className="min-h-[100px]"
                         {...field}
                       />
@@ -413,11 +419,11 @@ export function ApplicationModal({
                 variant="outline"
                 onClick={() => setShow?.(false)}
               >
-                Hủy
+                {t("Cancel")}
               </Button>
               <Button type="submit" disabled={isPending || isUploading}>
                 {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isUploading ? "Đang tải CV..." : "Nộp hồ sơ"}
+                {isUploading ? t("UploadingCvText") : t("Submit")}
               </Button>
             </DialogFooter>
           </form>

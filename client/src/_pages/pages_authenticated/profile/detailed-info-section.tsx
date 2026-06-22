@@ -16,8 +16,8 @@ import { Edit2, Check, X, GraduationCap, Calendar, Award } from "lucide-react";
 import { MultiSelect } from "../../components/multi-select";
 
 //- helper định dạng lại ngày tháng học vấn dạng mm/yyyy an toàn
-const formatEducationDate = (dateStr: string) => {
-  if (!dateStr) return "chưa cập nhật";
+const formatEducationDate = (dateStr: string, notUpdatedText: string) => {
+  if (!dateStr) return notUpdatedText;
   const date = new Date(dateStr);
   if (isNaN(date.getTime())) return dateStr;
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -37,8 +37,14 @@ import { useGetDetaiIndustry } from "@/queries/useIndustry";
 import { CustomizeSelect } from "../../components/CustomizeSelect";
 import { MultiSelectTree } from "../../components/multi-select-industry";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
+import { useTranslations } from "next-intl";
+import { useGetLang } from "@/hooks/use-get-lang";
 
 export function DetailedInfoSection() {
+  const t = useTranslations("Candidate.Profile");
+  const tCommon = useTranslations("Common");
+  const { getLang, locale } = useGetLang();
+
   const { user } = useAppStore();
   const { data: detailProfileData } = useGetDetailProfile({ id: user?._id });
   const { data: industryData } = useGetDetaiIndustry();
@@ -80,7 +86,7 @@ export function DetailedInfoSection() {
     const idUserUpdate = formData && formData?._id;
 
     if (!idUserUpdate) {
-      console.error("Thiếu ID người dùng để cập nhật");
+      console.error(t("MissingUserId"));
       return;
     }
 
@@ -123,9 +129,9 @@ export function DetailedInfoSection() {
   };
 
   const formatSalary = (salary: number) => {
-    return new Intl.NumberFormat("vi-VN", {
+    return new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US", {
       style: "currency",
-      currency: "VND",
+      currency: locale === "vi" ? "VND" : "USD",
       maximumFractionDigits: 0,
     }).format(salary);
   };
@@ -147,7 +153,7 @@ export function DetailedInfoSection() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-semibold text-foreground">
-          Thông tin chi tiết
+          {t("DetailedInfo")}
         </h2>
         {!isEditing && (
           <Button
@@ -157,7 +163,7 @@ export function DetailedInfoSection() {
             className="gap-2"
           >
             <Edit2 className="w-4 h-4" />
-            Chỉnh sửa
+            {t("Edit")}
           </Button>
         )}
       </div>
@@ -166,14 +172,14 @@ export function DetailedInfoSection() {
         {/* Summary */}
         <div>
           <Label htmlFor="summary" className="text-sm font-medium">
-            Tóm tắt
+            {t("Summary")}
           </Label>
           {isEditing ? (
             <Textarea
               id="summary"
               value={formData?.sumary}
               onChange={(e) => handleChange("sumary", e.target.value)}
-              placeholder="Mô tả ngắn về bản thân..."
+              placeholder={t("SummaryPlaceholder")}
               className="mt-2 min-h-24"
             />
           ) : (
@@ -187,7 +193,7 @@ export function DetailedInfoSection() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="gender" className="text-sm font-medium">
-              Giới tính
+              {t("Gender")}
             </Label>
             {isEditing ? (
               <Select
@@ -200,24 +206,23 @@ export function DetailedInfoSection() {
                 <SelectContent>
                   {GENDER_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
-                      {option.label}
+                      {tCommon(`Gender.${option.value}` as any)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             ) : (
               <p className="mt-2 text-foreground">
-                {
-                  GENDER_OPTIONS.find((o) => o.label === formData?.gender)
-                    ?.label
-                }
+                {formData?.gender
+                  ? tCommon(`Gender.${formData.gender}` as any)
+                  : t("NotUpdated")}
               </p>
             )}
           </div>
 
           <div>
             <Label htmlFor="level" className="text-sm font-medium">
-              Cấp độ
+              {t("Level")}
             </Label>
             {isEditing ? (
               <Select
@@ -230,14 +235,16 @@ export function DetailedInfoSection() {
                 <SelectContent>
                   {LEVEL_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
-                      {option.label}
+                      {tCommon(`Level.${option.value}` as any)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             ) : (
               <p className="mt-2 text-foreground">
-                {LEVEL_OPTIONS.find((o) => o.value === formData?.level)?.label}
+                {formData?.level
+                  ? tCommon(`Level.${formData.level}` as any)
+                  : t("NotUpdated")}
               </p>
             )}
           </div>
@@ -246,7 +253,7 @@ export function DetailedInfoSection() {
         {/* Address */}
         <div>
           <Label htmlFor="address" className="text-sm font-medium">
-            Địa chỉ
+            {t("Address")}
           </Label>
           {isEditing ? (
             <CustomizeSelect
@@ -255,13 +262,15 @@ export function DetailedInfoSection() {
               onChange={(value) => handleChange("address", value)}
             />
           ) : (
-            <p className="mt-2 text-foreground">{formData?.address}</p>
+            <p className="mt-2 text-foreground">
+              {formData?.address || t("NotUpdated")}
+            </p>
           )}
         </div>
 
         {/* Industry */}
         <div>
-          <Label className="text-sm font-medium">Chuyên ngành</Label>
+          <Label className="text-sm font-medium">{t("Industry")}</Label>
 
           {isEditing ? (
             <MultiSelectTree
@@ -286,7 +295,7 @@ export function DetailedInfoSection() {
 
                 handleChange("industryID", selectedIndustries);
               }}
-              placeholder="Chọn Chuyên ngành..."
+              placeholder={t("IndustryPlaceholder")}
               className="mt-2"
             />
           ) : (
@@ -297,11 +306,11 @@ export function DetailedInfoSection() {
                     key={item._id}
                     className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary text-primary-foreground"
                   >
-                    {item.name.vi}
+                    {getLang(item.name)}
                   </span>
                 ))
               ) : (
-                <p className="text-muted-foreground">Chưa cập nhật</p>
+                <p className="text-muted-foreground">{t("NotUpdated")}</p>
               )}
             </div>
           )}
@@ -309,7 +318,7 @@ export function DetailedInfoSection() {
 
         {/* Skills */}
         <div>
-          <Label className="text-sm font-medium">Kỹ năng</Label>
+          <Label className="text-sm font-medium">{t("Skills")}</Label>
 
           {isEditing ? (
             <MultiSelect
@@ -320,7 +329,6 @@ export function DetailedInfoSection() {
               }
               selected={
                 formData?.skillID?.map((item) => {
-                  //- item: _id, name
                   return {
                     label: item.name,
                     value: item._id,
@@ -335,7 +343,7 @@ export function DetailedInfoSection() {
 
                 handleChange("skillID", selectedSkills);
               }}
-              placeholder="Chọn kỹ năng..."
+              placeholder={t("SkillsPlaceholder")}
               className="mt-2"
             />
           ) : (
@@ -346,11 +354,11 @@ export function DetailedInfoSection() {
                     key={skill._id}
                     className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-secondary text-secondary-foreground"
                   >
-                    {skill.name.vi}
+                    {getLang(skill.name)}
                   </span>
                 ))
               ) : (
-                <p className="text-muted-foreground">Chưa cập nhật</p>
+                <p className="text-muted-foreground">{t("NotUpdated")}</p>
               )}
             </div>
           )}
@@ -359,7 +367,7 @@ export function DetailedInfoSection() {
         {/* Desired Salary */}
         <div>
           <Label className="text-sm font-medium mb-3 block">
-            Lương mong muốn
+            {t("ExpectedSalary")}
           </Label>
           {isEditing ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -368,7 +376,7 @@ export function DetailedInfoSection() {
                   htmlFor="salary-min"
                   className="text-xs font-medium text-muted-foreground"
                 >
-                  Tối thiểu
+                  {t("MinSalary")}
                 </Label>
                 <Input
                   id="salary-min"
@@ -384,7 +392,7 @@ export function DetailedInfoSection() {
                   htmlFor="salary-max"
                   className="text-xs font-medium text-muted-foreground"
                 >
-                  Tối đa
+                  {t("MaxSalary")}
                 </Label>
                 <Input
                   id="salary-max"
@@ -407,7 +415,7 @@ export function DetailedInfoSection() {
         {/* Education */}
         <div>
           <Label className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4 block">
-            Học vấn
+            {t("Education")}
           </Label>
           {isEditing ? (
             <EducationForm
@@ -429,19 +437,23 @@ export function DetailedInfoSection() {
                       {/*- thông tin chi tiết học vấn */}
                       <div className="space-y-1">
                         <h4 className="font-bold text-slate-800 dark:text-slate-100 text-base leading-tight tracking-tight group-hover:text-primary transition-colors">
-                          {edu.school || "Trường học chưa cập nhật"}
+                          {edu.school || t("SchoolNotUpdated")}
                         </h4>
 
                         <p className="text-sm text-slate-600 dark:text-slate-400 font-medium flex items-center gap-1.5">
                           <Award className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" />
-                          <span>{edu.degree || "Bằng cấp chưa cập nhật"}</span>
+                          <span>{edu.degree || t("DegreeNotUpdated")}</span>
                         </p>
 
                         <p className="text-xs text-slate-500 dark:text-slate-500 flex items-center gap-1.5 pt-0.5">
                           <Calendar className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
                           <span>
-                            {formatEducationDate(edu.startDate)} —{" "}
-                            {formatEducationDate(edu.endDate)}
+                            {formatEducationDate(
+                              edu.startDate,
+                              t("NotUpdated"),
+                            )}{" "}
+                            —{" "}
+                            {formatEducationDate(edu.endDate, t("NotUpdated"))}
                           </span>
                         </p>
                       </div>
@@ -452,7 +464,7 @@ export function DetailedInfoSection() {
                 <div className="text-center py-6 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/30 dark:bg-transparent">
                   <GraduationCap className="w-8 h-8 text-slate-300 dark:text-slate-700 mx-auto mb-2" />
                   <p className="text-sm text-slate-500 dark:text-slate-400">
-                    Chưa có thông tin học vấn
+                    {t("NoEducation")}
                   </p>
                 </div>
               )}
@@ -469,7 +481,7 @@ export function DetailedInfoSection() {
               className="gap-2 bg-transparent"
             >
               <X className="w-4 h-4" />
-              Hủy
+              {tCommon("Buttons.cancel")}
             </Button>
             <Button
               onClick={handleSave}
@@ -477,7 +489,7 @@ export function DetailedInfoSection() {
               disabled={!validateForm}
             >
               <Check className="w-4 h-4" />
-              Lưu
+              {tCommon("Buttons.save")}
             </Button>
           </div>
         )}

@@ -14,12 +14,17 @@ import { Spinner } from "@/components/ui/spinner";
 import { ArrowRight, PenIcon, Sparkles } from "lucide-react";
 import SlideCateNews from "./components/SlideCateNews";
 import BlockNewsWithPagination from "./components/BlockNewsWithPagination";
+import { useTranslations } from "next-intl";
+import { useGetLang } from "@/hooks/use-get-lang";
 
 export default function CategoryNewsPage({
   idCateNews,
 }: {
   idCateNews: string;
 }) {
+  const t = useTranslations("PageNews");
+  const { getLang } = useGetLang();
+
   const {
     data: categoryData,
     isLoading: isLoadingCategoryData,
@@ -60,7 +65,7 @@ export default function CategoryNewsPage({
   if (error || errorListNews || errorCategoryData || errorListCategories) {
     return (
       <div className="w-full flex justify-center items-center h-[300px]">
-        <p className="text-gray-500">Không tìm thấy bài viết</p>
+        <p className="text-gray-500">{t("NoArticles")}</p>
       </div>
     );
   }
@@ -89,16 +94,16 @@ export default function CategoryNewsPage({
 
         <div className="hidden md:block absolute top-[84%] left-1/2 -translate-x-1/2 -translate-y-1/2">
           <p className="text-center text-2xl font-bold text-primary">
-            {categoryData?.data?.name.vi}
+            {categoryData?.data && getLang(categoryData.data.name)}
           </p>
           <p className="hidden md:block text-center mt-2 font-medium max-w-[690px] mx-auto">
-            {categoryData?.data?.summary.vi}
+            {categoryData?.data && getLang(categoryData.data.summary)}
           </p>
         </div>
 
         <div className="block md:hidden mt-5">
           <p className="text-center text-2xl font-bold text-primary">
-            {categoryData?.data?.name.vi}
+            {categoryData?.data && getLang(categoryData.data.name)}
           </p>
         </div>
       </div>
@@ -109,7 +114,7 @@ export default function CategoryNewsPage({
       <div>
         <div className="mt-6">
           <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-primary text-balance">
-            Tin tức nổi bật
+            {t("FeaturedNews")}
           </span>
           <div className="h-1 w-[165px] md:w-[248px] bg-primary rounded-full mt-2"></div>
         </div>
@@ -136,7 +141,7 @@ export default function CategoryNewsPage({
           }
           isLoadingListNews={isLoadingListNews}
           onPageChange={onPageChange}
-          textTitle="Danh sách bài viết"
+          textTitle={t("NewsList")}
         />
       </div>
     </div>
@@ -150,6 +155,9 @@ function BlockNewsNice({
   data: NewsResFilterType[];
   isLoadingListNews: boolean;
 }) {
+  const t = useTranslations("PageNews");
+  const { getLang, locale } = useGetLang();
+
   if (isLoadingListNews) {
     return (
       <div className="flex items-center justify-center py-16">
@@ -162,7 +170,7 @@ function BlockNewsNice({
   const restNews = data.slice(1);
 
   const formatDateInput = (date: string | Date) => {
-    return new Date(date).toLocaleDateString("vi-VN");
+    return new Date(date).toLocaleDateString(locale === "en" ? "en-US" : "vi-VN");
   };
 
   return (
@@ -173,7 +181,7 @@ function BlockNewsNice({
         <div className="flex flex-col rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-slate-950/60 hover:bg-slate-950/80 backdrop-blur-sm border border-white/10 hover:border-indigo-500/30">
           <Link
             href={`/news/${generateSlugUrl({
-              name: firstNews?.slugNews.vi,
+              name: getLang(firstNews?.slugNews),
               id: firstNews?._id,
             })}`}
             className="flex-1 flex flex-col group"
@@ -181,20 +189,20 @@ function BlockNewsNice({
             <div className="relative overflow-hidden bg-slate-200 h-64 md:h-72 lg:h-80">
               <Image
                 src={firstNews?.image || "/placeholder.svg"}
-                alt={firstNews?.title.vi || "Tin tức nổi bật"}
+                alt={getLang(firstNews?.title) || t("Highlight")}
                 fill
                 className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-105"
               />
               <div className="absolute top-4 left-4 z-10 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg shadow-indigo-500/20 flex items-center gap-1">
                 <Sparkles className="w-3.5 h-3.5 fill-white animate-pulse" />
-                Tiêu điểm
+                {t("Highlight")}
               </div>
             </div>
 
             {/*- nội dung tin tiêu điểm */}
             <div className="p-5 md:p-6 flex flex-col flex-1">
               <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white line-clamp-2 mb-3 group-hover:text-indigo-300 transition-colors leading-snug">
-                {firstNews?.title.vi}
+                {getLang(firstNews?.title)}
               </h3>
 
               <p className="text-xs md:text-sm text-slate-400 mb-3 flex items-center gap-1.5">
@@ -205,11 +213,11 @@ function BlockNewsNice({
               </p>
 
               <p className="text-sm md:text-base text-slate-300 line-clamp-3 mb-4 flex-1 leading-relaxed">
-                {firstNews?.summary.vi}
+                {getLang(firstNews?.summary)}
               </p>
 
               <div className="flex items-center gap-1 text-indigo-400 font-bold text-sm md:text-base group-hover:text-indigo-300 transition-all">
-                Đọc bài viết
+                {t("ReadArticle")}
                 <ArrowRight size={16} className="md:w-5 md:h-5 transition-transform" />
               </div>
             </div>
@@ -222,7 +230,7 @@ function BlockNewsNice({
             <Link
               key={newsItem._id}
               href={`/news/${generateSlugUrl({
-                name: newsItem.slugNews.vi,
+                name: getLang(newsItem.slugNews),
                 id: newsItem._id,
               })}`}
               className="group bg-slate-950/60 hover:bg-slate-950/80 backdrop-blur-sm rounded-2xl p-4 md:p-5 shadow-sm hover:shadow-xl hover:border-indigo-500/30 hover:-translate-y-1 transition-all duration-300 border border-white/10 flex gap-4"
@@ -231,23 +239,23 @@ function BlockNewsNice({
               <div className="flex-1 flex flex-col min-w-0 justify-between">
                 <div>
                   <h4 className="text-base md:text-lg font-bold text-white line-clamp-2 mb-2 group-hover:text-indigo-300 transition-colors leading-snug">
-                    {newsItem.title.vi}
+                    {getLang(newsItem.title)}
                   </h4>
 
                   <p className="text-xs md:text-sm text-slate-400 mb-2.5 flex items-center gap-1.5">
-                    <PenIcon className="inline-block w-3 h-3 text-slate-505" />
+                    <PenIcon className="inline-block w-3 h-3 text-slate-555" />
                     <span className="font-medium text-slate-300">{newsItem.createdBy.name}</span>
                     <span className="text-slate-500">•</span>
                     <span>{formatDateInput(newsItem.createdAt)}</span>
                   </p>
 
                   <p className="text-sm text-slate-300 line-clamp-2 mb-3 leading-relaxed">
-                    {newsItem.summary.vi}
+                    {getLang(newsItem.summary)}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-1 text-indigo-400 font-bold text-xs md:text-sm group-hover:text-indigo-300 transition-all">
-                  Đọc thêm
+                  {t("ReadMore")}
                   <ArrowRight size={14} className="md:w-4 md:h-4" />
                 </div>
               </div>
@@ -256,7 +264,7 @@ function BlockNewsNice({
               <div className="relative w-24 md:w-28 lg:w-32 h-24 md:h-28 lg:h-32 flex-shrink-0 rounded-xl overflow-hidden bg-slate-200 shadow-inner">
                 <Image
                   src={newsItem.image || "/placeholder.svg"}
-                  alt={newsItem.title.vi}
+                  alt={getLang(newsItem.title)}
                   fill
                   className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-105"
                 />

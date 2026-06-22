@@ -18,8 +18,43 @@ import { listTemplateMetadata } from "../cv-templates/ListTemplate";
 import ListCvSkeleton from "@/components/skeletons/list-cv-skeleton";
 import { generateSlugUrl } from "@/lib/utils";
 
+import { useTranslations } from "next-intl";
+
 export default function PageMyListCv() {
+  const t = useTranslations("Candidate.MyCv");
+  const tCommon = useTranslations("Common");
+  const tTemplates = useTranslations("Candidate.CvTemplates");
   const { data: listMyCvFetch, isLoading } = useGetUserResumes();
+
+  const getTemplateTranslation = (key: string) => {
+    switch (key) {
+      case "basicTemplate":
+        return {
+          title: tTemplates("Templates.basicTemplate.title"),
+          description: tTemplates("Templates.basicTemplate.desc"),
+        };
+      case "impressiveTemplate":
+        return {
+          title: tTemplates("Templates.impressiveTemplate.title"),
+          description: tTemplates("Templates.impressiveTemplate.desc"),
+        };
+      case "modernTemplate":
+        return {
+          title: tTemplates("Templates.modernTemplate.title"),
+          description: tTemplates("Templates.modernTemplate.desc"),
+        };
+      case "simpleTemplate":
+        return {
+          title: tTemplates("Templates.simpleTemplate.title"),
+          description: tTemplates("Templates.simpleTemplate.desc"),
+        };
+      default:
+        return {
+          title: "",
+          description: "",
+        };
+    }
+  };
 
   //- vì response trả về không có field image và title nên ta sẽ thêm vào và dùng listTemplateMetadata để map theo listMyCvFetch.templateID === listTemplateMetadata.id để lấy image và title tương ứng
   const listMyCv = listMyCvFetch?.data?.map((template) => {
@@ -27,11 +62,12 @@ export default function PageMyListCv() {
       (item) => item.id === template.templateID,
     );
     if (!templateMetadata) return template;
+    const { title: defaultTitle, description: defaultDescription } = getTemplateTranslation(templateMetadata.key);
     return {
       ...template,
       image: template.image || templateMetadata.image,
-      title: template.resumeName || template.title || templateMetadata.title,
-      description: template.description || templateMetadata.description,
+      title: template.resumeName || template.title || defaultTitle,
+      description: template.description || defaultDescription,
     };
   });
 
@@ -43,19 +79,17 @@ export default function PageMyListCv() {
     <div className="container mx-auto py-10">
       <div className="flex flex-col text-center mb-12 space-y-4">
         <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-          Danh sách mẫu CV của tôi
+          {t("Title")}
         </h1>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Dưới đây là danh sách các mẫu CV mà bạn đã tạo. Bạn có thể xem, chỉnh
-          sửa hoặc tạo mới các mẫu CV của mình để phù hợp với nhu cầu ứng tuyển
-          của bạn.
+          {t("MyCvDesc")}
         </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {listMyCv?.length === 0 ? (
           <p className="text-center text-muted-foreground col-span-full">
-            Bạn chưa tạo CV nào. Hãy tạo CV đầu tiên của bạn ngay bây giờ!
+            {t("NoCv")}
           </p>
         ) : (
           listMyCv?.map((template, index) => (
@@ -81,7 +115,7 @@ export default function PageMyListCv() {
                     <Link
                       href={`/my-cv/${generateSlugUrl({ name: template.templateID, id: template._id })}?edit=true`}
                     >
-                      Xem chi tiết
+                      {tCommon("Buttons.viewDetail")}
                     </Link>
                   </Button>
                   <Button
@@ -93,7 +127,7 @@ export default function PageMyListCv() {
                       href={`/my-cv/${generateSlugUrl({ name: template.templateID, id: template._id })}/ai-score`}
                     >
                       <Sparkles className="mr-2 h-4 w-4 text-yellow-400 fill-yellow-400" />
-                      Chấm điểm AI
+                      {t("AiScoreBtn")}
                     </Link>
                   </Button>
                 </div>
@@ -118,7 +152,7 @@ export default function PageMyListCv() {
                     <Link
                       href={`/my-cv/${generateSlugUrl({ name: template.templateID, id: template._id })}?edit=true`}
                     >
-                      Chỉnh sửa
+                      {tCommon("Buttons.edit")}
                     </Link>
                   </Button>
                   <Button
@@ -129,7 +163,7 @@ export default function PageMyListCv() {
                       href={`/my-cv/${generateSlugUrl({ name: template.templateID, id: template._id })}/ai-score`}
                     >
                       <Sparkles className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      Chấm điểm AI
+                      {t("AiScoreBtn")}
                     </Link>
                   </Button>
                 </div>
@@ -143,7 +177,7 @@ export default function PageMyListCv() {
                   <Link
                     href={`/my-cv/${generateSlugUrl({ name: template.templateID, id: template._id })}?edit=true`}
                   >
-                    Chỉnh sửa
+                    {tCommon("Buttons.edit")}
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
                   </Link>
                 </Button>

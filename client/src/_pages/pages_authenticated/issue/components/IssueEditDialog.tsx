@@ -31,6 +31,7 @@ import { Loader2, X, Upload, Paperclip } from "lucide-react";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import Image from "next/image";
+import { useTranslations, useLocale } from "next-intl";
 
 interface IssueEditDialogProps {
   open: boolean;
@@ -43,6 +44,10 @@ export default function IssueEditDialog({
   onOpenChange,
   issue,
 }: IssueEditDialogProps) {
+  const t = useTranslations("Candidate.Issue");
+  const tCommon = useTranslations("Common");
+  const locale = useLocale();
+
   const [isUploading, setIsUploading] = useState(false);
   const updateMutation = useUpdateIssue();
 
@@ -56,8 +61,8 @@ export default function IssueEditDialog({
   } = useForm<IssueUpdateType>({
     resolver: zodResolver(issueUpdate),
     defaultValues: {
-      title: issue.title.vi,
-      description: issue.description.vi,
+      title: issue.title?.[locale as "vi" | "en"] || issue.title?.vi || "",
+      description: issue.description?.[locale as "vi" | "en"] || issue.description?.vi || "",
       type: issue.type,
       attachments: issue.attachments || [],
     },
@@ -67,13 +72,13 @@ export default function IssueEditDialog({
   useEffect(() => {
     if (open && issue) {
       reset({
-        title: issue.title.vi,
-        description: issue.description.vi,
+        title: issue.title?.[locale as "vi" | "en"] || issue.title?.vi || "",
+        description: issue.description?.[locale as "vi" | "en"] || issue.description?.vi || "",
         type: issue.type,
         attachments: issue.attachments || [],
       });
     }
-  }, [open, issue, reset]);
+  }, [open, issue, reset, locale]);
 
   const attachments = watch("attachments") || [];
 
@@ -97,7 +102,7 @@ export default function IssueEditDialog({
       setValue("attachments", [...currentAttachments, ...uploadedUrls]);
     } catch (error) {
       console.error(error);
-      SoftDestructiveSonner("Upload failed");
+      SoftDestructiveSonner(t("UploadFailed"));
     } finally {
       setIsUploading(false);
     }
@@ -113,10 +118,10 @@ export default function IssueEditDialog({
   const onSubmit = async (data: IssueUpdateType) => {
     try {
       await updateMutation.mutateAsync({ id: issue._id, payload: data });
-      SoftSuccessSonner("Cập nhật vấn đề thành công");
+      SoftSuccessSonner(t("EditSuccess"));
       onOpenChange(false);
     } catch (error) {
-      SoftDestructiveSonner("Cập nhật thất bại");
+      SoftDestructiveSonner(t("EditFailed"));
       console.error(error);
     }
   };
@@ -127,16 +132,16 @@ export default function IssueEditDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Chỉnh sửa vấn đề</DialogTitle>
+          <DialogTitle>{t("EditTitle")}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Tiêu đề</Label>
+            <Label htmlFor="title">{t("Labels.title")}</Label>
             <Input
               id="title"
               {...register("title")}
-              placeholder="Nhập tiêu đề vấn đề"
+              placeholder={t("Labels.enterTitle")}
             />
             {errors.title && (
               <p className="text-sm text-red-500">{errors.title.message}</p>
@@ -144,18 +149,18 @@ export default function IssueEditDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="type">Loại vấn đề</Label>
+            <Label htmlFor="type">{t("Labels.type")}</Label>
             <Select
               onValueChange={(value) => setValue("type", value as any)}
               defaultValue={issue.type}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Chọn loại vấn đề" />
+                <SelectValue placeholder={t("Labels.selectType")} />
               </SelectTrigger>
               <SelectContent>
                 {ISSUE_TYPE_OPTIONS.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
-                    {option.label.vi}
+                    {option.label[locale as "vi" | "en"]}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -166,12 +171,12 @@ export default function IssueEditDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Mô tả chi tiết</Label>
+            <Label htmlFor="description">{t("Labels.description")}</Label>
             <Textarea
               id="description"
               className="min-h-[150px]"
               {...register("description")}
-              placeholder="Mô tả chi tiết vấn đề của bạn..."
+              placeholder={t("Labels.enterDesc")}
             />
             {errors.description && (
               <p className="text-sm text-red-500">
@@ -181,7 +186,7 @@ export default function IssueEditDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Đính kèm</Label>
+            <Label>{t("Labels.attachments")}</Label>
             <div className="flex flex-wrap gap-2 mb-2">
               {attachments.map((url, index) => {
                 const isImage = url.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i) || url.includes('cloudinary');
@@ -235,7 +240,7 @@ export default function IssueEditDialog({
                 ) : (
                   <Upload className="mr-2 h-4 w-4" />
                 )}
-                Tải lên tệp đính kèm
+                {t("Labels.upload")}
               </Button>
               <input
                 id="file-upload"
@@ -254,11 +259,11 @@ export default function IssueEditDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Hủy
+              {tCommon("Buttons.cancel")}
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Lưu thay đổi
+              {tCommon("Buttons.save")}
             </Button>
           </DialogFooter>
         </form>

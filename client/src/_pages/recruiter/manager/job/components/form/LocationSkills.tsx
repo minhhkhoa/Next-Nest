@@ -1,4 +1,5 @@
 import { Briefcase, Plus, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   FormField,
   FormItem,
@@ -22,6 +23,7 @@ export function LocationSkills({
   form: UseFormReturn<any>;
   selectedIndustryOptions: any[];
 }) {
+  const t = useTranslations("Recruiter.JobManager.Form");
   const industryIDs = form.watch("industryID") || [];
 
   // Sử dụng useFieldArray để quản lý mảng otherSkills
@@ -33,7 +35,7 @@ export function LocationSkills({
   return (
     <Card className="shadow-sm gap-2">
       <CardHeader>
-        <CardTitle className="text-lg !mt-2">Địa điểm & Kỹ năng</CardTitle>
+        <CardTitle className="text-lg !mt-2">{t("LocationSkills")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6 mb-2">
         <FormField
@@ -41,9 +43,9 @@ export function LocationSkills({
           name="location"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="font-semibold">Địa chỉ làm việc</FormLabel>
+              <FormLabel className="font-semibold">{t("WorkAddress")}</FormLabel>
               <FormControl>
-                <Input placeholder="Số nhà, tên đường..." {...field} />
+                <Input placeholder={t("WorkAddressPlaceholder")} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -56,7 +58,7 @@ export function LocationSkills({
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="font-semibold flex items-center gap-2">
-                  <Briefcase className="w-4 h-4" /> Chuyên ngành liên quan
+                  <Briefcase className="w-4 h-4" /> {t("RelatedIndustry")}
                 </FormLabel>
                 <FormControl>
                   <MultiSelectTree
@@ -64,7 +66,7 @@ export function LocationSkills({
                     onChange={(opts) =>
                       field.onChange(opts.map((o: any) => o.value))
                     }
-                    placeholder="Chọn ngành nghề..."
+                    placeholder={t("SelectIndustry")}
                   />
                 </FormControl>
                 <FormMessage />
@@ -76,7 +78,7 @@ export function LocationSkills({
             name="skills"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="font-semibold">Kỹ năng yêu cầu</FormLabel>
+                <FormLabel className="font-semibold">{t("RequiredSkills")}</FormLabel>
                 <FormControl>
                   <MultiSelectSkills
                     selected={field.value || []}
@@ -94,7 +96,7 @@ export function LocationSkills({
         <div className="space-y-4 pt-4 border-t">
           <div className="flex items-center justify-between">
             <FormLabel className="font-semibold">
-              Kỹ năng bổ sung (Tối đa 5)
+              {t("AdditionalSkills")}
             </FormLabel>
             <Button
               type="button"
@@ -104,7 +106,7 @@ export function LocationSkills({
               disabled={fields.length >= 5} //- Khống chế Max 5
               className="h-8 gap-1"
             >
-              <Plus className="w-4 h-4" /> Thêm kỹ năng
+              <Plus className="w-4 h-4" /> {t("AddSkill")}
             </Button>
           </div>
 
@@ -119,7 +121,7 @@ export function LocationSkills({
                       <FormControl>
                         <Input
                           {...field}
-                          placeholder={`Kỹ năng khác ${index + 1}...`}
+                          placeholder={t("OtherSkillPlaceholder", { index: index + 1 })}
                         />
                       </FormControl>
                       <FormMessage />

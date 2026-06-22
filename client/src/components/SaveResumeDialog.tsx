@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Save } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface SaveResumeDialogProps {
   open: boolean;
@@ -31,6 +32,9 @@ export function SaveResumeDialog({
   isSaving,
   showTrigger = true,
 }: SaveResumeDialogProps) {
+  const t = useTranslations("Candidate.MyCv.SaveResumeDialog");
+  const tCommon = useTranslations("Common");
+
   return (
     <div className="flex justify-end mt-6 print:hidden">
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -38,15 +42,15 @@ export function SaveResumeDialog({
           <DialogTrigger asChild>
             <Button size="lg" className="rounded-full shadow-lg min-w-[200px]">
               <Save className="mr-2 h-4 w-4" />
-              Lưu hồ sơ CV
+              {t("BtnTrigger")}
             </Button>
           </DialogTrigger>
         )}
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Lưu hồ sơ CV</DialogTitle>
+            <DialogTitle>{t("Title")}</DialogTitle>
             <DialogDescription>
-              Đặt tên cho CV của bạn để dễ dàng tìm kiếm lại sau này.
+              {t("Description")}
             </DialogDescription>
           </DialogHeader>
           <div className="flex items-center space-x-2">
@@ -55,7 +59,7 @@ export function SaveResumeDialog({
                 id="resumeName"
                 value={resumeName}
                 onChange={(e) => onResumeNameChange(e.target.value)}
-                placeholder="Nhập tên CV..."
+                placeholder={t("Placeholder")}
               />
             </div>
           </div>
@@ -65,10 +69,10 @@ export function SaveResumeDialog({
               variant="secondary"
               onClick={() => onOpenChange(false)}
             >
-              Hủy
+              {tCommon("Buttons.cancel")}
             </Button>
             <Button type="button" onClick={onSave} disabled={isSaving}>
-              {isSaving ? "Đang lưu..." : "Lưu hồ sơ"}
+              {isSaving ? t("Saving") : t("Save")}
             </Button>
           </DialogFooter>
         </DialogContent>

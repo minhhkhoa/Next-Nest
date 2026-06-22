@@ -33,8 +33,10 @@ import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonn
 import SoftDestructiveSonner from "@/components/shadcn-studio/sonner/SoftDestructiveSonner";
 import { Link, useRouter } from "@/i18n/navigation";
 import { getBaseServerUrl } from "@/lib/http";
+import { useTranslations } from "next-intl";
 
 export default function RegisterForm() {
+  const t = useTranslations("Auth");
   const { setLogin } = useAppStore();
   const [isClient, setIsClient] = useState(false);
   const { theme } = useTheme();
@@ -57,14 +59,14 @@ export default function RegisterForm() {
 
       toast.success(() => (
         <div className="flex items-center justify-center">
-          <p>Chúc mừng bạn đã đăng ký tài khoản thành công🎇</p>
+          <p>{t("RegisterSuccess")}</p>
 
           <Button
             variant={"outline"}
             onClick={() => router.push("/login")}
-            className="!text-white"
+            className="!text-white ml-2"
           >
-            Đăng nhập
+            {t("Login")}
           </Button>
         </div>
       ));
@@ -117,7 +119,7 @@ export default function RegisterForm() {
 
           //- chuyen trang
           router.push("/");
-          SoftSuccessSonner(`Đăng nhập với ${provider} thành công!`);
+          SoftSuccessSonner(t("LoginSuccessWith", { provider }));
         }
 
         if (error) {
@@ -149,10 +151,10 @@ export default function RegisterForm() {
     <Card className="w-full max-w-md shadow-2xl border-border/50">
       <CardHeader className="space-y-2 text-center">
         <CardTitle className="text-3xl font-bold tracking-tight pt-2">
-          Đăng ký
+          {t("Register")}
         </CardTitle>
         <CardDescription className="text-base">
-          Nhập thông tin của bạn để hoàn tất đăng ký tài khoản
+          {t("EnterDetailsToRegister")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -167,9 +169,9 @@ export default function RegisterForm() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tên</FormLabel>
+                  <FormLabel>{t("NameLabel")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nguyễn Văn A" {...field} autoFocus />
+                    <Input placeholder={t("NamePlaceholder")} {...field} autoFocus />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -196,7 +198,7 @@ export default function RegisterForm() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>{t("PasswordLabel")}</FormLabel>
                     <FormControl>
                       <Input
                         type={showPassword ? "text" : "password"}
@@ -231,7 +233,7 @@ export default function RegisterForm() {
               className="w-full select-none" //- select-none: giúp click đúp không bôi text
               disabled={isPending}
             >
-              {isPending ? "Đang đăng ký..." : "Đăng ký"}
+              {isPending ? t("Registering") : t("Register")}
             </Button>
           </form>
         </Form>
@@ -242,12 +244,12 @@ export default function RegisterForm() {
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-card px-2 text-muted-foreground">
-              Hoặc đăng ký với
+              {t("OrRegisterWith")}
             </span>
           </div>
         </div>
 
-        {/* clg ra theme */}
+        {/* mạng xã hội */}
         <div className="grid grid-cols-2 gap-3">
           <Button
             variant="outline"
@@ -271,12 +273,12 @@ export default function RegisterForm() {
       </CardContent>
       <CardFooter className="flex justify-center pb-2">
         <p className="text-sm text-muted-foreground">
-          Bạn đã có tài khoản?{" "}
+          {t("AlreadyHaveAccount")}{" "}
           <Link
             href="/login"
             className="text-primary font-medium hover:underline"
           >
-            Đăng nhập ngay
+            {t("LoginNow")}
           </Link>
         </p>
       </CardFooter>

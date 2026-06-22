@@ -1,7 +1,6 @@
 import { cn, generateSlugUrl } from "@/lib/utils";
 import { ChatMessage } from "@/schemasvalidation/chat";
 import React, { useMemo, useState } from "react";
-//- import thu vien render markdown va plugin gfm ho tro table, checklist
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { envConfig } from "../../../../../config";
@@ -22,6 +21,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { useTranslations, useLocale } from "next-intl";
 
 const TEMPLATE_COMPONENTS: Record<string, React.ElementType> = {
   [CV_TEMPLATES.basicTemplate]: BasicTemplate,
@@ -63,6 +63,10 @@ export default function useMemoFrameChat({
   candidateData,
   hrData,
 }: UseMemoFrameChatProps) {
+  const t = useTranslations("Candidate.Chat");
+  const tCommon = useTranslations("Common");
+  const locale = useLocale();
+
   const [previewCvMessage, setPreviewCvMessage] = useState<ChatMessage | null>(
     null,
   );
@@ -177,7 +181,7 @@ export default function useMemoFrameChat({
                       >
                         <Image
                           src={msg.metadata.imageUrl}
-                          alt={msg.metadata?.fileName || "Ảnh đính kèm"}
+                          alt={msg.metadata?.fileName || t("Attachments")}
                           width={msg.metadata?.width || 320}
                           height={msg.metadata?.height || 220}
                           className="rounded-xl object-cover max-h-[320px] w-full"
@@ -185,7 +189,7 @@ export default function useMemoFrameChat({
                       </a>
                     ) : (
                       <p className="text-xs italic opacity-80">
-                        Không có ảnh để hiển thị
+                        {t("NoImageToDisplay")}
                       </p>
                     )}
 
@@ -218,7 +222,7 @@ export default function useMemoFrameChat({
                         <p className="font-semibold truncate">
                           {msg.metadata?.fileName ||
                             msg.content ||
-                            "Tệp đính kèm"}
+                            t("Attachments")}
                         </p>
                         <p className="text-xs opacity-80 truncate">
                           {msg.metadata?.mimeType ||
@@ -277,11 +281,11 @@ export default function useMemoFrameChat({
                             <p className="font-semibold truncate">
                               {msg.metadata?.cvName ||
                                 msg.content ||
-                                "CV hệ thống"}
+                                t("SystemCv")}
                             </p>
                             {msg.metadata?.isDefault ? (
                               <span className="text-[10px] px-2 py-0.5 rounded-full border border-current/40">
-                                Mặc định
+                                {t("DefaultResume")}
                               </span>
                             ) : null}
                           </div>
@@ -294,15 +298,18 @@ export default function useMemoFrameChat({
 
                           {msg.metadata?.updatedAt ? (
                             <p className="text-xs opacity-80 truncate">
-                              Cập nhật:{" "}
-                              {new Date(
-                                msg.metadata.updatedAt,
-                              ).toLocaleDateString("vi-VN")}
+                              {t("UpdateAt", {
+                                date: new Date(
+                                  msg.metadata.updatedAt,
+                                ).toLocaleDateString(
+                                  locale === "vi" ? "vi-VN" : "en-US",
+                                ),
+                              })}
                             </p>
                           ) : null}
 
                           <p className="text-xs opacity-80 mt-1">
-                            Nhấn để xem CV
+                            {t("ClickToViewCv")}
                           </p>
                         </div>
                       </div>
@@ -343,8 +350,7 @@ export default function useMemoFrameChat({
                               )}
                               <div className="min-w-0 flex-1">
                                 <p className="font-semibold truncate underline-offset-2 text-bl hover:underline">
-                                  {msg.metadata?.jobTitle ||
-                                    "Công việc tham chiếu"}
+                                  {msg.metadata?.jobTitle || t("ReferencedJob")}
                                 </p>
                                 {msg.metadata?.salary ? (
                                   <p className="text-xs opacity-80 truncate">
@@ -377,7 +383,7 @@ export default function useMemoFrameChat({
                           )}
                           <div className="min-w-0 flex-1">
                             <p className="font-semibold truncate">
-                              {msg.metadata?.jobTitle || "Công việc tham chiếu"}
+                              {msg.metadata?.jobTitle || t("ReferencedJob")}
                             </p>
                             {msg.metadata?.salary ? (
                               <p className="text-xs opacity-80 truncate">
@@ -391,7 +397,7 @@ export default function useMemoFrameChat({
                   </div>
                 ) : (
                   <p className="italic text-gray-300 break-all">
-                    [Loại tin nhắn chưa hỗ trợ: {msg.type}]
+                    {t("UnsupportedMessage", { type: msg.type })}
                   </p>
                 )}
               </div>
@@ -405,7 +411,7 @@ export default function useMemoFrameChat({
                     })}
                   </span>
                   <span>•</span>
-                  <span>{msg.isRead ? "Đã xem" : "Đã gửi"}</span>
+                  <span>{msg.isRead ? t("Read") : t("Sent")}</span>
                 </div>
               ) : null}
             </div>
@@ -418,6 +424,9 @@ export default function useMemoFrameChat({
       lastOwnMessageId,
       candidateData?.avatar,
       hrData?.avatar,
+      t,
+      tCommon,
+      locale,
     ],
   );
 
@@ -446,7 +455,7 @@ export default function useMemoFrameChat({
         >
           <SheetHeader className="px-4 py-3 border-b shrink-0">
             <SheetTitle>
-              {previewCvMessage?.metadata?.cvName || "Chi tiết CV hệ thống"}
+              {previewCvMessage?.metadata?.cvName || t("SystemCvDetail")}
             </SheetTitle>
           </SheetHeader>
 
@@ -460,7 +469,7 @@ export default function useMemoFrameChat({
                 />
               ) : (
                 <div className="text-center py-10 text-muted-foreground">
-                  Không tìm thấy mẫu CV phù hợp
+                  {t("NoCvTemplate")}
                 </div>
               )}
             </div>

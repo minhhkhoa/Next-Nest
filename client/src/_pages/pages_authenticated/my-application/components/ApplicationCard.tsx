@@ -17,34 +17,40 @@ import {
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
-import { APPLICATION_STATUS } from "@/lib/constant";
 import ApplicationDetailDialog from "./ApplicationDetailDialog";
 import CancelApplicationAlertDialog from "./CancelApplicationAlertDialog";
 import { generateSlugUrl, getSalaryText } from "@/lib/utils";
 import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import { useGetLang } from "@/hooks/use-get-lang";
 
-const getStatusDetails = (statusValue: string) => {
-  const st = APPLICATION_STATUS.find((s) => s.value === statusValue);
+const getStatusDetails = (statusValue: string, tCommon: any) => {
   switch (statusValue) {
     case "PENDING":
-      return { label: st?.label || statusValue, variant: "secondary" as const };
+      return {
+        label: tCommon("Status.pending"),
+        variant: "secondary" as const,
+      };
     case "REVIEWING":
-      return { label: st?.label || statusValue, variant: "default" as const };
+      return {
+        label: tCommon("Status.reviewing"),
+        variant: "default" as const,
+      };
     case "INTERVIEW":
       return {
-        label: st?.label || statusValue,
+        label: tCommon("Status.interview"),
         variant: "default" as const,
         className: "bg-blue-600 hover:bg-blue-600/80",
       };
     case "APPROVED":
       return {
-        label: st?.label || statusValue,
+        label: tCommon("Status.approved"),
         variant: "default" as const,
         className: "bg-green-600 hover:bg-green-600/80",
       };
     case "REJECTED":
       return {
-        label: st?.label || statusValue,
+        label: tCommon("Status.rejected"),
         variant: "destructive" as const,
       };
     default:
@@ -57,6 +63,10 @@ export default function ApplicationCard({
 }: {
   application: ApplicationResType;
 }) {
+  const t = useTranslations("Candidate.MyApplication");
+  const tCommon = useTranslations("Common");
+  const { getLang, locale } = useGetLang();
+
   const [detailOpen, setDetailOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
 
@@ -64,14 +74,14 @@ export default function ApplicationCard({
   const company =
     typeof application.companyId === "object" ? application.companyId : null;
 
-  const jobTitle = job?.title?.vi || job?.title?.en || "Vị trí bảo mật";
+  const jobTitle = getLang(job?.title) || tCommon("ConfidentialJob");
   const salaryString = getSalaryText(
     job?.salary!.min || 0,
     job?.salary!.max || 0,
     job?.salary!.currency || "VND",
   );
 
-  const statusInfo = getStatusDetails(application.status);
+  const statusInfo = getStatusDetails(application.status, tCommon);
 
   console.log("application: ", application);
 
@@ -120,7 +130,7 @@ export default function ApplicationCard({
                 className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
                 target="_blank"
               >
-                {company?.name || "Công ty bảo mật"}
+                {company?.name || tCommon("ConfidentialCompany")}
               </Link>
             </div>
 
@@ -131,10 +141,11 @@ export default function ApplicationCard({
               </span>
               <span className="flex items-center gap-1.5">
                 <Calendar className="w-4 h-4" />
-                Đã nộp{" "}
-                {formatDistanceToNow(new Date(application.createdAt), {
-                  addSuffix: true,
-                  locale: vi,
+                {t("ApplyDate", {
+                  date: formatDistanceToNow(new Date(application.createdAt), {
+                    addSuffix: true,
+                    locale: locale === "vi" ? vi : undefined,
+                  }),
                 })}
               </span>
               {application.status === "PENDING" && (
@@ -146,7 +157,9 @@ export default function ApplicationCard({
                   ) : (
                     <EyeOff className="w-4 h-4" />
                   )}
-                  {application.isViewed ? "NTD đã xem" : "NTD chưa xem"}
+                  {application.isViewed
+                    ? t("RecruiterViewed")
+                    : t("RecruiterNotViewed")}
                 </span>
               )}
             </div>
@@ -160,7 +173,7 @@ export default function ApplicationCard({
               onClick={() => setDetailOpen(true)}
             >
               <Eye className="w-4 h-4 mr-2" />
-              Chi tiết
+              {t("Detail")}
             </Button>
             {application.status === "PENDING" && (
               <Button
@@ -170,7 +183,7 @@ export default function ApplicationCard({
                 onClick={() => setCancelOpen(true)}
               >
                 <Trash2 className="w-4 h-4 mr-2" />
-                Rút đơn
+                {t("CancelApply")}
               </Button>
             )}
           </div>

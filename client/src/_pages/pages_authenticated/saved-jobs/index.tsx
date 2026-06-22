@@ -10,8 +10,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BriefcaseBusiness, Building2, MapPin } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { generateSlugUrl } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 export default function PageSavedJobs() {
+  const t = useTranslations("Candidate.SavedJobs");
   const [pageJobs, setPageJobs] = useState(1);
   const [pageCompanies, setPageCompanies] = useState(1);
   const pageSize = 8;
@@ -52,9 +54,9 @@ export default function PageSavedJobs() {
   return (
     <div className="container py-8 mx-auto space-y-8 min-h-[70vh]">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Mục đã lưu</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t("Title")}</h1>
         <p className="text-muted-foreground">
-          Quản lý việc làm bạn đã lưu và các công ty bạn đang theo dõi.
+          {t("Description")}
         </p>
       </div>
 
@@ -65,7 +67,7 @@ export default function PageSavedJobs() {
             className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm flex items-center justify-center gap-2 py-2"
           >
             <BriefcaseBusiness className="w-4 h-4" />
-            Việc làm
+            {t("TabJobs")}
             {metaJobs?.totalItems !== undefined && (
               <span className="ml-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
                 {metaJobs.totalItems}
@@ -77,7 +79,7 @@ export default function PageSavedJobs() {
             className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm flex items-center justify-center gap-2 py-2"
           >
             <Building2 className="w-4 h-4" />
-            Công ty
+            {t("TabCompanies")}
             {metaCompanies?.totalItems !== undefined && (
               <span className="ml-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
                 {metaCompanies.totalItems}
@@ -100,11 +102,10 @@ export default function PageSavedJobs() {
                 <BriefcaseBusiness className="w-8 h-8 text-muted-foreground" />
               </div>
               <h3 className="text-xl font-medium mb-2">
-                Chưa lưu việc làm nào
+                {t("NoJobsTitle")}
               </h3>
               <p className="text-muted-foreground mb-6 max-w-sm">
-                Bạn chưa lưu việc làm nào. Hãy tìm kiếm việc làm và ấn lưu để
-                xem lại sau nhé.
+                {t("NoJobsDesc")}
               </p>
             </div>
           ) : (
@@ -149,11 +150,10 @@ export default function PageSavedJobs() {
                 <Building2 className="w-8 h-8 text-muted-foreground" />
               </div>
               <h3 className="text-xl font-medium mb-2">
-                Chưa theo dõi công ty nào
+                {t("NoCompaniesTitle")}
               </h3>
               <p className="text-muted-foreground mb-6 max-w-sm">
-                Bạn chưa theo dõi công ty nào. Cập nhật các nhà tuyển dụng hàng
-                đầu để không bỏ lỡ cơ hội.
+                {t("NoCompaniesDesc")}
               </p>
             </div>
           ) : (
