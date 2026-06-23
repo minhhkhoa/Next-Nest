@@ -13,8 +13,10 @@ import { Spinner } from "@/components/ui/spinner";
 import styles from "@/app/[locale]/bootstrap.module.css";
 import BlockNewsWithPagination from "./components/BlockNewsWithPagination";
 import { useGetLang } from "@/hooks/use-get-lang";
+import { useTranslations } from "next-intl";
 
 export default function PageNewsDetail({ idNews }: { idNews: string }) {
+  const t = useTranslations("PageNews");
   const { getLang } = useGetLang();
   const [currentPage, setCurrentPage] = React.useState(1);
 
@@ -40,7 +42,7 @@ export default function PageNewsDetail({ idNews }: { idNews: string }) {
   if (error) {
     return (
       <div className="w-full flex justify-center items-center h-[300px]">
-        <p className="text-gray-500">Không tìm thấy bài viết</p>
+        <p className="text-gray-500">{t("NoArticles")}</p>
       </div>
     );
   }
@@ -83,7 +85,7 @@ export default function PageNewsDetail({ idNews }: { idNews: string }) {
             </p>
             <p>{getLang(newsDetail?.cateNewsID[0].name)}</p>
             <p className="text-xs md:text-sm text-gray-500 mb-3 flex items-center gap-1">
-              Tác giả: {newsDetail?.createdBy.name} •{" "}
+              {t("Author")}: {newsDetail?.createdBy.name} •{" "}
               {formatDateInput(newsDetail?.createdAt.toString() || "")}
             </p>
             <div
@@ -109,7 +111,7 @@ export default function PageNewsDetail({ idNews }: { idNews: string }) {
           }
           isLoadingListNews={isLoadingListNews}
           onPageChange={onPageChange}
-          textTitle="Bài viết liên quan"
+          textTitle={t("RelatedArticles")}
         />
       </div>
     </div>

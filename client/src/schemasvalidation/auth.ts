@@ -1,17 +1,10 @@
 import { z } from "zod";
 
+//- schema tĩnh phục vụ suy diễn kiểu (type inference)
 export const LoginBody = z
   .object({
-    email: z
-      .string({ message: "Vui lòng nhập email" })
-      .trim()
-      .email({ message: "Email không hợp lệ" }),
-
-    password: z
-      .string({ message: "Vui lòng nhập mật khẩu" })
-      .trim()
-      .min(8, { message: "Mật khẩu phải có ít nhất 8 ký tự" })
-      .max(100, { message: "Mật khẩu không được vượt quá 100 ký tự" }),
+    email: z.string().trim().email(),
+    password: z.string().trim().min(8).max(100),
   })
   .strict();
 
@@ -39,18 +32,9 @@ export type LoginResType = z.TypeOf<typeof LoginRes>;
 
 export const RegisterBody = z
   .object({
-    name: z.string({ message: "Vui lòng nhập tên" }).trim(),
-
-    email: z
-      .string({ message: "Vui lòng nhập email" })
-      .trim()
-      .email({ message: "Email không hợp lệ" }),
-
-    password: z
-      .string({ message: "Vui lòng nhập mật khẩu" })
-      .trim()
-      .min(8, { message: "Mật khẩu phải có ít nhất 8 ký tự" })
-      .max(100, { message: "Mật khẩu không được vượt quá 100 ký tự" }),
+    name: z.string().trim(),
+    email: z.string().trim().email(),
+    password: z.string().trim().min(8).max(100),
   })
   .strict();
 
@@ -63,17 +47,61 @@ export const RegisterRes = z.object({
 
 export type RegisterResType = z.TypeOf<typeof RegisterRes>;
 
-//- start change password
+//- schema tĩnh phục vụ suy diễn kiểu (type inference)
 export const changePasswordSchema = z
   .object({
-    currentPassword: z.string().min(1, "Vui lòng nhập mật khẩu hiện tại"),
-    newPassword: z.string().min(8, "Mật khẩu mới phải có ít nhất 8 ký tự"),
-    confirmPassword: z.string().min(1, "Vui lòng xác nhận mật khẩu mới"),
+    currentPassword: z.string().min(1),
+    newPassword: z.string().min(8),
+    confirmPassword: z.string().min(1),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Mật khẩu xác nhận không khớp",
     path: ["confirmPassword"],
   });
 
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
-//- end change password
+
+//- hàm động sinh schema dùng đa ngôn ngữ
+export const getLoginBodySchema = (t: any) => z
+  .object({
+    email: z
+      .string({ message: t("EnterEmail") })
+      .trim()
+      .email({ message: t("EmailInvalid") }),
+
+    password: z
+      .string({ message: t("EnterPassword") })
+      .trim()
+      .min(8, { message: t("PasswordMinLength") })
+      .max(100, { message: t("PasswordMaxLength") }),
+  })
+  .strict();
+
+//- hàm động sinh schema dùng đa ngôn ngữ
+export const getRegisterBodySchema = (t: any) => z
+  .object({
+    name: z.string({ message: t("EnterName") }).trim(),
+
+    email: z
+      .string({ message: t("EnterEmail") })
+      .trim()
+      .email({ message: t("EmailInvalid") }),
+
+    password: z
+      .string({ message: t("EnterPassword") })
+      .trim()
+      .min(8, { message: t("PasswordMinLength") })
+      .max(100, { message: t("PasswordMaxLength") }),
+  })
+  .strict();
+
+//- hàm động sinh schema dùng đa ngôn ngữ
+export const getChangePasswordSchema = (t: any) => z
+  .object({
+    currentPassword: z.string().min(1, t("CurrentPasswordRequired")),
+    newPassword: z.string().min(8, t("PasswordMinLength")),
+    confirmPassword: z.string().min(1, t("ConfirmPasswordRequired")),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: t("PasswordMismatch"),
+    path: ["confirmPassword"],
+  });

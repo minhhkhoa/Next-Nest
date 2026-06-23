@@ -11,7 +11,10 @@ import { APPLICATION_STATUS } from "@/lib/constant";
 import ApplicationCard from "./components/ApplicationCard";
 import { SearchBar } from "@/_pages/admin/NewsCategory/components/search-bar";
 
+import { useTranslations } from "next-intl";
+
 export default function PageMyApplication() {
+  const t = useTranslations("Candidate.MyApplication");
   const [activeTab, setActiveTab] = useState<string>("ALL");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [debouncedSearch] = useDebounce(searchTerm, 500);
@@ -48,9 +51,9 @@ export default function PageMyApplication() {
   return (
     <div className="container py-8 max-w-5xl mx-auto space-y-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold">Lịch sử ứng tuyển</h1>
+        <h1 className="text-2xl font-bold">{t("Title")}</h1>
         <p className="text-muted-foreground">
-          Quản lý các hồ sơ bạn đã nộp và theo dõi trạng thái.
+          {t("SubTitle")}
         </p>
       </div>
 
@@ -65,17 +68,22 @@ export default function PageMyApplication() {
           className="w-full sm:w-auto"
         >
           <TabsList className="w-full overflow-x-auto whitespace-nowrap sm:flex-wrap h-auto justify-start">
-            <TabsTrigger className="flex-none mr-2" value="ALL">Tất cả</TabsTrigger>
+            <TabsTrigger className="flex-none mr-2" value="ALL">{t("All")}</TabsTrigger>
             {APPLICATION_STATUS.map((status) => (
               <TabsTrigger key={status.value} className="flex-none mr-2" value={status.value}>
-                {status.label}
+                {t(`Status.${status.value}` as any)}
               </TabsTrigger>
             ))}
           </TabsList>
         </Tabs>
 
         <div className="relative w-full sm:w-72 shrink-0">
-          <SearchBar onChange={setSearchTerm} value={searchTerm} />
+          {/*- truyền placeholder được đa ngôn ngữ hóa */}
+          <SearchBar
+            placeholder={t("SearchPlaceholder")}
+            onChange={setSearchTerm}
+            value={searchTerm}
+          />
         </div>
       </div>
 
@@ -100,7 +108,7 @@ export default function PageMyApplication() {
       ) : (
         <div className="text-center py-12 border rounded-lg bg-muted/20">
           <p className="text-muted-foreground">
-            Bạn chưa có đơn ứng tuyển nào.
+            {t("NoApplications")}
           </p>
         </div>
       )}

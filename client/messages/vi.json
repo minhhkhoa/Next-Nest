@@ -134,6 +134,7 @@
       "PlaceholderSearch": "Tìm kiếm công việc ...",
       "PlaceholderLocation": "Tìm địa điểm ...",
       "LevelAll": "Tất cả cấp bậc",
+      "Level": "Cấp bậc",
       "LocationAll": "Tất cả địa điểm",
       "NoLocation": "Không có dữ liệu địa điểm",
       "NoJobsFound": "Không tìm thấy công việc nào."
@@ -142,7 +143,8 @@
     "TopCompaniesSection": {
       "Title": "Công ty hàng đầu",
       "Description": "Khám phá các công ty hàng đầu đang tuyển dụng",
-      "ViewAll": "Xem tất cả"
+      "ViewAll": "Xem tất cả",
+      "JobsCount": "{count} việc làm"
     }
   },
 
@@ -214,6 +216,31 @@
       "LoginRequired": "Bạn cần đăng nhập để thao tác",
       "CreateError": "Có lỗi xảy ra khi tạo cuộc trò chuyện",
       "Connecting": "Đang kết nối..."
+    },
+    "BlockIssue": {
+      "BadgeLabel": "Hỗ trợ & Đóng góp",
+      "SrOnlyLabel": "Hỗ trợ",
+      "TooltipLabel": "Hỗ trợ & Đóng góp",
+      "SupportCenter": "Trung tâm hỗ trợ",
+      "SupportCenterDesc": "Gửi yêu cầu hoặc đóng góp ý kiến để giúp chúng tôi cải thiện.",
+      "SubmittedIssues": "Các vấn đề đã gửi",
+      "TrackIssues": "Theo dõi trạng thái yêu cầu",
+      "SubmitIssue": "Đóng góp thêm",
+      "SubmitIssueDesc": "Gửi báo cáo lỗi hoặc ý kiến"
+    },
+    "FloatButton": {
+      "SavedJobsMobile": "Việc làm đã lưu",
+      "SavedJobsSrOnly": "Việc làm đã lưu",
+      "SavedJobsTooltip": "Việc làm & công ty đã lưu",
+      "MyApplicationsMobile": "Đơn ứng tuyển",
+      "MyApplicationsSrOnly": "Theo dõi đơn ứng tuyển",
+      "MyApplicationsTooltip": "Theo dõi đơn ứng tuyển",
+      "ToggleMenu": "Bật/Tắt menu"
+    },
+    "Bookmark": {
+      "SaveSuccess": "Đã lưu công việc",
+      "RemoveSuccess": "Đã bỏ lưu công việc",
+      "Error": "Có lỗi xảy ra"
     }
   },
 
@@ -302,7 +329,9 @@
       "Preparing": "Đang chuẩn bị...",
       "NoCompany": "Không tìm thấy công ty để bắt đầu cuộc trò chuyện",
       "PrepError": "Không thể chuẩn bị tin nhắn hỏi thêm"
-    }
+    },
+    "NotFoundTitle": "Không tìm thấy thông tin công việc hoặc có lỗi xảy ra.",
+    "NotFoundDesc": "Vui lòng kiểm tra lại đường dẫn hoặc thử lại sau."
   },
 
   "PageCompanyDetail": {
@@ -321,7 +350,8 @@
     "Message": "Nhắn tin",
     "Industries": "Lĩnh vực hoạt động",
     "CompanyLocation": "Vị trí công ty",
-    "ReportCompany": "Báo cáo công ty"
+    "ReportCompany": "Báo cáo công ty",
+    "NotFound": "Không tìm thấy thông tin công ty"
   },
 
   "Candidate": {
@@ -335,6 +365,8 @@
       "NoCv": "Bạn chưa tạo CV nào. Hãy tạo CV đầu tiên của bạn ngay bây giờ!",
       "TemplateList": "Danh sách mẫu CV",
       "AiScoreBtn": "Chấm điểm AI",
+      "DetailTitle": "Chi tiết CV của bạn",
+      "DetailDesc": "Dưới đây là chi tiết CV của bạn. Bạn có thể xem trước và chỉnh sửa nội dung CV để đảm bảo nó phản ánh chính xác kỹ năng và kinh nghiệm của bạn. Hãy chắc chắn rằng CV của bạn nổi bật và thu hút sự chú ý của nhà tuyển dụng!",
       "SaveResumeDialog": {
         "BtnTrigger": "Lưu hồ sơ CV",
         "Title": "Lưu hồ sơ CV",
@@ -374,7 +406,18 @@
       }
     },
     "MyApplication": {
+      "SearchPlaceholder": "Tìm kiếm theo tiêu đề công việc hoặc công ty...",
       "Title": "Lịch sử ứng tuyển",
+      "SubTitle": "Quản lý các hồ sơ bạn đã nộp và theo dõi trạng thái.",
+      "All": "Tất cả",
+      "Status": {
+        "PENDING": "Chờ xử lý",
+        "REVIEWING": "Đang xem xét",
+        "INTERVIEW": "Phỏng vấn",
+        "APPROVED": "Chấp nhận",
+        "REJECTED": "Từ chối",
+        "CANCELLED": "Đã rút"
+      },
       "ApplyDate": "Đã nộp {date}",
       "CoverLetter": "Thư giới thiệu",
       "Note": "Ghi chú của nhà tuyển dụng: {note}",
@@ -384,6 +427,11 @@
       "RecruiterNotViewed": "NTD chưa xem",
       "CancelApply": "Rút đơn",
       "CancelApplyConfirm": "Bạn có chắc chắn muốn rút đơn ứng tuyển này không?",
+      "WithdrawSuccess": "Rút đơn ứng tuyển thành công",
+      "WithdrawError": "Có lỗi xảy ra khi rút đơn, vui lòng thử lại",
+      "ConfirmWithdrawTitle": "Xác nhận rút đơn ứng tuyển",
+      "ConfirmWithdrawDesc": "Bạn có chắc chắn muốn rút lại đơn ứng tuyển cho vị trí {jobTitle} không? Hành động này không thể hoàn tác, nhà tuyển dụng sẽ không còn thấy hồ sơ của bạn.",
+      "ConfirmWithdrawBtn": "Xác nhận rút đơn",
       "Detail": "Chi tiết",
       "DetailTitle": "Chi tiết đơn ứng tuyển",
       "InterviewInvite": "Nhà tuyển dụng mời bạn phỏng vấn!",
@@ -789,7 +837,12 @@
     "Highlight": "Tiêu điểm",
     "ReadArticle": "Đọc bài viết",
     "ReadMore": "Đọc thêm",
-    "NoArticles": "Không tìm thấy bài viết"
+    "NoArticles": "Không tìm thấy bài viết",
+    "Author": "Tác giả",
+    "RelatedArticles": "Bài viết liên quan",
+    "CareerTitle": "Hành trang nghề nghiệp",
+    "CareerDesc": "Khám phá thông tin hữu ích liên quan tới nghề nghiệp bạn quan tâm. Chia sẻ kinh nghiệm, kiến thức chuyên môn giúp bạn tìm được công việc phù hợp và phát triển bản thân.",
+    "ViewAll": "Xem tất cả"
   },
 
   "AiScorePage": {
@@ -834,7 +887,7 @@
   },
   "JobCard": {
     "LevelFrom": "Cấp bậc từ",
-    "RequiredSkills": "Kỹ năng yêu cầu:",
+    "RequiredSkills": "Kỹ năng yêu cầu",
     "Deadline": "Hạn nộp:",
     "DaysLeft": "(còn {days} ngày)",
     "Expired": "Đã hết hạn",
@@ -896,6 +949,10 @@
     "ProfileIncomplete": "Hồ sơ của bạn hiện chưa đầy đủ thông tin hoặc thiếu CV",
     "UpdateProfilePrompt": "👉 Cập nhật ngay tại <link></link> hoặc tải CV lên để nhận kết quả khớp chuẩn nhất.",
     "ProfileLink": "Hồ sơ cá nhân",
+    "ProfileCompleteDesc": "AI đã phân tích hồ sơ và CV của bạn để đưa ra những gợi ý việc làm tốt nhất dưới đây.",
+    "NoRecommendationsDesc": "Hiện tại chưa có công việc nào hoàn toàn phù hợp với hồ sơ của bạn. Hãy thử cập nhật thêm kỹ năng hoặc chờ các cơ hội mới nhé.",
+    "ProfileIncompleteDesc": "Hồ sơ của bạn hiện chưa đầy đủ thông tin và chưa có CV. AI đang gợi ý các công việc nổi bật. Bạn hãy cập nhật hồ sơ cá nhân hoặc viết CV để AI có thể hiểu rõ nhu cầu của bạn hơn.",
+    "SystemBusyDesc": "Hệ thống gợi ý AI đang bận. Vui lòng thử lại sau.",
     "SearchPlaceholder": "Tên công việc, công ty, kỹ năng...",
     "SelectLocation": "Chọn địa điểm",
     "AllLocations": "Tất cả địa điểm",
@@ -934,7 +991,11 @@
     "ForgotPasswordConfirm": "Xác nhận",
     "EnterEmail": "Vui lòng nhập email",
     "EmailPlaceholder": "Nhập email của bạn",
+    "EmailInvalid": "Email không hợp lệ",
+    "EnterPassword": "Vui lòng nhập mật khẩu",
     "PasswordMinLength": "Mật khẩu phải có ít nhất 8 ký tự",
+    "PasswordMaxLength": "Mật khẩu không được vượt quá 100 ký tự",
+    "EnterName": "Vui lòng nhập tên",
     "PasswordMismatch": "Mật khẩu không trùng khớp",
     "RegisterSuccess": "Chúc mừng bạn đã đăng ký tài khoản thành công🎇",
     "NameLabel": "Tên",
@@ -951,6 +1012,8 @@
     "ConfirmPasswordPlaceholder": "Nhập lại mật khẩu mới",
     "ChangePasswordDesc": "Cập nhật mật khẩu của bạn để bảo mật tài khoản",
     "ChangePasswordSuccess": "Đổi mật khẩu thành công!",
-    "CurrentPasswordIncorrect": "Mật khẩu hiện tại bạn nhập không chính xác"
+    "CurrentPasswordIncorrect": "Mật khẩu hiện tại bạn nhập không chính xác",
+    "CurrentPasswordRequired": "Vui lòng nhập mật khẩu hiện tại",
+    "ConfirmPasswordRequired": "Vui lòng xác nhận mật khẩu mới"
   }
 }

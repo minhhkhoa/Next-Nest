@@ -12,7 +12,10 @@ import { useGetUserResumeDetail } from "@/queries/useUserResume";
 import { useSearchParams } from "next/navigation";
 import React from "react";
 
+import { useTranslations } from "next-intl";
+
 export default function PageDetailCv({ id }: { id: string }) {
+  const t = useTranslations("Candidate.MyCv");
   //- lấy ra biến bool edit từ query params để biết được đang ở chế độ nào
   const searchParams = useSearchParams();
   const isEdit = searchParams.get("edit") === "true";
@@ -81,13 +84,10 @@ export default function PageDetailCv({ id }: { id: string }) {
     <div className="py-3">
       <div className="flex flex-col text-center mb-12 space-y-4">
         <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-          Chi tiết CV của bạn
+          {t("DetailTitle")}
         </h1>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Dưới đây là chi tiết CV của bạn. Bạn có thể xem trước và chỉnh sửa nội
-          dung CV để đảm bảo nó phản ánh chính xác kỹ năng và kinh nghiệm của
-          bạn. Hãy chắc chắn rằng CV của bạn nổi bật và thu hút sự chú ý của nhà
-          tuyển dụng!
+          {t("DetailDesc")}
         </p>
       </div>
       {getTemplateComponent(detailCvFetch?.data?.templateID || "")}

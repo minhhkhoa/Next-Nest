@@ -13,6 +13,7 @@ import { JobResType } from "@/schemasvalidation/job";
 import { usePathname } from "@/i18n/navigation";
 import SoftSuccessSonner from "./shadcn-studio/sonner/SoftSuccessSonner";
 import SoftDestructiveSonner from "./shadcn-studio/sonner/SoftDestructiveSonner";
+import { useTranslations } from "next-intl";
 
 interface BookmarkButtonProps extends React.ComponentProps<typeof Button> {
   job: JobResType;
@@ -27,6 +28,7 @@ export default function BookmarkJobButton({
   ...props
 }: BookmarkButtonProps) {
   const pathName = usePathname();
+  const t = useTranslations("Common.Bookmark");
 
   const { isLogin } = useAppStore();
   const [isBookmarked, setIsBookmarked] = useState(false);
@@ -56,10 +58,10 @@ export default function BookmarkJobButton({
       deleteBookmarkMutation.mutate(job._id, {
         onSuccess: () => {
           setIsBookmarked(false);
-          SoftSuccessSonner("Đã bỏ lưu công việc");
+          SoftSuccessSonner(t("RemoveSuccess"));
         },
         onError: (error: any) => {
-          SoftDestructiveSonner(error?.message || "Có lỗi xảy ra");
+          SoftDestructiveSonner(error?.message || t("Error"));
         },
       });
     } else {
@@ -72,10 +74,10 @@ export default function BookmarkJobButton({
         {
           onSuccess: () => {
             setIsBookmarked(true);
-            SoftSuccessSonner("Đã lưu công việc");
+            SoftSuccessSonner(t("SaveSuccess"));
           },
           onError: (error: any) => {
-            SoftDestructiveSonner(error?.message || "Có lỗi xảy ra");
+            SoftDestructiveSonner(error?.message || t("Error"));
           },
         },
       );

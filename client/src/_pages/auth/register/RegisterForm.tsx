@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Facebook, Mail, Eye, EyeClosed } from "lucide-react";
-import { RegisterBody, RegisterBodyType } from "@/schemasvalidation/auth";
+import { RegisterBodyType, getRegisterBodySchema } from "@/schemasvalidation/auth";
 import {
   Form,
   FormControl,
@@ -42,8 +42,9 @@ export default function RegisterForm() {
   const { theme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const { isPending, mutateAsync: registerMutation } = useRegisterMutation();
+  const registerSchema = useMemo(() => getRegisterBodySchema(t), [t]);
   const form = useForm<RegisterBodyType>({
-    resolver: zodResolver(RegisterBody),
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       name: "",
       email: "",

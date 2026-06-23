@@ -35,6 +35,7 @@ import { useTranslations } from "next-intl";
 
 export default function JobsWithFilterSection() {
   const t = useTranslations("PageHome.JobsWithFilterSection");
+  const tCommon = useTranslations("Common");
 
   const [page, setPage] = useState(1);
   const [openLocation, setOpenLocation] = useState(false);
@@ -192,13 +193,13 @@ export default function JobsWithFilterSection() {
                 }}
               >
                 <SelectTrigger className="w-full md:w-[180px] bg-background">
-                  <SelectValue placeholder="Cấp bậc" />
+                  <SelectValue placeholder={t("Level")} />
                 </SelectTrigger>
                 <SelectContent className="w-[200px]">
                   <SelectItem value="all">{t("LevelAll")}</SelectItem>
                   {LEVEL_OPTIONS.map((item) => (
                     <SelectItem key={item.value} value={item.value}>
-                      {item.label}
+                      {tCommon(`Level.${item.value}` as any)}
                     </SelectItem>
                   ))}
                 </SelectContent>

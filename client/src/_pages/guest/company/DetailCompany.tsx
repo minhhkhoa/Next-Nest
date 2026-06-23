@@ -7,8 +7,10 @@ import CompanyInfo from "./components/CompanyInfo";
 import CompanyJobs from "./components/CompanyJobs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AdBannerInline } from "@/components/ads/AdSlotRenderer";
+import { useTranslations } from "next-intl";
 
 export default function PageDetailCompany({ idCompany }: { idCompany: string }) {
+  const t = useTranslations("PageCompanyDetail");
   const {
     data: companyData,
     isLoading: isLoadingCompanyData,
@@ -35,7 +37,7 @@ export default function PageDetailCompany({ idCompany }: { idCompany: string }) 
   if (errorCompanyData || !companyData?.data) {
     return (
       <div className="container mx-auto px-4 py-20 text-center">
-        Không tìm thấy thông tin công ty
+        {t("NotFound")}
       </div>
     );
   }

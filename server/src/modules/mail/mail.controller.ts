@@ -18,7 +18,7 @@ export class MailController {
   async handleTestEmail() {
     await this.mailerService.sendMail({
       to: 'khoalon89@gmail.com',
-      from: '"Support Team" <support@example.com>',
+      from: '"JobHub" <support@example.com>',
       subject: 'Welcome to Nice App! Confirm your Email',
       html: '<b>welcome bla bla</b>',
     });

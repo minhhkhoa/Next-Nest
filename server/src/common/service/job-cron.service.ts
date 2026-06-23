@@ -9,6 +9,7 @@ import { JobRecommendationService } from 'src/modules/ai-service/services/job-re
 import { UserService } from 'src/modules/user/user.service';
 import { ConfigService } from '@nestjs/config';
 import { UserDecoratorType } from 'src/utils/typeSchemas';
+import { slugify } from 'src/utils/generate-slug';
 
 //- Service để chạy các tác vụ định kỳ liên quan đến Job
 //- Hiện tại bao gồm việc tự động đóng các tin tuyển dụng đã hết hạn
@@ -62,7 +63,6 @@ export class JobCronService {
 
   // - Cron Job chạy mỗi 10 phút để đồng bộ lượt xem từ Redis về MongoDB
   @Cron(CronExpression.EVERY_10_MINUTES)
-  // @Cron('*/30 * * * * *')
   async syncViewsToDb() {
     this.logger.log('Bắt đầu đồng bộ lượt xem từ Redis về MongoDB...');
 
@@ -84,7 +84,7 @@ export class JobCronService {
         }
 
         const parts = key.split(':');
-        const jobId = parts[2];
+        const jobId = parts[1];
 
         if (!jobId || !mongoose.Types.ObjectId.isValid(jobId)) {
           continue;
@@ -196,8 +196,11 @@ export class JobCronService {
                   }
                 }
 
-                //- link chi tiết công việc
-                const jobLink = `${frontendUrl}/vi/jobs/${job._id}`;
+                //- link chi tiết công việc theo định dạng slug-i.id của client
+                const jobSlug =
+                  job.slug?.vi ||
+                  (job.title?.vi ? slugify(job.title.vi) : 'job');
+                const jobLink = `${frontendUrl}/vi/jobs/${jobSlug}-i.${job._id}`;
 
                 return {
                   title: job.title?.vi || job.title?.en || 'N/A',
@@ -219,6 +222,19 @@ export class JobCronService {
             );
             this.logger.log(
               `Đã gửi email gợi ý công việc thành công cho ứng viên: ${candidate.email}`,
+            );
+          } else {
+            //- log cảnh báo chi tiết lý do không gửi email để tiện check lỗi
+            this.logger.warn(
+              `Không gửi email gợi ý cho ứng viên: ${candidate.email}. Lý do: ` +
+                (!result
+                  ? 'không nhận được kết quả phân tích gợi ý từ service.'
+                  : !result.hasProfile
+                  ? 'ứng viên chưa hoàn thiện hồ sơ/profile (hasProfile = false).'
+                  : !result.recommendations ||
+                    result.recommendations.length === 0
+                  ? 'không tìm thấy công việc nào phù hợp với kỹ năng của ứng viên (recommendations rỗng).'
+                  : 'lý do không xác định.'),
             );
           }
         } catch (candidateErr) {

@@ -12,7 +12,7 @@ import { ApplicationResType } from "@/schemasvalidation/application";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, FileText, CalendarClock, XCircle } from "lucide-react";
 import { format } from "date-fns";
-import { vi } from "date-fns/locale";
+import { vi, enUS } from "date-fns/locale";
 import { generateSlugUrl } from "@/lib/utils";
 import { Link } from "@/i18n/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -87,7 +87,7 @@ export default function ApplicationDetailDialog({
                         {format(
                           new Date(application.interviewTime),
                           "dd/MM/yyyy HH:mm",
-                          { locale: locale === "vi" ? vi : undefined },
+                          { locale: locale === "vi" ? vi : enUS },
                         )}
                       </span>
                     </p>
@@ -112,7 +112,7 @@ export default function ApplicationDetailDialog({
                         {t("RecruiterFeedback")}
                       </p>
                       {typeof application.rejectionReason === "object"
-                        ? application.rejectionReason.vi
+                        ? application.rejectionReason[locale as "vi" | "en"] || application.rejectionReason.vi
                         : application.rejectionReason}
                     </div>
                   )}
@@ -127,7 +127,7 @@ export default function ApplicationDetailDialog({
                 {t("ApplyTime")}:{" "}
                 <span className="font-medium text-foreground">
                   {format(new Date(application.createdAt), "dd/MM/yyyy HH:mm", {
-                    locale: locale === "vi" ? vi : undefined,
+                    locale: locale === "vi" ? vi : enUS,
                   })}
                 </span>
               </span>
@@ -146,7 +146,7 @@ export default function ApplicationDetailDialog({
                     </span>
                     <div className="text-muted-foreground p-3 bg-background rounded-md border min-h-[60px] whitespace-pre-wrap leading-relaxed">
                       {typeof application.coverLetter === "object"
-                        ? application.coverLetter.vi
+                        ? application.coverLetter[locale as "vi" | "en"] || application.coverLetter.vi
                         : application.coverLetter}
                     </div>
                   </div>

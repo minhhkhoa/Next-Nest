@@ -28,7 +28,7 @@ export class MailService {
     try {
       await this.mailerService.sendMail({
         to: userEmail,
-        subject: `[Support Ticket #${issueId}] Xác nhận tiếp nhận yêu cầu`,
+        subject: `[JobHub Support #${issueId}] Xác nhận tiếp nhận yêu cầu`,
         template: 'issue-received', // Tên file .hbs
         context: {
           name: userName,
@@ -58,7 +58,7 @@ export class MailService {
 
       await this.mailerService.sendMail({
         to: userEmail,
-        subject: `[Cập nhật yêu cầu #${issueId.slice(-6).toUpperCase()}] Đã có phản hồi từ Admin`,
+        subject: `[JobHub - Cập nhật yêu cầu #${issueId.slice(-6).toUpperCase()}] Đã có phản hồi từ Admin`,
         template: 'admin-replied',
         context: {
           name: userName,
@@ -75,7 +75,7 @@ export class MailService {
   //- gửi email gợi ý việc làm phù hợp cho ứng viên
   async sendJobRecommendationsMail(to: string, userName: string, jobs: any[]) {
     try {
-      await this.mailerService.sendMail({
+      const response = await this.mailerService.sendMail({
         to,
         subject: '[JobHub] Danh sách công việc phù hợp nhất dành cho bạn',
         template: 'job-recommendations',
@@ -84,8 +84,13 @@ export class MailService {
           jobs: jobs,
         },
       });
+      console.log(
+        `[MailService] Gửi gợi ý việc làm thành công đến ${to}. MessageId: ${response?.messageId || 'N/A'}. Response: ${response?.response || 'N/A'}`,
+      );
+      return response;
     } catch (error) {
-      console.error('Lỗi gửi mail gợi ý việc làm:', error);
+      console.error(`[MailService] Lỗi gửi mail gợi ý việc làm đến ${to}:`, error);
+      throw error;
     }
   }
 }

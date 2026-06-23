@@ -13,8 +13,10 @@ import { BookMarked, BriefcaseBusiness, Settings2, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import BlockIssue from "./BlockIssue";
 import { useAppStore } from "./TanstackProvider";
+import { useTranslations } from "next-intl";
 
 export function BookmarkNavigationButton() {
+  const t = useTranslations("Common.FloatButton");
   return (
     <TooltipProvider>
       <Tooltip>
@@ -22,7 +24,7 @@ export function BookmarkNavigationButton() {
           <div className="flex items-center gap-2 pointer-events-auto">
             {/*- nhãn hiển thị bên cạnh icon trên mobile giúp người dùng dễ nhận biết do không có hover */}
             <span className="px-2 py-1 rounded bg-black/80 dark:bg-slate-900/90 text-white text-[11px] font-medium shadow-md pointer-events-none sm:hidden whitespace-nowrap">
-              Việc làm đã lưu
+              {t("SavedJobsMobile")}
             </span>
             <Button
               asChild
@@ -32,13 +34,13 @@ export function BookmarkNavigationButton() {
             >
               <Link href="/saved-jobs">
                 <BookMarked className="h-5 w-5" />
-                <span className="sr-only">Việc làm đã lưu</span>
+                <span className="sr-only">{t("SavedJobsSrOnly")}</span>
               </Link>
             </Button>
           </div>
         </TooltipTrigger>
         <TooltipContent side="left" className="hidden sm:block">
-          <p>Việc làm & công ty đã lưu</p>
+          <p>{t("SavedJobsTooltip")}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
@@ -46,6 +48,7 @@ export function BookmarkNavigationButton() {
 }
 
 export function MyApplicationNavigationButton() {
+  const t = useTranslations("Common.FloatButton");
   return (
     <TooltipProvider>
       <Tooltip>
@@ -53,7 +56,7 @@ export function MyApplicationNavigationButton() {
           <div className="flex items-center gap-2 pointer-events-auto">
             {/*- nhãn hiển thị bên cạnh icon trên mobile giúp người dùng dễ nhận biết do không có hover */}
             <span className="px-2 py-1 rounded bg-black/80 dark:bg-slate-900/90 text-white text-[11px] font-medium shadow-md pointer-events-none sm:hidden whitespace-nowrap">
-              Đơn ứng tuyển
+              {t("MyApplicationsMobile")}
             </span>
             <Button
               asChild
@@ -63,13 +66,13 @@ export function MyApplicationNavigationButton() {
             >
               <Link href="/my-application">
                 <BriefcaseBusiness className="h-4 w-4" />
-                <span className="sr-only">Theo dõi đơn ứng tuyển</span>
+                <span className="sr-only">{t("MyApplicationsSrOnly")}</span>
               </Link>
             </Button>
           </div>
         </TooltipTrigger>
         <TooltipContent side="left" className="hidden sm:block">
-          <p>Theo dõi đơn ứng tuyển</p>
+          <p>{t("MyApplicationsTooltip")}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
@@ -94,6 +97,7 @@ const AllButtons = [
 export function FloatButton() {
   const { isLogin } = useAppStore();
   const [isOpen, setIsOpen] = useState(false);
+  const t = useTranslations("Common.FloatButton");
 
   const toggleOpen = () => setIsOpen(!isOpen);
 
@@ -177,7 +181,7 @@ export function FloatButton() {
             <X className="h-5 w-5" />
           </motion.div>
 
-          <span className="sr-only">Toggle menu</span>
+          <span className="sr-only">{t("ToggleMenu")}</span>
         </Button>
       </motion.div>
     </div>

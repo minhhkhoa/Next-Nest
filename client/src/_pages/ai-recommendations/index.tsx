@@ -31,6 +31,7 @@ import { LEVEL_OPTIONS, ADDRESS_OPTIONS } from "@/lib/constant";
 
 export default function PageAiRecommendations() {
   const t = useTranslations("AiRecommendations");
+  const tCommon = useTranslations("Common");
   const { isLogin } = useAppStore();
 
   //- các bộ lọc tìm kiếm cơ bản
@@ -64,6 +65,20 @@ export default function PageAiRecommendations() {
   const hasProfile = responseData?.hasProfile ?? false;
   const message = responseData?.message ?? "";
   const recommendations = responseData?.recommendations ?? [];
+
+  //- xác định thông điệp hiển thị đa ngôn ngữ dựa trên dữ liệu từ BE
+  const getDisplayMessage = () => {
+    if (message === "Hệ thống gợi ý AI đang bận. Vui lòng thử lại sau.") {
+      return t("SystemBusyDesc");
+    }
+    if (hasProfile) {
+      return recommendations.length > 0
+        ? t("ProfileCompleteDesc")
+        : t("NoRecommendationsDesc");
+    } else {
+      return t("ProfileIncompleteDesc");
+    }
+  };
 
   //- xử lý lọc danh sách job trên client
   const filteredJobs = useMemo(() => {
@@ -203,43 +218,43 @@ export default function PageAiRecommendations() {
 
         {/* Trạng thái dữ liệu hồ sơ cá nhân và cảnh báo */}
         {!isLoading && (
-          <div
-            className={`flex items-start gap-3 p-4 rounded-2xl border ${
-              hasProfile
-                ? "bg-emerald-500/5 dark:bg-emerald-500/10 border-emerald-500/20 text-emerald-800 dark:text-emerald-300"
-                : "bg-amber-500/5 dark:bg-amber-500/10 border-amber-500/20 text-amber-800 dark:text-amber-300"
-            }`}
-          >
-            {hasProfile ? (
-              <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
-            ) : (
-              <AlertCircle className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
-            )}
-            <div className="space-y-1">
-              <p className="text-sm font-semibold">
-                {hasProfile
-                  ? t("ProfileComplete")
-                  : t("ProfileIncomplete")}
-              </p>
-              <p className="text-xs text-muted-foreground leading-normal">
-                {message}
-                {!hasProfile && (
-                  <span className="block mt-1">
-                {t.rich("UpdateProfilePrompt", {
-                  link: () => (
-                    <Link
-                      href="/profile"
-                      className="font-bold underline text-primary hover:opacity-85"
-                    >
-                      {t("ProfileLink")}
-                    </Link>
-                  ),
-                })}
-                  </span>
-                )}
-              </p>
+          hasProfile ? (
+            //- nếu đã hoàn tất hồ sơ, hiển thị dòng chữ thông báo bình thường không đóng card
+            <div className="flex items-center gap-2 text-sm text-muted-foreground px-1">
+              <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span>
+                <strong className="font-semibold text-foreground mr-1">
+                  {t("ProfileComplete")}:
+                </strong>
+                {getDisplayMessage()}
+              </span>
             </div>
-          </div>
+          ) : (
+            //- nếu chưa hoàn tất hồ sơ, giữ nguyên card cảnh báo màu vàng nổi bật để hướng dẫn người dùng
+            <div className="flex items-start gap-3 p-4 rounded-2xl border bg-amber-500/5 dark:bg-amber-500/10 border-amber-500/20 text-amber-800 dark:text-amber-300">
+              <AlertCircle className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-sm font-semibold">
+                  {t("ProfileIncomplete")}
+                </p>
+                <p className="text-xs text-muted-foreground leading-normal">
+                  {getDisplayMessage()}
+                  <span className="block mt-1">
+                    {t.rich("UpdateProfilePrompt", {
+                      link: () => (
+                        <Link
+                          href="/profile"
+                          className="font-bold underline text-primary hover:opacity-85"
+                        >
+                          {t("ProfileLink")}
+                        </Link>
+                      ),
+                    })}
+                  </span>
+                </p>
+              </div>
+            </div>
+          )
         )}
 
         {/* Thanh công cụ lọc cơ bản phía trên danh sách */}
@@ -258,7 +273,8 @@ export default function PageAiRecommendations() {
 
             {/* Bộ lọc địa điểm */}
             <Select value={location} onValueChange={(val) => setLocation(val)}>
-              <SelectTrigger className="bg-background border-border">
+              {/*- thêm w-full để SelectTrigger rộng hết cỡ bằng ô input */}
+              <SelectTrigger className="w-full bg-background border-border">
                 <SelectValue placeholder={t("SelectLocation")} />
               </SelectTrigger>
               <SelectContent>
@@ -273,14 +289,15 @@ export default function PageAiRecommendations() {
 
             {/* Bộ lọc cấp bậc */}
             <Select value={level} onValueChange={(val) => setLevel(val)}>
-              <SelectTrigger className="bg-background border-border">
+              {/*- thêm w-full để SelectTrigger rộng hết cỡ bằng ô input */}
+              <SelectTrigger className="w-full bg-background border-border">
                 <SelectValue placeholder={t("SelectLevel")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("AllLevels")}</SelectItem>
                 {LEVEL_OPTIONS.map((opt) => (
                   <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
+                    {tCommon(`Level.${opt.value}` as any)}
                   </SelectItem>
                 ))}
               </SelectContent>

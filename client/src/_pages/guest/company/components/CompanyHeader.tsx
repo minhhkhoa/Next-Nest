@@ -25,6 +25,7 @@ interface CompanyHeaderProps {
 
 export default function CompanyHeader({ company }: CompanyHeaderProps) {
   const t = useTranslations("PageCompanyDetail");
+  const tCommon = useTranslations("Common");
   const { isLogin, user } = useAppStore();
 
   const queryClient = useQueryClient();
@@ -49,7 +50,7 @@ export default function CompanyHeader({ company }: CompanyHeaderProps) {
           });
         },
         onError: (error: any) => {
-          SoftDestructiveSonner(error?.message || "Có lỗi xảy ra");
+          SoftDestructiveSonner(error?.message || tCommon("Bookmark.Error"));
         },
       });
     } else {
@@ -68,7 +69,7 @@ export default function CompanyHeader({ company }: CompanyHeaderProps) {
             });
           },
           onError: (error: any) => {
-            SoftDestructiveSonner(error?.message || "Có lỗi xảy ra");
+            SoftDestructiveSonner(error?.message || tCommon("Bookmark.Error"));
           },
         },
       );

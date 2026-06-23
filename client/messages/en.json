@@ -133,6 +133,7 @@
       "PlaceholderSearch": "Search jobs ...",
       "PlaceholderLocation": "Search location ...",
       "LevelAll": "All Levels",
+      "Level": "Level",
       "LocationAll": "All Locations",
       "NoLocation": "No location data available",
       "NoJobsFound": "No jobs found."
@@ -141,7 +142,8 @@
     "TopCompaniesSection": {
       "Title": "Top Companies",
       "Description": "Discover top companies that are hiring",
-      "ViewAll": "View all"
+      "ViewAll": "View all",
+      "JobsCount": "{count} jobs"
     }
   },
 
@@ -213,6 +215,31 @@
       "LoginRequired": "You need to log in to perform this action",
       "CreateError": "An error occurred while starting the chat",
       "Connecting": "Connecting..."
+    },
+    "BlockIssue": {
+      "BadgeLabel": "Support & Feedback",
+      "SrOnlyLabel": "Support",
+      "TooltipLabel": "Support & Feedback",
+      "SupportCenter": "Support Center",
+      "SupportCenterDesc": "Submit requests or feedback to help us improve.",
+      "SubmittedIssues": "Submitted Issues",
+      "TrackIssues": "Track issue status",
+      "SubmitIssue": "Submit Feedback",
+      "SubmitIssueDesc": "Send bug reports or ideas"
+    },
+    "FloatButton": {
+      "SavedJobsMobile": "Saved Jobs",
+      "SavedJobsSrOnly": "Saved Jobs",
+      "SavedJobsTooltip": "Saved jobs & companies",
+      "MyApplicationsMobile": "Applications",
+      "MyApplicationsSrOnly": "Track applications",
+      "MyApplicationsTooltip": "Track applications",
+      "ToggleMenu": "Toggle menu"
+    },
+    "Bookmark": {
+      "SaveSuccess": "Job saved successfully",
+      "RemoveSuccess": "Job removed from bookmarks",
+      "Error": "An error occurred"
     }
   },
 
@@ -301,7 +328,9 @@
       "Preparing": "Preparing...",
       "NoCompany": "No company found to start chat",
       "PrepError": "Could not prepare draft message"
-    }
+    },
+    "NotFoundTitle": "Job information not found or an error occurred.",
+    "NotFoundDesc": "Please check the URL again or try again later."
   },
 
   "PageCompanyDetail": {
@@ -320,7 +349,8 @@
     "Message": "Message",
     "Industries": "Industries",
     "CompanyLocation": "Company Location",
-    "ReportCompany": "Report company"
+    "ReportCompany": "Report company",
+    "NotFound": "Company information not found"
   },
 
   "Candidate": {
@@ -334,6 +364,8 @@
       "NoCv": "You haven't created any CVs yet. Create your first CV now!",
       "TemplateList": "CV Templates List",
       "AiScoreBtn": "AI Score",
+      "DetailTitle": "Your CV Details",
+      "DetailDesc": "Below are the details of your CV. You can preview and edit your CV content to ensure it accurately reflects your skills and experience. Make sure your CV stands out and grabs the recruiter's attention!",
       "SaveResumeDialog": {
         "BtnTrigger": "Save CV Resume",
         "Title": "Save CV Resume",
@@ -373,7 +405,18 @@
       }
     },
     "MyApplication": {
+      "SearchPlaceholder": "Search by job title or company...",
       "Title": "Application History",
+      "SubTitle": "Manage your submitted applications and track their status.",
+      "All": "All",
+      "Status": {
+        "PENDING": "Pending",
+        "REVIEWING": "Reviewing",
+        "INTERVIEW": "Interview",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected",
+        "CANCELLED": "Cancelled"
+      },
       "ApplyDate": "Applied {date}",
       "CoverLetter": "Cover Letter",
       "Note": "Recruiter's Note: {note}",
@@ -383,6 +426,11 @@
       "RecruiterNotViewed": "Recruiter not viewed",
       "CancelApply": "Withdraw",
       "CancelApplyConfirm": "Are you sure you want to withdraw this application?",
+      "WithdrawSuccess": "Application withdrawn successfully",
+      "WithdrawError": "An error occurred while withdrawing the application, please try again",
+      "ConfirmWithdrawTitle": "Confirm withdrawal of application",
+      "ConfirmWithdrawDesc": "Are you sure you want to withdraw your application for the position {jobTitle}? This action cannot be undone, and the recruiter will no longer see your profile.",
+      "ConfirmWithdrawBtn": "Confirm withdrawal",
       "Detail": "Detail",
       "DetailTitle": "Application Details",
       "InterviewInvite": "The recruiter has invited you for an interview!",
@@ -788,7 +836,12 @@
     "Highlight": "Highlight",
     "ReadArticle": "Read Article",
     "ReadMore": "Read More",
-    "NoArticles": "No articles found"
+    "NoArticles": "No articles found",
+    "Author": "Author",
+    "RelatedArticles": "Related articles",
+    "CareerTitle": "Career path",
+    "CareerDesc": "Discover useful information related to the career you are interested in. Share experiences and professional knowledge to help you find a suitable job and develop yourself.",
+    "ViewAll": "View all"
   },
 
   "AiScorePage": {
@@ -833,7 +886,7 @@
   },
   "JobCard": {
     "LevelFrom": "Level from",
-    "RequiredSkills": "Required skills:",
+    "RequiredSkills": "Required skills",
     "Deadline": "Deadline:",
     "DaysLeft": "({days} days left)",
     "Expired": "Expired",
@@ -895,6 +948,10 @@
     "ProfileIncomplete": "Your profile is currently incomplete or missing CV",
     "UpdateProfilePrompt": "Update now at <link></link> or upload CV to get the best matching results.",
     "ProfileLink": "Personal Profile",
+    "ProfileCompleteDesc": "AI has analyzed your profile and CV to provide the best job recommendations below.",
+    "NoRecommendationsDesc": "Currently there are no jobs fully matching your profile. Try updating more skills or wait for new opportunities.",
+    "ProfileIncompleteDesc": "Your profile is currently incomplete and has no CV. AI is suggesting prominent jobs. Please update your personal profile or create a CV so AI can better understand your needs.",
+    "SystemBusyDesc": "The AI recommendation system is busy. Please try again later.",
     "SearchPlaceholder": "Job title, company, skills...",
     "SelectLocation": "Select location",
     "AllLocations": "All locations",
@@ -933,7 +990,11 @@
     "ForgotPasswordConfirm": "Confirm",
     "EnterEmail": "Please enter your email",
     "EmailPlaceholder": "Enter your email",
+    "EmailInvalid": "Invalid email address",
+    "EnterPassword": "Please enter password",
     "PasswordMinLength": "Password must be at least 8 characters long",
+    "PasswordMaxLength": "Password must not exceed 100 characters",
+    "EnterName": "Please enter your name",
     "PasswordMismatch": "Passwords do not match",
     "RegisterSuccess": "Congratulations, you have registered successfully! 🎇",
     "NameLabel": "Name",
@@ -950,6 +1011,8 @@
     "ConfirmPasswordPlaceholder": "Confirm your new password",
     "ChangePasswordDesc": "Update your password to secure your account",
     "ChangePasswordSuccess": "Password changed successfully!",
-    "CurrentPasswordIncorrect": "The current password you entered is incorrect"
+    "CurrentPasswordIncorrect": "The current password you entered is incorrect",
+    "CurrentPasswordRequired": "Please enter your current password",
+    "ConfirmPasswordRequired": "Please confirm your new password"
   }
 }

@@ -15,6 +15,8 @@ import applicationApiRequest from "@/apiRequest/application";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
+import { useTranslations } from "next-intl";
+
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -29,18 +31,20 @@ export default function CancelApplicationAlertDialog({
   jobTitle,
 }: Props) {
   const queryClient = useQueryClient();
+  const t = useTranslations("Candidate.MyApplication");
+  const tCommon = useTranslations("Common");
 
   const { mutate, isPending } = useMutation({
     mutationFn: (id: string) => applicationApiRequest.remove(id),
     onSuccess: () => {
-      toast.success("Rút đơn ứng tuyển thành công");
+      toast.success(t("WithdrawSuccess"));
       queryClient.invalidateQueries({ queryKey: ["my-applications"] });
       onOpenChange(false);
     },
     onError: (error: any) => {
       toast.error(
         error?.response?.data?.message ||
-          "Có lỗi xảy ra khi rút đơn, vui lòng thử lại",
+          t("WithdrawError"),
       );
     },
   });
@@ -54,11 +58,11 @@ export default function CancelApplicationAlertDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Xác nhận rút đơn ứng tuyển</DialogTitle>
+          <DialogTitle>{t("ConfirmWithdrawTitle")}</DialogTitle>
           <DialogDescription>
-            Bạn có chắc chắn muốn rút lại đơn ứng tuyển cho vị trí{" "}
-            <strong>{jobTitle}</strong> không? Hành động này không thể hoàn tác,
-            nhà tuyển dụng sẽ không còn thấy hồ sơ của bạn.
+            {t.rich("ConfirmWithdrawDesc", {
+              jobTitle: () => <strong>{jobTitle}</strong>,
+            })}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -67,7 +71,7 @@ export default function CancelApplicationAlertDialog({
             onClick={() => onOpenChange(false)}
             disabled={isPending}
           >
-            Hủy
+            {tCommon("Buttons.cancel")}
           </Button>
           <Button
             variant="destructive"
@@ -75,7 +79,7 @@ export default function CancelApplicationAlertDialog({
             disabled={isPending}
           >
             {isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            Xác nhận rút đơn
+            {t("ConfirmWithdrawBtn")}
           </Button>
         </DialogFooter>
       </DialogContent>

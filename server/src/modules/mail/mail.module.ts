@@ -6,7 +6,6 @@ import { ConfigService } from '@nestjs/config';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { join } from 'path';
 
-
 @Module({
   imports: [
     MailerModule.forRootAsync({
@@ -21,7 +20,7 @@ import { join } from 'path';
         },
 
         defaults: {
-          from: '"Support Team" <example@gmail.com>',
+          from: '"JobHub" <example@gmail.com>',
         },
 
         template: {

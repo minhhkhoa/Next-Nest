@@ -74,7 +74,8 @@ export default function AdvancedFilterPanel({
           value={value.level || "all"}
           onValueChange={(next) => update("level", next === "all" ? "" : next)}
         >
-          <SelectTrigger>
+          {/*- thêm className="w-full" để Select rộng bằng các input khác */}
+          <SelectTrigger className="w-full">
             <SelectValue placeholder={t("AllLevels")} />
           </SelectTrigger>
           <SelectContent>
@@ -96,7 +97,8 @@ export default function AdvancedFilterPanel({
             update("employeeType", next === "all" ? "" : next)
           }
         >
-          <SelectTrigger>
+          {/*- thêm className="w-full" để Select rộng bằng các input khác */}
+          <SelectTrigger className="w-full">
             <SelectValue placeholder={t("AllTypes")} />
           </SelectTrigger>
           <SelectContent>
@@ -118,7 +120,8 @@ export default function AdvancedFilterPanel({
             update("experience", next === "all" ? "" : next)
           }
         >
-          <SelectTrigger>
+          {/*- thêm className="w-full" để Select rộng bằng các input khác */}
+          <SelectTrigger className="w-full">
             <SelectValue placeholder={t("AllExperiences")} />
           </SelectTrigger>
           <SelectContent>
@@ -169,7 +172,8 @@ export default function AdvancedFilterPanel({
           value={value.currency || "all"}
           onValueChange={(next) => update("currency", next === "all" ? "" : next)}
         >
-          <SelectTrigger>
+          {/*- thêm className="w-full" để Select rộng bằng các input khác */}
+          <SelectTrigger className="w-full">
             <SelectValue placeholder={t("All")} />
           </SelectTrigger>
           <SelectContent>

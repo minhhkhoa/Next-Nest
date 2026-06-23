@@ -76,7 +76,7 @@ export default function TopCompaniesSection() {
                         {company.name}
                       </h3>
                       <span className="text-xs text-muted-foreground mt-1">
-                        {company.totalJob || 0} việc làm
+                        {t("JobsCount", { count: company.totalJob || 0 })}
                       </span>
                     </CardContent>
                   </Card>

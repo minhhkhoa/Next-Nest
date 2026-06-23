@@ -71,6 +71,19 @@ instance.interceptors.request.use(
     ) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    //- tự động đính kèm locale hiện tại vào Accept-Language header
+    const getLocale = () => {
+      if (typeof window !== "undefined") {
+        const localePath = window.location.pathname.split("/")[1];
+        if (["vi", "en"].includes(localePath)) return localePath;
+        const match = document.cookie.match(/(?:^|; )NEXT_LOCALE=([^;]*)/);
+        if (match && ["vi", "en"].includes(match[1])) return match[1];
+      }
+      return "vi";
+    };
+    config.headers["Accept-Language"] = getLocale();
+
     if (!config.headers.Accept && config.headers["Content-Type"]) {
       //- neu khong co header Accept thi them
       config.headers.Accept = "application/json";
@@ -79,6 +92,8 @@ instance.interceptors.request.use(
 
     if (isCloudinary) {
       delete config.headers.Authorization;
+      //- khi upload cloudinary thì cũng không cần Accept-Language
+      delete config.headers["Accept-Language"];
       config.withCredentials = false;
     }
     return config;

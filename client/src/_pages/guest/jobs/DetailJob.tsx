@@ -6,8 +6,10 @@ import JobDetailInfo from "./components/JobDetailInfo";
 import RelatedJobs from "./components/RelatedJobs";
 import { AdBannerInline } from "@/components/ads/AdSlotRenderer";
 import DetailJobSkeleton from "@/components/skeletons/DetailJob";
+import { useTranslations } from "next-intl";
 
 export default function PageDetailJob({ idJob }: { idJob: string }) {
+  const t = useTranslations("PageJobDetail");
   const {
     data: jobDetail,
     isLoading: isLoadingJobDetail,
@@ -22,10 +24,10 @@ export default function PageDetailJob({ idJob }: { idJob: string }) {
     return (
       <div className="container mx-auto py-8 text-center">
         <h1 className="text-2xl font-bold text-red-500">
-          Không tìm thấy thông tin công việc hoặc có lỗi xảy ra.
+          {t("NotFoundTitle")}
         </h1>
         <p className="text-gray-500 mt-2">
-          Vui lòng kiểm tra lại đường dẫn hoặc thử lại sau.
+          {t("NotFoundDesc")}
         </p>
       </div>
     );

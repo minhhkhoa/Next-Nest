@@ -22,7 +22,10 @@ import { Button } from "@/components/ui/button";
 import { useAppStore } from "./TanstackProvider";
 import { IssueDialogForm } from "@/_pages/admin/issue/components/issue-modal-form";
 
+import { useTranslations } from "next-intl";
+
 export default function BlockIssue() {
+  const t = useTranslations("Common.BlockIssue");
   const { isLogin } = useAppStore();
 
   //- State để quản lý trạng thái mở của modal
@@ -42,7 +45,7 @@ export default function BlockIssue() {
               <div className="flex items-center gap-2 pointer-events-auto">
                 {/*- nhãn hiển thị bên cạnh icon trên mobile giúp người dùng dễ nhận biết do không có hover */}
                 <span className="px-2 py-1 rounded bg-black/80 dark:bg-slate-900/90 text-white text-[11px] font-medium shadow-md pointer-events-none sm:hidden whitespace-nowrap">
-                  Hỗ trợ & Đóng góp
+                  {t("BadgeLabel")}
                 </span>
                 <PopoverTrigger asChild>
                   <Button
@@ -50,13 +53,13 @@ export default function BlockIssue() {
                     className="h-10 w-10 rounded-full shadow-lg transition-transform hover:scale-110 bg-primary text-primary-foreground hover:bg-primary/90 shrink-0"
                   >
                     <MessageCircleQuestion className="h-5 w-5" />
-                    <span className="sr-only">Hỗ trợ</span>
+                    <span className="sr-only">{t("SrOnlyLabel")}</span>
                   </Button>
                 </PopoverTrigger>
               </div>
             </TooltipTrigger>
             <TooltipContent side="left" className="hidden sm:block">
-              <p>Hỗ trợ & Đóng góp</p>
+              <p>{t("TooltipLabel")}</p>
             </TooltipContent>
           </Tooltip>
 
@@ -67,9 +70,9 @@ export default function BlockIssue() {
             sideOffset={10}
           >
             <div className="flex flex-col border-b p-4 bg-muted/50 rounded-t-lg">
-              <h4 className="font-semibold text-sm">Trung tâm hỗ trợ</h4>
+              <h4 className="font-semibold text-sm">{t("SupportCenter")}</h4>
               <p className="text-xs text-muted-foreground mt-1">
-                Gửi yêu cầu hoặc đóng góp ý kiến để giúp chúng tôi cải thiện.
+                {t("SupportCenterDesc")}
               </p>
             </div>
             <div className="p-2 grid gap-1">
@@ -82,10 +85,10 @@ export default function BlockIssue() {
                   <ListChecks className="h-4 w-4 text-blue-500" />
                   <div className="flex flex-col items-start text-left">
                     <span className="text-sm font-medium">
-                      Các vấn đề đã gửi
+                      {t("SubmittedIssues")}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      Theo dõi trạng thái yêu cầu
+                      {t("TrackIssues")}
                     </span>
                   </div>
                 </Link>
@@ -97,9 +100,9 @@ export default function BlockIssue() {
               >
                 <PlusCircle className="h-4 w-4 text-green-500" />
                 <div className="flex flex-col items-start text-left">
-                  <span className="text-sm font-medium">Đóng góp thêm</span>
+                  <span className="text-sm font-medium">{t("SubmitIssue")}</span>
                   <span className="text-xs text-muted-foreground">
-                    Gửi báo cáo lỗi hoặc ý kiến
+                    {t("SubmitIssueDesc")}
                   </span>
                 </div>
               </Button>

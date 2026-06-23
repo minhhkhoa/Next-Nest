@@ -307,7 +307,7 @@ export default function IndustrySelector({
             <div className="max-h-[300px] overflow-y-auto">
               {filteredIndustries.length === 0 ? (
                 <div className="py-6 text-center text-sm text-muted-foreground">
-                  Không tìm thấy kết quả
+                  {t("NoData")}
                 </div>
               ) : (
                 filteredIndustries.map((industry) => (

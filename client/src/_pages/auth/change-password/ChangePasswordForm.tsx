@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,7 @@ import {
 } from "@/components/ui/card";
 import {
   ChangePasswordInput,
-  changePasswordSchema,
+  getChangePasswordSchema,
 } from "@/schemasvalidation/auth";
 import { useAppStore } from "@/components/TanstackProvider";
 import { useChangePassword } from "@/queries/useAuth";
@@ -31,6 +32,8 @@ export default function ChangePasswordForm() {
   const t = useTranslations("Auth");
   const { user } = useAppStore();
   const { mutateAsync: changePassword, isPending } = useChangePassword();
+
+  const changePasswordSchema = useMemo(() => getChangePasswordSchema(t), [t]);
 
   const form = useForm<ChangePasswordInput>({
     resolver: zodResolver(changePasswordSchema),

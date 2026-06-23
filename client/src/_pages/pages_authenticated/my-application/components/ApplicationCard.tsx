@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
-import { vi } from "date-fns/locale";
+import { vi, enUS } from "date-fns/locale";
 import ApplicationDetailDialog from "./ApplicationDetailDialog";
 import CancelApplicationAlertDialog from "./CancelApplicationAlertDialog";
 import { generateSlugUrl, getSalaryText } from "@/lib/utils";
@@ -144,7 +144,7 @@ export default function ApplicationCard({
                 {t("ApplyDate", {
                   date: formatDistanceToNow(new Date(application.createdAt), {
                     addSuffix: true,
-                    locale: locale === "vi" ? vi : undefined,
+                    locale: locale === "vi" ? vi : enUS,
                   }),
                 })}
               </span>

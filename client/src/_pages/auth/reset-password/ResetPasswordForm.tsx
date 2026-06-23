@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -27,17 +28,10 @@ import { Link } from "@/i18n/navigation";
 import SoftSuccessSonner from "@/components/shadcn-studio/sonner/SoftSuccessSonner";
 import { useTranslations } from "next-intl";
 
-const resetPasswordSchema = z
-  .object({
-    password: z.string().min(8, "Mật khẩu phải có ít nhất 8 ký tự"),
-    confirmPassword: z.string().min(8, "Mật khẩu phải có ít nhất 8 ký tự"),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Mật khẩu không trùng khớp",
-    path: ["confirmPassword"],
-  });
-
-type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
+type ResetPasswordFormValues = {
+  password: string;
+  confirmPassword: string;
+};
 
 export default function ResetPasswordForm() {
   const t = useTranslations("Auth");
@@ -50,6 +44,18 @@ export default function ResetPasswordForm() {
     email,
   );
   const { mutateAsync: resetPassword } = useResetPassword();
+
+  const resetPasswordSchema = useMemo(() => {
+    return z
+      .object({
+        password: z.string().min(8, t("PasswordMinLength")),
+        confirmPassword: z.string().min(8, t("PasswordMinLength")),
+      })
+      .refine((data) => data.password === data.confirmPassword, {
+        message: t("PasswordMismatch"),
+        path: ["confirmPassword"],
+      });
+  }, [t]);
 
   const form = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordSchema),
@@ -88,9 +94,7 @@ export default function ResetPasswordForm() {
   if (!validateResetPassword?.data?.valid) {
     return (
       <div className="flex flex-col justify-center items-center h-screen">
-        <div className="text-center text-red-500">
-          {t("InvalidToken")}
-        </div>
+        <div className="text-center text-red-500">{t("InvalidToken")}</div>
         {/* quay veef login */}
         <div className="mt-4">
           <Link href="/login">
@@ -105,9 +109,7 @@ export default function ResetPasswordForm() {
     <Card className="w-full max-w-md shadow-2xl border-border/50">
       <CardHeader>
         <CardTitle>{t("CreateNewPassword")}</CardTitle>
-        <CardDescription>
-          {t("ResetPasswordDesc")}
-        </CardDescription>
+        <CardDescription>{t("ResetPasswordDesc")}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>

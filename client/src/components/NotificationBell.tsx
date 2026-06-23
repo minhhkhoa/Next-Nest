@@ -11,7 +11,6 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
-import { vi } from "date-fns/locale";
 import {
   useDeleteNotification,
   useGetCountUnread,
@@ -22,12 +21,16 @@ import {
 import { handleNotificationNavigation } from "@/lib/utils";
 import { NotificationResType } from "@/schemasvalidation/notification";
 import { useRouter } from "@/i18n/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { useGetLang } from "@/hooks/use-get-lang";
+import { vi, enUS } from "date-fns/locale";
 
 export default function NotificationBell() {
   const t = useTranslations("Header.Bell");
   const router = useRouter();
   const { isLogin } = useAppStore();
+  const { getLang } = useGetLang();
+  const locale = useLocale();
 
   // 1. Lấy số lượng và danh sách thông báo qua Hooks
   const { data: countRes } = useGetCountUnread(isLogin);
@@ -106,7 +109,7 @@ export default function NotificationBell() {
                     <span
                       className={`text-sm leading-tight ${!item.isRead ? "font-bold" : "font-medium"}`}
                     >
-                      {item.title.vi}
+                      {getLang(item.title)}
                     </span>
                     <Button
                       variant="ghost"
@@ -122,13 +125,13 @@ export default function NotificationBell() {
                   </div>
 
                   <p className="text-xs text-muted-foreground line-clamp-2">
-                    {item.content.vi}
+                    {getLang(item.content)}
                   </p>
 
                   <span className="text-[10px] text-muted-foreground/70 mt-1">
                     {formatDistanceToNow(new Date(item.createdAt), {
                       addSuffix: true,
-                      locale: vi,
+                      locale: locale === "vi" ? vi : enUS,
                     })}
                   </span>
                 </div>
