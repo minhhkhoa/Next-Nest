@@ -1,5 +1,5 @@
 import { cn, generateSlugUrl } from "@/lib/utils";
-import { ChatMessage } from "@/schemasvalidation/chat";
+import { ChatMessage, Conversation } from "@/schemasvalidation/chat";
 import React, { useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -54,6 +54,7 @@ interface UseMemoFrameChatProps {
   lastOwnMessageId: string | null;
   candidateData: TypeActionBy | undefined;
   hrData: TypeActionBy | undefined;
+  activeConversation?: Conversation | null;
 }
 
 export default function useMemoFrameChat({
@@ -62,6 +63,7 @@ export default function useMemoFrameChat({
   lastOwnMessageId,
   candidateData,
   hrData,
+  activeConversation,
 }: UseMemoFrameChatProps) {
   const t = useTranslations("Candidate.Chat");
   const tCommon = useTranslations("Common");
@@ -93,11 +95,28 @@ export default function useMemoFrameChat({
           nextMessage.senderId?._id === msg.senderId?._id;
         const shouldShowAvatar = !isSameSenderAsNext;
 
-        const avatarSrc =
-          msg.senderId?.avatar ||
-          (msg.senderType === envConfig.NEXT_PUBLIC_ROLE_CANDIDATE
+        //- Xác định avatar hiển thị
+        let avatarSrc = msg.senderId?.avatar;
+        if (msg.conversationId !== "ai-assistant" && activeConversation) {
+          if (isMe) {
+            avatarSrc = msg.senderId?.avatar;
+          } else {
+            if (currentUserSenderType === "CANDIDATE") {
+              //- Đối phương là Company -> hiển thị logo công ty
+              avatarSrc = activeConversation.companyId?.logo || msg.senderId?.avatar;
+            } else {
+              //- Đối phương là Candidate -> hiển thị avatar candidate
+              avatarSrc = activeConversation.candidateId?.avatar || msg.senderId?.avatar;
+            }
+          }
+        }
+        
+        //- Fallback nếu avatarSrc rỗng
+        if (!avatarSrc) {
+          avatarSrc = msg.senderType === envConfig.NEXT_PUBLIC_ROLE_CANDIDATE
             ? candidateData?.avatar
-            : hrData?.avatar);
+            : hrData?.avatar;
+        }
 
         const jobReferenceSlug =
           msg.metadata?.jobSlug || msg.metadata?.jobTitle || "chi-tiet-job";
@@ -424,6 +443,7 @@ export default function useMemoFrameChat({
       lastOwnMessageId,
       candidateData?.avatar,
       hrData?.avatar,
+      activeConversation,
       t,
       tCommon,
       locale,

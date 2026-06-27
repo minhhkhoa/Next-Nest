@@ -207,6 +207,12 @@ export default function ChatPageModule() {
     return displayMessages;
   }, [activeConversationId, aiMessages, displayMessages]);
 
+  //- Xác định thông tin cuộc trò chuyện hiện tại đang mở
+  const activeConversation = useMemo(() => {
+    if (!activeConversationId) return null;
+    return conversations.find((c) => c._id === activeConversationId) || null;
+  }, [conversations, activeConversationId]);
+
   const getCurrentSenderType = (): ChatMessage["senderType"] => {
     return user?.roleCodeName === envConfig.NEXT_PUBLIC_ROLE_CANDIDATE
       ? (envConfig.NEXT_PUBLIC_ROLE_CANDIDATE as ChatMessage["senderType"])
@@ -800,6 +806,7 @@ export default function ChatPageModule() {
       <ChatWindow
         messages={currentWindowMessages}
         activeConversationId={activeConversationId}
+        activeConversation={activeConversation}
         inputText={inputText}
         onSendMessage={handleSendMessage}
         isSending={

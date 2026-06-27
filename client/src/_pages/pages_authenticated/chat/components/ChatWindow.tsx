@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { ChatMessage } from "@/schemasvalidation/chat";
+import { ChatMessage, Conversation } from "@/schemasvalidation/chat";
 import { getRoleCodeName } from "@/lib/utils";
 import {
   User as UserIcon,
@@ -84,11 +84,13 @@ interface ChatWindowProps {
   pendingCvAttachment?: UserResumeResponseType | null;
   onClearPendingCvAttachment?: () => void;
   onAttachSystemCv?: (resume: UserResumeResponseType) => void;
+  activeConversation?: Conversation | null;
 }
 
 export default function ChatWindow({
   messages,
   activeConversationId,
+  activeConversation,
   inputText,
   pendingJobReference,
   onSendMessage,
@@ -187,12 +189,40 @@ export default function ChatWindow({
     return null;
   }, [messages, currentUserSenderType]);
 
+  //- Xác định avatar và tên hiển thị ở Header
+  const headerAvatar = useMemo(() => {
+    if (activeConversationId === "ai-assistant") {
+      return "https://cdn-icons-png.flaticon.com/512/8943/8943377.png";
+    }
+    if (activeConversation) {
+      return isCandidate
+        ? activeConversation.companyId?.logo
+        : activeConversation.candidateId?.avatar;
+    }
+    //- Fallback nếu chưa có activeConversation
+    return isCandidate ? hrData?.avatar : candidateData?.avatar;
+  }, [activeConversation, activeConversationId, isCandidate, hrData?.avatar, candidateData?.avatar]);
+
+  const headerName = useMemo(() => {
+    if (activeConversationId === "ai-assistant") {
+      return t("AiAssistant");
+    }
+    if (activeConversation) {
+      return isCandidate
+        ? activeConversation.companyId?.name
+        : activeConversation.candidateId?.name;
+    }
+    //- Fallback nếu chưa có activeConversation
+    return isCandidate ? hrData?.name : candidateData?.name;
+  }, [activeConversation, activeConversationId, isCandidate, hrData?.name, candidateData?.name, t]);
+
   const messageItems = useMemoFrameChat({
     messages,
     currentUserSenderType,
     lastOwnMessageId,
     candidateData,
     hrData,
+    activeConversation,
   });
 
   useEffect(() => {
@@ -302,24 +332,12 @@ export default function ChatWindow({
 
         <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
           <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
-            <AvatarImage
-              src={
-                activeConversationId === "ai-assistant"
-                  ? "https://cdn-icons-png.flaticon.com/512/8943/8943377.png"
-                  : isCandidate
-                  ? hrData?.avatar
-                  : candidateData?.avatar
-              }
-            />
+            <AvatarImage src={headerAvatar} />
             <AvatarFallback>AI</AvatarFallback>
           </Avatar>
         </div>
         <span className="font-semibold truncate text-sm sm:text-base">
-          {activeConversationId === "ai-assistant"
-            ? t("AiAssistant")
-            : isCandidate
-            ? hrData?.name
-            : candidateData?.name}
+          {headerName}
         </span>
       </div>
 
