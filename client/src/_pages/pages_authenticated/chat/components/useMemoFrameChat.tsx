@@ -15,9 +15,15 @@ import {
   MessageContent,
   MessageFooter,
 } from "@/components/ui/message";
-import { Bubble, BubbleContent } from "@/components/ui/bubble";
+import { Bubble, BubbleContent, BubbleReactions } from "@/components/ui/bubble";
 import { Card, CardContent } from "@/components/ui/card";
-import { ExternalLink, FileText } from "lucide-react";
+import { ExternalLink, FileText, Smile } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { CV_TEMPLATES } from "@/lib/constant";
 import BasicTemplate from "@/components/cv-templates/BasicTemplate";
 import ImpressiveTemplate from "@/components/cv-templates/ImpressiveTemplate";
@@ -63,6 +69,8 @@ interface UseMemoFrameChatProps {
   candidateData: TypeActionBy | undefined;
   hrData: TypeActionBy | undefined;
   activeConversation?: Conversation | null;
+  onSendReaction?: (messageId: string, emoji: string) => void;
+  currentUserId?: string;
 }
 
 export default function useMemoFrameChat({
@@ -72,6 +80,8 @@ export default function useMemoFrameChat({
   candidateData,
   hrData,
   activeConversation,
+  onSendReaction,
+  currentUserId,
 }: UseMemoFrameChatProps) {
   const t = useTranslations("Candidate.Chat");
   const tCommon = useTranslations("Common");
@@ -150,10 +160,13 @@ export default function useMemoFrameChat({
           <MessageScrollerItem
             key={msg._id}
             messageId={msg._id}
-            scrollAnchor={isMe}
+            //- chỉ dùng tin nhắn cuối cùng làm anchor cuộn để scroller luôn bám đáy và tránh bị nhảy cuộn lên đầu khi gửi
+            scrollAnchor={index === messages.length - 1}
             className={cn(
               "w-full flex",
               isMe ? "justify-end" : "justify-start",
+              //- nếu tin nhắn hiện tại có biểu cảm và có tin nhắn tiếp theo thì thêm padding bottom để tránh đè
+              msg.reactions && msg.reactions.length > 0 && nextMessage ? "pb-3.5" : ""
             )}
           >
             <Message
@@ -171,283 +184,376 @@ export default function useMemoFrameChat({
                 <div className="h-8 w-8 sm:h-10 sm:w-10 shrink-0" />
               )}
               <MessageContent className="min-w-0 flex-1 gap-1">
-                <Bubble
-                  variant="custom"
-                  className="max-w-full group-data-[align=end]/message:self-end data-[align=end]:self-end"
+                <div
+                  className={cn(
+                    "flex items-center gap-1.5 w-full max-w-full min-w-0 relative group/row",
+                    isMe ? "flex-row-reverse" : "flex-row",
+                  )}
                 >
-                  <BubbleContent
-                    className={cn(
-                      "px-3 py-2 sm:px-4 rounded-2xl text-sm sm:text-base w-full max-w-full break-words shadow-xs border",
-                      isMe
-                        ? "bg-primary/10 text-primary dark:bg-primary/25 dark:text-primary-foreground border border-primary/20"
-                        : "bg-white/60 dark:bg-slate-900/60 border border-slate-200/40 dark:border-slate-800/40 backdrop-blur-xs",
-                    )}
-                  >
-                    {msg.type === "TEXT" ? (
-                      msg.content ? (
-                        //- su dung component markdown renderer khi tin nhan la tu ai assistant
-                        msg.conversationId === "ai-assistant" &&
-                        msg.senderId?._id === "ai-bot" ? (
-                          <MarkdownRenderer content={msg.content} />
+                  <Bubble variant="custom" className="max-w-full">
+                    <BubbleContent
+                      className={cn(
+                        "px-3 py-2 sm:px-4 rounded-2xl text-sm sm:text-base w-full max-w-full break-words shadow-xs border",
+                        isMe
+                          ? "bg-primary/10 text-primary dark:bg-primary/25 dark:text-primary-foreground border border-primary/20"
+                          : "bg-white/60 dark:bg-slate-900/60 border border-slate-200/40 dark:border-slate-800/40 backdrop-blur-xs",
+                      )}
+                    >
+                      {msg.type === "TEXT" ? (
+                        msg.content ? (
+                          //- su dung component markdown renderer khi tin nhan la tu ai assistant
+                          msg.conversationId === "ai-assistant" &&
+                          msg.senderId?._id === "ai-bot" ? (
+                            <MarkdownRenderer content={msg.content} />
+                          ) : (
+                            <p className="whitespace-pre-wrap">{msg.content}</p>
+                          )
                         ) : (
-                          <p className="whitespace-pre-wrap">{msg.content}</p>
+                          <div className="flex gap-1.5 py-1.5 px-1 items-center h-[24px]">
+                            <div
+                              className="w-2 h-2 bg-current rounded-full animate-bounce"
+                              style={{ animationDelay: "0ms" }}
+                            />
+                            <div
+                              className="w-2 h-2 bg-current rounded-full animate-bounce"
+                              style={{ animationDelay: "150ms" }}
+                            />
+                            <div
+                              className="w-2 h-2 bg-current rounded-full animate-bounce"
+                              style={{ animationDelay: "300ms" }}
+                            />
+                          </div>
                         )
-                      ) : (
-                        <div className="flex gap-1.5 py-1.5 px-1 items-center h-[24px]">
-                          <div
-                            className="w-2 h-2 bg-current rounded-full animate-bounce"
-                            style={{ animationDelay: "0ms" }}
-                          />
-                          <div
-                            className="w-2 h-2 bg-current rounded-full animate-bounce"
-                            style={{ animationDelay: "150ms" }}
-                          />
-                          <div
-                            className="w-2 h-2 bg-current rounded-full animate-bounce"
-                            style={{ animationDelay: "300ms" }}
-                          />
+                      ) : msg.type === "IMAGE" ? (
+                        <div className="space-y-2">
+                          {msg.metadata?.imageUrl ? (
+                            <a
+                              href={msg.metadata.imageUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="block"
+                              aria-label="Mở ảnh đính kèm"
+                            >
+                              <Image
+                                src={msg.metadata.imageUrl}
+                                alt={msg.metadata?.fileName || t("Attachments")}
+                                width={msg.metadata?.width || 320}
+                                height={msg.metadata?.height || 220}
+                                className="rounded-xl object-cover max-h-[320px] w-full"
+                              />
+                            </a>
+                          ) : (
+                            <p className="text-xs italic opacity-80">
+                              {t("NoImageToDisplay")}
+                            </p>
+                          )}
+
+                          {msg.content ? (
+                            <p className="whitespace-pre-wrap text-sm opacity-95">
+                              {msg.content}
+                            </p>
+                          ) : null}
                         </div>
-                      )
-                    ) : msg.type === "IMAGE" ? (
-                      <div className="space-y-2">
-                        {msg.metadata?.imageUrl ? (
+                      ) : msg.type === "CV_LINK" ? (
+                        <div className="space-y-2">
                           <a
-                            href={msg.metadata.imageUrl}
+                            href={msg.metadata?.link}
                             target="_blank"
                             rel="noreferrer"
-                            className="block"
-                            aria-label="Mở ảnh đính kèm"
-                          >
-                            <Image
-                              src={msg.metadata.imageUrl}
-                              alt={msg.metadata?.fileName || t("Attachments")}
-                              width={msg.metadata?.width || 320}
-                              height={msg.metadata?.height || 220}
-                              className="rounded-xl object-cover max-h-[320px] w-full"
-                            />
-                          </a>
-                        ) : (
-                          <p className="text-xs italic opacity-80">
-                            {t("NoImageToDisplay")}
-                          </p>
-                        )}
-
-                        {msg.content ? (
-                          <p className="whitespace-pre-wrap text-sm opacity-95">
-                            {msg.content}
-                          </p>
-                        ) : null}
-                      </div>
-                    ) : msg.type === "CV_LINK" ? (
-                      <div className="space-y-2">
-                        <a
-                          href={msg.metadata?.link}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={cn(
-                            "flex items-center gap-3 rounded-xl border p-3 transition hover:opacity-90",
-                            isMe
-                              ? "border-primary/20 bg-primary/10"
-                              : "border-gray-200 bg-gray-50 dark:bg-slate-900 dark:border-slate-700",
-                            !msg.metadata?.link &&
-                              "pointer-events-none opacity-70",
-                          )}
-                          aria-label="Mở tệp đính kèm"
-                        >
-                          <div className="h-9 w-9 rounded-full bg-white/80 dark:bg-slate-800 flex items-center justify-center shrink-0">
-                            <FileText className="h-4 w-4" />
-                          </div>
-
-                          <div className="min-w-0 flex-1">
-                            <p className="font-semibold truncate">
-                              {msg.metadata?.fileName ||
-                                msg.content ||
-                                t("Attachments")}
-                            </p>
-                            <p className="text-xs opacity-80 truncate">
-                              {msg.metadata?.mimeType ||
-                                msg.metadata?.fileExt ||
-                                "File"}
-                              {msg.metadata?.fileSize
-                                ? ` • ${formatFileSize(msg.metadata.fileSize)}`
-                                : ""}
-                            </p>
-                          </div>
-
-                          {msg.metadata?.link ? (
-                            <ExternalLink className="h-4 w-4 shrink-0" />
-                          ) : null}
-                        </a>
-
-                        {msg.content ? (
-                          <p className="whitespace-pre-wrap text-sm opacity-95">
-                            {msg.content}
-                          </p>
-                        ) : null}
-                      </div>
-                    ) : msg.type === "CV_SYSTEM" ? (
-                      <div className="space-y-2">
-                        {msg.content ? (
-                          <p className="whitespace-pre-wrap">{msg.content}</p>
-                        ) : null}
-
-                        <button
-                          type="button"
-                          onClick={() => handleOpenSystemCvPreview(msg)}
-                          className={cn(
-                            "w-full rounded-xl border p-3 text-left transition hover:opacity-90",
-                            isMe
-                              ? "border-primary/20 bg-primary/10"
-                              : "border-gray-200 bg-gray-50 dark:bg-slate-900 dark:border-slate-700",
-                          )}
-                        >
-                          <div className="flex items-center gap-3">
-                            {msg.metadata?.previewImage ? (
-                              <Image
-                                src={msg.metadata.previewImage}
-                                alt={msg.metadata?.cvName || "CV preview"}
-                                width={44}
-                                height={56}
-                                className="h-14 w-11 rounded-md border object-cover shrink-0"
-                              />
-                            ) : (
-                              <div className="h-14 w-11 rounded-md border bg-white/70 dark:bg-slate-800 flex items-center justify-center shrink-0">
-                                <FileText className="h-4 w-4 text-slate-500" />
-                              </div>
+                            className={cn(
+                              "flex items-center gap-3 rounded-xl border p-3 transition hover:opacity-90",
+                              isMe
+                                ? "border-primary/20 bg-primary/10"
+                                : "border-gray-200 bg-gray-50 dark:bg-slate-900 dark:border-slate-700",
+                              !msg.metadata?.link &&
+                                "pointer-events-none opacity-70",
                             )}
+                            aria-label="Mở tệp đính kèm"
+                          >
+                            <div className="h-9 w-9 rounded-full bg-white/80 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                              <FileText className="h-4 w-4" />
+                            </div>
 
                             <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <p className="font-semibold truncate">
-                                  {msg.metadata?.cvName ||
-                                    msg.content ||
-                                    t("SystemCv")}
-                                </p>
-                                {msg.metadata?.isDefault ? (
-                                  <span className="text-[10px] px-2 py-0.5 rounded-full border border-current/40">
-                                    {t("DefaultResume")}
-                                  </span>
-                                ) : null}
-                              </div>
-
-                              {msg.metadata?.templateID ? (
-                                <p className="text-xs opacity-80 truncate">
-                                  Template: {msg.metadata.templateID}
-                                </p>
-                              ) : null}
-
-                              {msg.metadata?.updatedAt ? (
-                                <p className="text-xs opacity-80 truncate">
-                                  {t("UpdateAt", {
-                                    date: new Date(
-                                      msg.metadata.updatedAt,
-                                    ).toLocaleDateString(
-                                      locale === "vi" ? "vi-VN" : "en-US",
-                                    ),
-                                  })}
-                                </p>
-                              ) : null}
-
-                              <p className="text-xs opacity-80 mt-1">
-                                {t("ClickToViewCv")}
+                              <p className="font-semibold truncate">
+                                {msg.metadata?.fileName ||
+                                  msg.content ||
+                                  t("Attachments")}
+                              </p>
+                              <p className="text-xs opacity-80 truncate">
+                                {msg.metadata?.mimeType ||
+                                  msg.metadata?.fileExt ||
+                                  "File"}
+                                {msg.metadata?.fileSize
+                                  ? ` • ${formatFileSize(msg.metadata.fileSize)}`
+                                  : ""}
                               </p>
                             </div>
-                          </div>
-                        </button>
-                      </div>
-                    ) : msg.type === "JOB_REFERENCE" ? (
-                      <div className="space-y-2 w-full min-w-0">
-                        {msg.content ? (
-                          <p className="whitespace-pre-wrap break-all">
-                            {msg.content}
-                          </p>
-                        ) : null}
 
-                        {jobReferenceLink ? (
-                          <Link
-                            href={jobReferenceLink}
-                            className="block w-full min-w-0"
-                            aria-label="Mở chi tiết công việc"
-                          >
-                            <div
-                              className={cn(
-                                "rounded-xl transition hover:opacity-90 w-full min-w-0",
-                                isMe
-                                  ? "border-primary/20 bg-primary/10"
-                                  : "border-gray-200 bg-gray-50 dark:bg-slate-900 dark:border-slate-700",
-                              )}
-                            >
-                              <Card className="w-full min-w-0 dark:!bg-black/80">
-                                <CardContent className="flex items-center gap-3 p-3 min-w-0 w-full">
-                                  {jobReferenceImage && (
-                                    <Image
-                                      src={jobReferenceImage}
-                                      alt={
-                                        msg.metadata?.jobTitle || "Job image"
-                                      }
-                                      width={40}
-                                      height={40}
-                                      className="h-10 w-10 rounded-md object-cover shrink-0"
-                                    />
-                                  )}
-                                  <div className="min-w-0 flex-1">
-                                    <p className="font-semibold truncate underline-offset-2 text-bl hover:underline">
-                                      {msg.metadata?.jobTitle ||
-                                        t("ReferencedJob")}
-                                    </p>
-                                    {msg.metadata?.salary ? (
-                                      <p className="text-xs opacity-80 truncate">
-                                        {msg.metadata.salary}
-                                      </p>
-                                    ) : null}
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            </div>
-                          </Link>
-                        ) : (
-                          <div
+                            {msg.metadata?.link ? (
+                              <ExternalLink className="h-4 w-4 shrink-0" />
+                            ) : null}
+                          </a>
+
+                          {msg.content ? (
+                            <p className="whitespace-pre-wrap text-sm opacity-95">
+                              {msg.content}
+                            </p>
+                          ) : null}
+                        </div>
+                      ) : msg.type === "CV_SYSTEM" ? (
+                        <div className="space-y-2">
+                          {msg.content ? (
+                            <p className="whitespace-pre-wrap">{msg.content}</p>
+                          ) : null}
+
+                          <button
+                            type="button"
+                            onClick={() => handleOpenSystemCvPreview(msg)}
                             className={cn(
-                              "rounded-xl border p-2 sm:p-3",
+                              "w-full rounded-xl border p-3 text-left transition hover:opacity-90",
                               isMe
                                 ? "border-primary/20 bg-primary/10"
                                 : "border-gray-200 bg-gray-50 dark:bg-slate-900 dark:border-slate-700",
                             )}
                           >
-                            <div className="flex items-center gap-3 w-full min-w-0">
-                              {jobReferenceImage && (
+                            <div className="flex items-center gap-3">
+                              {msg.metadata?.previewImage ? (
                                 <Image
-                                  src={jobReferenceImage}
-                                  alt={msg.metadata?.jobTitle || "Job image"}
-                                  width={40}
-                                  height={40}
-                                  className="h-10 w-10 rounded-md object-cover shrink-0"
+                                  src={msg.metadata.previewImage}
+                                  alt={msg.metadata?.cvName || "CV preview"}
+                                  width={44}
+                                  height={56}
+                                  className="h-14 w-11 rounded-md border object-cover shrink-0"
                                 />
+                              ) : (
+                                <div className="h-14 w-11 rounded-md border bg-white/70 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                                  <FileText className="h-4 w-4 text-slate-500" />
+                                </div>
                               )}
+
                               <div className="min-w-0 flex-1">
-                                <p className="font-semibold truncate">
-                                  {msg.metadata?.jobTitle || t("ReferencedJob")}
-                                </p>
-                                {msg.metadata?.salary ? (
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <p className="font-semibold truncate">
+                                    {msg.metadata?.cvName ||
+                                      msg.content ||
+                                      t("SystemCv")}
+                                  </p>
+                                  {msg.metadata?.isDefault ? (
+                                    <span className="text-[10px] px-2 py-0.5 rounded-full border border-current/40">
+                                      {t("DefaultResume")}
+                                    </span>
+                                  ) : null}
+                                </div>
+
+                                {msg.metadata?.templateID ? (
                                   <p className="text-xs opacity-80 truncate">
-                                    {msg.metadata.salary}
+                                    Template: {msg.metadata.templateID}
                                   </p>
                                 ) : null}
+
+                                {msg.metadata?.updatedAt ? (
+                                  <p className="text-xs opacity-80 truncate">
+                                    {t("UpdateAt", {
+                                      date: new Date(
+                                        msg.metadata.updatedAt,
+                                      ).toLocaleDateString(
+                                        locale === "vi" ? "vi-VN" : "en-US",
+                                      ),
+                                    })}
+                                  </p>
+                                ) : null}
+
+                                <p className="text-xs opacity-80 mt-1">
+                                  {t("ClickToViewCv")}
+                                </p>
                               </div>
                             </div>
+                          </button>
+                        </div>
+                      ) : msg.type === "JOB_REFERENCE" ? (
+                        <div className="space-y-2 w-full min-w-0">
+                          {msg.content ? (
+                            <p className="whitespace-pre-wrap break-all">
+                              {msg.content}
+                            </p>
+                          ) : null}
+
+                          {jobReferenceLink ? (
+                            <Link
+                              href={jobReferenceLink}
+                              className="block w-full min-w-0"
+                              aria-label="Mở chi tiết công việc"
+                            >
+                              <div
+                                className={cn(
+                                  "rounded-xl transition hover:opacity-90 w-full min-w-0",
+                                  isMe
+                                    ? "border-primary/20 bg-primary/10"
+                                    : "border-gray-200 bg-gray-50 dark:bg-slate-900 dark:border-slate-700",
+                                )}
+                              >
+                                <Card className="w-full min-w-0 dark:!bg-black/80">
+                                  <CardContent className="flex items-center gap-3 p-3 min-w-0 w-full">
+                                    {jobReferenceImage && (
+                                      <Image
+                                        src={jobReferenceImage}
+                                        alt={
+                                          msg.metadata?.jobTitle || "Job image"
+                                        }
+                                        width={40}
+                                        height={40}
+                                        className="h-10 w-10 rounded-md object-cover shrink-0"
+                                      />
+                                    )}
+                                    <div className="min-w-0 flex-1">
+                                      <p className="font-semibold truncate underline-offset-2 text-bl hover:underline">
+                                        {msg.metadata?.jobTitle ||
+                                          t("ReferencedJob")}
+                                      </p>
+                                      {msg.metadata?.salary ? (
+                                        <p className="text-xs opacity-80 truncate">
+                                          {msg.metadata.salary}
+                                        </p>
+                                      ) : null}
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            </Link>
+                          ) : (
+                            <div
+                              className={cn(
+                                "rounded-xl border p-2 sm:p-3",
+                                isMe
+                                  ? "border-primary/20 bg-primary/10"
+                                  : "border-gray-200 bg-gray-50 dark:bg-slate-900 dark:border-slate-700",
+                              )}
+                            >
+                              <div className="flex items-center gap-3 w-full min-w-0">
+                                {jobReferenceImage && (
+                                  <Image
+                                    src={jobReferenceImage}
+                                    alt={msg.metadata?.jobTitle || "Job image"}
+                                    width={40}
+                                    height={40}
+                                    className="h-10 w-10 rounded-md object-cover shrink-0"
+                                  />
+                                )}
+                                <div className="min-w-0 flex-1">
+                                  <p className="font-semibold truncate">
+                                    {msg.metadata?.jobTitle ||
+                                      t("ReferencedJob")}
+                                  </p>
+                                  {msg.metadata?.salary ? (
+                                    <p className="text-xs opacity-80 truncate">
+                                      {msg.metadata.salary}
+                                    </p>
+                                  ) : null}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="italic text-gray-300 break-all">
+                          {t("UnsupportedMessage", { type: msg.type })}
+                        </p>
+                      )}
+                    </BubbleContent>
+
+                    {/* hiển thị các biểu cảm cảm xúc đã thả trên tin nhắn này */}
+                    {msg.reactions && msg.reactions.length > 0 && (
+                      <BubbleReactions
+                        side="bottom"
+                        align={(() => {
+                          if (isMe) {
+                            //- nếu đối phương thả cảm xúc vào tin nhắn của mình thì hiển thị ở bên trái (start)
+                            const hasOpponentReaction = msg.reactions.some(
+                              (r) => r.userId !== currentUserId,
+                            );
+                            return hasOpponentReaction ? "start" : "end";
+                          }
+                          //- nếu là tin nhắn của đối phương thì hiển thị ở bên phải (end) để tránh đè avatar đối phương ở bên trái
+                          return "end";
+                        })()}
+                        className="cursor-pointer select-none bg-background/90 dark:bg-slate-950/90 border border-border shadow-xs scale-90 opacity-90 hover:opacity-100 hover:scale-95 transition-all"
+                      >
+                        {(
+                          Array.from(
+                            msg.reactions
+                              .reduce(
+                                (acc: Map<string, number>, current: any) => {
+                                  acc.set(
+                                    current.emoji,
+                                    (acc.get(current.emoji) || 0) + 1,
+                                  );
+                                  return acc;
+                                },
+                                new Map<string, number>(),
+                              )
+                              .entries(),
+                          ) as [string, number][]
+                        ).map(([emoji, count]) => (
+                          <div
+                            key={emoji}
+                            className="flex items-center gap-0.5"
+                          >
+                            <span>{emoji}</span>
+                            {count > 1 && (
+                              <span className="text-[9px] text-muted-foreground font-medium px-0.5">
+                                {count}
+                              </span>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="italic text-gray-300 break-all">
-                        {t("UnsupportedMessage", { type: msg.type })}
-                      </p>
+                        ))}
+                      </BubbleReactions>
                     )}
-                  </BubbleContent>
-                </Bubble>
+                  </Bubble>
+
+                  {/* nút chọn biểu cảm xuất hiện khi di chuột qua dòng tin nhắn */}
+                  {msg.conversationId !== "ai-assistant" && (
+                    <div
+                      className={cn(
+                        "opacity-0 group-hover/row:opacity-100 transition-opacity duration-200 shrink-0",
+                        isMe ? "mr-1" : "ml-1",
+                      )}
+                    >
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            type="button"
+                            className="h-7 w-7 rounded-full hover:bg-muted/80 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                            aria-label="Bày tỏ cảm xúc"
+                          >
+                            <Smile className="h-4.5 w-4.5" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          align={isMe ? "end" : "start"}
+                          className="flex flex-row p-1 gap-1.5 bg-background/95 dark:bg-slate-900/95 backdrop-blur-md rounded-full shadow-lg border border-border/80 min-w-0"
+                        >
+                          {["👍", "❤️", "😆", "😢", "😮", "🙏"].map((emoji) => (
+                            <DropdownMenuItem
+                              key={emoji}
+                              onClick={() => onSendReaction?.(msg._id, emoji)}
+                              className="cursor-pointer text-base hover:scale-125 hover:bg-accent rounded-full p-1.5 h-8 w-8 flex items-center justify-center transition-all duration-150"
+                            >
+                              {emoji}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  )}
+                </div>
                 {isLastOwnMessage ? (
                   //- căn phải phần thời gian và trạng thái tin nhắn cho tin nhắn cuối của mình
-                  <MessageFooter className="flex justify-end items-center gap-1.5 mt-1 text-[11px] text-gray-400 select-none">
+                  <MessageFooter className={cn(
+                    "flex justify-end items-center gap-1.5 text-[11px] text-gray-400 select-none",
+                    //- nếu có biểu cảm thì dịch footer xuống mt-3.5 để tránh bị đè chữ, ngược lại dùng mt-1
+                    msg.reactions && msg.reactions.length > 0 ? "mt-3.5" : "mt-1"
+                  )}>
                     <span>
                       {new Date(msg.createdAt).toLocaleTimeString([], {
                         hour: "2-digit",
@@ -473,6 +579,8 @@ export default function useMemoFrameChat({
       t,
       tCommon,
       locale,
+      onSendReaction,
+      currentUserId,
     ],
   );
 

@@ -37,6 +37,12 @@ export const chatMessageMetadataSchema = z
   })
   .optional();
 
+export const chatMessageReactionSchema = z.object({
+  userId: z.string(),
+  emoji: z.string(),
+  senderName: z.string(),
+});
+
 //- Schema cho một tin nhắn
 export const ChatMessageSchema = z.object({
   _id: z.string(),
@@ -48,6 +54,7 @@ export const ChatMessageSchema = z.object({
   metadata: chatMessageMetadataSchema,
   isRead: z.boolean().default(false),
   readAt: z.string().optional().nullable(),
+  reactions: z.array(chatMessageReactionSchema).optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

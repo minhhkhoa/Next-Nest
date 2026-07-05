@@ -88,6 +88,18 @@ export const MESSAGE_TYPE_OPTIONS = [
   'JOB_REFERENCE',
 ] as const;
 
+//- cấu trúc lưu trữ thông tin bày tỏ cảm xúc của tin nhắn
+class Reaction {
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  userId: Types.ObjectId;
+
+  @Prop()
+  emoji: string;
+
+  @Prop()
+  senderName: string;
+}
+
 @Schema({ timestamps: true })
 export class Message {
   @Prop({
@@ -126,6 +138,10 @@ export class Message {
 
   @Prop({ type: Boolean, default: false })
   isRead: boolean;
+
+  //- danh sách các biểu cảm đã thả trên tin nhắn này
+  @Prop({ type: [Reaction], default: [] })
+  reactions?: Reaction[];
 
   @Prop({ type: Date, default: null })
   readAt: Date | null;

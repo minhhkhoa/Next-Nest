@@ -359,6 +359,50 @@ export default function ChatPageModule() {
     setPendingCvAttachment(resume);
   };
 
+  //- phát sự kiện socket gửi cảm xúc tin nhắn lên server
+  const handleSendReaction = (messageId: string, emoji: string) => {
+    if (socket) {
+      socket.emit("send_reaction", { messageId, emoji });
+    }
+  };
+
+  //- lắng nghe sự kiện cập nhật cảm xúc tin nhắn realtime từ socket
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleReceiveReaction = (data: { messageId: string; reactions: any[] }) => {
+      //- cập nhật trực tiếp cache React Query của các tin nhắn để UI tự động render lại
+      queryClient.setQueriesData({ queryKey: ["messages"] }, (old: any) => {
+        if (!old?.data?.messages) return old;
+        return {
+          ...old,
+          data: {
+            ...old.data,
+            messages: old.data.messages.map((msg: any) =>
+              msg._id === data.messageId
+                ? { ...msg, reactions: data.reactions }
+                : msg
+            ),
+          },
+        };
+      });
+
+      //- cập nhật danh sách tin nhắn của AI assistant nếu đang mở chat bot AI
+      setAiMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === data.messageId
+            ? { ...msg, reactions: data.reactions }
+            : msg
+        )
+      );
+    };
+
+    socket.on("receive_reaction", handleReceiveReaction);
+    return () => {
+      socket.off("receive_reaction", handleReceiveReaction);
+    };
+  }, [socket, queryClient]);
+
   useEffect(() => {
     //- Luôn gọi API để lấy lịch sử chat AI từ server
     aiApiRequest
@@ -827,6 +871,8 @@ export default function ChatPageModule() {
         pendingCvAttachment={pendingCvAttachment}
         onClearPendingCvAttachment={() => setPendingCvAttachment(null)}
         onAttachSystemCv={handleAttachSystemCv}
+        onSendReaction={handleSendReaction}
+        currentUserId={user?._id || ""}
       />
     </div>
   );

@@ -1,7 +1,8 @@
-import { Logger, UseGuards } from '@nestjs/common';
+import { Logger, UseGuards, Inject, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OnEvent } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
+import { MessageService } from './message.service';
 import {
   WebSocketGateway,
   WebSocketServer,
@@ -23,6 +24,8 @@ export class ChatGateway implements OnGatewayConnection {
   constructor(
     private jwtService: JwtService,
     private configService: ConfigService,
+    @Inject(forwardRef(() => MessageService))
+    private messageService: MessageService,
   ) {}
 
   //- duoc goi tu dong duy nhat 1 lan ngay luc ma Frontend Next.js khoi tao lenh ket noi
@@ -125,5 +128,39 @@ export class ChatGateway implements OnGatewayConnection {
    */
   emitMessageToConversation(conversationId: string, messagePayload: any) {
     this.server.to(conversationId).emit('receive_message', messagePayload);
+  }
+
+  //- lắng nghe sự kiện thả biểu cảm cảm xúc tin nhắn từ client
+  @UseGuards(WsJwtGuard)
+  @SubscribeMessage('send_reaction')
+  async handleSendReaction(
+    @ConnectedSocket() client: Socket,
+    @MessageBody()
+    payload: {
+      messageId: string;
+      emoji: string;
+    },
+  ) {
+    if (!payload?.messageId || !payload?.emoji) return;
+    const userId = client.data?.user?.id;
+    const name = client.data?.user?.name || client.data?.user?.email;
+
+    const updatedReactions = await this.messageService.updateReaction(
+      payload.messageId,
+      userId,
+      name,
+      payload.emoji,
+    );
+
+    if (updatedReactions) {
+      const message = await this.messageService.findOne(payload.messageId);
+      if (message) {
+        //- phát sóng cập nhật biểu cảm tin nhắn realtime cho mọi người trong phòng chat
+        this.server.to(message.conversationId.toString()).emit('receive_reaction', {
+          messageId: payload.messageId,
+          reactions: updatedReactions,
+        });
+      }
+    }
   }
 }

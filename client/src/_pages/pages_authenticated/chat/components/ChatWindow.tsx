@@ -91,6 +91,8 @@ interface ChatWindowProps {
   onClearPendingCvAttachment?: () => void;
   onAttachSystemCv?: (resume: UserResumeResponseType) => void;
   activeConversation?: Conversation | null;
+  onSendReaction?: (messageId: string, emoji: string) => void;
+  currentUserId?: string;
 }
 
 export default function ChatWindow({
@@ -114,6 +116,8 @@ export default function ChatWindow({
   pendingCvAttachment,
   onClearPendingCvAttachment,
   onAttachSystemCv,
+  onSendReaction,
+  currentUserId,
 }: ChatWindowProps) {
   const t = useTranslations("Candidate.Chat");
   const tCommon = useTranslations("Common");
@@ -197,6 +201,8 @@ export default function ChatWindow({
     candidateData,
     hrData,
     activeConversation,
+    onSendReaction,
+    currentUserId,
   });
 
   useEffect(() => {

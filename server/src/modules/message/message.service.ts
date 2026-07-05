@@ -166,4 +166,14 @@ export class MessageService {
       },
     };
   }
+
+  //- tìm kiếm thông tin tin nhắn theo id
+  async findOne(id: string) {
+    return this.messageRepository.findByIdRaw(id, { includeDeleted: true });
+  }
+
+  //- xử lý logic nghiệp vụ cập nhật biểu cảm tin nhắn
+  async updateReaction(messageId: string, userId: string, name: string, emoji: string) {
+    return this.messageRepository.updateReaction(messageId, userId, name, emoji);
+  }
 }
