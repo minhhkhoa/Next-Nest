@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { useTranslations } from "next-intl";
+import { usePathname } from "next/navigation";
 
 interface FooterLink {
   title: string;
@@ -25,7 +26,13 @@ interface SocialLink {
 }
 
 export default function Footer() {
+  const pathname = usePathname();
   const t = useTranslations("Footer");
+
+  //- ẩn footer tại màn chat để giao diện chat tối ưu không gian hiển thị
+  if (pathname && pathname.includes("/chat")) {
+    return null;
+  }
 
   const footerLinks: FooterLink[] = [
     {

@@ -16,7 +16,13 @@ import {
 import { envConfig } from "../../../../../config";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  MessageScroller,
+  MessageScrollerButton,
+  MessageScrollerContent,
+  MessageScrollerProvider,
+  MessageScrollerViewport,
+} from "@/components/ui/message-scroller";
 import Image from "next/image";
 import useMemoFrameChat from "./useMemoFrameChat";
 import {
@@ -113,9 +119,7 @@ export default function ChatWindow({
   const tCommon = useTranslations("Common");
   const locale = useLocale();
 
-  //- Ref tới ScrollArea để cuộn xuống cuối
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const isUserAtBottomRef = useRef(true);
+  //- MessageScroller tự động quản lý trạng thái cuộn và bám đáy
   const localFileInputRef = useRef<HTMLInputElement>(null);
   const [systemCvDialogOpen, setSystemCvDialogOpen] = useState(false);
   const [selectedSystemCvId, setSelectedSystemCvId] = useState("");
@@ -129,37 +133,7 @@ export default function ChatWindow({
     setLocalText(inputText);
   }, [inputText, activeConversationId]);
 
-  //- theo dõi hành vi cuộn thực tế của người dùng để lưu vết trạng thái bám đáy
-  React.useEffect(() => {
-    const viewport = scrollAreaRef.current?.querySelector(
-      '[data-slot="scroll-area-viewport"]',
-    );
-    if (!viewport) return;
-
-    const handleScroll = () => {
-      //- nếu khoảng cách đến đáy < 150px thì coi như người dùng đang ở sát đáy
-      const distanceToBottom =
-        viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
-      isUserAtBottomRef.current = distanceToBottom < 150;
-    };
-
-    viewport.addEventListener("scroll", handleScroll);
-    return () => {
-      viewport.removeEventListener("scroll", handleScroll);
-    };
-  }, [activeConversationId]);
-
-  //- Hàm cuộn viewport của ScrollArea xuống cuối
-  const scrollToBottom = (behavior: ScrollBehavior = "smooth", force = false) => {
-    const viewport = scrollAreaRef.current?.querySelector(
-      '[data-slot="scroll-area-viewport"]',
-    );
-    if (viewport) {
-      if (force || isUserAtBottomRef.current) {
-        viewport.scrollTo({ top: viewport.scrollHeight, behavior });
-      }
-    }
-  };
+  //- Đã tích hợp MessageScroller tự động cuộn
 
   const currentUserSenderType: ChatMessage["senderType"] =
     getRoleCodeName() === envConfig.NEXT_PUBLIC_ROLE_CANDIDATE
@@ -278,20 +252,7 @@ export default function ChatWindow({
     }
   };
 
-  //- Cuộn xuống khi có tin nhắn mới hoặc đổi cuộc trò chuyện
-  useEffect(() => {
-    if (messages.length > 0) {
-      scrollToBottom("instant", true);
-    }
-  }, [activeConversationId]);
-
-  const lastMessageContent = messages[messages.length - 1]?.content;
-
-  useEffect(() => {
-    if (messages.length > 0) {
-      scrollToBottom(isSending ? "instant" : "smooth", false);
-    }
-  }, [messages.length, lastMessageContent, isSending]);
+  //- MessageScroller tự động cuộn thông minh khi có tin nhắn mới hoặc đổi cuộc trò chuyện
 
   if (!activeConversationId) {
     return (
@@ -342,17 +303,22 @@ export default function ChatWindow({
       </div>
 
       {/* Messages body */}
-      <ScrollArea ref={scrollAreaRef} className="flex-1 h-50 [&>div>div]:!block">
-        <div className="p-2 flex flex-col gap-2 w-full max-w-full">
-          {messages.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center text-gray-400 text-sm py-20">
-              {t("NoMessagesPrompt")}
-            </div>
-          ) : (
-            messageItems
-          )}
-        </div>
-      </ScrollArea>
+      <MessageScrollerProvider autoScroll defaultScrollPosition="last-anchor">
+        <MessageScroller className="flex-1 h-full min-h-0 relative">
+          <MessageScrollerViewport className="flex-1 h-full min-h-0">
+            <MessageScrollerContent className="p-2 flex flex-col gap-2 w-full max-w-full">
+              {messages.length === 0 ? (
+                <div className="flex-1 flex items-center justify-center text-gray-400 text-sm py-20">
+                  {t("NoMessagesPrompt")}
+                </div>
+              ) : (
+                messageItems
+              )}
+            </MessageScrollerContent>
+          </MessageScrollerViewport>
+          <MessageScrollerButton />
+        </MessageScroller>
+      </MessageScrollerProvider>
 
       {/* Input Box */}
       <div className="p-2 sm:p-4 bg-white/40 dark:bg-slate-950/40 backdrop-blur-sm border-t border-gray-200 dark:border-slate-800 shrink-0">

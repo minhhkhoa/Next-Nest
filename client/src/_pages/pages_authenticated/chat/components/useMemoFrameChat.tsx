@@ -8,6 +8,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { TypeActionBy } from "@/schemasvalidation/NewsCategory";
+import { MessageScrollerItem } from "@/components/ui/message-scroller";
+import {
+  Message,
+  MessageAvatar,
+  MessageContent,
+  MessageFooter,
+} from "@/components/ui/message";
+import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import { Card, CardContent } from "@/components/ui/card";
 import { ExternalLink, FileText } from "lucide-react";
 import { CV_TEMPLATES } from "@/lib/constant";
@@ -99,23 +107,32 @@ export default function useMemoFrameChat({
         let avatarSrc = msg.senderId?.avatar;
         if (msg.conversationId !== "ai-assistant" && activeConversation) {
           if (isMe) {
-            avatarSrc = msg.senderId?.avatar;
+            if (currentUserSenderType === "CANDIDATE") {
+              avatarSrc = msg.senderId?.avatar;
+            } else {
+              //- Mình là Recruiter -> hiển thị logo công ty của mình
+              avatarSrc =
+                activeConversation.companyId?.logo || msg.senderId?.avatar;
+            }
           } else {
             if (currentUserSenderType === "CANDIDATE") {
               //- Đối phương là Company -> hiển thị logo công ty
-              avatarSrc = activeConversation.companyId?.logo || msg.senderId?.avatar;
+              avatarSrc =
+                activeConversation.companyId?.logo || msg.senderId?.avatar;
             } else {
               //- Đối phương là Candidate -> hiển thị avatar candidate
-              avatarSrc = activeConversation.candidateId?.avatar || msg.senderId?.avatar;
+              avatarSrc =
+                activeConversation.candidateId?.avatar || msg.senderId?.avatar;
             }
           }
         }
-        
+
         //- Fallback nếu avatarSrc rỗng
         if (!avatarSrc) {
-          avatarSrc = msg.senderType === envConfig.NEXT_PUBLIC_ROLE_CANDIDATE
-            ? candidateData?.avatar
-            : hrData?.avatar;
+          avatarSrc =
+            msg.senderType === envConfig.NEXT_PUBLIC_ROLE_CANDIDATE
+              ? candidateData?.avatar
+              : hrData?.avatar;
         }
 
         const jobReferenceSlug =
@@ -130,234 +147,274 @@ export default function useMemoFrameChat({
           msg.metadata?.jobImage || msg.metadata?.thumbnail;
 
         return (
-          <div
+          <MessageScrollerItem
             key={msg._id}
+            messageId={msg._id}
+            scrollAnchor={isMe}
             className={cn(
-              "flex max-w-[calc(100%-2.75rem)] sm:max-w-[70%] gap-2 items-end min-w-0",
-              isMe ? "flex-row-reverse self-end " : "flex-row self-start",
+              "w-full flex",
+              isMe ? "justify-end" : "justify-start",
             )}
           >
-            {shouldShowAvatar ? (
-              <div
-                className={cn(
-                  "h-8 w-8 sm:h-10 sm:w-10 shrink-0" +
-                    (index === messages.length - 1 && isSameSenderAsNext
-                      ? " mb-4"
-                      : ""),
-                )}
-              >
-                <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
-                  <AvatarImage src={avatarSrc} />
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
-              </div>
-            ) : (
-              <div className="h-8 w-8 sm:h-10 sm:w-10 shrink-0" />
-            )}
-            <div className="min-w-0 flex-1">
-              <div
-                className={cn(
-                  "px-3 py-2 sm:px-4 rounded-2xl text-sm sm:text-base w-full max-w-full break-words shadow-xs",
-                  isMe
-                    ? "bg-primary/10 text-primary dark:bg-primary/25 dark:text-primary-foreground border border-primary/20 rounded-br-none"
-                    : "bg-white/60 dark:bg-slate-900/60 border border-slate-200/40 dark:border-slate-800/40 rounded-bl-none backdrop-blur-xs",
-                )}
-              >
-                {msg.type === "TEXT" ? (
-                  msg.content ? (
-                    //- su dung component markdown renderer khi tin nhan la tu ai assistant
-                    msg.conversationId === "ai-assistant" &&
-                    msg.senderId?._id === "ai-bot" ? (
-                      <MarkdownRenderer content={msg.content} />
-                    ) : (
-                      <p className="whitespace-pre-wrap">{msg.content}</p>
-                    )
-                  ) : (
-                    <div className="flex gap-1.5 py-1.5 px-1 items-center h-[24px]">
-                      <div
-                        className="w-2 h-2 bg-current rounded-full animate-bounce"
-                        style={{ animationDelay: "0ms" }}
-                      />
-                      <div
-                        className="w-2 h-2 bg-current rounded-full animate-bounce"
-                        style={{ animationDelay: "150ms" }}
-                      />
-                      <div
-                        className="w-2 h-2 bg-current rounded-full animate-bounce"
-                        style={{ animationDelay: "300ms" }}
-                      />
-                    </div>
-                  )
-                ) : msg.type === "IMAGE" ? (
-                  <div className="space-y-2">
-                    {msg.metadata?.imageUrl ? (
-                      <a
-                        href={msg.metadata.imageUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="block"
-                        aria-label="Mở ảnh đính kèm"
-                      >
-                        <Image
-                          src={msg.metadata.imageUrl}
-                          alt={msg.metadata?.fileName || t("Attachments")}
-                          width={msg.metadata?.width || 320}
-                          height={msg.metadata?.height || 220}
-                          className="rounded-xl object-cover max-h-[320px] w-full"
-                        />
-                      </a>
-                    ) : (
-                      <p className="text-xs italic opacity-80">
-                        {t("NoImageToDisplay")}
-                      </p>
+            <Message
+              align={isMe ? "end" : "start"}
+              className="max-w-[calc(100%-2.75rem)] sm:max-w-[70%] gap-2 items-end min-w-0"
+            >
+              {shouldShowAvatar ? (
+                <MessageAvatar className="h-8 w-8 sm:h-10 sm:w-10 shrink-0 bg-transparent rounded-none p-0 border-none min-w-0 overflow-visible group-has-data-[slot=message-footer]/message:-translate-y-5">
+                  <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
+                    <AvatarImage src={avatarSrc} />
+                    <AvatarFallback>CN</AvatarFallback>
+                  </Avatar>
+                </MessageAvatar>
+              ) : (
+                <div className="h-8 w-8 sm:h-10 sm:w-10 shrink-0" />
+              )}
+              <MessageContent className="min-w-0 flex-1 gap-1">
+                <Bubble
+                  variant="custom"
+                  className="max-w-full group-data-[align=end]/message:self-end data-[align=end]:self-end"
+                >
+                  <BubbleContent
+                    className={cn(
+                      "px-3 py-2 sm:px-4 rounded-2xl text-sm sm:text-base w-full max-w-full break-words shadow-xs border",
+                      isMe
+                        ? "bg-primary/10 text-primary dark:bg-primary/25 dark:text-primary-foreground border border-primary/20"
+                        : "bg-white/60 dark:bg-slate-900/60 border border-slate-200/40 dark:border-slate-800/40 backdrop-blur-xs",
                     )}
-
-                    {msg.content ? (
-                      <p className="whitespace-pre-wrap text-sm opacity-95">
-                        {msg.content}
-                      </p>
-                    ) : null}
-                  </div>
-                ) : msg.type === "CV_LINK" ? (
-                  <div className="space-y-2">
-                    <a
-                      href={msg.metadata?.link}
-                      target="_blank"
-                      rel="noreferrer"
-                      className={cn(
-                        "flex items-center gap-3 rounded-xl border p-3 transition hover:opacity-90",
-                        isMe
-                          ? "border-primary/20 bg-primary/10"
-                          : "border-gray-200 bg-gray-50 dark:bg-slate-900 dark:border-slate-700",
-                        !msg.metadata?.link && "pointer-events-none opacity-70",
-                      )}
-                      aria-label="Mở tệp đính kèm"
-                    >
-                      <div className="h-9 w-9 rounded-full bg-white/80 dark:bg-slate-800 flex items-center justify-center shrink-0">
-                        <FileText className="h-4 w-4" />
-                      </div>
-
-                      <div className="min-w-0 flex-1">
-                        <p className="font-semibold truncate">
-                          {msg.metadata?.fileName ||
-                            msg.content ||
-                            t("Attachments")}
-                        </p>
-                        <p className="text-xs opacity-80 truncate">
-                          {msg.metadata?.mimeType ||
-                            msg.metadata?.fileExt ||
-                            "File"}
-                          {msg.metadata?.fileSize
-                            ? ` • ${formatFileSize(msg.metadata.fileSize)}`
-                            : ""}
-                        </p>
-                      </div>
-
-                      {msg.metadata?.link ? (
-                        <ExternalLink className="h-4 w-4 shrink-0" />
-                      ) : null}
-                    </a>
-
-                    {msg.content ? (
-                      <p className="whitespace-pre-wrap text-sm opacity-95">
-                        {msg.content}
-                      </p>
-                    ) : null}
-                  </div>
-                ) : msg.type === "CV_SYSTEM" ? (
-                  <div className="space-y-2">
-                    {msg.content ? (
-                      <p className="whitespace-pre-wrap">{msg.content}</p>
-                    ) : null}
-
-                    <button
-                      type="button"
-                      onClick={() => handleOpenSystemCvPreview(msg)}
-                      className={cn(
-                        "w-full rounded-xl border p-3 text-left transition hover:opacity-90",
-                        isMe
-                          ? "border-primary/20 bg-primary/10"
-                          : "border-gray-200 bg-gray-50 dark:bg-slate-900 dark:border-slate-700",
-                      )}
-                    >
-                      <div className="flex items-center gap-3">
-                        {msg.metadata?.previewImage ? (
-                          <Image
-                            src={msg.metadata.previewImage}
-                            alt={msg.metadata?.cvName || "CV preview"}
-                            width={44}
-                            height={56}
-                            className="h-14 w-11 rounded-md border object-cover shrink-0"
-                          />
+                  >
+                    {msg.type === "TEXT" ? (
+                      msg.content ? (
+                        //- su dung component markdown renderer khi tin nhan la tu ai assistant
+                        msg.conversationId === "ai-assistant" &&
+                        msg.senderId?._id === "ai-bot" ? (
+                          <MarkdownRenderer content={msg.content} />
                         ) : (
-                          <div className="h-14 w-11 rounded-md border bg-white/70 dark:bg-slate-800 flex items-center justify-center shrink-0">
-                            <FileText className="h-4 w-4 text-slate-500" />
-                          </div>
+                          <p className="whitespace-pre-wrap">{msg.content}</p>
+                        )
+                      ) : (
+                        <div className="flex gap-1.5 py-1.5 px-1 items-center h-[24px]">
+                          <div
+                            className="w-2 h-2 bg-current rounded-full animate-bounce"
+                            style={{ animationDelay: "0ms" }}
+                          />
+                          <div
+                            className="w-2 h-2 bg-current rounded-full animate-bounce"
+                            style={{ animationDelay: "150ms" }}
+                          />
+                          <div
+                            className="w-2 h-2 bg-current rounded-full animate-bounce"
+                            style={{ animationDelay: "300ms" }}
+                          />
+                        </div>
+                      )
+                    ) : msg.type === "IMAGE" ? (
+                      <div className="space-y-2">
+                        {msg.metadata?.imageUrl ? (
+                          <a
+                            href={msg.metadata.imageUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="block"
+                            aria-label="Mở ảnh đính kèm"
+                          >
+                            <Image
+                              src={msg.metadata.imageUrl}
+                              alt={msg.metadata?.fileName || t("Attachments")}
+                              width={msg.metadata?.width || 320}
+                              height={msg.metadata?.height || 220}
+                              className="rounded-xl object-cover max-h-[320px] w-full"
+                            />
+                          </a>
+                        ) : (
+                          <p className="text-xs italic opacity-80">
+                            {t("NoImageToDisplay")}
+                          </p>
                         )}
 
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <p className="font-semibold truncate">
-                              {msg.metadata?.cvName ||
-                                msg.content ||
-                                t("SystemCv")}
-                            </p>
-                            {msg.metadata?.isDefault ? (
-                              <span className="text-[10px] px-2 py-0.5 rounded-full border border-current/40">
-                                {t("DefaultResume")}
-                              </span>
-                            ) : null}
+                        {msg.content ? (
+                          <p className="whitespace-pre-wrap text-sm opacity-95">
+                            {msg.content}
+                          </p>
+                        ) : null}
+                      </div>
+                    ) : msg.type === "CV_LINK" ? (
+                      <div className="space-y-2">
+                        <a
+                          href={msg.metadata?.link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={cn(
+                            "flex items-center gap-3 rounded-xl border p-3 transition hover:opacity-90",
+                            isMe
+                              ? "border-primary/20 bg-primary/10"
+                              : "border-gray-200 bg-gray-50 dark:bg-slate-900 dark:border-slate-700",
+                            !msg.metadata?.link &&
+                              "pointer-events-none opacity-70",
+                          )}
+                          aria-label="Mở tệp đính kèm"
+                        >
+                          <div className="h-9 w-9 rounded-full bg-white/80 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                            <FileText className="h-4 w-4" />
                           </div>
 
-                          {msg.metadata?.templateID ? (
-                            <p className="text-xs opacity-80 truncate">
-                              Template: {msg.metadata.templateID}
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold truncate">
+                              {msg.metadata?.fileName ||
+                                msg.content ||
+                                t("Attachments")}
                             </p>
-                          ) : null}
-
-                          {msg.metadata?.updatedAt ? (
                             <p className="text-xs opacity-80 truncate">
-                              {t("UpdateAt", {
-                                date: new Date(
-                                  msg.metadata.updatedAt,
-                                ).toLocaleDateString(
-                                  locale === "vi" ? "vi-VN" : "en-US",
-                                ),
-                              })}
+                              {msg.metadata?.mimeType ||
+                                msg.metadata?.fileExt ||
+                                "File"}
+                              {msg.metadata?.fileSize
+                                ? ` • ${formatFileSize(msg.metadata.fileSize)}`
+                                : ""}
                             </p>
-                          ) : null}
+                          </div>
 
-                          <p className="text-xs opacity-80 mt-1">
-                            {t("ClickToViewCv")}
+                          {msg.metadata?.link ? (
+                            <ExternalLink className="h-4 w-4 shrink-0" />
+                          ) : null}
+                        </a>
+
+                        {msg.content ? (
+                          <p className="whitespace-pre-wrap text-sm opacity-95">
+                            {msg.content}
                           </p>
-                        </div>
+                        ) : null}
                       </div>
-                    </button>
-                  </div>
-                ) : msg.type === "JOB_REFERENCE" ? (
-                  <div className="space-y-2 w-full min-w-0">
-                    {msg.content ? (
-                      <p className="whitespace-pre-wrap break-all">
-                        {msg.content}
-                      </p>
-                    ) : null}
+                    ) : msg.type === "CV_SYSTEM" ? (
+                      <div className="space-y-2">
+                        {msg.content ? (
+                          <p className="whitespace-pre-wrap">{msg.content}</p>
+                        ) : null}
 
-                    {jobReferenceLink ? (
-                      <Link
-                        href={jobReferenceLink}
-                        className="block w-full min-w-0"
-                        aria-label="Mở chi tiết công việc"
-                      >
-                        <div
+                        <button
+                          type="button"
+                          onClick={() => handleOpenSystemCvPreview(msg)}
                           className={cn(
-                            "rounded-xl transition hover:opacity-90 w-full min-w-0",
+                            "w-full rounded-xl border p-3 text-left transition hover:opacity-90",
                             isMe
                               ? "border-primary/20 bg-primary/10"
                               : "border-gray-200 bg-gray-50 dark:bg-slate-900 dark:border-slate-700",
                           )}
                         >
-                          <Card className="w-full min-w-0 dark:!bg-black/80">
-                            <CardContent className="flex items-center gap-3 p-3 min-w-0 w-full">
+                          <div className="flex items-center gap-3">
+                            {msg.metadata?.previewImage ? (
+                              <Image
+                                src={msg.metadata.previewImage}
+                                alt={msg.metadata?.cvName || "CV preview"}
+                                width={44}
+                                height={56}
+                                className="h-14 w-11 rounded-md border object-cover shrink-0"
+                              />
+                            ) : (
+                              <div className="h-14 w-11 rounded-md border bg-white/70 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                                <FileText className="h-4 w-4 text-slate-500" />
+                              </div>
+                            )}
+
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className="font-semibold truncate">
+                                  {msg.metadata?.cvName ||
+                                    msg.content ||
+                                    t("SystemCv")}
+                                </p>
+                                {msg.metadata?.isDefault ? (
+                                  <span className="text-[10px] px-2 py-0.5 rounded-full border border-current/40">
+                                    {t("DefaultResume")}
+                                  </span>
+                                ) : null}
+                              </div>
+
+                              {msg.metadata?.templateID ? (
+                                <p className="text-xs opacity-80 truncate">
+                                  Template: {msg.metadata.templateID}
+                                </p>
+                              ) : null}
+
+                              {msg.metadata?.updatedAt ? (
+                                <p className="text-xs opacity-80 truncate">
+                                  {t("UpdateAt", {
+                                    date: new Date(
+                                      msg.metadata.updatedAt,
+                                    ).toLocaleDateString(
+                                      locale === "vi" ? "vi-VN" : "en-US",
+                                    ),
+                                  })}
+                                </p>
+                              ) : null}
+
+                              <p className="text-xs opacity-80 mt-1">
+                                {t("ClickToViewCv")}
+                              </p>
+                            </div>
+                          </div>
+                        </button>
+                      </div>
+                    ) : msg.type === "JOB_REFERENCE" ? (
+                      <div className="space-y-2 w-full min-w-0">
+                        {msg.content ? (
+                          <p className="whitespace-pre-wrap break-all">
+                            {msg.content}
+                          </p>
+                        ) : null}
+
+                        {jobReferenceLink ? (
+                          <Link
+                            href={jobReferenceLink}
+                            className="block w-full min-w-0"
+                            aria-label="Mở chi tiết công việc"
+                          >
+                            <div
+                              className={cn(
+                                "rounded-xl transition hover:opacity-90 w-full min-w-0",
+                                isMe
+                                  ? "border-primary/20 bg-primary/10"
+                                  : "border-gray-200 bg-gray-50 dark:bg-slate-900 dark:border-slate-700",
+                              )}
+                            >
+                              <Card className="w-full min-w-0 dark:!bg-black/80">
+                                <CardContent className="flex items-center gap-3 p-3 min-w-0 w-full">
+                                  {jobReferenceImage && (
+                                    <Image
+                                      src={jobReferenceImage}
+                                      alt={
+                                        msg.metadata?.jobTitle || "Job image"
+                                      }
+                                      width={40}
+                                      height={40}
+                                      className="h-10 w-10 rounded-md object-cover shrink-0"
+                                    />
+                                  )}
+                                  <div className="min-w-0 flex-1">
+                                    <p className="font-semibold truncate underline-offset-2 text-bl hover:underline">
+                                      {msg.metadata?.jobTitle ||
+                                        t("ReferencedJob")}
+                                    </p>
+                                    {msg.metadata?.salary ? (
+                                      <p className="text-xs opacity-80 truncate">
+                                        {msg.metadata.salary}
+                                      </p>
+                                    ) : null}
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </div>
+                          </Link>
+                        ) : (
+                          <div
+                            className={cn(
+                              "rounded-xl border p-2 sm:p-3",
+                              isMe
+                                ? "border-primary/20 bg-primary/10"
+                                : "border-gray-200 bg-gray-50 dark:bg-slate-900 dark:border-slate-700",
+                            )}
+                          >
+                            <div className="flex items-center gap-3 w-full min-w-0">
                               {jobReferenceImage && (
                                 <Image
                                   src={jobReferenceImage}
@@ -368,7 +425,7 @@ export default function useMemoFrameChat({
                                 />
                               )}
                               <div className="min-w-0 flex-1">
-                                <p className="font-semibold truncate underline-offset-2 text-bl hover:underline">
+                                <p className="font-semibold truncate">
                                   {msg.metadata?.jobTitle || t("ReferencedJob")}
                                 </p>
                                 {msg.metadata?.salary ? (
@@ -377,64 +434,33 @@ export default function useMemoFrameChat({
                                   </p>
                                 ) : null}
                               </div>
-                            </CardContent>
-                          </Card>
-                        </div>
-                      </Link>
-                    ) : (
-                      <div
-                        className={cn(
-                          "rounded-xl border p-2 sm:p-3",
-                          isMe
-                            ? "border-primary/20 bg-primary/10"
-                            : "border-gray-200 bg-gray-50 dark:bg-slate-900 dark:border-slate-700",
-                        )}
-                      >
-                        <div className="flex items-center gap-3 w-full min-w-0">
-                          {jobReferenceImage && (
-                            <Image
-                              src={jobReferenceImage}
-                              alt={msg.metadata?.jobTitle || "Job image"}
-                              width={40}
-                              height={40}
-                              className="h-10 w-10 rounded-md object-cover shrink-0"
-                            />
-                          )}
-                          <div className="min-w-0 flex-1">
-                            <p className="font-semibold truncate">
-                              {msg.metadata?.jobTitle || t("ReferencedJob")}
-                            </p>
-                            {msg.metadata?.salary ? (
-                              <p className="text-xs opacity-80 truncate">
-                                {msg.metadata.salary}
-                              </p>
-                            ) : null}
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
+                    ) : (
+                      <p className="italic text-gray-300 break-all">
+                        {t("UnsupportedMessage", { type: msg.type })}
+                      </p>
                     )}
-                  </div>
-                ) : (
-                  <p className="italic text-gray-300 break-all">
-                    {t("UnsupportedMessage", { type: msg.type })}
-                  </p>
-                )}
-              </div>
-              {isLastOwnMessage ? (
-                //- căn phải phần thời gian và trạng thái tin nhắn cho tin nhắn cuối của mình
-                <div className="flex justify-end items-center gap-1.5 mt-1 text-[11px] text-gray-400 select-none">
-                  <span>
-                    {new Date(msg.createdAt).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
-                  <span>•</span>
-                  <span>{msg.isRead ? t("Read") : t("Sent")}</span>
-                </div>
-              ) : null}
-            </div>
-          </div>
+                  </BubbleContent>
+                </Bubble>
+                {isLastOwnMessage ? (
+                  //- căn phải phần thời gian và trạng thái tin nhắn cho tin nhắn cuối của mình
+                  <MessageFooter className="flex justify-end items-center gap-1.5 mt-1 text-[11px] text-gray-400 select-none">
+                    <span>
+                      {new Date(msg.createdAt).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                    <span>•</span>
+                    <span>{msg.isRead ? t("Read") : t("Sent")}</span>
+                  </MessageFooter>
+                ) : null}
+              </MessageContent>
+            </Message>
+          </MessageScrollerItem>
         );
       }),
     [
