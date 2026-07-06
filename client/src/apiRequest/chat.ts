@@ -44,8 +44,10 @@ const chatApiRequest = {
       params: { page, limit },
     }),
 
-  sendMessage: (payload: CreateMessagePayload) =>
-    http.post<ApiResponse<ChatMessage>>(messagePrefix, payload),
+  sendMessage: (payload: CreateMessagePayload, socketId?: string) =>
+    http.post<ApiResponse<ChatMessage>>(messagePrefix, payload, {
+      headers: socketId ? { "X-Socket-ID": socketId } : undefined,
+    }),
 };
 
 export default chatApiRequest;

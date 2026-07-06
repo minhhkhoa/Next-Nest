@@ -45,12 +45,15 @@ export const useChatSocket = (conversations: Conversation[]) => {
       setIsConnected(false);
     });
 
-    socketInstance.on("receive_message", (message: ChatMessage) => {
+    socketInstance.on("receive_message", (message: ChatMessage & { senderSocketId?: string }) => {
       console.log("Receive new chat message:", message);
 
-      //- Chỉ thêm vào realtime nếu KHÔNG phải mình gửi (mình đã có optimistic)
+      //- Chỉ thêm vào realtime nếu không phải chính kết nối này gửi tin nhắn (tránh bị lặp với optimistic)
+      //- Nếu là thiết bị khác của cùng tài khoản gửi (khác socket.id) thì vẫn thêm vào để đồng bộ realtime
       const isMine = message.senderId?._id === user?._id;
-      if (!isMine) {
+      const isMyOwnSocket = !!(message.senderSocketId && message.senderSocketId === socketInstance.id);
+
+      if (!isMine || !isMyOwnSocket) {
         setRealtimeMessages((prev) => [...prev, message]);
       }
 

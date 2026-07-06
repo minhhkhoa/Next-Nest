@@ -22,7 +22,7 @@ export class MessageService {
     private eventEmitter: EventEmitter2, //- dùng event emitter để phát tin nhắn mới
   ) {}
 
-  async create(createMessageDto: CreateMessageDto, user: UserDecoratorType) {
+  async create(createMessageDto: CreateMessageDto, user: UserDecoratorType, socketId?: string) {
     try {
       //- Xác định người gửi
       const candidateText = this.configService.get<string>('role_candidate');
@@ -126,6 +126,7 @@ export class MessageService {
       this.chatGateway.emitMessageToConversation(
         createMessageDto.conversationId,
         newMessage,
+        socketId,
       );
 
       return newMessage;

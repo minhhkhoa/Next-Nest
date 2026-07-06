@@ -126,8 +126,12 @@ export class ChatGateway implements OnGatewayConnection {
    * @param conversationId ID của phòng chat (conversation)
    * @param messagePayload Dữ liệu tin nhắn mới vừa được tạo (sau khi đã lưu vào DB)
    */
-  emitMessageToConversation(conversationId: string, messagePayload: any) {
-    this.server.to(conversationId).emit('receive_message', messagePayload);
+  emitMessageToConversation(conversationId: string, messagePayload: any, senderSocketId?: string) {
+    const payload = {
+      ...(messagePayload.toJSON ? messagePayload.toJSON() : messagePayload),
+      senderSocketId,
+    };
+    this.server.to(conversationId).emit('receive_message', payload);
   }
 
   //- lắng nghe sự kiện thả biểu cảm cảm xúc tin nhắn từ client

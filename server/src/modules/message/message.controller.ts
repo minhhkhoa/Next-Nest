@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, Headers } from '@nestjs/common';
 import { MessageService } from './message.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import {
@@ -21,8 +21,9 @@ export class MessageController {
   create(
     @Body() createMessageDto: CreateMessageDto,
     @userDecorator() user: UserDecoratorType,
+    @Headers('x-socket-id') socketId?: string,
   ) {
-    return this.messageService.create(createMessageDto, user);
+    return this.messageService.create(createMessageDto, user, socketId);
   }
 
   @Get('conversation/:conversationId')

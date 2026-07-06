@@ -280,7 +280,7 @@ export default function ChatPageModule() {
     addOptimisticMessage(queryKey, optimisticMessage);
 
     try {
-      await sendMessageMutation.mutateAsync(payload);
+      await sendMessageMutation.mutateAsync({ payload, socketId: socket?.id });
 
       queryClient.invalidateQueries({
         queryKey: ["messages", payload.conversationId],

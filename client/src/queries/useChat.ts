@@ -49,8 +49,8 @@ export const useGetMessages = (
 //--- Gửi tin nhắn mới ---
 export const useSendMessageMutation = () => {
   return useMutation({
-    mutationFn: (payload: CreateMessagePayload) =>
-      chatApiRequest.sendMessage(payload),
+    mutationFn: (data: { payload: CreateMessagePayload; socketId?: string }) =>
+      chatApiRequest.sendMessage(data.payload, data.socketId),
   });
 };
 
