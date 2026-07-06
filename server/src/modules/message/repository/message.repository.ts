@@ -49,7 +49,12 @@ export class MessageRepository extends MongoAbstractRepository<MessageDocument> 
   }
 
   //- cập nhật danh sách các biểu cảm đã thả trên tin nhắn
-  async updateReaction(messageId: string, userId: string, name: string, emoji: string) {
+  async updateReaction(
+    messageId: string,
+    userId: string,
+    name: string,
+    emoji: string,
+  ) {
     const message = await this.messageModel.findById(messageId);
     if (!message) return null;
 
@@ -73,7 +78,7 @@ export class MessageRepository extends MongoAbstractRepository<MessageDocument> 
     } else {
       //- nếu chưa thả biểu cảm nào thì push mới vào
       message.reactions.push({
-        userId: new Types.ObjectId(userId) as any,
+        userId: new Types.ObjectId(userId),
         emoji,
         senderName: name,
       });

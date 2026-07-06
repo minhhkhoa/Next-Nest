@@ -35,6 +35,12 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useTranslations, useLocale } from "next-intl";
 
 const TEMPLATE_COMPONENTS: Record<string, React.ElementType> = {
@@ -93,6 +99,71 @@ export default function useMemoFrameChat({
 
   const handleOpenSystemCvPreview = (message: ChatMessage) => {
     setPreviewCvMessage(message);
+  };
+
+  //- state lưu id tin nhắn đang được nhấn giữ chọn emoji trên mobile
+  const [mobileReactionMessageId, setMobileReactionMessageId] = useState<
+    string | null
+  >(null);
+
+  //- các ref để quản lý sự kiện chạm phát hiện long press
+  const touchStartRef = React.useRef<{ x: number; y: number } | null>(null);
+  const longPressTimerRef = React.useRef<any | null>(null);
+  const isLongPressRef = React.useRef<boolean>(false);
+
+  //- xử lý sự kiện khi bắt đầu chạm vào tin nhắn
+  const handleTouchStart = (e: React.TouchEvent, messageId: string) => {
+    //- chỉ xử lý khi chạm 1 ngón tay
+    if (e.touches.length !== 1) return;
+
+    const touch = e.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+    isLongPressRef.current = false;
+
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+    }
+
+    //- thiết lập hẹn giờ 500ms cho hành động nhấn giữ
+    longPressTimerRef.current = setTimeout(() => {
+      isLongPressRef.current = true;
+      //- rung nhẹ thiết bị để báo hiệu thành công (haptic feedback) nếu trình duyệt hỗ trợ
+      if (typeof navigator !== "undefined" && navigator.vibrate) {
+        try {
+          navigator.vibrate(50);
+        } catch (err) {
+          console.log("log err: ", err);
+          //- bỏ qua nếu trình duyệt không cho phép rung không qua tương tác trực tiếp
+        }
+      }
+      setMobileReactionMessageId(messageId);
+    }, 500);
+  };
+
+  //- xử lý sự kiện khi di chuyển ngón tay (hủy long press nếu di chuyển nhiều - ví dụ đang cuộn trang)
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchStartRef.current || !longPressTimerRef.current) return;
+
+    const touch = e.touches[0];
+    const diffX = Math.abs(touch.clientX - touchStartRef.current.x);
+    const diffY = Math.abs(touch.clientY - touchStartRef.current.y);
+
+    if (diffX > 10 || diffY > 10) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+
+  //- xử lý sự kiện khi nhấc ngón tay lên
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    //- nếu là long press, ngăn chặn hành vi click/tap mặc định của trình duyệt
+    if (isLongPressRef.current) {
+      e.preventDefault();
+    }
   };
 
   //- sử dụng useMemo để tránh tính toán render lại toàn bộ không gian chat khi chỉ có một tin nhắn mới
@@ -166,7 +237,9 @@ export default function useMemoFrameChat({
               "w-full flex",
               isMe ? "justify-end" : "justify-start",
               //- nếu tin nhắn hiện tại có biểu cảm và có tin nhắn tiếp theo thì thêm padding bottom để tránh đè
-              msg.reactions && msg.reactions.length > 0 && nextMessage ? "pb-3.5" : ""
+              msg.reactions && msg.reactions.length > 0 && nextMessage
+                ? "pb-3.5"
+                : "",
             )}
           >
             <Message
@@ -194,10 +267,28 @@ export default function useMemoFrameChat({
                     <BubbleContent
                       className={cn(
                         "px-3 py-2 sm:px-4 rounded-2xl text-sm sm:text-base w-full max-w-full break-words shadow-xs border",
+                        //- ngăn chặn bôi đen text khi nhấn giữ trên mobile, vẫn cho phép trên desktop
+                        "select-none sm:select-text cursor-pointer",
                         isMe
                           ? "bg-primary/10 text-primary dark:bg-primary/25 dark:text-primary-foreground border border-primary/20"
                           : "bg-white/60 dark:bg-slate-900/60 border border-slate-200/40 dark:border-slate-800/40 backdrop-blur-xs",
                       )}
+                      style={{ WebkitTouchCallout: "none" }}
+                      onTouchStart={
+                        msg.conversationId !== "ai-assistant"
+                          ? (e) => handleTouchStart(e, msg._id)
+                          : undefined
+                      }
+                      onTouchMove={
+                        msg.conversationId !== "ai-assistant"
+                          ? handleTouchMove
+                          : undefined
+                      }
+                      onTouchEnd={
+                        msg.conversationId !== "ai-assistant"
+                          ? handleTouchEnd
+                          : undefined
+                      }
                     >
                       {msg.type === "TEXT" ? (
                         msg.content ? (
@@ -549,11 +640,15 @@ export default function useMemoFrameChat({
                 </div>
                 {isLastOwnMessage ? (
                   //- căn phải phần thời gian và trạng thái tin nhắn cho tin nhắn cuối của mình
-                  <MessageFooter className={cn(
-                    "flex justify-end items-center gap-1.5 text-[11px] text-gray-400 select-none",
-                    //- nếu có biểu cảm thì dịch footer xuống mt-3.5 để tránh bị đè chữ, ngược lại dùng mt-1
-                    msg.reactions && msg.reactions.length > 0 ? "mt-3.5" : "mt-1"
-                  )}>
+                  <MessageFooter
+                    className={cn(
+                      "flex justify-end items-center gap-1.5 text-[11px] text-gray-400 select-none",
+                      //- nếu có biểu cảm thì dịch footer xuống mt-3.5 để tránh bị đè chữ, ngược lại dùng mt-1
+                      msg.reactions && msg.reactions.length > 0
+                        ? "mt-3.5"
+                        : "mt-1",
+                    )}
+                  >
                     <span>
                       {new Date(msg.createdAt).toLocaleTimeString([], {
                         hour: "2-digit",
@@ -630,6 +725,39 @@ export default function useMemoFrameChat({
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Dialog chọn emoji reaction dành riêng cho mobile */}
+      <Dialog
+        open={!!mobileReactionMessageId}
+        onOpenChange={(open) => {
+          if (!open) setMobileReactionMessageId(null);
+        }}
+      >
+        <DialogContent className="max-w-[340px] w-[90%] rounded-2xl p-4 flex flex-col items-center gap-4 bg-background/95 backdrop-blur-md border border-border shadow-2xl">
+          <DialogHeader className="p-0 text-center">
+            <DialogTitle className="text-sm font-semibold text-muted-foreground">
+              {locale === "vi" ? "Bày tỏ cảm xúc" : "React to message"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex justify-center items-center gap-2.5 w-full py-1">
+            {["👍", "❤️", "😆", "😢", "😮", "🙏"].map((emoji) => (
+              <button
+                key={emoji}
+                type="button"
+                onClick={() => {
+                  if (mobileReactionMessageId) {
+                    onSendReaction?.(mobileReactionMessageId, emoji);
+                    setMobileReactionMessageId(null);
+                  }
+                }}
+                className="text-3xl active:scale-130 transition-transform duration-100 p-1 hover:bg-accent rounded-full select-none"
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

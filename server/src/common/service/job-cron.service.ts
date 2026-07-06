@@ -143,11 +143,11 @@ export class JobCronService {
     }
   }
 
-  //- cron job chạy vào 8:00 am sáng chủ nhật hàng tuần để gửi gợi ý việc làm phù hợp cho ứng viên
-  @Cron('0 8 * * 0')
+  //- cron job chạy vào 8:00 am hàng ngày để gửi gợi ý việc làm phù hợp cho ứng viên
+  @Cron('0 8 * * *')
   async handleWeeklyJobRecommendations() {
     this.logger.log(
-      'Bắt đầu chạy Cron Job gửi gợi ý công việc hàng tuần cho ứng viên...',
+      'Bắt đầu chạy Cron Job gửi gợi ý công việc hàng ngày cho ứng viên...',
     );
     try {
       //- lấy tất cả ứng viên đang hoạt động

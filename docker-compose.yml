@@ -9,7 +9,6 @@ services:
       - ./server/.env.prod
     environment:
       PORT: "${BACKEND_PORT}"
-      FRONTEND_URL: "http://${SERVER_IP}:${FRONTEND_PORT}"
     ports:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
     depends_on:
