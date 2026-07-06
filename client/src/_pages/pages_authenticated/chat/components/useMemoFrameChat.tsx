@@ -606,7 +606,7 @@ export default function useMemoFrameChat({
                   {msg.conversationId !== "ai-assistant" && (
                     <div
                       className={cn(
-                        "opacity-0 group-hover/row:opacity-100 transition-opacity duration-200 shrink-0",
+                        "hidden md:flex opacity-0 group-hover/row:opacity-100 transition-opacity duration-200 shrink-0",
                         isMe ? "mr-1" : "ml-1",
                       )}
                     >
