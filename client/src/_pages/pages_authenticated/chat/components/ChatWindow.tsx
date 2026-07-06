@@ -179,7 +179,13 @@ export default function ChatWindow({
     }
     //- Fallback nếu chưa có activeConversation
     return isCandidate ? hrData?.avatar : candidateData?.avatar;
-  }, [activeConversation, activeConversationId, isCandidate, hrData?.avatar, candidateData?.avatar]);
+  }, [
+    activeConversation,
+    activeConversationId,
+    isCandidate,
+    hrData?.avatar,
+    candidateData?.avatar,
+  ]);
 
   const headerName = useMemo(() => {
     if (activeConversationId === "ai-assistant") {
@@ -192,7 +198,14 @@ export default function ChatWindow({
     }
     //- Fallback nếu chưa có activeConversation
     return isCandidate ? hrData?.name : candidateData?.name;
-  }, [activeConversation, activeConversationId, isCandidate, hrData?.name, candidateData?.name, t]);
+  }, [
+    activeConversation,
+    activeConversationId,
+    isCandidate,
+    hrData?.name,
+    candidateData?.name,
+    t,
+  ]);
 
   const messageItems = useMemoFrameChat({
     messages,
@@ -368,9 +381,13 @@ export default function ChatWindow({
           <div className="mb-2 rounded-lg border border-primary/20 bg-primary/5 dark:bg-slate-900 dark:border-slate-800 px-3 py-2">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-3 min-w-0">
-                {(pendingCvAttachment as any).previewImage || (pendingCvAttachment as any).image ? (
+                {(pendingCvAttachment as any).previewImage ||
+                (pendingCvAttachment as any).image ? (
                   <Image
-                    src={(pendingCvAttachment as any).previewImage || (pendingCvAttachment as any).image}
+                    src={
+                      (pendingCvAttachment as any).previewImage ||
+                      (pendingCvAttachment as any).image
+                    }
                     alt={pendingCvAttachment.resumeName || "CV image"}
                     width={36}
                     height={36}
@@ -382,7 +399,9 @@ export default function ChatWindow({
                   </div>
                 )}
                 <div className="min-w-0">
-                  <p className="text-xs text-gray-500">{t("AttachingSystemCv")}</p>
+                  <p className="text-xs text-gray-500">
+                    {t("AttachingSystemCv")}
+                  </p>
                   <p className="text-sm font-medium truncate">
                     {pendingCvAttachment.resumeName || t("UnnamedCv")}
                   </p>
@@ -431,10 +450,7 @@ export default function ChatWindow({
                 variant="outline"
                 size="icon"
                 className="rounded-full shrink-0"
-                disabled={
-                  !activeConversationId ||
-                  isSending
-                }
+                disabled={!activeConversationId || isSending}
                 aria-label={t("AttachFile")}
               >
                 <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -495,7 +511,12 @@ export default function ChatWindow({
           ) : (
             <Button
               type="submit"
-              disabled={(!localText.trim() && !pendingJobReference && !pendingCvAttachment) || isSending}
+              disabled={
+                (!localText.trim() &&
+                  !pendingJobReference &&
+                  !pendingCvAttachment) ||
+                isSending
+              }
               size="icon"
               className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shrink-0"
             >
@@ -532,7 +553,9 @@ export default function ChatWindow({
                     )}
 
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate">{file.fileName}</p>
+                      <p className="text-sm font-medium truncate">
+                        {file.fileName}
+                      </p>
                       <p className="text-xs text-slate-500">
                         {(file.fileSize / 1024 / 1024).toFixed(2)} MB
                       </p>
@@ -568,12 +591,19 @@ export default function ChatWindow({
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium truncate">{file.fileName}</p>
+                    <p className="text-sm font-medium truncate">
+                      {file.fileName}
+                    </p>
 
                     <div className="mt-1 flex items-center gap-2">
                       <Skeleton className="h-2 w-24 sm:w-40" />
                       <span className="text-xs text-gray-500">
-                        {t("UploadingFileProgress", { size: Math.max(file.fileSize / 1024 / 1024, 0.01).toFixed(2) })}
+                        {t("UploadingFileProgress", {
+                          size: Math.max(
+                            file.fileSize / 1024 / 1024,
+                            0.01,
+                          ).toFixed(2),
+                        })}
                       </span>
                     </div>
                   </div>
@@ -588,9 +618,7 @@ export default function ChatWindow({
         <DialogContent className="w-[96vw] max-w-[680px] p-0 overflow-hidden">
           <DialogHeader className="px-5 pt-5 pb-3 border-b">
             <DialogTitle>{t("SendSystemCvTitle")}</DialogTitle>
-            <DialogDescription>
-              {t("SendSystemCvDesc")}
-            </DialogDescription>
+            <DialogDescription>{t("SendSystemCvDesc")}</DialogDescription>
           </DialogHeader>
 
           <div className="px-5 py-4 max-h-[62vh] overflow-y-auto">
@@ -633,7 +661,7 @@ export default function ChatWindow({
                       htmlFor={`chat-system-cv-${resume._id}`}
                       className={`group rounded-2xl border p-3 sm:p-4 cursor-pointer transition ${
                         isActive
-                           ? "border-primary bg-primary/5 dark:bg-primary/20"
+                          ? "border-primary bg-primary/5 dark:bg-primary/20"
                           : "border-slate-200 hover:border-primary/50 dark:border-slate-700"
                       }`}
                     >
@@ -664,7 +692,9 @@ export default function ChatWindow({
                               {resume.resumeName || t("UnnamedCv")}
                             </Label>
                             {resume.isDefault ? (
-                              <Badge variant="secondary">{t("DefaultResume")}</Badge>
+                              <Badge variant="secondary">
+                                {t("DefaultResume")}
+                              </Badge>
                             ) : null}
                           </div>
 
@@ -672,7 +702,13 @@ export default function ChatWindow({
                             Template: {templateID}
                           </p>
                           <p className="text-xs sm:text-sm text-slate-500">
-                            {t("UpdateAt", { date: new Date(resume.updatedAt).toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US") })}
+                            {t("UpdateAt", {
+                              date: new Date(
+                                resume.updatedAt,
+                              ).toLocaleDateString(
+                                locale === "vi" ? "vi-VN" : "en-US",
+                              ),
+                            })}
                           </p>
                         </div>
                       </div>
@@ -704,7 +740,9 @@ export default function ChatWindow({
               {isSubmittingSystemCv ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : null}
-              {activeConversationId === "ai-assistant" ? t("AttachCvBtn") : t("SendSelectedCvBtn")}
+              {activeConversationId === "ai-assistant"
+                ? t("AttachCvBtn")
+                : t("SendSelectedCvBtn")}
             </Button>
           </DialogFooter>
         </DialogContent>

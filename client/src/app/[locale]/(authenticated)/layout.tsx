@@ -9,11 +9,11 @@ export default async function AuthenticatedLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="md:px-26 min-h-screen flex flex-col">
+    <div className="authenticated-layout-root md:px-26 min-h-screen flex flex-col">
       {/* Giữ nguyên Header vì cần dùng chung User Menu/Thông báo */}
       <HeaderClient />
 
-      <div className="mt-2 container mx-auto flex-grow">
+      <div className="mt-2 container mx-auto flex-none authenticated-layout-breadcrumb">
         <BreadcrumbSite />
       </div>
       {children}
@@ -21,7 +21,7 @@ export default async function AuthenticatedLayout({
       <FloatButton />
 
       {/* Có thể giữ hoặc bỏ Footer tùy UX Khoa muốn */}
-      <div className="md:-mx-30 mt-auto">
+      <div className="md:-mx-30 mt-auto authenticated-layout-footer">
         <Footer />
       </div>
     </div>

@@ -654,3 +654,19 @@ body[data-scroll-locked="1"] .tox-pop {
 .go1754112896 {
   right: 80px !important;
 }
+
+/* Ẩn Footer và khóa chiều cao toàn trang khi ở màn hình chat trên mobile */
+@media (max-width: 768px) {
+  body:has(.chat-page-container) {
+    overflow: hidden !important;
+  }
+  
+  body:has(.chat-page-container) .authenticated-layout-root {
+    height: 100dvh !important;
+    overflow: hidden !important;
+  }
+  
+  body:has(.chat-page-container) .authenticated-layout-footer {
+    display: none !important;
+  }
+}

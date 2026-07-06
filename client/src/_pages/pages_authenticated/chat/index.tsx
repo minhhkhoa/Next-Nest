@@ -77,7 +77,8 @@ export default function ChatPageModule() {
     location?: string;
   } | null>(null);
   //- state quan ly cv he thong dang cho gui khi chat voi ai
-  const [pendingCvAttachment, setPendingCvAttachment] = useState<UserResumeResponseType | null>(null);
+  const [pendingCvAttachment, setPendingCvAttachment] =
+    useState<UserResumeResponseType | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [uploadingAttachments, setUploadingAttachments] = useState<
     ChatUploadingAttachment[]
@@ -370,7 +371,10 @@ export default function ChatPageModule() {
   useEffect(() => {
     if (!socket) return;
 
-    const handleReceiveReaction = (data: { messageId: string; reactions: any[] }) => {
+    const handleReceiveReaction = (data: {
+      messageId: string;
+      reactions: any[];
+    }) => {
       //- cập nhật trực tiếp cache React Query của các tin nhắn để UI tự động render lại
       queryClient.setQueriesData({ queryKey: ["messages"] }, (old: any) => {
         if (!old?.data?.messages) return old;
@@ -381,7 +385,7 @@ export default function ChatPageModule() {
             messages: old.data.messages.map((msg: any) =>
               msg._id === data.messageId
                 ? { ...msg, reactions: data.reactions }
-                : msg
+                : msg,
             ),
           },
         };
@@ -392,8 +396,8 @@ export default function ChatPageModule() {
         prev.map((msg) =>
           msg._id === data.messageId
             ? { ...msg, reactions: data.reactions }
-            : msg
-        )
+            : msg,
+        ),
       );
     };
 
@@ -496,9 +500,7 @@ export default function ChatPageModule() {
       const parsedDraft = JSON.parse(rawDraft);
       if (parsedDraft?.conversationId !== activeConversationId) return;
 
-      setInputText(
-        parsedDraft?.inputText || t("AiDefaultPrompt"),
-      );
+      setInputText(parsedDraft?.inputText || t("AiDefaultPrompt"));
       setPendingJobReference(parsedDraft?.metadata || null);
       sessionStorage.removeItem(CHAT_JOB_REFERENCE_DRAFT_STORAGE_KEY);
     } catch {
@@ -680,7 +682,9 @@ export default function ChatPageModule() {
             t("SendFileError", { name: pendingItem.file.name }),
           );
         } catch (error) {
-          SoftDestructiveSonner(t("UploadFileFailed", { name: pendingItem.file.name }));
+          SoftDestructiveSonner(
+            t("UploadFileFailed", { name: pendingItem.file.name }),
+          );
           console.log("error upload file: ", error);
         } finally {
           removeUploadingAttachment(uploadId);
@@ -694,8 +698,7 @@ export default function ChatPageModule() {
     const sendingJobReference = !!pendingJobReference;
     if (!trimmedText && !sendingJobReference) return;
 
-    const textToSend =
-      trimmedText || t("JobReferenceDefaultText");
+    const textToSend = trimmedText || t("JobReferenceDefaultText");
     const jobReferenceData = pendingJobReference;
     const messageType = sendingJobReference ? "JOB_REFERENCE" : "TEXT";
 
@@ -814,7 +817,7 @@ export default function ChatPageModule() {
   ]);
 
   return (
-    <div className="flex h-[calc(100vh-100px)] w-full bg-gradient-to-br from-primary/15 via-primary/5 to-indigo-50/20 border border-primary/10 rounded-xl overflow-hidden shadow-sm">
+    <div className="chat-page-container flex h-full md:h-[calc(100vh-100px)] w-full bg-gradient-to-br from-primary/15 via-primary/5 to-indigo-50/20 border border-primary/10 rounded-xl overflow-hidden shadow-sm my-2">
       {/*- đặt nền gradient giống khối tin tức nổi bật cho toàn bộ khung chat */}
       {/* Desktop Sidebar - ẩn trên mobile */}
       <ConversationSidebar

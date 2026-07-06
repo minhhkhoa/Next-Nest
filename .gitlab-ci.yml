@@ -7,6 +7,9 @@ stages:
   - deploy
 
 variables:
+  SERVER_IP: "192.168.91.14"
+  BACKEND_PORT: "2302"
+  FRONTEND_PORT: "2303"
   # Biến môi trường cho Frontend (Injected at build time)
   NEXT_PUBLIC_API_URL: "${DOMAIN_PROD}"
   NEXT_PUBLIC_API_URL_SERVER: "${DOMAIN_PROD}/api"
