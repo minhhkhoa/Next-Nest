@@ -575,7 +575,7 @@ export class JobsService {
       const totalItems = countResult.length > 0 ? countResult[0].total : 0;
 
       //- Gắn thông tin đã bookmark vào kết quả (nếu có login)
-      if(hasBookmarked && hasBookmarked.result.length > 0) {
+      if (hasBookmarked && hasBookmarked.result.length > 0) {
         const bookmarkedJobIds = hasBookmarked.result.map(
           (bookmark: Bookmark) => bookmark.itemId.toString(),
         );
@@ -610,6 +610,7 @@ export class JobsService {
       const {
         currentPage,
         pageSize,
+        industryIDs,
         title,
         fieldCompany,
         address,
@@ -620,40 +621,179 @@ export class JobsService {
         minSalary,
         maxSalary,
         currency,
-        industryIDs,
         skillIDs,
       } = query;
 
       const defaultPage = currentPage && currentPage > 0 ? +currentPage : 1;
       const defaultLimit = pageSize && pageSize > 0 ? +pageSize : 12;
-      const skip = (defaultPage - 1) * defaultLimit;
 
-      const titleText = title?.trim() || '';
-      const companyText = fieldCompany?.trim() || '';
-      const addressText = address?.trim() || '';
+      //- Kiểm tra xem có bất kỳ điều kiện lọc nào được gửi lên hay không
+      const hasAnyFilter =
+        title?.trim() ||
+        fieldCompany?.trim() ||
+        address?.trim() ||
+        level ||
+        employeeType ||
+        experience ||
+        isHot === 'true' ||
+        (minSalary !== undefined && minSalary !== null) ||
+        (maxSalary !== undefined && maxSalary !== null) ||
+        currency ||
+        (industryIDs && industryIDs.length > 0) ||
+        (skillIDs && skillIDs.length > 0);
 
-      const titleRegex = titleText ? new RegExp(titleText, 'i') : null;
-      const companyRegex = companyText ? new RegExp(companyText, 'i') : null;
-      const addressRegex = addressText
-        ? new RegExp(this.buildLocationRegexPattern(addressText), 'i')
-        : null;
+      if (!hasAnyFilter) {
+        //- Query trực tiếp từ MongoDB để đảm bảo khi không có bộ lọc (lần đầu vào trang), hiển thị hết các Job
+        const skip = (defaultPage - 1) * defaultLimit;
 
+        const countPipeline = [
+          {
+            $match: {
+              isActive: true,
+              status: 'active',
+              isDeleted: false,
+            },
+          },
+          {
+            $lookup: {
+              from: 'companies',
+              localField: 'companyID',
+              foreignField: '_id',
+              as: 'company',
+            },
+          },
+          { $unwind: '$company' },
+          {
+            $match: {
+              'company.isDeleted': false,
+              'company.status': 'ACCEPT',
+            },
+          },
+          { $count: 'total' },
+        ];
+
+        const pipeline: any[] = [
+          {
+            $match: {
+              isActive: true,
+              status: 'active',
+              isDeleted: false,
+            },
+          },
+          {
+            $lookup: {
+              from: 'companies',
+              localField: 'companyID',
+              foreignField: '_id',
+              as: 'company',
+            },
+          },
+          { $unwind: '$company' },
+          {
+            $match: {
+              'company.isDeleted': false,
+              'company.status': 'ACCEPT',
+            },
+          },
+          {
+            $lookup: {
+              from: 'industries',
+              localField: 'industryID',
+              foreignField: '_id',
+              as: 'industryID',
+            },
+          },
+          {
+            $lookup: {
+              from: 'skills',
+              localField: 'skills',
+              foreignField: '_id',
+              as: 'skills',
+            },
+          },
+          {
+            $sort: {
+              'isHot.isHotJob': -1,
+              createdAt: -1,
+            },
+          },
+          { $skip: skip },
+          { $limit: defaultLimit },
+        ];
+
+        const [countResult, result] = await Promise.all([
+          this.jobsRepository.aggregateWithPipeline(countPipeline),
+          this.jobsRepository.aggregateWithPipeline(pipeline),
+        ]);
+
+        const totalItems = countResult.length > 0 ? countResult[0].total : 0;
+
+        let hasBookmarked;
+        if (user) {
+          hasBookmarked = await this.bookmarkService.findAllByUser(user, {
+            currentPage: 1,
+            pageSize: 300,
+            itemType: 'job',
+          });
+        }
+
+        if (hasBookmarked && hasBookmarked.result.length > 0) {
+          const bookmarkedJobIds = hasBookmarked.result.map(
+            (bookmark: Bookmark) => bookmark.itemId.toString(),
+          );
+
+          result.forEach((job) => {
+            job.hasBookmarked = bookmarkedJobIds.includes(job._id.toString());
+          });
+        }
+
+        return {
+          meta: {
+            current: defaultPage,
+            pageSize: defaultLimit,
+            totalPages: Math.ceil(totalItems / defaultLimit),
+            totalItems,
+          },
+          result,
+        };
+      }
+
+      //- Phân giải danh sách ngành nghề lọc gồm cha và toàn bộ con đệ quy từ MongoDB
       const normalizedIndustryIDs = (industryIDs || []).filter((id) =>
         mongoose.Types.ObjectId.isValid(id),
       );
-      const normalizedSkillIDs = (skillIDs || []).filter((id) =>
-        mongoose.Types.ObjectId.isValid(id),
-      );
-
-      const industryObjectIds = normalizedIndustryIDs.length
+      const industryChildIds = normalizedIndustryIDs.length
         ? await this.industryService.getAllChildIndustryIds(
             normalizedIndustryIDs,
           )
         : [];
-      const skillObjectIds = normalizedSkillIDs.map(
-        (id) => new mongoose.Types.ObjectId(id),
-      );
+      const industryObjectIds = industryChildIds.map((id) => id.toString());
 
+      //- Thực hiện tìm kiếm nâng cao và lọc AND trên Elasticsearch
+      const { jobIds, totalItems } =
+        await this.elasticsearchService.searchJobsPublicAdvanced(
+          {
+            ...query,
+            currentPage: defaultPage,
+            pageSize: defaultLimit,
+          },
+          industryObjectIds,
+        );
+
+      //- Nếu không tìm thấy kết quả nào khớp trên ES, trả về danh sách rỗng luôn
+      if (jobIds.length === 0) {
+        return {
+          meta: {
+            current: defaultPage,
+            pageSize: defaultLimit,
+            totalPages: 0,
+            totalItems: 0,
+          },
+          result: [],
+        };
+      }
+
+      //- Tìm kiếm bookmarked của user (nếu đã đăng nhập)
       let hasBookmarked;
       if (user) {
         hasBookmarked = await this.bookmarkService.findAllByUser(user, {
@@ -663,12 +803,12 @@ export class JobsService {
         });
       }
 
+      //- Truy vấn MongoDB lấy chi tiết Job dựa trên danh sách IDs khớp từ ES
+      const jobObjectIds = jobIds.map((id) => new mongoose.Types.ObjectId(id));
       const pipeline: any[] = [
         {
           $match: {
-            isActive: true,
-            status: 'active',
-            isDeleted: false,
+            _id: { $in: jobObjectIds },
           },
         },
         {
@@ -680,12 +820,6 @@ export class JobsService {
           },
         },
         { $unwind: '$company' },
-        {
-          $match: {
-            'company.isDeleted': false,
-            'company.status': 'ACCEPT',
-          },
-        },
         {
           $lookup: {
             from: 'industries',
@@ -704,254 +838,20 @@ export class JobsService {
         },
       ];
 
-      const levelHierarchy = LEVEL_OPTIONS.map((option) => option.value);
-      const selectedLevelIndex = level ? levelHierarchy.indexOf(level) : -1;
-      const compatibleLevels =
-        selectedLevelIndex >= 0
-          ? levelHierarchy.slice(0, selectedLevelIndex + 1)
-          : [];
+      const result = await this.jobsRepository.aggregateWithPipeline(pipeline);
 
-      //- Khi user chọn level, giữ các job cùng level hoặc thấp hơn.
-      if (compatibleLevels.length > 0) {
-        pipeline.push({
-          $match: {
-            level: { $in: compatibleLevels },
-          },
-        });
-      }
+      //- Sắp xếp lại kết quả MongoDB trả về theo đúng thứ tự xếp hạng (score) của Elasticsearch
+      const sortedResult = jobIds
+        .map((id) => result.find((job) => job._id.toString() === id))
+        .filter(Boolean);
 
-      const primaryScoreConditions: any[] = [];
-      const secondaryScoreConditions: any[] = [];
-
-      //- Weight strategy:
-      //- title: 30 (highest)
-      //- industry: 20
-      //- skill: 20 (same priority as industry)
-      //- other filters: low priority
-
-      if (titleRegex) {
-        primaryScoreConditions.push({
-          $cond: [
-            {
-              $or: [
-                {
-                  $regexMatch: {
-                    input: { $ifNull: ['$title.vi', ''] },
-                    regex: titleRegex,
-                  },
-                },
-                {
-                  $regexMatch: {
-                    input: { $ifNull: ['$title.en', ''] },
-                    regex: titleRegex,
-                  },
-                },
-              ],
-            },
-            30,
-            0,
-          ],
-        });
-      }
-
-      if (companyRegex) {
-        const companyOrConditions: any[] = [
-          {
-            $regexMatch: {
-              input: { $ifNull: ['$company.name', ''] },
-              regex: companyRegex,
-            },
-          },
-          {
-            $regexMatch: {
-              input: { $ifNull: ['$company.taxCode', ''] },
-              regex: companyRegex,
-            },
-          },
-        ];
-
-        if (mongoose.Types.ObjectId.isValid(companyText)) {
-          companyOrConditions.push({
-            $eq: ['$company._id', new mongoose.Types.ObjectId(companyText)],
-          });
-        }
-
-        secondaryScoreConditions.push({
-          $cond: [{ $or: companyOrConditions }, 1, 0],
-        });
-      }
-
-      if (addressRegex) {
-        secondaryScoreConditions.push({
-          $cond: [
-            {
-              $regexMatch: {
-                input: { $ifNull: ['$location', ''] },
-                regex: addressRegex,
-              },
-            },
-            1,
-            0,
-          ],
-        });
-      }
-
-      if (compatibleLevels.length > 0) {
-        secondaryScoreConditions.push({
-          $cond: [{ $eq: ['$level', level] }, 2, 1],
-        });
-      }
-
-      if (employeeType) {
-        secondaryScoreConditions.push({
-          $cond: [{ $eq: ['$employeeType', employeeType] }, 1, 0],
-        });
-      }
-
-      if (experience) {
-        secondaryScoreConditions.push({
-          $cond: [{ $eq: ['$experience', experience] }, 1, 0],
-        });
-      }
-
-      if (isHot === 'true') {
-        secondaryScoreConditions.push({
-          $cond: [{ $eq: ['$isHot.isHotJob', true] }, 1, 0],
-        });
-      }
-
-      if (currency) {
-        secondaryScoreConditions.push({
-          $cond: [{ $eq: ['$salary.currency', currency] }, 1, 0],
-        });
-      }
-
-      const hasSalaryFilter =
-        (minSalary !== undefined && minSalary !== null) ||
-        (maxSalary !== undefined && maxSalary !== null);
-
-      const minSalaryBoundary =
-        minSalary !== undefined && minSalary !== null ? minSalary : 0;
-      const maxSalaryBoundary =
-        maxSalary !== undefined && maxSalary !== null
-          ? maxSalary
-          : Number.MAX_SAFE_INTEGER;
-
-      if (hasSalaryFilter) {
-        secondaryScoreConditions.push({
-          $cond: [
-            {
-              $and: [
-                { $gte: ['$salary.max', minSalaryBoundary] },
-                { $lte: ['$salary.min', maxSalaryBoundary] },
-              ],
-            },
-            1,
-            0,
-          ],
-        });
-      }
-
-      if (industryObjectIds.length > 0) {
-        primaryScoreConditions.push({
-          $cond: [
-            {
-              $gt: [
-                {
-                  $size: {
-                    $setIntersection: ['$industryID._id', industryObjectIds],
-                  },
-                },
-                0,
-              ],
-            },
-            20,
-            0,
-          ],
-        });
-      }
-
-      if (skillObjectIds.length > 0) {
-        secondaryScoreConditions.push({
-          $cond: [
-            {
-              $gt: [
-                {
-                  $size: {
-                    $setIntersection: ['$skills._id', skillObjectIds],
-                  },
-                },
-                0,
-              ],
-            },
-            20,
-            0,
-          ],
-        });
-      }
-
-      const hasPrimaryScoreConditions = primaryScoreConditions.length > 0;
-      const hasSecondaryScoreConditions = secondaryScoreConditions.length > 0;
-      const hasAnyOptionalFilter =
-        hasPrimaryScoreConditions || hasSecondaryScoreConditions;
-
-      pipeline.push({
-        $addFields: {
-          primaryScore: hasPrimaryScoreConditions
-            ? { $add: primaryScoreConditions }
-            : 0,
-          secondaryScore: hasSecondaryScoreConditions
-            ? { $add: secondaryScoreConditions }
-            : 0,
-        },
-      });
-
-      pipeline.push({
-        $addFields: {
-          matchScore: {
-            $add: ['$primaryScore', '$secondaryScore'],
-          },
-        },
-      });
-
-      if (hasAnyOptionalFilter) {
-        //- Flexible mode: chỉ cần khớp >= 1 tiêu chí là được giữ lại.
-        pipeline.push({
-          $match: {
-            matchScore: { $gt: 0 },
-          },
-        });
-      }
-
-      const countPipeline = [...pipeline, { $count: 'total' }];
-
-      pipeline.push(
-        {
-          $sort: {
-            primaryScore: -1,
-            secondaryScore: -1,
-            matchScore: -1,
-            'isHot.isHotJob': -1,
-            createdAt: -1,
-          },
-        },
-        { $skip: skip },
-        { $limit: defaultLimit },
-      );
-
-      const [countResult, result] = await Promise.all([
-        this.jobsRepository.aggregateWithPipeline(countPipeline),
-        this.jobsRepository.aggregateWithPipeline(pipeline),
-      ]);
-
-      const totalItems = countResult.length > 0 ? countResult[0].total : 0;
-
+      //- Đánh dấu các công việc đã được người dùng bookmark
       if (hasBookmarked && hasBookmarked.result.length > 0) {
         const bookmarkedJobIds = hasBookmarked.result.map(
           (bookmark: Bookmark) => bookmark.itemId.toString(),
         );
 
-        result.forEach((job) => {
+        sortedResult.forEach((job) => {
           job.hasBookmarked = bookmarkedJobIds.includes(job._id.toString());
         });
       }
@@ -963,11 +863,11 @@ export class JobsService {
           totalPages: Math.ceil(totalItems / defaultLimit),
           totalItems,
         },
-        result,
+        result: sortedResult,
       };
     } catch (error) {
       throw new BadRequestCustom(
-        'Lỗi truy vấn Job Public nâng cao: ' + error.message,
+        'Lỗi truy vấn Job Public nâng cao qua Elasticsearch: ' + error.message,
         true,
       );
     }
