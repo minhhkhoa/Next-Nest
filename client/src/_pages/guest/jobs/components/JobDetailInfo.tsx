@@ -122,7 +122,8 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
                 <div className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />
                   <span>
-                    {t("Expired")}: {format(new Date(job.endDate), "dd/MM/yyyy")}
+                    {t("Expired")}:{" "}
+                    {format(new Date(job.endDate), "dd/MM/yyyy")}
                   </span>
                 </div>
               </div>
@@ -222,7 +223,8 @@ export default function JobDetailInfo({ job }: JobDetailInfoProps) {
                         </>
                       ) : (
                         <>
-                          {tCommon("Buttons.viewMore")} <ChevronDown size={16} />
+                          {tCommon("Buttons.viewMore")}{" "}
+                          <ChevronDown size={16} />
                         </>
                       )}
                     </Button>

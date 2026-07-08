@@ -123,7 +123,7 @@ export default function BookingTable({
                     {dayjs(booking.endAt).format("DD/MM/YY")}
                   </div>
                   <span className="text-[10px] text-muted-foreground italic pl-5">
-                    ({dayjs(booking.endAt).diff(dayjs(booking.startAt), "day")}{" "}
+                    ({dayjs(booking.endAt).diff(dayjs(booking.startAt), "day") + 1}{" "}
                     ngày)
                   </span>
                 </div>

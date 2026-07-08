@@ -90,7 +90,8 @@ export const getAdvertisingColumns = ({
       header: "Thời gian",
       cell: ({ row }) => {
         const booking = row.original;
-        const days = dayjs(booking.endAt).diff(dayjs(booking.startAt), "day");
+        const days =
+          dayjs(booking.endAt).diff(dayjs(booking.startAt), "day") + 1;
         return (
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-1.5 text-sm">

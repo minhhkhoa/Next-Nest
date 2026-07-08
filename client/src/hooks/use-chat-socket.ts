@@ -20,18 +20,17 @@ export const useChatSocket = (conversations: Conversation[]) => {
   useEffect(() => {
     if (!isLogin || !user?._id) return;
 
-    const socketUrl = typeof window !== "undefined" && !window.location.hostname.includes("localhost") 
-      ? window.location.origin 
-      : envConfig.NEXT_PUBLIC_API_URL_SERVER_BASE;
+    const socketUrl =
+      typeof window !== "undefined" &&
+      !window.location.hostname.includes("localhost")
+        ? window.location.origin
+        : envConfig.NEXT_PUBLIC_API_URL_SERVER_BASE;
 
-    const socketInstance = io(
-      `${socketUrl}/chat`,
-      {
-        auth: { token: getAccessTokenFromLocalStorage() },
-        transports: ["websocket"],
-        reconnection: true,
-      },
-    );
+    const socketInstance = io(`${socketUrl}/chat`, {
+      auth: { token: getAccessTokenFromLocalStorage() },
+      transports: ["websocket"],
+      reconnection: true,
+    });
 
     socketInstance.on("connect", () => {
       console.log("Chat Socket connected:", socketInstance.id);
@@ -45,21 +44,26 @@ export const useChatSocket = (conversations: Conversation[]) => {
       setIsConnected(false);
     });
 
-    socketInstance.on("receive_message", (message: ChatMessage & { senderSocketId?: string }) => {
-      console.log("Receive new chat message:", message);
+    socketInstance.on(
+      "receive_message",
+      (message: ChatMessage & { senderSocketId?: string }) => {
+        console.log("Receive new chat message:", message);
 
-      //- Chỉ thêm vào realtime nếu không phải chính kết nối này gửi tin nhắn (tránh bị lặp với optimistic)
-      //- Nếu là thiết bị khác của cùng tài khoản gửi (khác socket.id) thì vẫn thêm vào để đồng bộ realtime
-      const isMine = message.senderId?._id === user?._id;
-      const isMyOwnSocket = !!(message.senderSocketId && message.senderSocketId === socketInstance.id);
+        //- Chỉ thêm vào realtime nếu không phải chính kết nối này gửi tin nhắn (tránh bị lặp với optimistic)
+        //- Nếu là thiết bị khác của cùng tài khoản gửi (khác socket.id) thì vẫn thêm vào để đồng bộ realtime
+        const isMine = message.senderId?._id === user?._id;
+        const isMyOwnSocket = !!(
+          message.senderSocketId && message.senderSocketId === socketInstance.id
+        );
 
-      if (!isMine || !isMyOwnSocket) {
-        setRealtimeMessages((prev) => [...prev, message]);
-      }
+        if (!isMine || !isMyOwnSocket) {
+          setRealtimeMessages((prev) => [...prev, message]);
+        }
 
-      //- Luôn invalidate sidebar để cập nhật vị trí tin nhắn mới, số tin chưa đọc
-      queryClient.invalidateQueries({ queryKey: ["conversations"] });
-    });
+        //- Luôn invalidate sidebar để cập nhật vị trí tin nhắn mới, số tin chưa đọc
+        queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      },
+    );
 
     //- Lang nghe khi co conversation moi duoc tao (recruiter nhan duoc khi candidate nhan tin lan dau)
     socketInstance.on("new_conversation", (conversation: any) => {
@@ -89,7 +93,10 @@ export const useChatSocket = (conversations: Conversation[]) => {
             queryKey: ["messages", payload.conversationId],
           },
           (oldData: any) => {
-            if (!oldData?.data?.messages || !Array.isArray(oldData.data.messages)) {
+            if (
+              !oldData?.data?.messages ||
+              !Array.isArray(oldData.data.messages)
+            ) {
               return oldData;
             }
 
@@ -99,7 +106,9 @@ export const useChatSocket = (conversations: Conversation[]) => {
                 ...oldData.data,
                 messages: oldData.data.messages.map((message: ChatMessage) => {
                   const isMine = message.senderId?._id === user?._id;
-                  const messageCreatedAt = new Date(message.createdAt).getTime();
+                  const messageCreatedAt = new Date(
+                    message.createdAt,
+                  ).getTime();
                   const shouldMarkRead =
                     isMine && !message.isRead && messageCreatedAt <= readAtTime;
 

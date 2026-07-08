@@ -82,14 +82,17 @@ export default function AdvertisingPage() {
   const handleOpenCreateForm = (slot: AdSlotResType) => {
     setSelectedSlot(slot);
 
-    //- Tự động gán adType dựa trên adModeAllowed của slot
+    //- tự động gán adtype dựa trên admodeallowed của slot
     const defaultAdType =
       slot.adModeAllowed === "BOTH" ? "NON_DISMISSIBLE" : slot.adModeAllowed;
 
+    //- reset hoàn toàn form data khi mở form mới để tránh lưu lại state trước đó
     setFormData({
-      ...formData,
       adType: defaultAdType,
-      duration: 1, // Reset về mặc định khi chọn slot mới
+      imageUrl: "",
+      targetUrl: "",
+      startAt: "",
+      duration: 1,
     });
 
     setIsCreateModalOpen(true);
@@ -107,6 +110,7 @@ export default function AdvertisingPage() {
   const executeCreateBooking = async () => {
     if (!selectedSlot) return;
 
+    //- endat được trừ đi 1 ngày vì backend tính toán diffDays = end - start + 1
     const payload = {
       slotId: selectedSlot._id,
       adType: formData.adType,
@@ -114,7 +118,7 @@ export default function AdvertisingPage() {
       targetUrl: formData.targetUrl,
       startAt: dayjs(formData.startAt).toISOString(),
       endAt: dayjs(formData.startAt)
-        .add(formData.duration, "day")
+        .add(formData.duration - 1, "day")
         .toISOString(),
     };
 
@@ -126,6 +130,18 @@ export default function AdvertisingPage() {
         setIsTermsModalOpen(false);
         setIsCreateModalOpen(false);
         setIsPaymentModalOpen(true);
+        
+        //- reset form data sau khi tạo đơn hàng thành công
+        const defaultAdType =
+          selectedSlot.adModeAllowed === "BOTH" ? "NON_DISMISSIBLE" : selectedSlot.adModeAllowed;
+        setFormData({
+          adType: defaultAdType,
+          imageUrl: "",
+          targetUrl: "",
+          startAt: "",
+          duration: 1,
+        });
+
         refetch();
       }
     } catch (error: any) {
